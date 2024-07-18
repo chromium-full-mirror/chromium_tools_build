@@ -157,7 +157,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_xfa_v8_asan",
-      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true is_asan=true use_asan_unowned_ptr=true is_lsan=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true is_asan=true use_raw_ptr_asan_unowned_impl=true is_lsan=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1361,7 +1361,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled"
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "env": {
@@ -1407,7 +1407,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1454,7 +1454,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1501,7 +1501,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled"
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "env": {
@@ -1547,7 +1547,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1594,7 +1594,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1641,7 +1641,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1688,7 +1688,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1735,7 +1735,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled"
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "env": {
@@ -1781,7 +1781,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1828,7 +1828,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1875,7 +1875,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1922,7 +1922,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",

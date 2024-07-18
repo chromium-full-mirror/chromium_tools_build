@@ -266,7 +266,7 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
     assert not clang
 
   if memory_tool == 'asan':
-    args.extend(['is_asan=true', 'use_asan_unowned_ptr=true'])
+    args.extend(['is_asan=true', 'use_raw_ptr_asan_unowned_impl=true'])
     if api.platform.is_win:
       # ASAN requires Clang. Until Clang is default on Windows for certain,
       # bots should set it explicitly.
