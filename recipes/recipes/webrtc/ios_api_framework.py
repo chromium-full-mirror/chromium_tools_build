@@ -32,7 +32,7 @@ def RunSteps(api):
   if not api.tryserver.is_tryserver:
     api.step('cleanup', [build_script, '-c'])
     cmd += ['-r', api.webrtc.revision_number]
-  api.webrtc.build_with_reclient('build', cmd)
+  api.webrtc.build_with_reclient('build', source_dir, cmd)
 
   output_dir = source_dir / 'out_ios_libs'
 

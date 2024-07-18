@@ -311,16 +311,15 @@ class WebRTCApi(recipe_api.RecipeApi):
         step_test_data=self.test_api.example_binary_sizes)
     result.presentation.properties['binary_sizes'] = result.json.output
 
-  def build_with_reclient(self, step_name, cmd):
+  def build_with_reclient(self, step_name, source_dir: Path, cmd):
     cmd += ['--use-remoteexec']
     # TODO(b/243628179): get ninja command generated in build_aar.py
     ninja_command = ""
-    with self.m.reclient.process(step_name, ninja_command,
-                                 self.m.path.checkout_dir) as p:
+    with self.m.reclient.process(step_name, ninja_command, source_dir) as p:
       step_result = self.m.step(step_name, cmd)
       p.build_exit_status = step_result.retcode
 
-  def build_android_archive(self, source_dir):
+  def build_android_archive(self, source_dir: Path):
     # Build the Android .aar archive and upload it to Google storage (except for
     # trybots). This should only be run on a single bot or the archive will be
     # overwritten (and it's a multi-arch build so one is enough).
@@ -336,7 +335,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       build_step_name = 'build android archive'
       build_dir = source_dir / 'andriod-archive'
       cmd += ['--build-dir', build_dir]
-      self.build_with_reclient(build_step_name, cmd)
+      self.build_with_reclient(build_step_name, source_dir, cmd)
       self.m.file.rmtree('Remove android archive dir', build_dir)
 
     if not self.m.tryserver.is_tryserver and not self.m.runtime.is_experimental:
