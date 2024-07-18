@@ -83,7 +83,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     This is intended for uses cases where no checkout is performed. Eventually,
     all code should be switched to taking paths as arguments instead of relying
     on chromium_checkout.checkout_dir and chromium_checkout.source_dir, but this
-    provides a migration path for removing api.path.checkout_dir until necessary
+    provided a migration path for removing api.path.checkout_dir until necessary
     changes to plumb paths through can be made.
 
     Args:
@@ -93,16 +93,12 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         this value.
       source_root: Either a str that gives the checkout_dir-relative path to the
         source directory or a Path which must be a subdirectory of checkout_dir.
-        After returning, api.chromium_checkout.source_dir and
-        api.path.checkout_dir will have a Path pointing at this directory.
+        After returning, api.chromium_checkout.source_dir will have a Path
+        pointing at this directory.
     """
     if isinstance(source_dir, str):
       source_dir = checkout_dir / source_dir
     self._set_paths(checkout_dir, source_dir)
-
-    # TODO: crbug.com/336589262 This can be removed once no one is relying on it
-    # being set
-    self.m.path.checkout_dir = self._source_dir
 
   def set_paths_from_update_result(self,
                                    update_result: bot_update.Result) -> None:
@@ -112,7 +108,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     bot_update.ensure_checkout. Eventually, all code should be switched to
     taking paths as arguments instead of relying on
     chromium_checkout.checkout_dir and chromium_checkout.source_dir, but this
-    provides a migration path for removing api.path.checkout_dir until necessary
+    provided a migration path for removing api.path.checkout_dir until necessary
     changes to plumb paths through can be made.
 
     Args:
