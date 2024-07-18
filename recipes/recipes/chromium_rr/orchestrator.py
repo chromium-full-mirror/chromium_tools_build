@@ -70,8 +70,9 @@ def RunSteps(api):
       target_test_info = target_test_infos.target_test_infos.add()
       target_test_info.test_suite = test_suite
       target_test_info.test_names.extend(test_names)
-    properties['$build/chromium_rr/test_launcher'] = json_format.MessageToDict(
-        target_test_infos, preserving_proto_field_name=True)
+    properties.update(
+        json_format.MessageToDict(
+            target_test_infos, preserving_proto_field_name=True))
 
     api.buildbucket.schedule(
         [
