@@ -19,6 +19,7 @@ DEPS = [
     'depot_tools/tryserver',
     'libyuv',
     'recipe_engine/buildbucket',
+    'recipe_engine/context',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -34,6 +35,8 @@ def RunSteps(api):
   update_result = libyuv.checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
+  with api.context(cwd=source_dir):
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   api.chromium.runhooks(source_dir, build_dir)
 
   if libyuv.should_build:
