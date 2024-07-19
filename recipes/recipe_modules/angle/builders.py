@@ -149,7 +149,8 @@ _SPEC = {
         _create_builder_config(
             'linux', 'Release', 64, gclient_config='angle_mesa'),
     'linux-trace':
-        _create_builder_config('linux', 'Release', 64),
+        _create_builder_config(
+            'linux', 'Release', 64, gclient_config='angle_nointernal'),
     'linux-tsan-test':
         _create_builder_config('linux', 'Release', 64),
     'mac-amd':
@@ -189,7 +190,8 @@ _SPEC = {
     'win-test':
         _create_builder_config('win', 'Release', 64),
     'win-trace':
-        _create_builder_config('win', 'Release', 64),
+        _create_builder_config(
+            'win', 'Release', 64, gclient_config='angle_nointernal'),
     'win-x86-dbg-compile':
         _create_builder_config('win', 'Debug', 32),
     'win-x86-test':
