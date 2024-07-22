@@ -17,7 +17,8 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                  enable_cloud_trace=None,
                  configs=None,
                  remote_jobs=None,
-                 fail_if_reapi_used=None):
+                 fail_if_reapi_used=None,
+                 output_local_strategy=None):
     return self.m.properties(
         **{
             '$build/siso': {
@@ -31,5 +32,6 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                 'configs': configs,
                 'remote_jobs': remote_jobs,
                 'fail_if_reapi_used': fail_if_reapi_used,
+                'output_local_strategy': output_local_strategy,
             },
         })

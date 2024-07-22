@@ -117,6 +117,11 @@ class SisoApi(recipe_api.RecipeApi):
           '--remote_jobs',
           self._props.remote_jobs,
       ])
+    if self._props.output_local_strategy:
+      cmd.extend([
+          '--output_local_strategy',
+          self._props.output_local_strategy,
+      ])
     if siso_args:
       cmd.extend(siso_args)
     cmd.extend(ninja_command[1:])

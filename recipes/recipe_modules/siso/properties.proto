@@ -47,4 +47,7 @@ message InputProperties {
   // Boolean flag to enable REAPI usage check after build step.
   // This is useful to make sure REAPI is not used in the build.
   bool fail_if_reapi_used = 11;
+
+  // Siso flag for `--output_local_strategy`.
+  string output_local_strategy = 12;
 }

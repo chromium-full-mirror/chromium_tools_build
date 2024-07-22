@@ -151,3 +151,14 @@ def GenTests(api):
                        'upload siso reports.gsutil upload siso_metrics.json'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'output_local_strategy',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(output_local_strategy='minimum'),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '--output_local_strategy',
+          'minimum',
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
