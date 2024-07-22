@@ -292,7 +292,6 @@
     "name": "gclient config",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@config@{@@@",
-      "@@@STEP_LOG_LINE@config@  \"BUILDSPEC_VERSION\": null,@@@",
       "@@@STEP_LOG_LINE@config@  \"USE_MIRROR\": true,@@@",
       "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]/git\",@@@",
       "@@@STEP_LOG_LINE@config@  \"delete_unversioned_trees\": true,@@@",
