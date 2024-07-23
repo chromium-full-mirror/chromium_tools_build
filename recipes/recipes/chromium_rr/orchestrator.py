@@ -23,7 +23,9 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/json',
+    'recipe_engine/led',
     'recipe_engine/path',
+    'recipe_engine/properties',
     'recipe_engine/step',
 ]
 
@@ -74,27 +76,70 @@ def RunSteps(api):
         json_format.MessageToDict(
             target_test_infos, preserving_proto_field_name=True))
 
-    api.buildbucket.schedule(
-        [
-            api.buildbucket.schedule_request(
-                project=api.buildbucket.build.builder.project,
-                bucket=api.buildbucket.build.builder.bucket,
-                builder='linux-rr-test-launcher-fyi',
-                tags=api.buildbucket.build.tags,
-                properties=properties,
-                can_outlive_parent=True,
-                as_shadow_if_parent_is_led=True,
-                led_inherit_parent=True,
-            ),
-        ],
-        include_sub_invs=False,
-    )
-
+    if api.led.launched_by_led:
+      api.led.trigger_builder(
+          api.buildbucket.build.builder.project,
+          api.led.shadowed_bucket,
+          'linux-rr-test-launcher-fyi',
+          properties,
+          use_payload=True)
+    else:
+      api.buildbucket.schedule(
+          [
+              api.buildbucket.schedule_request(
+                  project=api.buildbucket.build.builder.project,
+                  bucket=api.buildbucket.build.builder.bucket,
+                  builder='linux-rr-test-launcher-fyi',
+                  tags=api.buildbucket.build.tags,
+                  properties=properties,
+                  can_outlive_parent=True,
+                  as_shadow_if_parent_is_led=True,
+              ),
+          ],
+          include_sub_invs=False,
+      )
 
 def GenTests(api):
   yield api.test(
       'happy_path',
       api.builder_group.for_current('chromium.fyi'),
+      api.chromium_polymorphic.properties_on_target_build({
+          'builder_group': 'fake-group',
+          '$bootstrap/properties': 'fake-bootstrap-properties',
+      }),
+      api.override_step_data(
+          'query test data',
+          api.json.output([{
+              'test_suite': 'blink_wpt_tests',
+              'builder': 'builder1',
+              'test_id': 'test_id_123'
+          }, {
+              'test_suite': 'blink_wpt_tests',
+              'builder': 'builder1',
+              'test_id': 'test_id_345'
+          }, {
+              'test_suite': 'blink_web_tests',
+              'builder': 'builder1',
+              'test_id': 'test_id_567'
+          }])),
+      api.post_process(DropExpectation),
+  )
+  yield api.test(
+      'happy_path_led',
+      api.builder_group.for_current('chromium.fyi'),
+      api.properties(
+          **{
+              "$recipe_engine/led": {
+                  "rbe_cas_input": {
+                      "digest": {
+                          "hash": "123",
+                          "size_bytes": 123
+                      }
+                  },
+                  "shadowed_bucket": "ci",
+                  "led_run_id": ""
+              },
+          }),
       api.chromium_polymorphic.properties_on_target_build({
           'builder_group': 'fake-group',
           '$bootstrap/properties': 'fake-bootstrap-properties',
