@@ -677,7 +677,7 @@ def _parse_ninja_deps(out_dir: str
   `object_file`s are all relative to out_dir; all `file_it_depends_on`s are
   absolute.
   """
-  command = ['ninja', '-t', 'deps']
+  command = ['autoninja', '-t', 'deps']
   ninja = subprocess.Popen(
       command, cwd=out_dir, stdout=subprocess.PIPE, encoding='utf-8')
   try:
