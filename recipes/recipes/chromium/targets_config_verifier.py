@@ -232,14 +232,39 @@ def _verify_target_configs(
     for c in builder_config.chromium_apply_config:
       api.chromium.apply_config(c, chromium_config)
 
+    targets_spec_dir = repo_path / chromium_config.targets_spec_dir
+
+    # If someone adds a builder with a new builder group and doesn't set tests
+    # in the initial CL, then a subsequent CL that sets the tests would
+    # encounter the pyl-generated targets spec file not existing without the
+    # patch. So if any of the targets spec files don't exist, assume that the
+    # builder wasn't running tests before and there's no need to verify
+    # anything.
+    spec_files_exist = [
+        api.path.exists(targets_spec_dir / spec_file)
+        for spec_file in builder_config.targets_spec_files.values()
+    ]
+    if not any(spec_files_exist):
+      return success('none of the targets spec files for the builder exists,'
+                     " assuming it hasn't been running tests")
+    if not all(spec_files_exist):
+      raise api.step.InfraFailure(
+          'unexpected situation: not all of the targets spec files'
+          f' exist without patch for {builder_dir}')
+
     pyl_config = _get_targets_config(
         api,
         'get pyl targets config',
         builder_config,
         repo_path,
-        repo_path / chromium_config.targets_spec_dir,
+        targets_spec_dir,
         precommit_details,
     )
+
+    # If the builder isn't building targets or running tests without the patch,
+    # then just allow targets for the builder to be newly set
+    if not pyl_config.compile_only_targets and not pyl_config.all_tests:
+      return success("builder wasn't running any tests before")
 
     diff = _compare_targets_configs(api, pyl_config, starlark_config)
     if not diff:
@@ -345,14 +370,16 @@ def GenTests(api):
       bucket: str,
       builder: str,
       builder_group: str,
+      non_existent_tester: str | None = None,
+      non_existent_tester_group: str | None = None,
       try_bucket: str | None = None,
       try_builder: str | None = None,
       with_ctbc_property: bool = True,
       with_targets_spec_directory: bool = True,
       with_properties_file_without_patch: bool = True,
       with_targets_spec_directory_without_patch=False,
-      starlark_targets_spec: object | None = None,
-      testing_buildbot_targets_spec: object | None = None,
+      starlark_targets_spec: dict | None = None,
+      testing_buildbot_targets_spec: dict | None = None,
   ) -> recipe_test_api.StepTestData:
     """Set necessary step test data for calling verify_builder_configs.
 
@@ -365,8 +392,15 @@ def GenTests(api):
       * builder_group - The group of the builder to verify targets spec
         for or the group of the mirrored builder if try_bucket and
         try_builder are set.
+      * non_existent_tester -  The name of a tester that there is no
+        targets spec for without patch. Must be set iff
+        non_existent_tester_group is set.
+      * non_existent_tester_group - The builder group of the
+        non-existent tester. Must be set iff non_existent_tester is set.
+        Must not be equal to builder_group.
       * try_bucket - The bucket of the try builder to verify targets
-        spec for. Must be set iff try_builder is set.
+        spec for. Must be set iff try_builder is set. Cannot be set if
+        non_existent_tester is set.
       * try_builder - The try builder to verify targets spec for. Must
         be set iff try_builder is set.
       * with_ctbc_property - Whether or not the
@@ -377,7 +411,7 @@ def GenTests(api):
         $build/chromium_tests_builder_config property.
       * starlark_targets_spec - The targets spec generated from starlark
       * testing_buildbot_targets_spec - The targets spec generated from
-        //testing/buildbot
+        //testing/buildbot. Cannot be set if non_existent_tester is set.
     """
     t = api.buildbucket.try_build()
     t += api.properties(
@@ -385,8 +419,24 @@ def GenTests(api):
             builder_config_directory=builder_config_dir,
             precommit_buckets=[try_bucket] if try_bucket is not None else []))
 
-    assert (try_bucket is None) == (try_builder is None), (
-        'try_bucket and try_builder must both be set or both be unset')
+    def assert_set_together(name1, val1, name2, val2):
+      assert (val1 is None) == (val2 is None), (
+          f'{name1} and {name2} must both be set or both be unset')
+
+    assert_set_together('try_bucket', try_bucket, 'try_builder', try_builder)
+
+    assert_set_together('non_existent_tester', non_existent_tester,
+                        'non_existent_tester_group', non_existent_tester_group)
+    if non_existent_tester is not None:
+      assert non_existent_tester_group is not None, (
+          'non_existent_tester_group must be set if tester is set')
+      assert non_existent_tester_group != builder_group, (
+          'non_existent_tester_group must not be equal to builder_group')
+      assert try_bucket is None, (
+          "non_existent_tester and try_bucket can't both be set")
+      assert testing_buildbot_targets_spec is None, (
+          'non_existent_tester and testing_buildbot_targets_spec'
+          " can't both be set")
 
     builder_dir = f'{builder_config_dir}/{try_bucket or bucket}/{try_builder or builder}'
     t += api.tryserver.get_files_affected_by_patch(
@@ -396,6 +446,8 @@ def GenTests(api):
 
     get_targets_config_step = f'get patched targets configs.{builder_dir}'
     verify_step = f'verify {builder_dir}'
+
+    existing_paths = []
 
     if with_ctbc_property:
       if try_bucket:
@@ -421,11 +473,16 @@ def GenTests(api):
                 chromium_apply_config=['mb'],
             ),
         )
+        if non_existent_tester_group:
+          ctbc_prop.with_tester(
+              bucket=bucket,
+              builder=non_existent_tester,
+              builder_group=non_existent_tester_group,
+          )
       if with_targets_spec_directory:
         if with_properties_file_without_patch:
-          t += api.path.exists(
-              api.path.cache_dir.joinpath('builder/src', builder_dir,
-                                          'properties.json'))
+          existing_paths.append(api.path.cache_dir /
+                                f'builder/src/{builder_dir}/properties.json')
           if with_targets_spec_directory_without_patch:
             ctbc_prop = ctbc_prop.with_targets_spec_directory(
                 f'{builder_dir}/targets')
@@ -448,14 +505,26 @@ def GenTests(api):
       return api.chromium_tests.read_targets_spec(
           builder_group, {builder: targets_spec}, step_prefix=step_prefix)
 
-    if starlark_targets_spec:
+    if starlark_targets_spec is not None:
       t += read_targets_spec(
           starlark_targets_spec,
           step_prefix=f'{get_targets_config_step}.get starlark targets config.')
-    if testing_buildbot_targets_spec:
+    if testing_buildbot_targets_spec is not None:
+      existing_paths.append(
+          api.path.cache_dir /
+          f'builder/src/testing/buildbot/{builder_group}.json')
       t += read_targets_spec(
           testing_buildbot_targets_spec,
           step_prefix=f'{verify_step}.get pyl targets config.')
+    # In the case where there isn't the targets spec file for the tester, we
+    # need to indicate that the targets spec file for the builder exists
+    if non_existent_tester:
+      existing_paths.append(
+          api.path.cache_dir /
+          f'builder/src/testing/buildbot/{builder_group}.json')
+
+    if existing_paths:
+      t += api.path.exists(*existing_paths)
 
     return t
 
@@ -660,6 +729,54 @@ def GenTests(api):
           builder_group='fake-group',
           with_targets_spec_directory_without_patch=True,
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no-tests-specified-previously',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          starlark_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+          testing_buildbot_targets_spec={},
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no-targets-spec-files',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'some-targets-spec-files',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-builder-group',
+          non_existent_tester='fake-tester',
+          non_existent_tester_group='fake-tester-group',
+      ),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
