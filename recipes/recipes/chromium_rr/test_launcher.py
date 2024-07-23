@@ -6,6 +6,8 @@
 The recipe will compile input tests, and execute test runner script to run tests
 using the rr tool, and upload the recorded traces to GCS.
 """
+
+import itertools
 from recipe_engine.post_process import DropExpectation, MustRun
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium_rr.test_launcher import InputProperties
@@ -21,6 +23,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/gclient',
     'gn',
+    'depot_tools/git',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
@@ -32,7 +35,6 @@ DEPS = [
 
 def RunSteps(api, properties):
 
-  # TODO(jiesheng): Add steps and create test objects to run tests later.
   test_suites = []
   for test_info in properties.target_test_infos:
     if test_info.test_suite:
@@ -41,10 +43,19 @@ def RunSteps(api, properties):
   if not test_suites:
     return
 
-  builder_id, builder_config = api.chromium_polymorphic.lookup_builder_config()
+  builder_id, builder_config = api.chromium_polymorphic.lookup_builder_config(
+      allow_tester=True)
   api.chromium_tests.configure_build(builder_config)
-  update_step, _, _ = api.chromium_tests.prepare_checkout(
+  update_step, _, targets_config = api.chromium_tests.prepare_checkout(
       builder_config, report_cache_state=False)
+
+  # Create test objects for all input tests, removed test suite will not be
+  # added here.
+  tests = [t for t in targets_config.all_tests if t.name in test_suites]
+  if not tests:
+    raise api.step.StepFailure('No valid input test suites, please check if the'
+                               ' input test suites are removed')
+  targets = set(itertools.chain(*[t.compile_targets() for t in tests]))
 
   api.chromium.output_dir = update_step.source_root.path.joinpath(
       'out', api.chromium.c.build_config_fs)
@@ -65,7 +76,7 @@ def RunSteps(api, properties):
     api.gn.gen(build_dir, 'gn_gen')
 
     raw_result = api.chromium.compile(
-        source_dir, build_dir, targets=test_suites, use_reclient=use_reclient)
+        source_dir, build_dir, targets=list(targets), use_reclient=use_reclient)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -89,6 +100,20 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'name': 'blink_wpt_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.properties(
           InputProperties(
               target_test_infos=[
@@ -98,6 +123,46 @@ def GenTests(api):
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'invaild_input_test_suite',
+      api.chromium_polymorphic.triggered_properties(
+          project='fake-project',
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder='fake-builder',
+              builder_group='fake-group',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'name': 'blink_wpt_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.properties(
+          InputProperties(
+              target_test_infos=[
+                  InputProperties.TestInfo(
+                      test_suite='blink_web_tests',
+                      test_names=['test1', 'test2'],
+                  ),
+              ],)),
+      api.builder_group.for_current('chromium.fyi'),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -132,6 +197,20 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'name': 'blink_wpt_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.properties(
           InputProperties(
               target_test_infos=[
@@ -159,6 +238,20 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'name': 'blink_wpt_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.properties(
           InputProperties(
               target_test_infos=[
