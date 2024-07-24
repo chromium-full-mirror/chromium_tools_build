@@ -6,7 +6,6 @@
 import argparse
 import logging
 import subprocess
-import tarfile
 import os
 import platform
 import sys
