@@ -35,6 +35,7 @@ TEST_SUITE_ALLOW_LIST = [
     'not_site_per_process_blink_web_tests', 'high_dpi_blink_wpt_tests',
     'high_dpi_blink_web_tests'
 ]
+MAX_TESTS_PER_BUG = 3
 
 
 def RunSteps(api):
@@ -49,6 +50,7 @@ def RunSteps(api):
 
   builder_to_tests = collections.defaultdict(
       lambda: collections.defaultdict(list))
+  bug_to_test_num = collections.defaultdict(int)
   for query_result in query_results:
     # TODO(jiesheng): Support other test type for rr test launcher.
     test_suite = query_result.get('test_suite', '')
@@ -56,9 +58,12 @@ def RunSteps(api):
       continue
     builder = query_result.get('builder', '')
     test_id = query_result.get('test_id', '')
-    if not builder or not test_id:
+    bug_id = query_result.get('bug_id', '')
+    if (not builder or not test_id or not bug_id or
+        bug_to_test_num[bug_id] > MAX_TESTS_PER_BUG):
       continue
     builder_to_tests[builder][test_suite].append(test_id)
+    bug_to_test_num[bug_id] += 1
 
   for builder, test_suites in builder_to_tests.items():
     # Use hard coded chromium and ci here which is same as the values in
@@ -112,15 +117,18 @@ def GenTests(api):
           api.json.output([{
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_123'
+              'test_id': 'test_id_123',
+              'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_345'
+              'test_id': 'test_id_345',
+              'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_web_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_567'
+              'test_id': 'test_id_567',
+              'bug_id': 'bug_123'
           }])),
       api.post_process(DropExpectation),
   )
@@ -149,15 +157,18 @@ def GenTests(api):
           api.json.output([{
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_123'
+              'test_id': 'test_id_123',
+              'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_345'
+              'test_id': 'test_id_345',
+              'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_web_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_567'
+              'test_id': 'test_id_567',
+              'bug_id': 'bug_123'
           }])),
       api.post_process(DropExpectation),
   )
@@ -180,7 +191,8 @@ def GenTests(api):
           api.json.output([{
               'test_suite': 'non_blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_234'
+              'test_id': 'test_id_234',
+              'bug_id': 'bug_123'
           }])),
       api.post_process(DropExpectation),
   )
