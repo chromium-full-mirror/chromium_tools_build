@@ -179,7 +179,7 @@ def GenTests(api):
           }),
       ),
       api.expect_status('FAILURE'),
-      api.post_check(post_process.ResultReasonRE,
+      api.post_check(post_process.SummaryMarkdownRE,
                      'following targets were not found'),
       api.post_process(post_process.DropExpectation),
   )

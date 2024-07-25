@@ -62,7 +62,7 @@ def GenTests(api):
                 has_log in step.logs)
 
   def build_failure_result(check, steps, *files):
-    return post_process.ResultReason(
+    return post_process.SummaryMarkdown(
         check, steps,
         '\n* '.join(['Could not verify the following files:\n'] + list(files)))
 

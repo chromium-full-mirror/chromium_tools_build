@@ -1361,7 +1361,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
-      api.post_check(post_process.ResultReason,
+      api.post_check(post_process.SummaryMarkdown,
                      'CI coverage supports only 1 coverage tool type.'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),

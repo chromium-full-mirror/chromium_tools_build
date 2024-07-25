@@ -834,10 +834,10 @@ def GenTests(api):
   def invalid_properties(*errors):
     test_data = api.expect_status('INFRA_FAILURE')
     test_data += api.post_check(
-        post_process.ResultReasonRE,
+        post_process.SummaryMarkdownRE,
         '^The following errors were found with the input properties')
     for error in errors:
-      test_data += api.post_check(post_process.ResultReasonRE, error)
+      test_data += api.post_check(post_process.SummaryMarkdownRE, error)
     test_data += api.post_process(post_process.DropExpectation)
     return test_data
 

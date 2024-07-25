@@ -350,10 +350,10 @@ def GenTests(api):
       api.post_check(post_process.StepFailure, 'branch-config3'),
       api.post_check(post_process.StepSuccess, 'branch-config2'),
       api.expect_status('FAILURE'),
-      api.post_check(post_process.ResultReasonRE,
+      api.post_check(post_process.SummaryMarkdownRE,
                      '^The following branch configs failed verification'),
-      api.post_check(post_process.ResultReasonRE, r'\bbranch-config1\b'),
-      api.post_check(post_process.ResultReasonRE, r'\bbranch-config3\b'),
+      api.post_check(post_process.SummaryMarkdownRE, r'\bbranch-config1\b'),
+      api.post_check(post_process.SummaryMarkdownRE, r'\bbranch-config3\b'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -361,10 +361,10 @@ def GenTests(api):
   def invalid_properties(*errors):
     test_data = api.expect_status('INFRA_FAILURE')
     test_data += api.post_check(
-        post_process.ResultReasonRE,
+        post_process.SummaryMarkdownRE,
         '^The following errors were found with the input properties')
     for error in errors:
-      test_data += api.post_check(post_process.ResultReasonRE, error)
+      test_data += api.post_check(post_process.SummaryMarkdownRE, error)
     test_data += api.post_process(post_process.DropExpectation)
     return test_data
 

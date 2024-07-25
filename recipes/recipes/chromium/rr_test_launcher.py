@@ -8,7 +8,7 @@ traces to GCS.
 """
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        LogContains, ResultReason,
+                                        LogContains, SummaryMarkdown,
                                         StepCommandRE, StepFailure, StepSuccess)
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2,

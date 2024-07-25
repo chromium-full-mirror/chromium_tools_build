@@ -818,7 +818,7 @@ def GenTests(api):
               api.test_utils.canned_isolated_script_output(), failure=True)),
       # Result from "check flakiness" step is empty.
       api.post_check(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
           '(check flakiness shard #0) steps in '
           "test new tests for flakiness didn't produce test results."),

@@ -114,7 +114,7 @@ def GenTests(api):
       ),
       api.expect_status('INFRA_FAILURE'),
       api.post_check(
-          post_process.ResultReasonRE,
+          post_process.SummaryMarkdownRE,
           "The grouping for 'fake-group:non-existent-builder' cannot be migrated"
       ),
       api.post_process(post_process.DropExpectation),

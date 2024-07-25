@@ -125,7 +125,7 @@ def GenTests(api):
       expect_gclient_config_revisions({'src': 'src-hash'}),
       api.expect_status('INFRA_FAILURE'),
       api.post_check(
-          post_process.ResultReasonRE,
+          post_process.SummaryMarkdownRE,
           (r'https://chrome-internal\.googlesource\.com/chrome/src-internal'
            " does not appear in the gclient config's repo_path_map")),
       api.post_process(post_process.DropExpectation),
@@ -136,7 +136,7 @@ def GenTests(api):
       expect_gclient_config_revisions({}),
       api.properties(skip_callback=True),
       api.expect_status('INFRA_FAILURE'),
-      api.post_check(post_process.ResultReasonRE,
+      api.post_check(post_process.SummaryMarkdownRE,
                      ('The callback from update_gclient_config'
                       ' must be called with the manifest from bot_update')),
       api.post_process(post_process.DropExpectation),

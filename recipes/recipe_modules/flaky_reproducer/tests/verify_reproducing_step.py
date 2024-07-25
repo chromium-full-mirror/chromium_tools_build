@@ -135,7 +135,7 @@ def GenTests(api):
               'reproducing_step.json'),
       ),
       api.expect_status('FAILURE'),
-      api.post_check(post_process.ResultReason,
+      api.post_check(post_process.SummaryMarkdown,
                      'Cannot retrieve invocation for task some-task-id.'),
       api.post_process(post_process.DropExpectation),
   )
@@ -157,7 +157,7 @@ def GenTests(api):
           },
           step_name='verify_reproducing_step.find_related_builders.rdb query'),
       api.expect_status('FAILURE'),
-      api.post_check(post_process.ResultReason,
+      api.post_check(post_process.SummaryMarkdown,
                      'Cannot find TestResult for test Not.Exists.Test.'),
       api.post_process(post_process.DropExpectation),
   )
