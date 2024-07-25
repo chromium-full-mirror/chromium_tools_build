@@ -51,51 +51,64 @@ def RunSteps(api, properties):
 
     api.git('fetch')
 
-    mirror_hash = api.git(
-        'rev-parse',
-        'FETCH_HEAD',
-        name='fetch mirror hash',
-        stdout=api.raw_io.output_text()).stdout.strip()
+    props = {}
+    if properties.no_synthetic_commit:
+      props['root_solution_revision'] = api.git(
+          'rev-parse',
+          'FETCH_HEAD',
+          name='fetch source hash',
+          stdout=api.raw_io.output_text()).stdout.strip()
 
-    mirror_unix_timestamp = int(
-        api.git(
-            'log',
-            '-1',
-            '--format=%ct',
-            'FETCH_HEAD',
-            name='fetch mirror timestamp',
-            stdout=api.raw_io.output_text()).stdout.strip())
+      props['root_solution_revision_timestamp'] = int(
+          api.git(
+              'log',
+              '-1',
+              '--format=%ct',
+              'FETCH_HEAD',
+              name='fetch source timestamp',
+              stdout=api.raw_io.output_text()).stdout.strip())
+    else:
+      props['codesearch_mirror_revision'] = api.git(
+          'rev-parse',
+          'FETCH_HEAD',
+          name='fetch mirror hash',
+          stdout=api.raw_io.output_text()).stdout.strip()
 
-    commit_hash = api.git(
-        'rev-parse',
-        'FETCH_HEAD^',
-        name='fetch source hash',
-        stdout=api.raw_io.output_text()).stdout.strip()
+      props['codesearch_mirror_revision_timestamp'] = int(
+          api.git(
+              'log',
+              '-1',
+              '--format=%ct',
+              'FETCH_HEAD',
+              name='fetch mirror timestamp',
+              stdout=api.raw_io.output_text()).stdout.strip())
 
-    unix_timestamp = int(
-        api.git(
-            'log',
-            '-1',
-            '--format=%ct',
-            'FETCH_HEAD^',
-            name='fetch source timestamp',
-            stdout=api.raw_io.output_text()).stdout.strip())
+      props['root_solution_revision'] = api.git(
+          'rev-parse',
+          'FETCH_HEAD^',
+          name='fetch source hash',
+          stdout=api.raw_io.output_text()).stdout.strip()
 
-    # The head of source_repo will be lost the next time a synthetic commit
-    # is added to it. Add a ref to the current head so that it doesn't get
-    # garbage collected, and references to it in codesearch links stay valid.
-    api.git('push', properties.source_repo,
-            mirror_hash + ':refs/kythe/' + commit_hash)
+      props['root_solution_revision_timestamp'] = int(
+          api.git(
+              'log',
+              '-1',
+              '--format=%ct',
+              'FETCH_HEAD^',
+              name='fetch source timestamp',
+              stdout=api.raw_io.output_text()).stdout.strip())
+
+      # The head of source_repo will be lost the next time a synthetic commit
+      # is added to it. Add a ref to the current head so that it doesn't get
+      # garbage collected, and references to it in codesearch links stay valid.
+      api.git(
+          'push', properties.source_repo,
+          f'{props["codesearch_mirror_revision"]}:refs/kythe/{props["root_solution_revision"]}'
+      )
 
     # Trigger the codesearch builders in the same project.
     api.scheduler.emit_trigger(
-        api.scheduler.BuildbucketTrigger(
-            properties={
-                'root_solution_revision': commit_hash,
-                'root_solution_revision_timestamp': unix_timestamp,
-                'codesearch_mirror_revision': mirror_hash,
-                'codesearch_mirror_revision_timestamp': mirror_unix_timestamp
-            }),
+        api.scheduler.BuildbucketTrigger(properties=props),
         project=api.buildbucket.build.builder.project,
         jobs=properties.builders)
 
@@ -115,6 +128,20 @@ def GenTests(api):
                     api.raw_io.stream_output_text('a' * 40, stream='stdout')),
       api.step_data('fetch mirror timestamp',
                     api.raw_io.stream_output_text('100', stream='stdout')),
+      api.step_data('fetch source hash',
+                    api.raw_io.stream_output_text('b' * 40, stream='stdout')),
+      api.step_data('fetch source timestamp',
+                    api.raw_io.stream_output_text('50', stream='stdout')),
+  )
+
+  yield api.test(
+      'no-synthetic-commit',
+      api.buildbucket.generic_build(project='infra'),
+      api.properties(
+          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+          source_repo=('https://chromium.googlesource.com/chromium/src'),
+          no_synthetic_commit=True,
+      ),
       api.step_data('fetch source hash',
                     api.raw_io.stream_output_text('b' * 40, stream='stdout')),
       api.step_data('fetch source timestamp',

@@ -1,0 +1,251 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "glob",
+      "[CACHE]/builder",
+      "src"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check for existing checkout",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@glob@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clone",
+      "--progress",
+      "https://chromium.googlesource.com/chromium/src",
+      "src"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git clone"
+  },
+  {
+    "cmd": [
+      "git",
+      "reset",
+      "--hard",
+      "HEAD"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git reset"
+  },
+  {
+    "cmd": [
+      "git",
+      "fetch"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git fetch"
+  },
+  {
+    "cmd": [
+      "git",
+      "rev-parse",
+      "FETCH_HEAD"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "fetch source hash"
+  },
+  {
+    "cmd": [
+      "git",
+      "log",
+      "-1",
+      "--format=%ct",
+      "FETCH_HEAD"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "fetch source timestamp"
+  },
+  {
+    "cmd": [
+      "prpc",
+      "call",
+      "-format=json",
+      "luci-scheduler.appspot.com",
+      "scheduler.Scheduler.EmitTriggers"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "luci-scheduler.EmitTriggers",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"codesearch-gen-chromium-android\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-chromiumos\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-fuchsia\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-lacros\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-linux\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-mac\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-win\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\"}}], \"timestamp\": 1337000001500000}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@input@{@@@",
+      "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
+      "@@@STEP_LOG_LINE@input@        {@@@",
+      "@@@STEP_LOG_LINE@input@            \"jobs\": [@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-android\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-chromiumos\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-fuchsia\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-lacros\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-linux\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-mac\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"codesearch-gen-chromium-win\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
+      "@@@STEP_LOG_LINE@input@                }@@@",
+      "@@@STEP_LOG_LINE@input@            ],@@@",
+      "@@@STEP_LOG_LINE@input@            \"trigger\": {@@@",
+      "@@@STEP_LOG_LINE@input@                \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@input@                    \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@input@                        \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
+      "@@@STEP_LOG_LINE@input@                        \"root_solution_revision_timestamp\": 50@@@",
+      "@@@STEP_LOG_LINE@input@                    },@@@",
+      "@@@STEP_LOG_LINE@input@                    \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@input@                        \"parent_buildername:builder\",@@@",
+      "@@@STEP_LOG_LINE@input@                        \"user_agent:recipe\"@@@",
+      "@@@STEP_LOG_LINE@input@                    ]@@@",
+      "@@@STEP_LOG_LINE@input@                },@@@",
+      "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
+      "@@@STEP_LOG_LINE@input@                \"title\": \"builder/0\"@@@",
+      "@@@STEP_LOG_LINE@input@            }@@@",
+      "@@@STEP_LOG_LINE@input@        }@@@",
+      "@@@STEP_LOG_LINE@input@    ],@@@",
+      "@@@STEP_LOG_LINE@input@    \"timestamp\": 1337000001500000@@@",
+      "@@@STEP_LOG_LINE@input@}@@@",
+      "@@@STEP_LOG_END@input@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]

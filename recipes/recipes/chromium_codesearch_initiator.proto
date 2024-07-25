@@ -13,4 +13,8 @@ message InputProperties {
   // A codesearch repo, e.g.
   // https://chromium.googlesource.com/codesearch/chromium/src/
   string source_repo = 2;
+
+  // Defines if source_repo uses synthetic commits (e.g. it's a codesearch
+  // mirror repo like codesearch/chromium/src).
+  bool no_synthetic_commit = 3;
 }
