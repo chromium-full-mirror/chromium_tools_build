@@ -376,8 +376,6 @@ _AddPinpointTestSpec(
     'mac',
     'mac-arm-builder-perf-pgo',
     target_arch='arm')
-_AddPinpointTestSpec(
-    'mac-14-m1-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 # windows
 _AddPinpointTestSpec('win-10-perf-pgo', 'win', 'win64-builder-perf-pgo')
 _AddPinpointTestSpec('win-10_laptop_low_end-perf-pgo', 'win',
