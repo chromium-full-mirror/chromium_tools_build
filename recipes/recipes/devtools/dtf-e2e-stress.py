@@ -5,7 +5,11 @@
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
-from recipe_engine.recipe_api import StepFailure
+
+from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests, E2ETestDivider
+
+from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase
 
 DEPS = [
     'builder_group',
@@ -35,80 +39,42 @@ PROPERTIES = {
             kind=bool,
             help='Should the builder clean up the out/ folder before building',
             default=False),
-    'e2e_env':
-        Property(
-            kind=dict,
-            help='A set of environment variables to be used when running e2e'
-            'stress tests. '
-            'Example vars:  the subset of tests to be run, number of '
-            'iterations, etc.',
-            default=None),
-    # TODO: remove e2e_env property once the runner gets updated
     'runner_args':
         Property(
             kind=str,
             help='Parameters to be passed down to the test runner for running'
             ' stress e2e tests.',
             default=None),
-    'parallel':
-        Property(
-            kind=bool,
-            help='Switch swarming assisted parallel executions of tests',
-            default=False),
 }
 
 
-def RunSteps(api, clobber, e2e_env, runner_args, parallel):
+def RunSteps(api, clobber, runner_args):
   builder_config = 'Debug'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
   update_result = api.devtools.update()
+
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
-
   with api.devtools.depot_on_path(source_dir):
     api.devtools.clean_out_dir(source_dir, builder_config, clobber)
     api.chromium.run_gn(source_dir, build_dir)
+
     compilation_result = api.chromium.compile(source_dir, build_dir)
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
+    cas_digest = api.devtools.archive_to_cas(source_dir)
 
-    with api.context(env=e2e_env):
-      args = runner_args.split() if runner_args else []
-      e2e_env = e2e_env or {}
-      if not parallel:
-        api.devtools.run_e2e(source_dir, builder_config, args)
-      else:
-        cas_digest = api.devtools.archive_to_cas(source_dir)
-        test_pattern = ''
-        iterations = 1
-        if 'TEST_PATTERNS' in e2e_env:
-          test_pattern = e2e_env['TEST_PATTERNS']
-        if 'ITERATIONS' in e2e_env:
-          iterations = e2e_env['ITERATIONS']
-        with api.step.nest('Trigger Tests'):
-          tasks = api.devtools.trigger_test_swarming_tasks(
-              step_name='E2E Tests',
-              cas_digest=cas_digest,
-              commands=api.devtools.divided_e2e_commands(
-                  source_dir, builder_config, 4, test_pattern, iterations),
-              env={
-                  "HTML_OUTPUT_FILE":
-                      api.path.join('${ISOLATED_OUTDIR}',
-                                    'e2e_failure_screenshots.html'),
-              },
-          )
-        with api.step.nest('E2E Tests'):
-          failed_shards = []
-          for i in range(len(tasks)):
-            step, is_valid = api.chromium_swarming.collect_task(tasks[i])
-            if step.presentation.status != api.step.SUCCESS or not is_valid:
-              failed_shards.append(i)
-          if failed_shards:
-            raise StepFailure(
-                'Failure in shard(s)' +
-                f' #{", ".join([str(x) for x in failed_shards])}.')
+    divider = E2ETestDivider(api, source_dir, builder_config)
+    trigger = SwarmingTrigger(api, cas_digest)
+    e2e_stressor = E2ETests(api, source_dir, trigger, builder_config, False,
+                            'E2E Tests', divider)
+    e2e_stressor.extra_args.extend(
+        runner_args.split(' ') if runner_args else [])
 
+    results = FirstRunPhase(api).run_all([e2e_stressor])
+
+    return results.raw_result()
 
 def GenTests(api):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
@@ -138,63 +104,6 @@ def GenTests(api):
       'e2e stress test',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='e2e_stressor_linux'),
-      api.properties(e2e_env={
-          'ITERATIONS': '100',
-          'SUITE': 'flaky suite'
-      }),
-      api.post_process(post_process.DoesNotRun, 'archive'),
-      api.post_process(post_process.DoesNotRun, 'Unit Tests'),
-      api.post_process(post_process.Filter('E2E tests')),
+      api.post_process(post_process.Filter().include_re(r'Run tests.*')),
       status='SUCCESS',
-  )
-
-  yield api.test(
-      'e2e stress test with parameters',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='e2e_stressor_linux'),
-      api.properties(runner_args="--ITERATIONS=100 --SUITE=flaky/suite"),
-      api.post_process(post_process.DoesNotRun, 'Unit Tests'),
-      api.post_process(post_process.Filter('E2E tests')),
-      status='SUCCESS',
-  )
-
-  yield api.test(
-      'parallel stress builder',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='parallel_stressor_linux'),
-      api.properties(parallel=True),
-      api.properties(e2e_env={
-          'ITERATIONS': '100',
-          'TEST_PATTERNS': 'test/example_test.ts'
-      }),
-      api.step_data(
-          'Trigger Tests.divide test run',
-          api.raw_io.stream_output_text(
-              'node runner config pattern', stream='stdout')),
-      api.post_process(post_process.MustRun, 'archive'),
-      api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.DropExpectation),
-      status='SUCCESS',
-  )
-
-  data = {
-      'shards': [{
-          'state': 'COMPLETED (FAILURE)',
-      }]
-  }
-  yield api.test(
-      'failed parallel builder',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='parallel_linux'),
-      api.properties(parallel=True),
-      api.step_data(
-          'Trigger Tests.divide test run',
-          api.raw_io.stream_output_text(
-              'node runner config pattern', stream='stdout')),
-      api.step_data('E2E Tests.E2E Tests (Shard #0) on Ubuntu-22.04',
-                    api.chromium_swarming.summary(None, data)),
-      api.post_process(post_process.MustRun, 'archive'),
-      api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
   )
