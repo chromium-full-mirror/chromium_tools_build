@@ -387,3 +387,24 @@ class IsolateApi(recipe_api.RecipeApi):
         },
         indent=2,
     )
+
+  def add_files_to_isolate_file(self, isolate_path, files_to_add):
+    """Rewrites an .isolate file with a list of additional files to isolate.
+
+    Args:
+      isolate_path (Path): Path of .isolate file to create.
+      files_to_add ([Path]): List of additional files to upload.
+    """
+    isolate_data = self.m.file.read_json('Read ' + str(isolate_path),
+                                         isolate_path)
+    if not isolate_data:
+      raise self.m.step.StepFailure('Missing or empty isolated file: %s' %
+                                    str(isolate_path))
+    isolate_data.setdefault('variables', {})
+
+    files_to_isolate = isolate_data['variables'].get('files', [])
+    files_to_isolate.extend(files_to_add)
+    isolate_data['variables']['files'] = files_to_isolate
+
+    self.m.file.write_json(
+        'Write ' + str(isolate_path), isolate_path, isolate_data, indent=2)
