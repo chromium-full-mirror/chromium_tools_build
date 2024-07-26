@@ -403,7 +403,7 @@
     },
     "name": "JSTests1 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests1.json --arch x64 --buildbot --run-count=2```<br/><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests1.json --arch x64 --buildbot --run-count=2```<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -489,7 +489,7 @@
     },
     "name": "JSTests2 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests2.json --arch x64 --buildbot --run-count=1```<br/><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests2.json --arch x64 --buildbot --run-count=1```<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -575,7 +575,7 @@
     },
     "name": "JSTests3 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests3.json --arch x64 --buildbot --run-count=1```<br/><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests3.json --arch x64 --buildbot --run-count=1```<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -661,7 +661,7 @@
     },
     "name": "JSTests4 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests4.json --arch x64 --buildbot --run-count=1```<br/><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests4.json --arch x64 --buildbot --run-count=1```<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -747,7 +747,7 @@
     },
     "name": "JSTests5 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests5.json --arch x64 --buildbot --run-count=1```<br/><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```vpython3 -u tools/run_perf.py test/js-perf-test/JSTests5.json --arch x64 --buildbot --run-count=1```<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

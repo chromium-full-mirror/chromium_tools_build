@@ -388,8 +388,7 @@ class SwarmingApi(recipe_api.RecipeApi):
            task_to_retry=None,
            trigger_script=None,
            relative_cwd=None,
-           collect_json_output_override=None,
-           instructions_tag=None):
+           collect_json_output_override=None):
     """Returns a new SwarmingTask instance to run an isolated executable on
     Swarming.
 
@@ -452,8 +451,6 @@ class SwarmingApi(recipe_api.RecipeApi):
         in the isolate, if raw_cmd is empty) will run.
       * collect_json_output_override: Overrides the output json placeholder
           passed to the collect script.
-      * instructions_tag: Tag to attach to the step which will link the
-          reproduction instructions
     """
 
     if not collect_step:
@@ -529,8 +526,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         build_properties=build_properties,
         merge=merge,
         trigger_script=trigger_script,
-        collect_json_output_override=collect_json_output_override,
-        instructions_tag=instructions_tag)
+        collect_json_output_override=collect_json_output_override)
 
   def gtest_task(self,
                  raw_cmd,
@@ -539,7 +535,6 @@ class SwarmingApi(recipe_api.RecipeApi):
                  cipd_packages=None,
                  merge=None,
                  relative_cwd=None,
-                 instructions_tag=None,
                  **kwargs):
     """Returns a new SwarmingTask instance to run an isolated gtest on Swarming.
 
@@ -581,15 +576,13 @@ class SwarmingApi(recipe_api.RecipeApi):
         merge=merge,
         raw_cmd=raw_cmd,
         relative_cwd=relative_cwd,
-        instructions_tag=instructions_tag,
         **kwargs)
     return task
 
   def isolated_script_task(self,
                            raw_cmd=None,
                            relative_cwd=None,
-                           cas_input_root='',
-                           instructions_tag=None):
+                           cas_input_root=''):
     """Returns a new SwarmingTask to run an isolated script test on Swarming.
 
     At the time of this writting, this code is used by WebRTC and
@@ -619,8 +612,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     task = self.task(
         raw_cmd=raw_cmd,
         relative_cwd=relative_cwd,
-        cas_input_root=cas_input_root,
-        instructions_tag=instructions_tag)
+        cas_input_root=cas_input_root)
     task.extra_args = extra_args
     task.merge = merge
     return task
@@ -964,12 +956,9 @@ class SwarmingApi(recipe_api.RecipeApi):
         infra_step=True,
         **kwargs)
     step_result.presentation.step_text += task.text_for_step(
-        self.m.buildbucket.build.builder.project, self.m.led.shadowed_bucket or
+        self.m.buildbucket.build.builder.project,
         self.m.buildbucket.build.builder.bucket,
         self.m.buildbucket.build.builder.builder)
-    if task.instructions_tag:
-      step_result.presentation.tags[
-          'resultdb.instruction.id'] = task.instructions_tag
 
     task._trigger_output = step_result.json.output
     links = step_result.presentation.links
@@ -1015,12 +1004,9 @@ class SwarmingApi(recipe_api.RecipeApi):
         infra_step=True,
         **kwargs)
     step_result.presentation.step_text += task.text_for_step(
-        self.m.buildbucket.build.builder.project, self.m.led.shadowed_bucket or
+        self.m.buildbucket.build.builder.project,
         self.m.buildbucket.build.builder.bucket,
         self.m.buildbucket.build.builder.builder)
-    if task.instructions_tag:
-      step_result.presentation.tags[
-          'resultdb.instruction.id'] = task.instructions_tag
 
     # While it might make more sense to update all presentation links in
     # trigger_task(), this is currently not possible. Steps are run in series,
@@ -1357,12 +1343,9 @@ class SwarmingApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
         **kwargs)
     step_result.presentation.step_text += task.text_for_step(
-        self.m.buildbucket.build.builder.project, self.m.led.shadowed_bucket or
+        self.m.buildbucket.build.builder.project,
         self.m.buildbucket.build.builder.bucket,
         self.m.buildbucket.build.builder.builder)
-    if task.instructions_tag:
-      step_result.presentation.tags[
-          'resultdb.instruction.id'] = task.instructions_tag
 
     links = {}
     if hasattr(step_result, 'json') and hasattr(
@@ -1762,8 +1745,7 @@ class SwarmingTask:
                optional_dimensions=None,
                task_to_retry=None,
                trigger_script=None,
-               collect_json_output_override=None,
-               instructions_tag=None):
+               collect_json_output_override=None):
 
     """Configuration of a swarming task.
 
@@ -1796,8 +1778,6 @@ class SwarmingTask:
       * trigger_script: An optional `chromium_swarming.TriggerScript`.
       * collect_json_output_override: Overrides the output json placeholder
           passed to the collect script.
-      * instructions_tag: Tag to attach to the step which will link the
-          reproduction instructions
     """
     self._server = server
     self._trigger_output = None
@@ -1822,7 +1802,6 @@ class SwarmingTask:
     self.trigger_script = trigger_script or {}
     self.wait_for_capacity = False
     self.collect_json_output_override = collect_json_output_override
-    self._instructions_tag = instructions_tag
 
   @property
   def task_name(self):
@@ -1839,10 +1818,6 @@ class SwarmingTask:
     return '%s/%s/%s%s' % (self.request.name, self.request[0].dimensions['os'],
                            self.request[0].cas_input_root[:10],
                            task_name_suffix)
-
-  @property
-  def instructions_tag(self):
-    return self._instructions_tag
 
   @property
   def trigger_output(self):
@@ -1884,39 +1859,28 @@ class SwarmingTask:
     elif dimensions.get('os'):
       lines.append('Run on OS: %r' % dimensions['os'])
 
-    lines.append(self.get_local_instruction())
-    lines.append(
-        self.get_utr_instruction(project_name, bucket_name, builder_name))
-    return '<br/>'.join(lines)
-
-  def get_local_instruction(self, *, extra_args=None) -> str:
-    if not extra_args:
-      extra_args = []
-    cmd = ' '.join(self.base_command + self.extra_args + extra_args)
+    # TODO(crbug.com/349529661): Milo's native repro instructions feature
+    # potentially obviates this + the UTR cmd below. Need to reassess after that
+    # feature is deployed on Chrome bots.
+    cmd = ' '.join(self.base_command + self.extra_args)
     # The `luci-auth context` bit is used for a small subset of tests that need
-    # to make authenticated GS calls. Were a dev to run the test command
-    # locally, it'd likely be unneeded since:
+    # to make authenticated GS calls. Were a dev to run the test command locally,
+    # it'd likely be unneeded since:
     # - They're probably not running a test that makes GS calls.
     # - They probably have latent GS creds locally that gsutil will use.
     # TODO(crbug.com/1498156): Remove this once swarming sets up BOTO itself.
-    cmd = cmd.removeprefix('luci-auth context -- ')
-    cmd = cmd.removeprefix('luci-auth.exe context -- ')
-    lines = []
+    # "disable=no-member" since pylint doesn't recongize this is running under
+    # a newer version of python that has removeprefix().
+    # TODO(crbug.com/1500415): Remove the "no-member" pylint disable.
+    cmd = cmd.removeprefix('luci-auth context -- ')  # pylint: disable=no-member
+    cmd = cmd.removeprefix('luci-auth.exe context -- ')  # pylint: disable=no-member
     if len(cmd) <= 1000:
       lines.append('Test command:')
       lines.append('```' + cmd + '```')
     else:
       lines.append('Test command too long to list. See "shard #0" link below '
                    'for the full invocation.')
-    lines.append('')
-    return '<br/>'.join(lines)
 
-  def get_utr_instruction(self,
-                          project_name,
-                          bucket_name,
-                          builder_name,
-                          *,
-                          extra_args=None):
     # TODO(crbug.com/350641999): Clean-up how we handle and set swarming tags
     # throughout the Chromium recipe stack.
     test_name = None
@@ -1929,7 +1893,8 @@ class SwarmingTask:
     # be set for all uses of this recipe module. Use that as an indication that
     # this module is being used outside of a Chrome/Chromium builder.
     if not test_name:
-      return ''
+      return '<br/>'.join(lines)
+    bucket_name = bucket_name.replace('.shadow', '')
 
     def quote_as_needed(s):
       if len(s.split()) > 1:
@@ -1949,15 +1914,12 @@ class SwarmingTask:
         quote_as_needed(test_name),
         'compile-and-test',
     ]
-    if extra_args:
-      utr_cmd.append('--')
-      utr_cmd.extend(extra_args)
     utr_cmd = ' '.join(utr_cmd)
     utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
-    lines = []
+    lines.append('')
     lines.append(
-        f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
-        'checkout:')
+        f'[UTR]({utr_readme_url}) command to reproduce locally, from your '
+        'Chromium checkout:')
     lines.append('```' + utr_cmd + '```')
     lines.append('')
     return '<br/>'.join(lines)

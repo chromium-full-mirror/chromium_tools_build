@@ -204,7 +204,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           ' attempting to set'
           f' checkout_dir={checkout_dir}, source_dir={source_dir}')
 
-    self.update_rdb_source_spec_invocation(
+    self.update_rdb_invocation(
         gitiles_commit=self.m.buildbucket.build.output.gitiles_commit)
 
     return update_result
@@ -231,7 +231,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     step.presentation.logs['config'] = self.m.json.dumps(
         gclient_config.as_jsonish(include_hidden=True), indent=2).split('\n')
 
-  def update_rdb_source_spec_invocation(self, gitiles_commit):
+  def update_rdb_invocation(self, gitiles_commit):
     """Update the rdb invocation to include the SourceSpec being used.
 
     Args:
