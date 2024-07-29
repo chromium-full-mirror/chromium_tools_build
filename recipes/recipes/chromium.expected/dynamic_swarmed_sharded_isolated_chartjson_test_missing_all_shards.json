@@ -51,8 +51,11 @@
       }
     },
     "name": "telemetry_gpu_unittests",
+    "tags": {
+      "resultdb.instruction.id": "tag_f41f1e95d2fb8e7b7765a9be5ece8fd23650460e"
+    },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t telemetry_gpu_unittests compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t telemetry_gpu_unittests compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
