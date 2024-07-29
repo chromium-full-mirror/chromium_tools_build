@@ -43,10 +43,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'linux',
         'targets': ['all'],
@@ -60,10 +62,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'linux',
         'targets': ['all'],
@@ -77,10 +81,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'linux',
         'targets': ['all'],
@@ -94,10 +100,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'chromium_config_kwargs': {
             'BUILD_CONFIG': 'Debug',
@@ -118,10 +126,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'linux',
         'targets': ['all'],
@@ -135,10 +145,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -157,10 +169,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -180,10 +194,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -203,10 +219,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'win',
         'targets': ['all'],
@@ -220,10 +238,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'win',
         'targets': ['all'],
@@ -244,10 +264,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'linux',
         'chromium_config_kwargs': {
@@ -268,10 +290,12 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache_size': '100000',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
