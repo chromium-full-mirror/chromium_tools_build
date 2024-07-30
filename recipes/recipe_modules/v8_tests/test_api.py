@@ -227,7 +227,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
         'test_total': 1,
     })
 
-  def flakes(self, count, num_fuzz=False):
+  def flakes(self, count, num_fuzz=False, crash_type='Some crash type.'):
     if num_fuzz:
       framework_name = 'num_fuzzer'
       variant = None
@@ -248,7 +248,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
         'run': 1,
         'stdout': 'Some output.',
         'stderr': 'Some errput.',
-        'crash_type': 'Some crash type.',
+        'crash_type': crash_type,
         'crash_state': 'Some crash state.',
         'name': 'suite-name/dir/test-name',
         'command': 'd8 test.js',

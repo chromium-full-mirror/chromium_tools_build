@@ -56,6 +56,14 @@ MAX_BUG_LINKS = 5
 REPRO_TIMEOUT_DEFAULT = 60
 REPRO_TOTAL_TIMEOUT_DEFAULT = 120
 
+# Exonerate builds with flaky crashes if all types are in this list.
+EXONERATED_CRASH_TYPES = [
+    # We keep this dummy to ease recipe testing.
+    '_Magically_exonerated_crash_type_for_testing_',
+    # TODO(https://crbug.com/329074431): Remove when bug is resolved.
+    'Unexpectedly found incompatible memory layout.',
+]
+
 # pylint: disable=abstract-method
 
 
@@ -1079,6 +1087,10 @@ class Failure:
     return self.failure_dict.get('crash_state')
 
   @property
+  def is_exonerated(self):
+    return self.crash_type in EXONERATED_CRASH_TYPES
+
+  @property
   def shard_info(self):
     index = self.failure_dict.get('shard_id', 0)
     count = self.failure_dict.get('shard_count', 1)
@@ -1267,7 +1279,9 @@ class TestResults:
 
   @property
   def is_negative(self):
-    return bool(self.failures or self.flakes or self.infra_failures)
+    flakes_not_exonerated = not all(
+        flake.is_exonerated for flake in self.flakes)
+    return bool(self.failures or flakes_not_exonerated or self.infra_failures)
 
   @property
   def has_failures(self):

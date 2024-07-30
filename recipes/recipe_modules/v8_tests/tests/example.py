@@ -4,8 +4,10 @@
 
 import json
 
-from recipe_engine.post_process import (
-    DropExpectation, LogContains, StepFailure)
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine import result as result_pb2
+from recipe_engine.post_process import (DropExpectation, LogContains,
+                                        StepFailure)
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -26,7 +28,9 @@ def RunSteps(api):
   source_dir = api.path.cache_dir / 'builder' / 'src'
 
   tests = api.v8_tests.extra_tests_from_properties()
-  api.v8_tests.runtests(source_dir, tests)
+  result = api.v8_tests.runtests(source_dir, tests)
+  status = common_pb.FAILURE if result.is_negative else common_pb.SUCCESS
+  return result_pb2.RawResult(status=status)
 
 
 def GenTests(api):
@@ -92,4 +96,16 @@ def GenTests(api):
       api.post_process(StepFailure, 'Check'),
       api.post_process(DropExpectation),
       status='FAILURE',
+  )
+
+  yield api.test(
+      'exonerated_flake',
+      api.buildbucket.try_build(),
+      api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
+      api.step_data(
+          'Check',
+          api.v8_tests.flakes(
+              2, crash_type='_Magically_exonerated_crash_type_for_testing_')),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
   )
