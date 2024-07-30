@@ -2331,90 +2331,6 @@
     ]
   },
   {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateInvocation",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_f7e60c5d1a7ed4d67572a5dc87c8c6739a7f0b32\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B try -b linux_x86_dbg -t dummy_test compile-and-test```<br/>\", \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/>\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_c1922a6743f3aea43fa3dd9f3e0b250c6ea9b66d\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B try -b linux_x86_dbg -t dummy_test compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/>\", \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json --gtest_filter={{test.tags.test_name}}```<br/>\", \"targets\": [\"LOCAL\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"dummy_test instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_f7e60c5d1a7ed4d67572a5dc87c8c6739a7f0b32\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B try -b linux_x86_dbg -t dummy_test compile-and-test```<br/>\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              ]@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/>\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              ]@@@",
-      "@@@STEP_LOG_LINE@json.input@            }@@@",
-      "@@@STEP_LOG_LINE@json.input@          ],@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
-      "@@@STEP_LOG_LINE@json.input@        },@@@",
-      "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"dummy_test instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_c1922a6743f3aea43fa3dd9f3e0b250c6ea9b66d\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"instructionFilter\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"invocationIds\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"invocationIds\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"0\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              ]@@@",
-      "@@@STEP_LOG_LINE@json.input@            }@@@",
-      "@@@STEP_LOG_LINE@json.input@          },@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B try -b linux_x86_dbg -t dummy_test compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/>\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              ]@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json --gtest_filter={{test.tags.test_name}}```<br/>\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              ]@@@",
-      "@@@STEP_LOG_LINE@json.input@            }@@@",
-      "@@@STEP_LOG_LINE@json.input@          ],@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"type\": \"TEST_RESULT_INSTRUCTION\"@@@",
-      "@@@STEP_LOG_LINE@json.input@        }@@@",
-      "@@@STEP_LOG_LINE@json.input@      ]@@@",
-      "@@@STEP_LOG_LINE@json.input@    },@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  },@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "collect tasks"
   },
@@ -2761,11 +2677,8 @@
       }
     },
     "name": "dummy_test on Ubuntu-16.04",
-    "tags": {
-      "resultdb.instruction.id": "tag_f7e60c5d1a7ed4d67572a5dc87c8c6739a7f0b32"
-    },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B try -b linux_x86_dbg -t dummy_test compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B try -b linux_x86_dbg -t dummy_test compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",

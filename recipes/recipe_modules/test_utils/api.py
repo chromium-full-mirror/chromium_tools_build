@@ -5,7 +5,6 @@
 import contextlib
 import itertools
 import traceback
-from collections.abc import Iterable
 
 from recipe_engine import recipe_api
 from recipe_engine import util as recipe_util
@@ -19,7 +18,6 @@ from google.protobuf import timestamp_pb2
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import instruction as instruction_pb
 
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.recipe_engine.json.api import JsonOutputPlaceholder
@@ -85,12 +83,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # 0.15% false rejection rate.
     self._min_failed_suites_to_skip_retry = (
         properties.min_failed_suites_to_skip_retry or 5)
-
-    # When instructions are updated they replace the existing instructions on
-    # the invocation. To add an updated instruction, all previous tests need to
-    # be passed in so we don't lose their instructions when the invocation is
-    # updated
-    self._tests_for_instructions = {}
 
   def limit_failures(self, failures, limit=None):
     """Limit failures of a step to prevent large results JSON.
@@ -290,9 +282,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
       for group in groups:
         group.pre_run(self.m, suffix)
 
-    # Update the instructions for the test result instructions
-    self.update_invocation_instructions(test_suites)
-
     for group in groups:
       group.run(self.m, checkout_dir, source_dir, suffix)
 
@@ -338,12 +327,10 @@ class TestUtilsApi(recipe_api.RecipeApi):
         steps.Test objects.
     """
     suffixes = sorted(test_objects_by_suffix.keys())
-    tests = set()
     groups_by_suffix = {}
     for suffix in suffixes:
       groups = self._create_groups(test_objects_by_suffix[suffix])
       groups_by_suffix[suffix] = groups
-      tests.update(test_objects_by_suffix[suffix])
 
       nest_name = 'test_pre_run (%s)' % suffix
       with self.m.step.nest(nest_name):
@@ -354,9 +341,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
       groups = groups_by_suffix[suffix]
       for group in groups:
         group.run(self.m, checkout_dir, source_dir, suffix)
-
-    # Update the instructions for the test result instructions
-    self.update_invocation_instructions(tests)
 
   def luci_milo_test_results_url(self, invocation_id):
     """Returns a url to the 'test results' tab in Milo.
@@ -369,31 +353,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
     """
     return 'https://ci.chromium.org/ui/inv/{}/test-results'.format(
         invocation_id)
-
-  def update_invocation_instructions(
-      self,
-      tests: Iterable[steps.Test],
-      *,
-      step_name: str = 'update invocation instructions') -> None:
-    """Update the rdb invocation to include reproduction instructions.
-
-    Args:
-      tests: new tests from the last call to attach reproduction instructions
-        for the step and test result
-      step_name: name to display on the step
-    """
-    if not self.m.resultdb.enabled or not tests:
-      return
-
-    self._tests_for_instructions.update(dict.fromkeys(tests))
-
-    instructions = []
-    for test, _ in self._tests_for_instructions.items():
-      instructions.extend(test.get_instructions())
-
-    self.m.resultdb.update_invocation(
-        step_name=step_name,
-        instructions=instruction_pb.Instructions(instructions=instructions))
 
   def _exonerate_unrelated_failures(self, test_suites, suffix):
     """Notifies RDB of any unexpected test failure that doesn't fail the build.
@@ -1004,7 +963,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
           status=self.m.step.FAILURE,
           step_text=('every build supported by chromium recipe code'
                      ' must have resultdb enabled'))
-
     rdb_results, invalid_test_suites, failed_test_suites = (
         self.run_tests_once(
             checkout_dir,
