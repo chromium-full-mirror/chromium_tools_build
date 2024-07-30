@@ -6,7 +6,7 @@
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
       "[CACHE]/builder/devtools-frontend/out/Debug",
-      "--args=devtools_dcheck_always_on=true is_debug=true target_cpu=\"x64\""
+      "--args=is_debug=true target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {

@@ -252,7 +252,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
                        devtools_skip_typecheck):
     build_cfg = self.m.chromium.make_config(BUILD_CONFIG=builder_config)
     build_cfg.build_config_fs = builder_config
-    build_cfg.gn_args.append('devtools_dcheck_always_on=true')
     if is_official_build:
       build_cfg.gn_args.append('is_official_build=true')
     if devtools_skip_typecheck:
