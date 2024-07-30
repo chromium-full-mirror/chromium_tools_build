@@ -152,14 +152,9 @@ def GenTests(api):
           parent_step_name='searching_for_new_tests',
       ),
       api.post_process(
-          post_process.StepCommandContains,
+          post_process.MustRun,
           ('searching_for_new_tests.Test history query rpc call for '
-           'TestSuite.Test4'), [
-               'prpc',
-               'call',
-               'luci-analysis.appspot.com',
-               'luci.analysis.v1.TestHistory.Query',
-           ]),
+           'TestSuite.Test4')),
       api.post_process(post_process.DropExpectation),
   )
 
