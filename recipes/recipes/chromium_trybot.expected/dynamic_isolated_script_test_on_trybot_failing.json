@@ -3239,7 +3239,7 @@
     "cmd": [
       "prpc",
       "call",
-      "luci-analysis.appspot.com",
+      "analysis.api.luci.app",
       "luci.analysis.v1.TestVariants.QueryFailureRate"
     ],
     "cwd": "[CACHE]/builder",
