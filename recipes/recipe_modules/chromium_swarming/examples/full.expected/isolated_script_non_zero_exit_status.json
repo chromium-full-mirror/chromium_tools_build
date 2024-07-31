@@ -813,7 +813,7 @@
     },
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br>Pending time: 1m 11s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/><br>Pending time: 1m 11s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
