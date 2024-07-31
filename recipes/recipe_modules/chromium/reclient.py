@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Reclient-related constants."""
 
-STAGING_VERSION = 're_client_version:0.154.0.1e6c270e-gomaip'
-TEST_VERSION = 're_client_version:0.154.0.1e6c270e-gomaip'
+STAGING_VERSION = 're_client_version:0.150.2.a829188f-gomaip'
+TEST_VERSION = 're_client_version:0.150.2.a829188f-gomaip'
 CLANG_SCAN_DEPS_VERSION = 're_client_version:0.41.4.3f0d8bb'
 EXPERIMENTAL_VERSION = 'git_revision:21cbd17123b5d00232f53b5b4575e94638a17477'
