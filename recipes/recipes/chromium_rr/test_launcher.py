@@ -9,6 +9,8 @@ using the rr tool, and upload the recorded traces to GCS.
 
 import itertools
 from recipe_engine.post_process import DropExpectation, MustRun
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium_rr.test_launcher import InputProperties
 
@@ -23,14 +25,18 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/gclient',
     'gn',
+    'isolate',
     'depot_tools/git',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
+
+RUNNER_PACKAGE_PATH = 'rr_tool_runner'
 
 
 def RunSteps(api, properties):
@@ -45,6 +51,9 @@ def RunSteps(api, properties):
 
   builder_id, builder_config = api.chromium_polymorphic.lookup_builder_config(
       allow_tester=True)
+  if builder_config.execution_mode == ctbc.TEST:
+    builder_id = chromium.BuilderId.create_for_group(
+        builder_config.parent_builder_group, builder_config.parent_buildername)
   api.chromium_tests.configure_build(builder_config)
   update_step, _, targets_config = api.chromium_tests.prepare_checkout(
       builder_config, report_cache_state=False)
@@ -55,7 +64,7 @@ def RunSteps(api, properties):
   if not tests:
     raise api.step.StepFailure('No valid input test suites, please check if the'
                                ' input test suites are removed')
-  targets = set(itertools.chain(*[t.compile_targets() for t in tests]))
+  targets = list(set(itertools.chain(*[t.compile_targets() for t in tests])))
 
   api.chromium.output_dir = update_step.source_root.path.joinpath(
       'out', api.chromium.c.build_config_fs)
@@ -70,15 +79,34 @@ def RunSteps(api, properties):
         'use_reclient') != 'false'
 
     gn_args = gn_args.splitlines()
-    gn_args.append('symbol_level=2')
+    gn_args.append('symbol_level = 2')
+    gn_args.append('use_debug_fission = false')
     api.file.write_text('write gn args', build_dir.joinpath('args.gn'),
                         '\n'.join(gn_args))
     api.gn.gen(build_dir, 'gn_gen')
 
     raw_result = api.chromium.compile(
-        source_dir, build_dir, targets=list(targets), use_reclient=use_reclient)
+        source_dir, build_dir, targets=targets, use_reclient=use_reclient)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
+
+  runner_dir = source_dir / RUNNER_PACKAGE_PATH
+  api.file.copytree('copy source files', api.resource('.'), runner_dir)
+  api.chromium.mb_isolate_everything(source_dir, build_dir, None)
+
+  isolate_targets = [t.isolate_target for t in tests]
+  for isolate_target in isolate_targets:
+    file_path = build_dir.joinpath('%s.isolate' % isolate_target)
+    api.isolate.add_files_to_isolate_file(file_path,
+                                          [f'../../{RUNNER_PACKAGE_PATH}/'])
+  api.chromium_tests.isolate_tests(
+      source_dir,
+      build_dir,
+      builder_config,
+      tests,
+      '',
+      '',
+  )
 
   # TODO(jiesheng): Run the tests using the test runner script using the
   # compiled tests.
@@ -123,6 +151,66 @@ def GenTests(api):
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
+          api.file.read_json({'cmd': ''})),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'happy_path_compile_test_with_child_tester',
+      api.chromium_polymorphic.triggered_properties(
+          project='fake-project',
+          bucket='fake-bucket',
+          builder='fake-tester',
+          builder_group='fake-group',
+      ),
+      ctbc_api.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'blink_wpt_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.properties(
+          InputProperties(
+              target_test_infos=[
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_names=['test1', 'test2'],
+                  ),
+              ],)),
+      api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
+          api.file.read_json({'cmd': ''})),
       api.post_process(DropExpectation),
   )
 
@@ -267,6 +355,9 @@ def GenTests(api):
                                         'symbol_level = "1"\n'
                                         'a = true\n'
                                         'b = true')),
+      api.override_step_data(
+          'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
+          api.file.read_json({'cmd': ''})),
       api.post_process(MustRun, 'write gn args'),
       api.post_process(DropExpectation),
   )
