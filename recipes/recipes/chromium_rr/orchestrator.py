@@ -57,12 +57,12 @@ def RunSteps(api):
     if test_suite not in TEST_SUITE_ALLOW_LIST:
       continue
     builder = query_result.get('builder', '')
-    test_id = query_result.get('test_id', '')
+    test_name = query_result.get('test_name', '')
     bug_id = query_result.get('bug_id', '')
-    if (not builder or not test_id or not bug_id or
+    if (not builder or not test_name or not bug_id or
         bug_to_test_num[bug_id] > MAX_TESTS_PER_BUG):
       continue
-    builder_to_tests[builder][test_suite].append(test_id)
+    builder_to_tests[builder][test_suite].append(test_name)
     bug_to_test_num[bug_id] += 1
 
   for builder, test_suites in builder_to_tests.items():
@@ -117,17 +117,17 @@ def GenTests(api):
           api.json.output([{
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_123',
+              'test_name': 'test_name_123',
               'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_345',
+              'test_name': 'test_name_345',
               'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_web_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_567',
+              'test_name': 'test_name_567',
               'bug_id': 'bug_123'
           }])),
       api.post_process(DropExpectation),
@@ -157,23 +157,23 @@ def GenTests(api):
           api.json.output([{
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_123',
+              'test_name': 'test_name_123',
               'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_345',
+              'test_name': 'test_name_345',
               'bug_id': 'bug_123'
           }, {
               'test_suite': 'blink_web_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_567',
+              'test_name': 'test_name_567',
               'bug_id': 'bug_123'
           }])),
       api.post_process(DropExpectation),
   )
   yield api.test(
-      'no_test_id',
+      'no_test_name',
       api.builder_group.for_current('chromium.fyi'),
       api.override_step_data(
           'query test data',
@@ -191,7 +191,7 @@ def GenTests(api):
           api.json.output([{
               'test_suite': 'non_blink_wpt_tests',
               'builder': 'builder1',
-              'test_id': 'test_id_234',
+              'test_name': 'test_name_234',
               'bug_id': 'bug_123'
           }])),
       api.post_process(DropExpectation),

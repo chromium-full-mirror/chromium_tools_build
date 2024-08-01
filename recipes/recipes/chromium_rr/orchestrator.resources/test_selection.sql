@@ -24,7 +24,9 @@ WITH
         (SELECT value FROM UNNEST(failures_table.variant)
             WHERE key = "builder") AS builder,
         (SELECT value FROM UNNEST(failures_table.tags)
-            WHERE key = "target_platform") AS test_platform
+            WHERE key = "target_platform") AS test_platform,
+        (SELECT value FROM UNNEST(failures_table.tags)
+            WHERE key = "test_name") AS test_name
       ))[0] AS test_data
     FROM test_bugs LEFT JOIN `luci-analysis.chromium.clustered_failures`
         AS failures_table

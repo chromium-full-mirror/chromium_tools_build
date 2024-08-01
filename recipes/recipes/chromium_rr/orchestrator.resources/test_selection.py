@@ -43,6 +43,7 @@ def fetch_test_info(bq, args):
       'invocation_id': row.invocation_id,
       'test_suite': row.test_suite,
       'builder': row.builder,
+      'test_name': row.test_name,
   } for row in rows]
 
   with open(args.output_json, 'w+', encoding='utf-8') as f:
