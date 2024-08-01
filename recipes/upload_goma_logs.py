@@ -47,13 +47,6 @@ def main():
   )
 
   parser.add_argument(
-      '--json-status',
-      metavar='JSON',
-      help='path of json file generated from'
-      ' ./goma_ctl.py jsonstatus'
-  )
-
-  parser.add_argument(
       '--gsutil-py-path',
       help='Specify path to gsutil.py script in depot_tools.'
   )
