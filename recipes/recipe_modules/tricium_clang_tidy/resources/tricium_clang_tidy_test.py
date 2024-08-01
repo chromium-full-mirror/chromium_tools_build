@@ -125,12 +125,13 @@ class Tests(unittest.TestCase):
         compile_command('/path/to/clang-cl.exe foo /Fo foo.o'),
         compile_command('/path/to/pnacl-clang++.exe foo /Fo foo-1.o'),
         compile_command(
-            '/path/to/gomacc.exe /path/to/clang-cl.exe foo /Fo foo-2.o'),
+            '/path/to/rewrapper.exe /path/to/clang-cl.exe foo /Fo foo-2.o'),
         compile_command(
-            '/path/to/gomacc.exe /path/to/pnacl-clang++.exe foo /Fo foo-3.o'),
+            '/path/to/rewrapper.exe /path/to/pnacl-clang++.exe foo /Fo foo-3.o'
+        ),
         compile_command('/path/to/nacl-clang++.exe foo -o foo-4.o'),
         compile_command(
-            '/path/to/gomacc.exe /path/to/nacl-clang++.exe foo -o foo-5.o'),
+            '/path/to/rewrapper.exe /path/to/nacl-clang++.exe foo -o foo-5.o'),
     ])
 
     results = list(
@@ -149,7 +150,7 @@ class Tests(unittest.TestCase):
             file_abspath='/dir/ect/ory/foo.cc',
             file='foo.cc',
             directory='/dir/ect/ory',
-            command='/path/to/gomacc.exe /path/to/clang-cl.exe foo /Fo foo-2.o',
+            command='/path/to/rewrapper.exe /path/to/clang-cl.exe foo /Fo foo-2.o',
             is_clang_cl_command=True,
         ),
         tidy._CompileCommand(
@@ -165,7 +166,7 @@ class Tests(unittest.TestCase):
             file_abspath='/dir/ect/ory/foo.cc',
             file='foo.cc',
             directory='/dir/ect/ory',
-            command='/path/to/gomacc.exe /path/to/nacl-clang++.exe foo -o '
+            command='/path/to/rewrapper.exe /path/to/nacl-clang++.exe foo -o '
             'foo-5.o',
             is_clang_cl_command=False,
         ),
@@ -184,12 +185,14 @@ class Tests(unittest.TestCase):
         compile_command('/path/to/clang++ foo -o foo.o'),
         compile_command('/path/to/pnacl-clang foo -o foo-1.o'),
         compile_command('/path/to/pnacl-clang++ foo -o foo-2.o'),
-        compile_command('/path/to/gomacc /path/to/pnacl-clang foo -o foo-3.o'),
         compile_command(
-            '/path/to/gomacc /path/to/pnacl-clang++ foo -o foo-4.o'),
+            '/path/to/rewrapper /path/to/pnacl-clang foo -o foo-3.o'),
+        compile_command(
+            '/path/to/rewrapper /path/to/pnacl-clang++ foo -o foo-4.o'),
         compile_command('/some/clang /path/to/pnacl-helpers.c -o foo-5.o'),
         compile_command(
-            '/path/to/gomacc /some/clang /path/to/pnacl-helpers.c -o foo-6.o'),
+            '/path/to/rewrapper /some/clang /path/to/pnacl-helpers.c -o foo-6.o'
+        ),
     ])
 
     results = list(
@@ -216,7 +219,7 @@ class Tests(unittest.TestCase):
             file_abspath='/dir/ect/ory/foo.cc',
             file='foo.cc',
             directory='/dir/ect/ory',
-            command='/path/to/gomacc /some/clang /path/to/pnacl-helpers.c -o '
+            command='/path/to/rewrapper /some/clang /path/to/pnacl-helpers.c -o '
             'foo-6.o',
             is_clang_cl_command=False,
         ),
@@ -1599,10 +1602,6 @@ class Tests(unittest.TestCase):
     commands = [
         ['/path/to/clang++', 'foo', '-o', 'foo.o'],
         [
-            '/path/to/gomacc', '/some/clang', '/path/to/pnacl-helpers.c', 'foo',
-            '-o', 'foo-3.o'
-        ],
-        [
             '/path/to/rewrapper', '-cfg=../../path/to/file.cfg',
             '-other_rewrapper_flag', '-exec_root=/a/b/c', '/path/to/clang++',
             'foo', '-o', 'foo.o'
@@ -1615,10 +1614,6 @@ class Tests(unittest.TestCase):
 
     self.assertEqual(trimmed_commands, [
         ['/path/to/clang++', 'foo', '-o', 'foo.o'],
-        [
-            '/path/to/gomacc', '/some/clang', '/path/to/pnacl-helpers.c', 'foo',
-            '-o', 'foo-3.o'
-        ],
         ['/path/to/clang++', 'foo', '-o', 'foo.o'],
     ])
 

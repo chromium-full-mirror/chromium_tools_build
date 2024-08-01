@@ -434,8 +434,6 @@ def _run_clang_tidy(
     pieces = shlex.split(compile_command)
     pieces = _trim_rewrapper_command(pieces)
     if use_cl_driver_mode:
-      # HACK: Sometimes argv[0] is goma, so we write `gomacc --driver-mode=cl
-      # clang ...`.
       # Clang itself seems to skip these, and we need --driver-mode=cl before
       # any clang flags, so place it after.
       pieces.insert(1, '--driver-mode=cl')
@@ -578,7 +576,7 @@ def _parse_compile_commands(stream: io.TextIOWrapper, clang_cl: bool
         if pnacl in first_piece:
           continue
 
-        if (len(pieces) > 1 and 'goma' in first_piece and
+        if (len(pieces) > 1 and 'rewrapper' in first_piece and
             pnacl in os.path.basename(pieces[1])):
           continue
 
