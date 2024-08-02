@@ -59,6 +59,7 @@ class DevToolsTests(ABC):
     self.extra_args = [
         f'--{grep_arg}="{self.test_names_to_grep_string(test_names)}"',
     ]
+    self.env['DEBUG'] = 'puppeteer:*'
 
   def test_names_to_grep_string(self, names):
     return '|'.join([self.test_name_to_grep_string(name) for name in names])
