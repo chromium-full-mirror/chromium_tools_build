@@ -10,6 +10,3 @@ per-file upload_ninja_logs.py=file://recipes/BUILD_TEAM_OWNERS
 # For reverts only
 agrieve@chromium.org
 
-# For goma cleanup CLs.
-# TODO(b/306109834): remove this after removing goma related code from recipes.
-tikuta@chromium.org
