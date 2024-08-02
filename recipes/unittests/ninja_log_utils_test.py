@@ -17,10 +17,10 @@ sys.path.extend([
     os.path.join(ROOT_DIR, 'recipes'),
 ])
 
-import goma_utils
+import ninja_log_utils
 
 
-class GomaUtilTest(unittest.TestCase):
+class NinjaLogUtilTest(unittest.TestCase):
 
   def setUp(self):
     self._tmp_dir = tempfile.mkdtemp()
@@ -50,7 +50,7 @@ class GomaUtilTest(unittest.TestCase):
   def testGetLogFileTimestamp(self):
     self.assertEquals(
         datetime.datetime(2006, 1, 2, 15, 4, 5),
-        goma_utils.
+        ninja_log_utils.
         GetLogFileTimestamp('gomacc.host.user.log.INFO.20060102-150405.123456')
     )
 
@@ -60,7 +60,7 @@ class GomaUtilTest(unittest.TestCase):
       f.write('test')
 
     with mock.patch('bot_utils.GSUtilCopy') as mocked_GSUtilCopy:
-      goma_utils.UploadToGomaLogGS(file_path, 'gs_filename')
+      ninja_log_utils.UploadToGomaLogGS(file_path, 'gs_filename')
       mocked_GSUtilCopy.assert_called_once()
 
 

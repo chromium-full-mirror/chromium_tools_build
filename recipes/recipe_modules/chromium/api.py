@@ -639,7 +639,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             name='upload_ninja_log',
             cmd=[
                 'vpython3',
-                self.repo_resource('recipes', 'upload_goma_logs.py')
+                self.repo_resource('recipes', 'upload_ninja_logs.py')
             ] + upload_ninja_log_args)
 
   @contextlib.contextmanager

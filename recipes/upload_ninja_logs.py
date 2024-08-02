@@ -13,7 +13,7 @@ import json
 import os
 import sys
 
-import goma_utils
+import ninja_log_utils
 
 
 def main():
@@ -74,7 +74,7 @@ def main():
       ninja_log_command = f.read()
 
   if args.ninja_log_outdir:
-    viewer_url = goma_utils.UploadNinjaLog(
+    viewer_url = ninja_log_utils.UploadNinjaLog(
         outdir=args.ninja_log_outdir,
         compiler=args.ninja_log_compiler,
         command=ninja_log_command,

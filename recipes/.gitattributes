@@ -6,13 +6,13 @@
 /crash_utils.py                   recipes
 /daemonizer.py                    recipes
 /extract_build.py                 recipes
-/goma_utils.py                    recipes
+/ninja_log_utils.py               recipes
 /process_dumps.py                 recipes
 /results_dashboard.py             recipes
 /runisolatedtest.py               recipes
 /runtest.py                       recipes
 /tee.py                           recipes
-/upload_goma_logs.py*             recipes
+/upload_ninja_logs.py*            recipes
 /withxvfb.py                      recipes
 /xvfb.py                          recipes
 /zip_build.py                     recipes

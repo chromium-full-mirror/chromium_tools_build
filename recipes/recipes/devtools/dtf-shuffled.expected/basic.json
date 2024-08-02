@@ -248,7 +248,7 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
+      "RECIPE_REPO[build]/recipes/upload_ninja_logs.py",
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "--ninja-log-outdir",
