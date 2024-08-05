@@ -54,7 +54,7 @@ message SquashfsParams {
   int32 compression_level = 3;
 }
 
-// Next id: 20
+// Next id: 21
 message ArchiveData {
   // A list of relative paths to files that should be archived. All files are
   // relative to the build directory, which is passed alongside this proto to
@@ -213,6 +213,13 @@ message ArchiveData {
   // need chain-of-custody, or create a zip/tar archive of the dirs, and add the
   // provenance to that.
   bool requires_provenance = 18;
+
+  // If set to true, generate a single Software Bill of Materials (SBOM) based
+  // on all the files that make up the final archive. Each dependency that is
+  // required to produce each file in the archive will be included in the
+  // final combined SBOM, and will be uploaded to the gcs_path specified in
+  // this message.
+  bool requires_sbom = 20;
 
   // A string key to override the default base directory (build dir)
   // for the given file(s), dir(s) for this ArchiveData definition.
