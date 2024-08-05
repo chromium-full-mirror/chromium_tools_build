@@ -810,7 +810,7 @@
     },
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--foo 42```<br/><br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (6m 41s): 7m 12s (shard #2)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (2m 6s) + overhead(13m 17s): 15m 23s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--foo 42```<br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (6m 41s): 7m 12s (shard #2)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (2m 6s) + overhead(13m 17s): 15m 23s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

@@ -602,7 +602,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # Update the invocation so tests will inherit source position from the
     # orchestrator's invocation
     if sub_build.output.HasField('gitiles_commit'):
-      self.m.chromium_checkout.update_rdb_source_spec_invocation(
+      self.m.chromium_checkout.update_rdb_invocation(
           gitiles_commit=sub_build.output.gitiles_commit)
 
       # Set the output gitiles commit ASAP before any skylab tests are
