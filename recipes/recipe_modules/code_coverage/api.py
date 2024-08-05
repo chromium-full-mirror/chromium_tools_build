@@ -402,6 +402,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       patterns = [
           # Following are scripts based tests that don't build any binaries.
           ['blink_python_tests', None],
+          ['cronet_sizes', None],
           ['extension_docserver_python_unittests', None],
           ['fuchsia_pytype', None],
           ['grit_python_unittests', None],
