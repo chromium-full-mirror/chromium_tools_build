@@ -17,6 +17,13 @@
   },
   {
     "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"linux\"@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "builder cache",
     "~followup_annotations": [
       "@@@STEP_TEXT@builder cache is absent, expect a slow build@@@",

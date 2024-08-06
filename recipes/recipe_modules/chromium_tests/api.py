@@ -177,7 +177,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     presentation = self.m.step.active_result.presentation
     presentation.logs.setdefault('stdout', []).append(message)
 
-  def configure_build(self, builder_config, test_only=False):
+  def configure_build(self,
+                      builder_config,
+                      test_only=False,
+                      report_target_platform=False):
     """Configure the modules that will be used by chromium_tests code.
 
     Args:
@@ -188,12 +191,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         inapplicable validation is disabled. By default, the compilation
         validation is skipped only if the builder config's
         execution_mode is TEST.
+      report_target_platform - Whether or not reporting the "target_platform"
+        to the build output properties.
     """
     test_only = test_only or builder_config.execution_mode == ctbc.TEST
     self.m.chromium.set_config(
         builder_config.chromium_config,
         TEST_ONLY=test_only,
         **builder_config.chromium_config_kwargs)
+    # TODO(crbug.com/356461014): Switch to ResultDB after its RPC call supports
+    # updating invocation-level tags.
+    if report_target_platform:
+      step_result = self.m.step.empty('Report target_platform')
+      step_result.presentation.properties['target_platform'] = (
+          self.m.chromium.c.TARGET_PLATFORM)
 
     self.m.gclient.set_config(builder_config.gclient_config)
 
@@ -1728,7 +1739,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config, report_mirroring_builders=True)
     self.print_link_to_results()
-    self.configure_build(builder_config)
+    self.configure_build(builder_config, report_target_platform=True)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
@@ -2496,7 +2507,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           and the failure message if it failed
         Configuration of the build/test.
     """
-    self.configure_build(builder_config)
+    self.configure_build(builder_config, report_target_platform=True)
 
     self.m.chromium.apply_config('trybot_flavor')
 
