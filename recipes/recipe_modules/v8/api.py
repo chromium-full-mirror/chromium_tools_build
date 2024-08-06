@@ -249,6 +249,11 @@ class V8Api(recipe_api.RecipeApi):
     self.recipe_result = RawResult(status=common_pb.SUCCESS)
     self._build_config = None
 
+  @property
+  def dry_run(self):
+    """Indicate that we don't want to alter external state."""
+    return self.m.properties.get('dry_run') or self.m.runtime.is_experimental
+
   # TODO(machenbach): Temporary convenience method to update recipe
   # dependencies.
   def update_test_configs(self, *args, **kwargs):  # pragma: no cover
@@ -1414,7 +1419,8 @@ class V8Api(recipe_api.RecipeApi):
                         latest_version,
                         push_account,
                         bot_commit=False,
-                        extra_edits=None):
+                        extra_edits=None,
+                        dry_run=None):
     """Update the version on branch 'ref'.
 
       Args:
@@ -1427,7 +1433,10 @@ class V8Api(recipe_api.RecipeApi):
         bot_commit: Use True to allow a bot commit. This also force lands
             the CL
         extra_edits: Callback used to edit extra files before generating the CL
+        dry_run: If true, don't upload the CL. If None, use defaults to
+            determine dry-run state.
       """
+    dry_run = self.dry_run if dry_run is None else dry_run
     self.m.git('branch', '-D', 'work', ok_ret='any')
     self.m.git('clean', '-ffd')
 
@@ -1463,7 +1472,7 @@ class V8Api(recipe_api.RecipeApi):
     # Commit and push changes.
     self.m.git('commit', '-am', f'Version {latest_version}')
 
-    if self.m.properties.get('dry_run') or self.m.runtime.is_experimental:
+    if dry_run:
       self.m.step('Dry-run commit', cmd=None)
     else:
       upload_cmd = [

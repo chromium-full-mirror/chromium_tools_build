@@ -155,18 +155,13 @@ def milestone_version_mapping(api):
 
 def check_branch(api, source_dir, branch_version, chromium_version,
                  build_results):
-  with api.step.nest('Checking branch %s' % branch_version):
-    branch_ref = 'branch-heads/%s' % branch_version
+  with api.step.nest(f'Checking V8 branch {branch_version}'):
+    branch_ref = f'branch-heads/{branch_version}'
     api.v8.git_output('checkout', branch_ref)
     version_at_head = api.v8.read_version_from_ref(source_dir, "HEAD",
                                                    branch_ref)
-    proof_of_version_change = api.v8.git_output(
-        'show',
-        api.v8.VERSION_FILE,
-        ok_ret='any',
-        name='Proof of version change')
-    if proof_of_version_change:
-      verify_version_tag(api, version_at_head, build_results)
+    if current_branch_has_version_change(api):
+      verify_version_tag(api, api.v8.dry_run, version_at_head, build_results)
       has_pgo_tag = verify_pgo_tag(api, version_at_head)
 
       # TODO(crbug.com/1382471): We can remove this again if there are no back-
@@ -187,7 +182,12 @@ def check_branch(api, source_dir, branch_version, chromium_version,
                               build_results)
 
 
-def verify_version_tag(api, version_at_branch_head, build_results):
+def current_branch_has_version_change(api):
+  return api.v8.git_output(
+      'show', api.v8.VERSION_FILE, ok_ret='any', name='Proof of version change')
+
+
+def verify_version_tag(api, dry_run, version_at_branch_head, build_results):
   with api.step.nest('Verify version tag'):
     commit_at_tag = get_commit_at_tag(api, version_at_branch_head)
     commit_at_head = api.v8.git_output(
@@ -195,7 +195,7 @@ def verify_version_tag(api, version_at_branch_head, build_results):
     assert commit_at_head, 'Expected a checkout, but no head revision found.'
     if commit_at_head != commit_at_tag:
       # Tag latest version.
-      if api.properties.get('dry_run') or api.runtime.is_experimental:
+      if dry_run:
         api.step('Dry-run tag %s' % version_at_branch_head, cmd=None)
       else:
         api.git('tag', str(version_at_branch_head), 'HEAD')
@@ -251,7 +251,7 @@ def verify_ref(api, name, ref, branch_head, build_results):
 
 
 def set_ref(api, branch_head, ref, build_results):
-  if api.properties.get('dry_run') or api.runtime.is_experimental:
+  if api.v8.dry_run:
     api.step('Dry-run ref update %s' % branch_head, cmd=None)
   else:
     push_ref(api, REMOTE_REPO_URL, ref, branch_head)
@@ -276,8 +276,12 @@ def push_ref(api, repo, ref, hsh):
   api.git('push', repo, '+%s:%s' % (hsh, ref))
 
 
-def maybe_increment_version(api, source_dir, ref, latest_version,
-                            build_results):
+def maybe_increment_version(api,
+                            source_dir,
+                            ref,
+                            latest_version,
+                            build_results,
+                            dry_run=None):
   with api.step.nest('Increment version from %s' % latest_version):
     commits = api.gerrit.get_changes(
         'https://chromium-review.googlesource.com',
@@ -300,7 +304,8 @@ def maybe_increment_version(api, source_dir, ref, latest_version,
           ref,
           new_version,
           push_account=PUSH_ACCOUNT,
-          bot_commit=True)
+          bot_commit=True,
+          dry_run=dry_run)
       build_results.performed_actions.append("Version updated %s" % new_version)
 
 
@@ -349,16 +354,16 @@ def GenTests(api):
       'branches-to-update-version-for',
       tracked_branches_count(2),
       milestones(111, 112),
-      version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
+      version_file(3, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
       version_file(
           4,
           'latest',
-          prefix="Checking branch 11.2.Increment version from 11.4.3.3."),
-      version_file(2, 'branch-heads/11.1', prefix="Checking branch 11.1."),
+          prefix="Checking V8 branch 11.2.Increment version from 11.4.3.3."),
+      version_file(2, 'branch-heads/11.1', prefix="Checking V8 branch 11.1."),
       version_file(
           3,
           'latest',
-          prefix="Checking branch 11.1.Increment version from 11.4.3.2."),
+          prefix="Checking V8 branch 11.1.Increment version from 11.4.3.2."),
       status='SUCCESS',
   )
 
@@ -367,32 +372,32 @@ def GenTests(api):
       tracked_branches_count(2),
       api.runtime(is_experimental=True),
       milestones(111, 112),
-      version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
+      version_file(3, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
       version_file(
           4,
           'latest',
-          prefix="Checking branch 11.2.Increment version from 11.4.3.3."),
-      version_file(2, 'branch-heads/11.1', prefix="Checking branch 11.1."),
+          prefix="Checking V8 branch 11.2.Increment version from 11.4.3.3."),
+      version_file(2, 'branch-heads/11.1', prefix="Checking V8 branch 11.1."),
       version_file(
           3,
           'latest',
-          prefix="Checking branch 11.1.Increment version from 11.4.3.2."),
+          prefix="Checking V8 branch 11.1.Increment version from 11.4.3.2."),
       status='SUCCESS',
   )
 
   yield test(
       'branche-with-stale-version-update',
       milestones(112),
-      version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
+      version_file(3, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
       api.override_step_data(
-          'Checking branch 11.2.'
+          'Checking V8 branch 11.2.'
           'Increment version from 11.4.3.3.gerrit changes',
           api.json.output([{
               '_number': '123',
               'subject': 'Version 11.4.3.3'
           }])),
       api.post_process(
-          StepFailure, 'Checking branch 11.2.'
+          StepFailure, 'Checking V8 branch 11.2.'
           'Increment version from 11.4.3.3.'
           'Stale version change CL found!'),
       status='FAILURE',
@@ -401,12 +406,13 @@ def GenTests(api):
   yield test(
       'branch-with-updated-version-but-no-tag',
       milestones(113),
-      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
-      stdout('Checking branch 11.3.Proof of version change',
+      version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
+      stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
-      api.post_process(
-          MustRun, 'Checking branch 11.3.Verify version tag.git push'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD',
+             '123'),
+      api.post_process(MustRun,
+                       'Checking V8 branch 11.3.Verify version tag.git push'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -414,20 +420,24 @@ def GenTests(api):
   yield test(
       'branch-with-correct-tags',
       milestones(113),
-      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
-      stdout('Checking branch 11.3.Proof of version change',
+      version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
+      stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'),
-      stdout('Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at 11.4.3.3',
+             '123'),
+      stdout('Checking V8 branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo',
+             '123'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD',
+             '123'),
       stdout(
-          'Checking branch 11.3.Verify LKGR.'
+          'Checking V8 branch 11.3.Verify LKGR.'
           'git ls-remote refs_heads_11.3-lkgr', '112233'),
-      stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '112233'),
-      api.post_process(DoesNotRunRE, 'Checking branch 11.3.'
+      stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3',
+             '112233'),
+      api.post_process(DoesNotRunRE, 'Checking V8 branch 11.3.'
                        'Verify version tag.git tag'),
       api.post_process(
-          MustRun, 'Checking branch 11.3.Verify LKGR.'
+          MustRun, 'Checking V8 branch 11.3.Verify LKGR.'
           'There is no new LKGR ref.'),
       status='SUCCESS',
   )
@@ -435,21 +445,25 @@ def GenTests(api):
   yield test(
       'lkgr-branch',
       milestones(113),
-      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
-      stdout('Checking branch 11.3.Proof of version change',
+      version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
+      stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'),
-      stdout('Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at 11.4.3.3',
+             '123'),
+      stdout('Checking V8 branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo',
+             '123'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD',
+             '123'),
       stdout(
-          'Checking branch 11.3.Verify LKGR.'
+          'Checking V8 branch 11.3.Verify LKGR.'
           'git ls-remote refs_heads_11.3-lkgr', 'faceb00c'),
       stdout(
-          'Checking branch 11.3.Verify Chromium.'
+          'Checking V8 branch 11.3.Verify Chromium.'
           'git ls-remote refs_heads_chromium_5113', 'deadbeef'),
-      stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
-      api.post_process(MustRun, 'Checking branch 11.3.Verify LKGR.git push'),
-      api.post_process(MustRun, 'Checking branch 11.3.Verify Chromium.git push'),
+      stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
+      api.post_process(MustRun, 'Checking V8 branch 11.3.Verify LKGR.git push'),
+      api.post_process(MustRun,
+                       'Checking V8 branch 11.3.Verify Chromium.git push'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -464,25 +478,31 @@ def GenTests(api):
 
       # Simulate processing 112 with all data except the Chromium ref,
       # which doesn't exist yet.
-      version_file(2, 'branch-heads/11.2', prefix="Checking branch 11.2."),
-      stdout('Checking branch 11.2.Proof of version change',
+      version_file(2, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
+      stdout('Checking V8 branch 11.2.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.2.Verify version tag.Commit at 11.4.3.2', '123'),
-      stdout('Checking branch 11.2.Verify pgo tag.Commit at 11.4.3.2-pgo', '123'),
-      stdout('Checking branch 11.2.Verify version tag.Commit at HEAD', '123'),
-      version_file(1, 'branch-heads/11.1', prefix="Checking branch 11.1."),
-      api.post_process(MustRun, 'Checking branch 11.2.Verify LKGR'),
-      api.post_process(DoesNotRunRE, 'Checking branch 11.2.Verify Chromium.*'),
+      stdout('Checking V8 branch 11.2.Verify version tag.Commit at 11.4.3.2',
+             '123'),
+      stdout('Checking V8 branch 11.2.Verify pgo tag.Commit at 11.4.3.2-pgo',
+             '123'),
+      stdout('Checking V8 branch 11.2.Verify version tag.Commit at HEAD',
+             '123'),
+      version_file(1, 'branch-heads/11.1', prefix="Checking V8 branch 11.1."),
+      api.post_process(MustRun, 'Checking V8 branch 11.2.Verify LKGR'),
+      api.post_process(DoesNotRunRE,
+                       'Checking V8 branch 11.2.Verify Chromium.*'),
 
       # Simulate processing 111, where all data including Chromium ref exists.
-      stdout('Checking branch 11.1.Proof of version change',
+      stdout('Checking V8 branch 11.1.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.1.Verify version tag.Commit at 11.4.3.1', '121'),
-      stdout('Checking branch 11.1.Verify pgo tag.Commit at 11.4.3.1-pgo', '121'),
-      stdout('Checking branch 11.1.Verify version tag.Commit at HEAD', '121'),
-      api.post_process(MustRun, 'Checking branch 11.1.Verify LKGR'),
-      api.post_process(MustRun, 'Checking branch 11.1.Verify Chromium'),
-
+      stdout('Checking V8 branch 11.1.Verify version tag.Commit at 11.4.3.1',
+             '121'),
+      stdout('Checking V8 branch 11.1.Verify pgo tag.Commit at 11.4.3.1-pgo',
+             '121'),
+      stdout('Checking V8 branch 11.1.Verify version tag.Commit at HEAD',
+             '121'),
+      api.post_process(MustRun, 'Checking V8 branch 11.1.Verify LKGR'),
+      api.post_process(MustRun, 'Checking V8 branch 11.1.Verify Chromium'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -490,11 +510,13 @@ def GenTests(api):
   yield test(
       'no-pgo-profiles',
       milestones(113),
-      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
-      stdout('Checking branch 11.3.Proof of version change',
+      version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
+      stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at 11.4.3.3',
+             '123'),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD',
+             '123'),
       api.post_process(
           DoesNotRunRE,
           '.*Verify LKGR.*',
@@ -511,23 +533,25 @@ def GenTests(api):
       'dry-run-branch-no-tag-no-lkgr',
       api.runtime(is_experimental=True),
       milestones(113),
-      stdout('Checking branch 11.3.Proof of version change',
+      stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
-      stdout('Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'),
-      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
+      stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD',
+             '123'),
+      stdout('Checking V8 branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo',
+             '123'),
+      version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
       stdout(
-          'Checking branch 11.3.Verify LKGR.'
+          'Checking V8 branch 11.3.Verify LKGR.'
           'git ls-remote refs_heads_11.3-lkgr', '3e1a'),
       stdout(
-          'Checking branch 11.3.Verify Chromium.'
+          'Checking V8 branch 11.3.Verify Chromium.'
           'git ls-remote refs_heads_chromium_5113', '3e1a'),
-      stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
+      stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
       api.post_process(
-          MustRun, 'Checking branch 11.3.Verify LKGR.'
+          MustRun, 'Checking V8 branch 11.3.Verify LKGR.'
           'Dry-run ref update 404'),
       api.post_process(
-          MustRun, 'Checking branch 11.3.Verify Chromium.'
+          MustRun, 'Checking V8 branch 11.3.Verify Chromium.'
           'Dry-run ref update 404'),
       status='SUCCESS',
   )
