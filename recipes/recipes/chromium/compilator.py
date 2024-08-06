@@ -234,11 +234,17 @@ def archive_src_side_deps(
     affected_files (list): List of absolute string paths
   """
   with api.step.nest('archive src-side dep paths') as nested_step:
-    # Dedupe in case a file from src_side_dep_paths is also an affected file
-    dep_paths = sorted(
-        set(
-            get_src_side_dep_paths(api, source_dir, build_dir) +
-            affected_files))
+    dep_paths = set(get_src_side_dep_paths(api, source_dir, build_dir))
+    # Affected files are needed in when coverage is collected
+    dep_paths.update(affected_files)
+    # Include the targets spec files so that the orchestrator can create the
+    # test objects for running remote tests
+    targets_spec_dir = api.chromium_tests.get_targets_spec_dir(
+        checkout_dir, source_dir, orch_builder_config)
+    dep_paths.update(
+        str(targets_spec_dir / f)
+        for f in orch_builder_config.targets_spec_files.values())
+    dep_paths = sorted(dep_paths)
 
     # We need the files relative to the checkout dir so they can get downloaded
     # correctly on the orchestrator. And the .isolate file inherits the cwd of
