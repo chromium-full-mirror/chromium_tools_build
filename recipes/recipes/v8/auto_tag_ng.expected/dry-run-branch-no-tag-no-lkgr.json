@@ -155,6 +155,31 @@
     ]
   },
   {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "origin",
+      "refs/heads/chromium/*"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "git ls-remote",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5111@@@",
+      "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5112@@@",
+      "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5113@@@",
+      "@@@STEP_LOG_END@stdout@@@",
+      "@@@STEP_LOG_LINE@chromium versions@5112@@@",
+      "@@@STEP_LOG_LINE@chromium versions@5111@@@",
+      "@@@STEP_LOG_END@chromium versions@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "Checking branch 11.3"
   },

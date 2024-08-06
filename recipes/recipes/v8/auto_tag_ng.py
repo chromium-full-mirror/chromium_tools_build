@@ -43,6 +43,7 @@ DEPS = [
     'v8',
 ]
 
+CHROMIUM_BRANCH_RE = re.compile(r'\w+\s+refs/heads/chromium/(\d+)')
 CHROMIUM_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/(\d+)$')
 RELEASE_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/\d+\.\d+$')
 MAX_COMMIT_WAIT_RETRIES = 5
@@ -73,7 +74,13 @@ def RunSteps(api):
     api.v8.git_output('fetch', 'origin', '--prune')
 
     build_results = BuildResults()
-    for v8_version, chromium_version in milestone_version_mapping(api):
+    milestone_versions = milestone_version_mapping(api)
+
+    # TODO(http://b/353262752): Continue verifying the version on these
+    # branches.
+    fetch_unmanaged_chromium_versions(api, milestone_versions)
+
+    for v8_version, chromium_version in milestone_versions:
       check_branch(api, source_dir, v8_version, chromium_version, build_results)
 
     result = api.step('Summary', cmd=None)
@@ -81,6 +88,26 @@ def RunSteps(api):
         or ["-none-"])
     if not build_results.success:
       return RawResult(status=FAILURE)
+
+
+def fetch_unmanaged_chromium_versions(api, milestone_versions):
+  """Returns chromium branches for the last 3 milestones <= 100 branches
+  without the milestone branches that are managed automatically by this script.
+
+  Branches are ordered latest first.
+  """
+  output = api.v8.git_output('ls-remote', 'origin', 'refs/heads/chromium/*')
+  unmanaged_versions = []
+  managed_versions = set(str(version) for _, version in milestone_versions)
+  for line in list(reversed(output.split('\n')))[:100]:
+    match = CHROMIUM_BRANCH_RE.fullmatch(line)
+    assert match
+    chromium_version = match.group(1)
+    if chromium_version not in managed_versions:
+      unmanaged_versions.append(match.group(1))
+  logs = api.step.active_result.presentation.logs
+  logs['chromium versions'] = unmanaged_versions
+  return unmanaged_versions
 
 
 def milestone_version_mapping(api):
@@ -287,6 +314,13 @@ def GenTests(api):
     return api.override_step_data(
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
+  def chromium_versions(*numbers):
+
+    def line(num):
+      return f'deadbeef\trefs/heads/chromium/{num}'
+
+    return stdout('git ls-remote', '\n'.join(line(num) for num in numbers))
+
   def milestones(*numbers):
     def ref_config(number):
       return {'ref': f'refs/branch-heads/{5000 + number}'}
@@ -304,7 +338,9 @@ def GenTests(api):
         # If the test case specifies tracked_branches_count, it will override
         # this
         tracked_branches_count(1),
-        *test_data, **kwargs)
+        chromium_versions(5111, 5112, 5113),
+        *test_data,
+        **kwargs)
 
   def version_file(patch_level, description, prefix=''):
     return api.v8.version_file(patch_level, description, prefix=prefix, major=11)
