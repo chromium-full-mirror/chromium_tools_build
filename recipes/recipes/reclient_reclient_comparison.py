@@ -146,13 +146,11 @@ COMPARISON_BUILDERS = freeze({
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache_size': '100000',
-            'GOGC': '400',
         },
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache_size': '100000',
-            'GOGC': '400',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
