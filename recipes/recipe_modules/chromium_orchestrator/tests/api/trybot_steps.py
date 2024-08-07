@@ -1719,6 +1719,17 @@ def GenTests(api):
   recent_run = test_history.QueryTestHistoryResponse(
       verdicts=[], next_page_token='dummy_token')
 
+  def check_duplicate_instruction_ids(check, steps, update_step_name):
+    check(update_step_name in steps)
+    update_invocation_step = steps[update_step_name]
+    check('json.input' in update_invocation_step.logs)
+    ids = set()
+    for instruction in api.json.loads(
+        update_invocation_step.logs['json.input']
+    )['invocation']['instructions']['instructions']:
+      check(instruction['id'] not in ids)
+      ids.add(instruction['id'])
+
   yield api.test(
       'new_flaky_test',
       get_try_build(),
@@ -1762,6 +1773,12 @@ def GenTests(api):
                                  ))),
       api.post_process(post_process.MustRun, 'calculate flake rates'),
       api.post_process(post_process.SummaryMarkdownRE, '.*browser_tests.*'),
+      api.post_process(
+          post_process.MustRun,
+          'test new tests for flakiness.update invocation instructions'),
+      api.post_process(
+          check_duplicate_instruction_ids,
+          'test new tests for flakiness.update invocation instructions'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

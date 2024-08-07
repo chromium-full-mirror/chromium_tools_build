@@ -577,6 +577,46 @@
   },
   {
     "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions",
+    "stdin": "{\"invocation\": {\"instructions\": {}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {},@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
       "python3",
       "-u",
       "RECIPE_MODULE[depot_tools::git]/resources/git_setup.py",
