@@ -37,7 +37,7 @@ def RunSteps(api, properties):
     # Check out the code.
     bot_update_step, build_dir, build_config = api.chromium_tests.prepare_checkout(
         builder_config, set_output_commit=False)
-    api.chromium_swarming.configure_swarming('chromium', precommit=False)
+    api.chromium_swarming.configure_swarming(precommit=False)
 
     compile_targets = tuple(properties.compile_targets)
     if not compile_targets:

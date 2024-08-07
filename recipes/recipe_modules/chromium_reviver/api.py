@@ -35,7 +35,7 @@ class ChromiumReviverApi(recipe_api.RecipeApi):
       checkout_dir = update_result.checkout_dir
       source_dir = update_result.source_root.path
       self.m.chromium_swarming.configure_swarming(
-          'chromium', precommit=False, builder_group=builder_id.group)
+          precommit=False, builder_group=builder_id.group)
 
       # Set the test options so that the tests run disabled test cases, skipping
       # tests that don't support it

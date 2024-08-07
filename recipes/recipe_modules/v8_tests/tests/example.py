@@ -49,7 +49,7 @@ def GenTests(api):
 
   yield api.test(
       'basic',
-      api.buildbucket.try_build(),
+      api.buildbucket.try_build(project='v8'),
       api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
       api.post_process(
           api.swarming.check_triggered_request,

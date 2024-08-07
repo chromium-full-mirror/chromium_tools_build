@@ -18,7 +18,6 @@ def RunSteps(api):
   api.chromium.set_config('android', TARGET_PLATFORM='android')
 
   api.chromium_swarming.configure_swarming(
-      'chromium',
       precommit=api.properties['precommit'],
       # Fake path to make tests pass.
       path_to_merge_scripts=api.path.start_dir.joinpath('checkout',

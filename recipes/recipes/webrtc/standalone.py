@@ -41,8 +41,7 @@ def RunSteps(api):
       source_dir,
       checkout_dir=checkout_dir)
 
-  api.chromium_swarming.configure_swarming(
-      'webrtc', precommit=api.tryserver.is_tryserver)
+  api.chromium_swarming.configure_swarming(precommit=api.tryserver.is_tryserver)
 
   if api.webrtc.should_download_video_quality_tools(builder_id, builder_config):
     api.webrtc.download_video_quality_tools(source_dir)

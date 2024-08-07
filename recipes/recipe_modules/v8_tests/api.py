@@ -98,7 +98,6 @@ class V8TestsApi(recipe_api.RecipeApi):
   def set_up_swarming(self):
     self.m.chromium_swarming.set_default_dimension('pool', 'chromium.tests')
     self.m.chromium_swarming.set_default_dimension('os', 'Ubuntu-16.04')
-    self.m.chromium_swarming.add_default_tag('project:v8')
     self.m.chromium_swarming.default_hard_timeout = 45 * 60
 
     self.m.chromium_swarming.default_idempotent = True

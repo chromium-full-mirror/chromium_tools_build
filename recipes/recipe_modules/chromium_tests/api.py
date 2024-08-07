@@ -2465,8 +2465,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return test_targets, compile_targets
 
   def configure_swarming(self, precommit, task_output_stdout=None, **kwargs):
-    self.m.chromium_swarming.configure_swarming(
-        'chromium', precommit=precommit, **kwargs)
+    self.m.chromium_swarming.configure_swarming(precommit=precommit, **kwargs)
 
     if task_output_stdout:
       self.m.chromium_swarming.task_output_stdout = task_output_stdout

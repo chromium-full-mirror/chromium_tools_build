@@ -63,7 +63,7 @@ def RunSteps(api, properties):
       update_result, build_dir, targets_config = (
           api.chromium_tests.prepare_checkout(
               builder_config, set_output_commit=False))
-      api.chromium_swarming.configure_swarming('chromium', precommit=False)
+      api.chromium_swarming.configure_swarming(precommit=False)
       checkout_dir = update_result.checkout_dir
       source_dir = update_result.source_root.path
 

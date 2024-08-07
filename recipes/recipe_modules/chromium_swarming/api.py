@@ -162,8 +162,12 @@ class SwarmingApi(recipe_api.RecipeApi):
   def initialize(self):
     self.add_default_tag(
         'build_is_experimental:' + str(self.m.runtime.is_experimental).lower())
-    if self.m.buildbucket.build.builder.bucket:
+    if self.m.buildbucket.build.builder.builder:
+      self.add_default_tag('project:' +
+                           self.m.buildbucket.build.builder.project)
       self.add_default_tag('bucket:' + self.m.buildbucket.build.builder.bucket)
+      self.add_default_tag('buildername:' +
+                           self.m.buildbucket.build.builder.builder)
 
   @recipe_util.returns_placeholder
   def summary(self):
@@ -712,7 +716,6 @@ class SwarmingApi(recipe_api.RecipeApi):
       tags.add('spec_name:' + task.spec_name)
 
     if task.builder_info:
-      tags.add('buildername:' + task.builder_info[0])
       if not task.builder_info[1] == -1:
         tags.add('buildnumber:%s' % task.builder_info[1])
 
@@ -1663,7 +1666,6 @@ class SwarmingApi(recipe_api.RecipeApi):
     })
 
   def configure_swarming(self,
-                         project_name,
                          precommit,
                          builder_group=None,
                          path_to_merge_scripts=None):
@@ -1674,7 +1676,6 @@ class SwarmingApi(recipe_api.RecipeApi):
     beforehand.
 
     Args:
-      project_name: Lowercase name of the project, e.g. "blink", "chromium".
       precommit: Boolean flag to indicate whether the tests are running before
           the changes are commited.
       builder_group: optional name of the builder group to use to configure the
@@ -1692,7 +1693,6 @@ class SwarmingApi(recipe_api.RecipeApi):
       self.set_default_dimension(k, v)
 
     self.set_default_dimension('pool', 'chromium.tests')
-    self.add_default_tag('project:%s' % project_name)
     self.default_idempotent = True
 
     if precommit:

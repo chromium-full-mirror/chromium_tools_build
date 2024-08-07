@@ -58,6 +58,8 @@
       "--tag",
       "os:win",
       "--tag",
+      "project:chromium",
+      "--tag",
       "spec_name:chromium.ci:test_buildername",
       "--tag",
       "stepname:hello_world on Windows-10",
