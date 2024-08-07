@@ -54,7 +54,14 @@ message SquashfsParams {
   int32 compression_level = 3;
 }
 
-// Next id: 21
+// Next id: 2
+message TarZstdParams {
+  // If not set, it uses default level.
+  int32 compression_level = 1;
+}
+
+
+// Next id: 22
 message ArchiveData {
   // A list of relative paths to files that should be archived. All files are
   // relative to the build directory, which is passed alongside this proto to
@@ -155,6 +162,10 @@ message ArchiveData {
     // whose final component is the name of the archive file.
     ARCHIVE_TYPE_TAR_GZ = 3;
 
+    // All input files and dirs are tar zstded, gcs_path should be a path
+    // whose final component is the name of the archive file.
+    ARCHIVE_TYPE_TAR_ZSTD = 7;
+
     // Recursively upload directories and subdirectories. Files are not
     // supported. gcs_path should be a path to the directory where the uploaded
     // items will be placed.
@@ -181,6 +192,9 @@ message ArchiveData {
 
   // Only set this when archive_type is ARCHIVE_TYPE_SQUASHFS.
   SquashfsParams squashfs_params = 16;
+
+  // Only set this when archive_type is ARCHIVE_TYPE_TAR_ZSTD
+  TarZstdParams tar_zstd_params = 21;
 
   // When set, system will update the latest file.
   // Example:

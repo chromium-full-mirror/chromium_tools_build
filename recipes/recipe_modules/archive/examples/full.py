@@ -240,6 +240,7 @@ def GenTests(api):
       (properties.ArchiveData.ARCHIVE_TYPE_FILES, '', False),
       (properties.ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES, '', False),
       (properties.ArchiveData.ARCHIVE_TYPE_TAR_GZ, 'any-path.tar.gz', True),
+      (properties.ArchiveData.ARCHIVE_TYPE_TAR_ZSTD, 'any-path.tar.zst', True),
       (properties.ArchiveData.ARCHIVE_TYPE_SQUASHFS, 'any-path.squash', True),
       (properties.ArchiveData.ARCHIVE_TYPE_RECURSIVE, '', True),
   ):
@@ -689,6 +690,30 @@ def GenTests(api):
               '/heads/9.7.48@{#1}\", \"v8_revision\": \"1\", \"v8_revision_'
               'git\": \"466dd2d77f6dd56a9174d7389e788cb7367d818d\"}'
           ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.dirs.extend(['anydir'])
+  archive_data.gcs_bucket = 'any-bucket'
+  archive_data.gcs_path = 'x86/{%position%}/chrome'
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_TAR_ZSTD
+  archive_data.tar_zstd_params.compression_level = 9
+  archive_data.revisions_file.gcs_path = 'x86/{%position%}/REVISIONS'
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_tar_zstd_with_compression_level',
+      api.properties(
+          gcs_archive=True,
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+              'got_v8_revision': '466dd2d77f6dd56a9174d7389e788cb7367d818d',
+              'got_v8_revision_cp': 'refs/heads/9.7.48@{#1}'
+          },
+          **{'$build/archive': input_properties}),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -277,7 +277,7 @@ class SkylabApi(recipe_api.RecipeApi):
       cmd.extend(['--test-args', ' '.join(test_args)])
 
       lacros_gcs_path = os.path.join(test.lacros_gcs_path,
-                                     'lacros_compressed.squash')
+                                     'skylab_runtime_deps.tar.zst')
       cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
 
       if test.spec.secondary_cros_board:
