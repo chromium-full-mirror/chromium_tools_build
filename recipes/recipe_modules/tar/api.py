@@ -2,19 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from typing import Optional
-
 from recipe_engine import recipe_api
 
 
 class TarApi(recipe_api.RecipeApi):
   """Provides steps to tar and untar files."""
 
-  def make_package(self,
-                   root: str,
-                   output: str,
-                   compression: Optional[str] = None,
-                   compression_level: Optional[int] = None) -> 'TarPackage':
+  def make_package(self, root, output, compression=None):
     """Returns TarPackage object that can be used to compress a set of files.
 
     Usage:
@@ -27,14 +21,11 @@ class TarApi(recipe_api.RecipeApi):
       root: a directory that would become root of a package, all files added to
           an archive will have archive paths relative to this directory.
       output: path to a tar file to create.
-      compression: the compression algorithm to use, either None, 'gz', 'bz2' or 'zstd'.
-      compression_level: the compression level for zstd to use. from 1 to 20.
-                         compression level at other compression algorithm is not handled.
 
     Returns:
       TarPackage object.
     """
-    return TarPackage(self, root, output, compression, compression_level)
+    return TarPackage(self, root, output, compression)
 
   def directory(self, step_name, directory, output):
     """Step to compress a single directory.
@@ -79,12 +70,11 @@ class TarApi(recipe_api.RecipeApi):
 class TarPackage:
   """Used to gather a list of files to tar."""
 
-  def __init__(self, module, root, output, compression, compression_level):
+  def __init__(self, module, root, output, compression):
     self._module = module
     self._root = root
     self._output = output
     self._compression = compression
-    self._compression_level = compression_level
     self._entries = []
 
   @property
@@ -125,11 +115,10 @@ class TarPackage:
   def tar(self, step_name):
     """Step to tar all staged files."""
     script_input = {
-        'entries': self._entries,
-        'output': str(self._output),
-        'compression': str(self._compression or ''),
-        'root': str(self._root),
-        'compression_level': self._compression_level,
+      'entries': self._entries,
+      'output': str(self._output),
+      'compression': str(self._compression),
+      'root': str(self._root),
     }
     step_result = self._module.m.step(
         name=step_name,

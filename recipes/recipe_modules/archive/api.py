@@ -6,7 +6,6 @@ import base64
 import datetime
 import re
 import os
-import typing
 
 from . import manual_bisect_files
 
@@ -481,14 +480,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     inserted into the URL."""
     return self._legacy_url(True, gs_bucket_name, extra_url_components)
 
-  def _create_tar_archive_for_upload(
-      self,
-      archive_data: InputProperties.archive_datas,
-      build_dir: typing.Text,
-      files: typing.List[typing.Text],
-      directories: typing.List[typing.Text],
-      compression: typing.Text = 'gz',
-      compression_level: typing.Optional[int] = None) -> None:
+  def _create_targz_archive_for_upload(self, archive_data, build_dir, files,
+                                       directories):
     """Adds files and dirs to a tar.gz file to be uploaded.
 
     Args:
@@ -498,20 +491,14 @@ class ArchiveApi(recipe_api.RecipeApi):
       files: List of files to include. Paths are relative to |build_dir|.
       directories: List of directories to include. Paths are relative to
                    |build_dir|.
-      compression: compression algorithm, allowed values are gz/bz2/zstd, and
-                   default value is gz.
-      compression_level: The compression level for zstd, integer between 1 and
-                         20. This parameters has no effect for gz or bz2.
 
     Returns:
       Absolute path to the archive file or None if files and dirs do not exist
       and skip_empty_source is enabled.
     """
-    suffix = {'gz': 'gz', 'zstd': 'zst'}[compression]
     tmp_dir = self.m.path.mkdtemp()
-    output = tmp_dir / 'artifact.tar.{}'.format(suffix)
-    pkg = self.m.tar.make_package(build_dir, output, compression,
-                                  compression_level)
+    output = tmp_dir / 'artifact.tar.gz'
+    pkg = self.m.tar.make_package(build_dir, output, 'gz')
 
     for f in files:
       pkg.add_file(build_dir / f)
@@ -519,7 +506,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       pkg.add_directory(build_dir / directory)
 
     try:
-      pkg.tar('Create tar.{} archive'.format(suffix))
+      pkg.tar('Create tar.gz archive')
     except Exception:
       # Don't fail the build if there are no files to compress, and
       # skip_empty_source is enabled. Return an empty path.
@@ -1174,21 +1161,8 @@ class ArchiveApi(recipe_api.RecipeApi):
           for f in expanded_files
       }
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_GZ:
-      archive_file = self._create_tar_archive_for_upload(
-          archive_data, base_path, expanded_files, updated_dirs, 'gz')
-      if archive_file:
-        uploads = {archive_file: gcs_path}
-    elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_ZSTD:
-      compression_level = None
-      if archive_data.tar_zstd_params.compression_level:
-        compression_level = archive_data.tar_zstd_params.compression_level
-      archive_file = self._create_tar_archive_for_upload(
-          archive_data,
-          base_path,
-          expanded_files,
-          updated_dirs,
-          'zstd',
-          compression_level=compression_level)
+      archive_file = self._create_targz_archive_for_upload(
+          archive_data, base_path, expanded_files, updated_dirs)
       if archive_file:
         uploads = {archive_file: gcs_path}
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE:

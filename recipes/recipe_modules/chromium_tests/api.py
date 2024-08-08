@@ -2845,11 +2845,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           base_dir=str(out_dir),
           files=['metadata.json'],
       )
-      browser_arch = arch_prop.ArchiveData(
+      squash_arch = arch_prop.ArchiveData(
           gcs_bucket=gcs_bucket,
-          gcs_path='%s/%s/skylab_runtime_deps.tar.zst' % (gcs_path, target),
-          archive_type=arch_prop.ArchiveData.ARCHIVE_TYPE_TAR_ZSTD,
-          tar_zstd_params=arch_prop.TarZstdParams(compression_level=4,),
+          gcs_path='%s/%s/lacros_compressed.squash' % (gcs_path, target),
+          archive_type=arch_prop.ArchiveData.ARCHIVE_TYPE_SQUASHFS,
+          squashfs_params=arch_prop.SquashfsParams(
+              algorithm='zstd',
+              compression_level=5,
+          ),
           base_dir='src',
           files=[v for v in runtime_deps.values() if is_file(v)],
           dirs=[v for v in runtime_deps.values() if is_dir(v)],
@@ -2861,7 +2864,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           build_dir=checkout_dir,
           update_properties={},
           config=arch_prop.InputProperties(
-              archive_datas=[browser_arch, metadata_arch]),
+              archive_datas=[squash_arch, metadata_arch]),
           should_batch=True)
       return 'gs://{}{}/{}/{}'.format(
           gcs_bucket, '/experimental' if self.m.runtime.is_experimental else '',

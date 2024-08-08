@@ -39,6 +39,7 @@ GPU_GTEST_ARGS = ['--show-stdout', '--browser=cros-chrome', '--passthrough']
 GPU_EXTRA_BROWSWER_ARGS = ('--log-level=0 --js-flags=--expose-gc '
                            '--force_high_performance_gpu')
 LACROS_GCS_PATH = 'gs://fake_bucket/fake_test'
+LACROS_SQUASH = 'lacros_compressed.squash'
 SHARD_COUNT = 2
 TAST_MAX_RUN_SEC = 21600
 
@@ -406,7 +407,7 @@ def GenTests(api):
               '--test-args',
               test_args(REQUESTS[0].name) + ' run_private_tests=False',
               '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
+              'gs://fake_bucket/fake_test/lacros_compressed.squash',
           ]),
       api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.post_process(post_process.DropExpectation),
@@ -593,7 +594,7 @@ def GenTests(api):
               '--test-args',
               test_args(MULTI_DUT_REQUESTS[1].name),
               '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
+              'gs://fake_bucket/fake_test/lacros_compressed.squash',
               '--secondary-lacros-gcs-path',
               '',
               '--autotest-name',
@@ -636,13 +637,13 @@ def GenTests(api):
               '--test-args',
               test_args(MULTI_DUT_REQUESTS[2].name),
               '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
+              'gs://fake_bucket/fake_test/lacros_compressed.squash',
               '--secondary-lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
+              'gs://fake_bucket/fake_test/lacros_compressed.squash',
               '--secondary-lacros-gcs-path',
               '',
               '--secondary-lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
+              'gs://fake_bucket/fake_test/lacros_compressed.squash',
               '--autotest-name',
               'tast.nearby-share',
               '--total-shards',

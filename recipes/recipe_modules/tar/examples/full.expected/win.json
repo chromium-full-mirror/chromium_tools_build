@@ -41,7 +41,7 @@
       "RECIPE_MODULE[build::tar]\\resources\\tar.py"
     ],
     "name": "taring",
-    "stdin": "{\"compression\": \"\", \"compression_level\": null, \"entries\": [{\"path\": \"[CLEANUP]\\\\tar-example_tmp_1\", \"type\": \"dir\"}], \"output\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\output.tar\", \"root\": \"[CLEANUP]\\\\tar-example_tmp_1\"}"
+    "stdin": "{\"compression\": \"None\", \"entries\": [{\"path\": \"[CLEANUP]\\\\tar-example_tmp_1\", \"type\": \"dir\"}], \"output\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\output.tar\", \"root\": \"[CLEANUP]\\\\tar-example_tmp_1\"}"
   },
   {
     "cmd": [
@@ -49,7 +49,7 @@
       "RECIPE_MODULE[build::tar]\\resources\\tar.py"
     ],
     "name": "taring more",
-    "stdin": "{\"compression\": \"gz\", \"compression_level\": null, \"entries\": [{\"archive_name\": null, \"path\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\a\", \"type\": \"file\"}, {\"archive_name\": null, \"path\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\b\", \"type\": \"file\"}, {\"path\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\sub\", \"type\": \"dir\"}], \"output\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\more.tar.gz\", \"root\": \"[CLEANUP]\\\\tar-example_tmp_1\"}"
+    "stdin": "{\"compression\": \"gz\", \"entries\": [{\"archive_name\": null, \"path\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\a\", \"type\": \"file\"}, {\"archive_name\": null, \"path\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\b\", \"type\": \"file\"}, {\"path\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\sub\", \"type\": \"dir\"}], \"output\": \"[CLEANUP]\\\\tar-example_tmp_1\\\\more.tar.gz\", \"root\": \"[CLEANUP]\\\\tar-example_tmp_1\"}"
   },
   {
     "cmd": [
