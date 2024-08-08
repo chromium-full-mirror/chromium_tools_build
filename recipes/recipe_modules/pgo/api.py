@@ -185,9 +185,7 @@ class PgoApi(recipe_api.RecipeApi):
               self.m.profiles.profile_dir(),
               recursive=True))
 
-      tests_failing_verification = []
       for test in tests:
-        test_verification_success = False
         # crbug.com/1113316 - Ensure that the test is passed before any form
         # of handling. Failed benchmarks may produce bad profdata files, so
         # we want to fail this run if any of them fail.
@@ -206,26 +204,14 @@ class PgoApi(recipe_api.RecipeApi):
           # In this path, there should be a profdata file named after the test
           if profdata_path not in files:
             missing_files[profdata_filename] = subdir_identifier
-            continue
 
-          # Consider success if any suffix of the test (including the original
-          # run and possibly a retry) is successful.
-          test_verification_success = True
-
-        if not test_verification_success:
-          tests_failing_verification.append(test.target_name)
-
-      # Empty failed_benchmarks and missing_files is logged irrespective of
-      # step status.
+      # Empty failed_benchmarks and missing_files should continue onwards.
       if failed_benchmarks or missing_files:
         presentation.logs['failed_benchmarks'] = failed_benchmarks
         presentation.logs['missing_files'] = (
             self.m.json.dumps(missing_files, indent=2))
 
-      if tests_failing_verification:
         failure_msgs = []
-        failure_msgs.append('The following tests failed all runs: %s' %
-                            ', '.join(tests_failing_verification))
         if failed_benchmarks:
           failure_msgs.append(f'{len(failed_benchmarks)} benchmark(s) failed.')
           for failed_benchmark in failed_benchmarks:
