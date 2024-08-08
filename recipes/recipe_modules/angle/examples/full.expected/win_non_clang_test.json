@@ -8,6 +8,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"win\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",

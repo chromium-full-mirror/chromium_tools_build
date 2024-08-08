@@ -180,7 +180,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def configure_build(self,
                       builder_config,
                       test_only=False,
-                      report_target_platform=False):
+                      report_target_platform=True):
     """Configure the modules that will be used by chromium_tests code.
 
     Args:
@@ -1739,7 +1739,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config, report_mirroring_builders=True)
     self.print_link_to_results()
-    self.configure_build(builder_config, report_target_platform=True)
+    self.configure_build(builder_config)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
@@ -2506,7 +2506,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           and the failure message if it failed
         Configuration of the build/test.
     """
-    self.configure_build(builder_config, report_target_platform=True)
+    self.configure_build(builder_config)
 
     self.m.chromium.apply_config('trybot_flavor')
 

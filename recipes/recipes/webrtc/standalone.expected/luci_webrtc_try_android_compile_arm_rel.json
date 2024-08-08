@@ -1,6 +1,13 @@
 [
   {
     "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"android\"@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "gclient config",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@config@{@@@",
