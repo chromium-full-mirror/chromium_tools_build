@@ -160,7 +160,14 @@ class ChromiumApi(recipe_api.RecipeApi):
     Args:
       source_dir: The path to the top-level repo.
     """
-    return source_dir / 'out' / self.c.build_config_fs
+    # TODO(crbug.com/355218109): Remove the legacy naming scheme.
+    legacy_path = source_dir / 'out' / self.c.build_config_fs
+    if self.c.shared_build_dir:
+      # We can't trust that the disk will have enough room for both build-dirs.
+      if self.m.path.exists(legacy_path):
+        self.m.file.rmtree('remove legacy build dir', legacy_path)
+      return source_dir / 'out' / f'shared-{self.c.build_config_fs}'
+    return legacy_path
 
   def _ninja_path(self, source_dir: Path) -> Path:
     """The path to the ninja executable.

@@ -100,6 +100,9 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       # trybot_analyze_config.json in targets_spec_dir will be used.
       analyze_config_path=Single(str, required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
+      # Indicates that the build-dir is shared across multiple builders. May use
+      # a builder-specific build-dir name otherwise.
+      shared_build_dir=Single(bool, empty_val=False, required=False),
 
       # Some platforms do not have a 1:1 correlation of BUILD_CONFIG to what is
       # passed as --target on the command line.
@@ -282,6 +285,11 @@ def fastbuild(c, invert=False):
 @config_ctx()
 def clobber(c):
   c.clobber_before_runhooks = True
+
+
+@config_ctx()
+def shared_build_dir(c):
+  c.shared_build_dir = True
 
 
 @config_ctx(includes=['clobber'])
