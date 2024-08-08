@@ -447,7 +447,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       ]
       tags.append(common_pb.StringPair(key='hide-in-gerrit', value='pointless'))
       tags.append(
-          common_pb.StringPair(key='skip-rety-in-gerrit', value='pointless'))
+          common_pb.StringPair(key='skip-retry-in-gerrit', value='pointless'))
       request = self.m.buildbucket.schedule_request(
           builder=self.compilator,
           swarming_parent_run_id=self.m.swarming.task_id,
