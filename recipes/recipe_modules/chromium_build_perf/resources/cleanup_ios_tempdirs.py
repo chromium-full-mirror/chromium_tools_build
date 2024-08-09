@@ -23,12 +23,15 @@ def main():
   for p in patterns:
     for d in glob.iglob(p, recursive=True):
       print('Removing ' + d)
-      # Since shutil.rmtree() gets stuck on named pipe, it needs to use
-      # os.remove(). https://github.com/python/cpython/issues/116401
-      if os.path.isdir(d):
-        shutil.rmtree(d)
-      else:
-        os.remove(d)
+      try:
+        # Since shutil.rmtree() gets stuck on named pipe, it needs to use
+        # os.remove(). https://github.com/python/cpython/issues/116401
+        if os.path.isdir(d):
+          shutil.rmtree(d)
+        else:
+          os.remove(d)
+      except FileNotFoundError as e:
+        print(e, flle=sys.stderr)
 
 
 if '__main__' == __name__:
