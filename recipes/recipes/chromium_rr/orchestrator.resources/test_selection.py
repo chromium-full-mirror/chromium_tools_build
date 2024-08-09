@@ -40,10 +40,10 @@ def fetch_test_info(bq, args):
   test_results = [{
       'test_id': row.test_id,
       'bug_id': row.bug_id,
-      'invocation_id': row.invocation_id,
       'test_suite': row.test_suite,
       'builder': row.builder,
       'test_name': row.test_name,
+      'flaky_invocation_count': int(row.flaky_invocation_count),
   } for row in rows]
 
   with open(args.output_json, 'w+', encoding='utf-8') as f:

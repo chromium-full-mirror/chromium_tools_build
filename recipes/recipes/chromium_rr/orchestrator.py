@@ -36,6 +36,8 @@ TEST_SUITE_ALLOW_LIST = [
     'high_dpi_blink_web_tests'
 ]
 MAX_TESTS_PER_BUG = 3
+MAX_TEST_RUNNER_COUNT = 15
+MIN_FLAKY_INVOCATION_COUNT = 10
 
 
 def RunSteps(api):
@@ -51,6 +53,7 @@ def RunSteps(api):
   builder_to_tests = collections.defaultdict(
       lambda: collections.defaultdict(list))
   bug_to_test_num = collections.defaultdict(int)
+  test_runner_count = 0
   for query_result in query_results:
     # TODO(jiesheng): Support other test type for rr test launcher.
     test_suite = query_result.get('test_suite', '')
@@ -59,11 +62,15 @@ def RunSteps(api):
     builder = query_result.get('builder', '')
     test_name = query_result.get('test_name', '')
     bug_id = query_result.get('bug_id', '')
+    flaky_invocation_count = query_result.get('flaky_invocation_count', 0)
     if (not builder or not test_name or not bug_id or
-        bug_to_test_num[bug_id] > MAX_TESTS_PER_BUG):
+        bug_to_test_num[bug_id] > MAX_TESTS_PER_BUG or
+        flaky_invocation_count < MIN_FLAKY_INVOCATION_COUNT or
+        test_runner_count > MAX_TEST_RUNNER_COUNT):
       continue
     builder_to_tests[builder][test_suite].append(test_name)
     bug_to_test_num[bug_id] += 1
+    test_runner_count += 1
 
   for builder, test_suites in builder_to_tests.items():
     # Use hard coded chromium and ci here which is same as the values in
@@ -118,17 +125,20 @@ def GenTests(api):
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
               'test_name': 'test_name_123',
-              'bug_id': 'bug_123'
+              'bug_id': 'bug_123',
+              'flaky_invocation_count': 12
           }, {
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
               'test_name': 'test_name_345',
-              'bug_id': 'bug_123'
+              'bug_id': 'bug_123',
+              'flaky_invocation_count': 13
           }, {
               'test_suite': 'blink_web_tests',
               'builder': 'builder1',
               'test_name': 'test_name_567',
-              'bug_id': 'bug_123'
+              'bug_id': 'bug_123',
+              'flaky_invocation_count': 14
           }])),
       api.post_process(DropExpectation),
   )
@@ -158,7 +168,8 @@ def GenTests(api):
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
               'test_name': 'test_name_123',
-              'bug_id': 'bug_123'
+              'bug_id': 'bug_123',
+              'flaky_invocation_count': 12
           }, {
               'test_suite': 'blink_wpt_tests',
               'builder': 'builder1',
