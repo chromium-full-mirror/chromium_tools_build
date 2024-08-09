@@ -349,8 +349,26 @@ class GcsArtifact(BaseArtifact):
   VERSION_KEYS = ['object_name', 'sha256sum', 'size_bytes', 'generation']
 
   ID_MAPPINGS = {
-      'third_party/llvm-build/Release+Asserts': CLANG_MAPPING,
-      'src/third_party/llvm-build/Release+Asserts': CLANG_MAPPING,
+      'third_party/llvm-build/Release+Asserts':
+          CLANG_MAPPING,
+      'src/third_party/llvm-build/Release+Asserts':
+          CLANG_MAPPING,
+      'src/third_party/node/win':
+          lambda idx, oname: f'third-party/node/win-{idx}',
+      'third_party/node/win':
+          lambda idx, oname: f'third-party/node/win-{idx}',
+      'src/third_party/node/linux':
+          lambda idx, oname: f'third-party/node/linux-{idx}',
+      'third_party/node/linux':
+          lambda idx, oname: f'third-party/node/linux-{idx}',
+      'src/third_party/node/mac':
+          lambda idx, oname: f'third-party/node/mac-{idx}',
+      'third_party/node/mac':
+          lambda idx, oname: f'third-party/node/mac-{idx}',
+      'src/third_party/node/mac_arm64':
+          lambda idx, oname: f'third-party/node/mac_arm64-{idx}',
+      'third_party/node/mac_arm64':
+          lambda idx, oname: f'third-party/node/mac_arm64-{idx}',
   }
 
   def __repr__(self):
