@@ -419,6 +419,9 @@
       }
     },
     "name": "build.compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

@@ -44,6 +44,7 @@ class SisoApi(recipe_api.RecipeApi):
                 post_step_func=None,
                 skip_log_upload=False,
                 resource_usage_output_file=None,
+                ninja_invocation_id=None,
                 **kwargs):
     """Run the ninja command with siso.
 
@@ -57,6 +58,7 @@ class SisoApi(recipe_api.RecipeApi):
           skip_log_upload: When true skip log.
           resource_usage_output_file: File which if provided will
             record the resource usage stats related to build step.
+          ninja_invocation_id: ID of the build invocation.
 
         Returns:
           step_data.StepData of the build step.
@@ -128,12 +130,22 @@ class SisoApi(recipe_api.RecipeApi):
     env = ninja_env or {}
     if len(self._props.experiments) > 0:
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
+    if ninja_invocation_id:
+      env['SISO_BUILD_ID'] = ninja_invocation_id
+    step_result = None
     try:
       with self.m.context(env=env, cwd=source_dir):
         step_result = self.m.step(name, cmd, **kwargs)
+        if ninja_invocation_id:
+          step_result.presentation.tags[
+              'ninja_invocation_id'] = ninja_invocation_id
         if post_step_func:
           post_step_func(step_result)
         return step_result
+    except self.m.step.StepFailure as ex:
+      if ninja_invocation_id:
+        ex.result.presentation.tags['ninja_invocation_id'] = ninja_invocation_id
+      raise ex
     finally:
       if not self.m.runtime.in_global_shutdown and not skip_log_upload:
         with self.m.step.nest('upload siso reports') as s:

@@ -218,6 +218,7 @@ class ReclientApi(recipe_api.RecipeApi):
       buildtools_dir: Path,
       reclient_log_dir: Path,
       exec_strategy: str | None,
+      invocation_id: str | None,
   ):
     # While this verification would better be placed at __init__, the test
     # framework 1) doesn't check for exceptions thrown during object creation,
@@ -229,12 +230,13 @@ class ReclientApi(recipe_api.RecipeApi):
           self._props.rewrapper_env)
 
     rewrapper_env = dict(self._base_rewrapper_env)
-    rewrapper_env["RBE_invocation_id"] = '/'.join([
-        self.m.buildbucket.build.builder.project,
-        self.m.buildbucket.build.builder.bucket,
-        self.m.buildbucket.builder_name,
-        '%d' % self.m.buildbucket.build.number,
-    ])
+    rewrapper_env["RBE_invocation_id"] = invocation_id
+    # This is the same as siso's job_id, which is the Buildbucket ID in the LUCI
+    # webpage: https://ci.chromium.org/ui/b/$RBE_correlated_invocations_id.
+    # Note that a buildbucket job may build multiple times under the same
+    # Buildbucket ID.
+    rewrapper_env["RBE_correlated_invocations_id"] = self.m.buildbucket.build.id
+
 
     if exec_strategy is not None:
       rewrapper_env['RBE_exec_strategy'] = exec_strategy
@@ -374,6 +376,7 @@ class ReclientApi(recipe_api.RecipeApi):
       skip_log_upload=False,
       exec_strategy=None,
       bootstrap_extra_env: dict | None = None,
+      invocation_id=None,
   ):
     """Do preparation and cleanup steps for running the ninja command.
 
@@ -386,6 +389,7 @@ class ReclientApi(recipe_api.RecipeApi):
         then the 'buildtools' subdirectory of `source_dir` will be used.
       skip_log_upload: When true skip log uploading including cloudtail.
       bootstrap_extra_env: Additional env vars for reclient to be used by bootstrap.
+      invocation_id: ID of the build invocation.
     """
     buildtools_dir = buildtools_dir or source_dir / 'buildtools'
     reclient_log_dir = self.m.path.mkdtemp('reclient_log')
@@ -419,7 +423,7 @@ class ReclientApi(recipe_api.RecipeApi):
       # This will get the reclient version the first time it is run,
       # so get it here to ensure it is nested in 'preprocess for reclient'
       rewrapper_env = self._rewrapper_env(buildtools_dir, reclient_log_dir,
-                                          exec_strategy)
+                                          exec_strategy, invocation_id)
 
     p = BuildResultReceiver()
     try:

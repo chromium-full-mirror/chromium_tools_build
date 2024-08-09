@@ -31,6 +31,7 @@ DEPS = [
     'recipe_engine/resultdb',
     'recipe_engine/runtime',
     'recipe_engine/step',
+    'recipe_engine/uuid',
     'siso',
     'xcode',
 ]

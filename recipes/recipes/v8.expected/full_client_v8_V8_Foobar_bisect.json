@@ -348,8 +348,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -366,6 +367,9 @@
       }
     },
     "name": "build.compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -384,8 +388,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -891,8 +896,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-00000000133d",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -909,6 +915,9 @@
       }
     },
     "name": "Bisect a0.compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
+    },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -927,8 +936,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-00000000133d",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -1278,8 +1288,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001343",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -1296,6 +1307,9 @@
       }
     },
     "name": "Bisect a2.compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
+    },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1314,8 +1328,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001343",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -1679,8 +1694,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -1697,6 +1713,9 @@
       }
     },
     "name": "Bisect a1.compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
+    },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1715,8 +1734,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "v8/ci/V8 Foobar/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },

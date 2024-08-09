@@ -821,8 +821,9 @@
       "BUILDBOT_BUILDNUMBER": "42",
       "BUILDBOT_MASTERNAME": "emscripten-releases",
       "BUILDBOT_REVISION": "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "emscripten-releases/ci/linux/42",
+      "RBE_invocation_id": null,
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "USE_RECLIENT": "1"

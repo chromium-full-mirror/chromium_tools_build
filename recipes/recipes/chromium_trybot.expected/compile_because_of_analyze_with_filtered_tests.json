@@ -86,8 +86,9 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "chromium/try/fake-try-builder/571",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -103,6 +104,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile (with patch)"
+    "name": "compile (with patch)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    }
   }
 ]

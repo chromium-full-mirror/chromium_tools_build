@@ -367,6 +367,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  siso_args=None,
                  skip_log_upload=False,
                  resource_usage_output_file=None,
+                 ninja_invocation_id=None,
                  **kwargs):
     """
     Run ninja with given command and env.
@@ -382,6 +383,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       skip_log_upload: When true skip log uploading.
       resource_usage_output_file: File which if provided will record the resource usage
                                  stats related to build step
+      ninja_invocation_id: ID of the build invocation of the compile step.
+
 
     Returns:
       A named tuple with the fields
@@ -430,6 +433,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             step_test_data=step_test_data,
             skip_log_upload=skip_log_upload,
             resource_usage_output_file=resource_usage_output_file,
+            ninja_invocation_id=ninja_invocation_id,
             **kwargs)
       else:
         cmd = [
@@ -448,8 +452,14 @@ class ChromiumApi(recipe_api.RecipeApi):
         with self.m.context(env=ninja_env):
           ninja_step_result = self.m.step(
               name or 'compile', cmd, step_test_data=step_test_data, **kwargs)
+          if ninja_invocation_id:
+            ninja_step_result.presentation.tags[
+                'ninja_invocation_id'] = ninja_invocation_id
     except self.m.step.StepFailure as ex:
       ninja_step_result = ex.result
+      if ninja_invocation_id and 'ninja_invocation_id' not in ninja_step_result.presentation.tags:
+        ninja_step_result.presentation.tags[
+            'ninja_invocation_id'] = ninja_invocation_id
       if ninja_step_result.retcode != 1:
         raise self.m.step.InfraFailure(
             ninja_step_result.name, result=ninja_step_result)
@@ -510,6 +520,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           stdout=self.m.raw_io.output_text(),
           post_step_func=check_noop,
           skip_log_upload=skip_log_upload,
+          ninja_invocation_id=ninja_invocation_id,
           **kwargs)
     else:
       with self.m.context(env=ninja_env):
@@ -546,6 +557,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                name=None,
                                skip_log_upload=False,
                                reclient_extra_env: dict | None = None,
+                               ninja_invocation_id=None,
                                **kwargs):
     """
     Run ninja with reclient.
@@ -560,6 +572,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       name: Name of the compile step.
       skip_log_upload: When true skip log uploading.
       reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
+      ninja_invocation_id: ID of the build invocation of the compile step.
 
     Returns:
       A named tuple with the fields
@@ -575,13 +588,15 @@ class ChromiumApi(recipe_api.RecipeApi):
         source_dir,
         deps_cache_by_step=self.c.compile_py.reclient_deps_cache_by_step,
         skip_log_upload=skip_log_upload,
-        bootstrap_extra_env=reclient_extra_env) as p:
+        bootstrap_extra_env=reclient_extra_env,
+        invocation_id=ninja_invocation_id) as p:
       ninja_result = self._run_ninja(
           source_dir,
           ninja_command,
           name=name,
           ninja_env=ninja_env,
           skip_log_upload=skip_log_upload,
+          ninja_invocation_id=ninja_invocation_id,
           **kwargs)
       p.build_exit_status = ninja_result.retcode
     return ninja_result
@@ -799,6 +814,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     assert 'cwd' not in kwargs
 
     with self.m.context(cwd=self.m.context.cwd or source_dir):
+      ninja_invocation_id = self.m.uuid.random()
       if use_reclient:
         ninja_result = self._run_ninja_with_reclient(
             source_dir,
@@ -806,14 +822,16 @@ class ChromiumApi(recipe_api.RecipeApi):
             ninja_env=ninja_env,
             name=name or 'compile',
             reclient_extra_env=reclient_extra_env,
+            ninja_invocation_id=ninja_invocation_id,
             **kwargs)
       else:
         ninja_result = self._run_ninja_without_remote(
             source_dir,
             ninja_command=command,
+            ninja_env=ninja_env,
             ninja_log_outdir=build_dir,
             name=name or 'compile',
-            ninja_env=ninja_env,
+            ninja_invocation_id=ninja_invocation_id,
             **kwargs)
 
     if ninja_result.retcode:

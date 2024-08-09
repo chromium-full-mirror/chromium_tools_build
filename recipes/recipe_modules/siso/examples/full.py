@@ -27,6 +27,7 @@ def RunSteps(api):
         resource_usage_output_file=api.properties.get(
             'resource_usage_output_file', None),
         post_step_func=lambda s: s,
+        ninja_invocation_id='some_random_id',
     )
   with api.siso.disable():
     assert not api.siso.enabled

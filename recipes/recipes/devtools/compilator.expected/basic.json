@@ -146,7 +146,10 @@
         "[CACHE]/builder/devtools-frontend/third_party"
       ]
     },
-    "name": "compile"
+    "name": "compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    }
   },
   {
     "cmd": [
