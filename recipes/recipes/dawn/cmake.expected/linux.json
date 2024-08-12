@@ -750,44 +750,6 @@
     "name": "Run Tint end-to-end tests"
   },
   {
-    "cmd": [
-      "./tools/run",
-      "tests",
-      "--tint",
-      "cmake-build/tint",
-      "--verbose",
-      "--format",
-      "spvasm",
-      "--use-ir"
-    ],
-    "cwd": "[CACHE]/uncached/dawn",
-    "env": {
-      "ANDROID_HOME": "[CACHE]/android_sdk",
-      "JAVA_HOME": "[CACHE]/java"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools",
-        "[CACHE]/java/bin",
-        "[CACHE]/gradle/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run Tint end-to-end tests for SPIR-V IR backend"
-  },
-  {
     "cmd": [],
     "name": "CMake build _other.cc files"
   },

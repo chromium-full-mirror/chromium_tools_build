@@ -515,13 +515,6 @@ def RunSteps(api,
             ],
             wrapper=shell_wrapper)
 
-        api.step(
-            'Run Tint end-to-end tests for SPIR-V IR backend', [
-                './tools/run', 'tests', '--tint', tint_exe, '--verbose',
-                '--format', 'spvasm', '--use-ir'
-            ],
-            wrapper=shell_wrapper)
-
       # Skip building 'other' on Windows as we hit _CRT_SECURE_NO_WARNINGS related to
       # std::getenv, and it's not worth fixing.
       if not api.platform.is_win:

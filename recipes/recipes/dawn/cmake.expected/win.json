@@ -562,50 +562,6 @@
     "name": "Run Tint end-to-end tests"
   },
   {
-    "cmd": [
-      "bash",
-      "--",
-      "./tools/run",
-      "tests",
-      "--tint",
-      "cmake-build/tint.exe",
-      "--verbose",
-      "--format",
-      "spvasm",
-      "--use-ir"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
-      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
-        "win_toolchain\\vs_files\\version_hash\\sys64",
-        "win_toolchain\\vs_files\\version_hash\\sys32",
-        "win_toolchain\\vs_files\\version_hash\\sysarm64",
-        "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run Tint end-to-end tests for SPIR-V IR backend"
-  },
-  {
     "cmd": [],
     "name": "CMake build disabled readers and writers"
   },
