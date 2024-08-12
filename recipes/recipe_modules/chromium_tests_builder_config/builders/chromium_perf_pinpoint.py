@@ -203,6 +203,11 @@ _AddBuildSpec(
     bisect_archive_build=True,
     target_arch='arm',
 )
+_AddBuildSpec(
+    'mac-arm-builder-perf-local',
+    'mac',
+    target_arch='arm',
+)
 
 # Adapted from 'lacros-amd64-generic-chrome' and 'lacros-arm-generic-chrome'
 # to measure binary size.
@@ -375,6 +380,11 @@ _AddPinpointTestSpec(
     'mac-m1_mini_2020-perf-pgo',
     'mac',
     'mac-arm-builder-perf-pgo',
+    target_arch='arm')
+_AddPinpointTestSpec(
+    'mac-m1_mini_2020-perf-local',
+    'mac',
+    'mac-arm-builder-perf-local',
     target_arch='arm')
 # windows
 _AddPinpointTestSpec('win-10-perf-pgo', 'win', 'win64-builder-perf-pgo')
