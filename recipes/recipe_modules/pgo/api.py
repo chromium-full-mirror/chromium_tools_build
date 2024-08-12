@@ -203,7 +203,7 @@ class PgoApi(recipe_api.RecipeApi):
             # Remove the profile from failed runs so it's never included in
             # the final generated profile.
             self.m.file.remove('Removing %s' % profdata_path, profdata_path)
-            failed_benchmarks.append(test.name + suffix)
+            failed_benchmarks.append(f'{test.name} ({suffix})')
             continue
           # In this path, there should be a profdata file named after the test
           if profdata_path not in files:
@@ -226,7 +226,7 @@ class PgoApi(recipe_api.RecipeApi):
 
       if tests_failing_verification:
         failure_msgs = []
-        failure_msgs.append('The following tests failed all runs: %s' %
+        failure_msgs.append('The following tests failed all runs: **%s**.' %
                             ', '.join(tests_failing_verification))
         if failed_benchmarks:
           failure_msgs.append(f'{len(failed_benchmarks)} benchmark(s) failed.')
