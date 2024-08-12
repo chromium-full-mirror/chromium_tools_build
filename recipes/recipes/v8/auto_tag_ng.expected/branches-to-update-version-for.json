@@ -171,10 +171,7 @@
     "name": "git ls-remote",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5111@@@",
-      "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5112@@@",
-      "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5113@@@",
       "@@@STEP_LOG_END@stdout@@@",
-      "@@@STEP_LOG_LINE@chromium versions@5113@@@",
       "@@@STEP_LOG_END@chromium versions@@@"
     ]
   },

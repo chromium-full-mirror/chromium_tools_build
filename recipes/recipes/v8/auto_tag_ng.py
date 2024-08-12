@@ -76,12 +76,13 @@ def RunSteps(api):
     build_results = BuildResults()
     milestone_versions = milestone_version_mapping(api)
 
-    # TODO(http://b/353262752): Continue verifying the version on these
-    # branches.
-    fetch_unmanaged_chromium_versions(api, milestone_versions)
+    for chromium_version in fetch_unmanaged_chromium_versions(
+        api, milestone_versions):
+      update_chromium_branch(api, source_dir, chromium_version, build_results)
 
     for v8_version, chromium_version in milestone_versions:
-      check_branch(api, source_dir, v8_version, chromium_version, build_results)
+      update_v8_branch(api, source_dir, v8_version, chromium_version,
+                       build_results)
 
     result = api.step('Summary', cmd=None)
     result.presentation.step_text = "\n".join(build_results.performed_actions
@@ -153,8 +154,8 @@ def milestone_version_mapping(api):
   return result
 
 
-def check_branch(api, source_dir, branch_version, chromium_version,
-                 build_results):
+def update_v8_branch(api, source_dir, branch_version, chromium_version,
+                     build_results):
   with api.step.nest(f'Checking V8 branch {branch_version}'):
     branch_ref = f'branch-heads/{branch_version}'
     api.v8.git_output('checkout', branch_ref)
@@ -180,6 +181,35 @@ def check_branch(api, source_dir, branch_version, chromium_version,
     else:
       maybe_increment_version(api, source_dir, branch_ref, version_at_head,
                               build_results)
+
+
+def update_chromium_branch(api, source_dir, chromium_version, build_results):
+  # TODO(http://b/353262752): Drop dry-run once the correct version update is
+  # implemented.
+  dry_run = True
+  with api.step.nest(f'Checking Chromium branch {chromium_version}'):
+    branch_ref = f'remotes/origin/chromium/{chromium_version}'
+    # TODO(http://b/353262752): Consider optimizing this and checkout later
+    # checking if no version update is needed or no tag update is needed.
+    # These two commands should be able to run without checking out, which
+    # is slow.
+    api.v8.git_output('checkout', branch_ref)
+    version_at_head = api.v8.read_version_from_ref(source_dir, "HEAD",
+                                                   branch_ref)
+    if current_branch_has_version_change(api):
+      verify_version_tag(api, dry_run, version_at_head, build_results)
+    else:
+      # TODO(http://b/353262752): Implement a version update that doesn't clash
+      # if branch_ref is a chromium ref like here. In this case we'd update for
+      # 1234 and V8 11.2.345.1 like 11.2.12340345.1 and for a mini branch
+      # 1234_23, 11.2.230345.1.
+      maybe_increment_version(
+          api,
+          source_dir,
+          branch_ref,
+          version_at_head,
+          build_results,
+          dry_run=dry_run)
 
 
 def current_branch_has_version_change(api):
@@ -343,7 +373,6 @@ def GenTests(api):
         # If the test case specifies tracked_branches_count, it will override
         # this
         tracked_branches_count(1),
-        chromium_versions(5111, 5112, 5113),
         *test_data,
         **kwargs)
 
@@ -354,6 +383,7 @@ def GenTests(api):
       'branches-to-update-version-for',
       tracked_branches_count(2),
       milestones(111, 112),
+      chromium_versions(5111),
       version_file(3, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
       version_file(
           4,
@@ -372,6 +402,7 @@ def GenTests(api):
       tracked_branches_count(2),
       api.runtime(is_experimental=True),
       milestones(111, 112),
+      chromium_versions(5111),
       version_file(3, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
       version_file(
           4,
@@ -388,6 +419,7 @@ def GenTests(api):
   yield test(
       'branche-with-stale-version-update',
       milestones(112),
+      chromium_versions(5112),
       version_file(3, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
       api.override_step_data(
           'Checking V8 branch 11.2.'
@@ -406,6 +438,7 @@ def GenTests(api):
   yield test(
       'branch-with-updated-version-but-no-tag',
       milestones(113),
+      chromium_versions(5113),
       version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
       stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -420,6 +453,7 @@ def GenTests(api):
   yield test(
       'branch-with-correct-tags',
       milestones(113),
+      chromium_versions(5113),
       version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
       stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -445,6 +479,7 @@ def GenTests(api):
   yield test(
       'lkgr-branch',
       milestones(113),
+      chromium_versions(5113),
       version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
       stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -474,6 +509,7 @@ def GenTests(api):
       # Active milestone is 111, but on branch-cut day 112 is prepared on
       # the V8 side.
       milestones(111),
+      chromium_versions(5111),
       stdout('last branches', 'branch-heads/11.1\nbranch-heads/11.2'),
 
       # Simulate processing 112 with all data except the Chromium ref,
@@ -510,6 +546,7 @@ def GenTests(api):
   yield test(
       'no-pgo-profiles',
       milestones(113),
+      chromium_versions(5113),
       version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
       stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -533,6 +570,7 @@ def GenTests(api):
       'dry-run-branch-no-tag-no-lkgr',
       api.runtime(is_experimental=True),
       milestones(113),
+      chromium_versions(5113),
       stdout('Checking V8 branch 11.3.Proof of version change',
              'dummy proof of version change'),
       stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD',
@@ -553,5 +591,87 @@ def GenTests(api):
       api.post_process(
           MustRun, 'Checking V8 branch 11.3.Verify Chromium.'
           'Dry-run ref update 404'),
+      status='SUCCESS',
+  )
+
+  yield test(
+      'chromium-branches-to-update-version-for',
+      tracked_branches_count(1),
+      milestones(112),
+      chromium_versions(5112, 5113),
+      version_file(
+          3,
+          'remotes/origin/chromium/5113',
+          prefix="Checking Chromium branch 5113."),
+      version_file(
+          4,
+          'latest',
+          prefix="Checking Chromium branch 5113.Increment version from 11.4.3.3."
+      ),
+
+      # Dummy data for the V8 branch check, since there's always one V8 branch.
+      version_file(2, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
+      version_file(
+          3,
+          'latest',
+          prefix="Checking V8 branch 11.2.Increment version from 11.4.3.2."),
+      status='SUCCESS',
+  )
+
+  yield test(
+      'chromium-branch-with-updated-version-but-no-tag',
+      tracked_branches_count(1),
+      milestones(112),
+      chromium_versions(5112, 5113),
+      version_file(
+          3,
+          'remotes/origin/chromium/5113',
+          prefix="Checking Chromium branch 5113."),
+      stdout('Checking Chromium branch 5113.Proof of version change',
+             'dummy proof of version change'),
+      stdout('Checking Chromium branch 5113.Verify version tag.Commit at HEAD',
+             '123'),
+
+      # Dummy data for the V8 branch check, since there's always one V8 branch.
+      version_file(2, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
+      version_file(
+          3,
+          'latest',
+          prefix="Checking V8 branch 11.2.Increment version from 11.4.3.2."),
+      api.post_process(
+          MustRun,
+          'Checking Chromium branch 5113.Verify version tag.Dry-run tag 11.4.3.3'
+      ),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield test(
+      'chromium-branch-with-correct-tags',
+      tracked_branches_count(1),
+      milestones(112),
+      chromium_versions(5112, 5113),
+      version_file(
+          3,
+          'remotes/origin/chromium/5113',
+          prefix="Checking Chromium branch 5113."),
+      stdout('Checking Chromium branch 5113.Proof of version change',
+             'dummy proof of version change'),
+      stdout(
+          'Checking Chromium branch 5113.Verify version tag.Commit at 11.4.3.3',
+          '123'),
+      stdout('Checking Chromium branch 5113.Verify version tag.Commit at HEAD',
+             '123'),
+
+      # Dummy data for the V8 branch check, since there's always one V8 branch.
+      version_file(2, 'branch-heads/11.2', prefix="Checking V8 branch 11.2."),
+      version_file(
+          3,
+          'latest',
+          prefix="Checking V8 branch 11.2.Increment version from 11.4.3.2."),
+      api.post_process(
+          DoesNotRunRE, 'Checking Chromium branch 5113.'
+          'Verify version tag.Dry-run tag 11.4.3.3'),
+      api.post_process(DropExpectation),
       status='SUCCESS',
   )
