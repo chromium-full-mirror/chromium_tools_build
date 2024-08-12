@@ -254,6 +254,7 @@ class ReclientApi(recipe_api.RecipeApi):
 
     # The reclient version needs to be checked each time because if a different
     # revision was checked out then the reclient version could be different
+    rewrapper_env['RBE_canonicalize_working_dir'] = 'true'
     if self.m.platform.is_win:
       reclient_version = self._get_reclient_version_from_bootstrap(
           buildtools_dir)

@@ -1020,7 +1020,7 @@
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_root": "[CACHE]",
       "RBE_exec_strategy": "remote",
@@ -2956,7 +2956,7 @@
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_root": "[CACHE]",
       "RBE_exec_strategy": "remote",
@@ -4893,7 +4893,7 @@
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_root": "[CACHE]",
       "RBE_exec_strategy": "remote",

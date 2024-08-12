@@ -505,6 +505,7 @@
       "tint_unittests"
     ],
     "env": {
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": null,
@@ -1609,6 +1610,7 @@
       "fuzzers"
     ],
     "env": {
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": null,
@@ -2634,6 +2636,7 @@
       "dawn_end2end_tests"
     ],
     "env": {
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": null,

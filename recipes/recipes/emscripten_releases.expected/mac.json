@@ -821,6 +821,7 @@
       "BUILDBOT_BUILDNUMBER": "42",
       "BUILDBOT_MASTERNAME": "emscripten-releases",
       "BUILDBOT_REVISION": "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": null,

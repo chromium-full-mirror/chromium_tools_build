@@ -788,6 +788,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
@@ -827,6 +828,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",

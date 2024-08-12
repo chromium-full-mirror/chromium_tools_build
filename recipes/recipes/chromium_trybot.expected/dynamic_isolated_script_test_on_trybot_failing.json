@@ -1315,6 +1315,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
@@ -1353,6 +1354,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
@@ -4857,6 +4859,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-00000000133d",
@@ -4895,6 +4898,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
+      "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-00000000133d",
