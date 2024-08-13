@@ -295,7 +295,8 @@ class SkylabApi(recipe_api.RecipeApi):
       cmd.extend(['--autotest-name', test.spec.autotest_name])
       cmd.extend(['--total-shards', test.spec.shards])
 
-      cmd.append('--run-cft')
+      if test.spec.run_cft:
+        cmd.append('--run-cft')
 
       for retry_shard in retry_shards or []:
         cmd.extend(['--shard-indexes', retry_shard])

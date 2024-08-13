@@ -127,11 +127,12 @@ def schedule_skylab_tests(opts):
                   f'shard_index={i}')
 
     autotest_name = opts.autotest_name.replace('tauto.', '')
-    req.params.metadata.container_metadata_url = os.path.join(
-        gs_url, CONTAINER_METADATA_LOC)
-    req.params.run_via_cft = True
-    _test_args += ' is_cft=True'
-    autotest_name = f'tauto.{autotest_name}'
+    if opts.run_cft:
+      req.params.metadata.container_metadata_url = os.path.join(
+          gs_url, CONTAINER_METADATA_LOC)
+      req.params.run_via_cft = True
+      _test_args += ' is_cft=True'
+      autotest_name = f'tauto.{autotest_name}'
 
     if opts.secondary_boards:
       assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
