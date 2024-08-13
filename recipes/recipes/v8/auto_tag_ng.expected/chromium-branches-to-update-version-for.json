@@ -171,9 +171,11 @@
     "name": "git ls-remote",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5112@@@",
+      "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5112_42@@@",
       "@@@STEP_LOG_LINE@stdout@deadbeef\trefs/heads/chromium/5113@@@",
       "@@@STEP_LOG_END@stdout@@@",
       "@@@STEP_LOG_LINE@chromium versions@5113@@@",
+      "@@@STEP_LOG_LINE@chromium versions@5112_42@@@",
       "@@@STEP_LOG_END@chromium versions@@@"
     ]
   },
@@ -444,6 +446,277 @@
   {
     "cmd": [],
     "name": "Checking Chromium branch 5113.Increment version from 11.4.3.3.Dry-run commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking Chromium branch 5112_42"
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "remotes/origin/chromium/5112_42"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show",
+      "HEAD:include/v8-version.h"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Check remotes/origin/chromium/5112_42 version file",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show",
+      "include/v8-version.h"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Proof of version change",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--verbose",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--limit",
+      "20",
+      "-p",
+      "project=v8/v8",
+      "-p",
+      "owner=v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com",
+      "-p",
+      "status=open"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.gerrit changes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@[]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "work"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "work",
+      "--upstream",
+      "remotes/origin/chromium/5112_42"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "config",
+      "user.name",
+      "V8 Autoroll"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git config user.name",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "config",
+      "user.email",
+      "v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git config user.email",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show",
+      "remotes/origin/chromium/5112_42:include/v8-version.h"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.Check latest version file",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "\n#define V8_MAJOR_VERSION 11\n#define V8_MINOR_VERSION 4\n#define V8_BUILD_NUMBER 3\n#define V8_PATCH_LEVEL 4\n",
+      "[CACHE]/builder/v8/include/v8-version.h"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.Increment version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_MAJOR_VERSION 11@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_MINOR_VERSION 4@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_BUILD_NUMBER 3@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_PATCH_LEVEL 4@@@",
+      "@@@STEP_LOG_END@v8-version.h@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "commit",
+      "-am",
+      "Version 11.4.3.4"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.Dry-run commit",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -759,7 +1032,7 @@
     "cmd": [],
     "name": "Summary",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Version updated 11.4.3.4<br/>Version updated 11.4.3.3@@@"
+      "@@@STEP_TEXT@Version updated 11.4.3.4<br/>Version updated 11.4.3.4<br/>Version updated 11.4.3.3@@@"
     ]
   },
   {

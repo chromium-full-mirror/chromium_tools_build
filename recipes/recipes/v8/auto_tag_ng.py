@@ -43,7 +43,7 @@ DEPS = [
     'v8',
 ]
 
-CHROMIUM_BRANCH_RE = re.compile(r'\w+\s+refs/heads/chromium/(\d+)')
+CHROMIUM_BRANCH_RE = re.compile(r'\w+\s+refs/heads/chromium/(\w+)')
 CHROMIUM_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/(\d+)$')
 RELEASE_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/\d+\.\d+$')
 MAX_COMMIT_WAIT_RETRIES = 5
@@ -92,20 +92,33 @@ def RunSteps(api):
 
 
 def fetch_unmanaged_chromium_versions(api, milestone_versions):
-  """Returns chromium branches for the last 3 milestones <= 100 branches
-  without the milestone branches that are managed automatically by this script.
+  """Returns supported chromium branches for the active milestones without
+  the milestone branches themselves, which are managed automatically by this
+  script.
+
+  Supported branches are: mini branches and recent canary branches that
+  are either currently active or used for the dev channel.
 
   Branches are ordered latest first.
   """
   output = api.v8.git_output('ls-remote', 'origin', 'refs/heads/chromium/*')
   unmanaged_versions = []
   managed_versions = set(str(version) for _, version in milestone_versions)
-  for line in list(reversed(output.split('\n')))[:100]:
+  for index, line in enumerate(list(reversed(output.split('\n')))[:300]):
     match = CHROMIUM_BRANCH_RE.fullmatch(line)
     assert match
     chromium_version = match.group(1)
-    if chromium_version not in managed_versions:
-      unmanaged_versions.append(match.group(1))
+
+    # Check if this is a mini branch.
+    if '_' in chromium_version:
+      # Check if this mini branch is active.
+      base_version = chromium_version.split('_')[0]
+      if base_version in managed_versions:
+        unmanaged_versions.append(chromium_version)
+
+    # The dev channel must be one of the latest canary branches.
+    elif index < 20 and chromium_version not in managed_versions:
+      unmanaged_versions.append(chromium_version)
   logs = api.step.active_result.presentation.logs
   logs['chromium versions'] = unmanaged_versions
   return unmanaged_versions
@@ -189,10 +202,6 @@ def update_chromium_branch(api, source_dir, chromium_version, build_results):
   dry_run = True
   with api.step.nest(f'Checking Chromium branch {chromium_version}'):
     branch_ref = f'remotes/origin/chromium/{chromium_version}'
-    # TODO(http://b/353262752): Consider optimizing this and checkout later
-    # checking if no version update is needed or no tag update is needed.
-    # These two commands should be able to run without checking out, which
-    # is slow.
     api.v8.git_output('checkout', branch_ref)
     version_at_head = api.v8.read_version_from_ref(source_dir, "HEAD",
                                                    branch_ref)
@@ -349,12 +358,12 @@ def GenTests(api):
     return api.override_step_data(
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
-  def chromium_versions(*numbers):
+  def chromium_versions(*versions):
 
-    def line(num):
-      return f'deadbeef\trefs/heads/chromium/{num}'
+    def line(version):
+      return f'deadbeef\trefs/heads/chromium/{version}'
 
-    return stdout('git ls-remote', '\n'.join(line(num) for num in numbers))
+    return stdout('git ls-remote', '\n'.join(line(v) for v in versions))
 
   def milestones(*numbers):
     def ref_config(number):
@@ -598,7 +607,16 @@ def GenTests(api):
       'chromium-branches-to-update-version-for',
       tracked_branches_count(1),
       milestones(112),
-      chromium_versions(5112, 5113),
+      chromium_versions("5112", "5112_42", "5113"),
+      version_file(
+          3,
+          'remotes/origin/chromium/5112_42',
+          prefix="Checking Chromium branch 5112_42."),
+      version_file(
+          4,
+          'latest',
+          prefix="Checking Chromium branch 5112_42.Increment version from 11.4.3.3."
+      ),
       version_file(
           3,
           'remotes/origin/chromium/5113',
@@ -622,7 +640,16 @@ def GenTests(api):
       'chromium-branch-with-updated-version-but-no-tag',
       tracked_branches_count(1),
       milestones(112),
-      chromium_versions(5112, 5113),
+      chromium_versions("5112", "5112_42", "5113"),
+      version_file(
+          3,
+          'remotes/origin/chromium/5112_42',
+          prefix="Checking Chromium branch 5112_42."),
+      stdout('Checking Chromium branch 5112_42.Proof of version change',
+             'dummy proof of version change'),
+      stdout(
+          'Checking Chromium branch 5112_42.Verify version tag.Commit at HEAD',
+          '123'),
       version_file(
           3,
           'remotes/origin/chromium/5113',
@@ -650,7 +677,19 @@ def GenTests(api):
       'chromium-branch-with-correct-tags',
       tracked_branches_count(1),
       milestones(112),
-      chromium_versions(5112, 5113),
+      chromium_versions("5112", "5112_42", "5113"),
+      version_file(
+          3,
+          'remotes/origin/chromium/5112_42',
+          prefix="Checking Chromium branch 5112_42."),
+      stdout('Checking Chromium branch 5112_42.Proof of version change',
+             'dummy proof of version change'),
+      stdout(
+          'Checking Chromium branch 5112_42.Verify version tag.Commit at 11.4.3.3',
+          '123'),
+      stdout(
+          'Checking Chromium branch 5112_42.Verify version tag.Commit at HEAD',
+          '123'),
       version_file(
           3,
           'remotes/origin/chromium/5113',
