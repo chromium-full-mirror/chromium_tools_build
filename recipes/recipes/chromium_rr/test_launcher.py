@@ -10,6 +10,7 @@ using the rr tool, and upload the recorded traces to GCS.
 import itertools
 from recipe_engine.post_process import DropExpectation, MustRun
 from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium_rr.test_launcher import InputProperties
@@ -21,12 +22,16 @@ DEPS = [
     'chromium',
     'chromium_checkout',
     'chromium_polymorphic',
+    'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/gclient',
     'gn',
     'isolate',
     'depot_tools/git',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cas',
+    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -36,6 +41,10 @@ DEPS = [
     'recipe_engine/step',
 ]
 
+WEB_TEST_EXTRA_ARGS = [
+    '--no-retry-failures', '--isolated-script-test-output=test_result',
+    '--wrapper=../../rr_tool/bin/rr record --output-trace-dir=../../trace_dir'
+]
 RUNNER_PACKAGE_PATH = 'rr_tool_runner'
 
 
@@ -80,6 +89,7 @@ def RunSteps(api, properties):
 
     gn_args = gn_args.splitlines()
     gn_args.append('symbol_level = 2')
+    gn_args.append('forbid_non_component_debug_builds = false')
     gn_args.append('use_debug_fission = false')
     api.file.write_text('write gn args', build_dir.joinpath('args.gn'),
                         '\n'.join(gn_args))
@@ -108,8 +118,55 @@ def RunSteps(api, properties):
       '',
   )
 
-  # TODO(jiesheng): Run the tests using the test runner script using the
-  # compiled tests.
+  test_suite_to_tests = {t.name: t for t in tests}
+  cipd_packages = [
+      chromium_swarming.CipdPackage.create(
+          name='infra/3pp/tools/rr/${platform}',
+          version='latest',
+          root='rr_tool',
+      )
+  ]
+  swarming_tasks = []
+  for test_info in properties.target_test_infos:
+    if test_info.test_suite not in test_suite_to_tests:
+      continue
+    test = test_suite_to_tests[test_info.test_suite]
+    for test_name in test_info.test_names:
+      # Construct test cmd, trigger reproducing job in swarming.
+      command = [
+          'vpython3', f'../../{RUNNER_PACKAGE_PATH}/test_runner.py',
+          '--test={0}'.format(test_name),
+          '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
+      ]
+      # TODO(jiesheng): Support other test type for rr test launcher.
+      command.extend(test.raw_cmd)
+      command.extend(WEB_TEST_EXTRA_ARGS)
+      relative_cwd = str(test.relative_cwd)
+      dimensions = {'pool': 'chromium.tests.rr', 'os': 'Linux'}
+      task_input = api.isolate.isolated_tests.get(test.isolate_target)
+
+      task = api.chromium_swarming.task(
+          name=f'rr tool runner for {test_name}',
+          raw_cmd=command,
+          cas_input_root=task_input,
+          service_account=test.spec.service_account,
+          relative_cwd=relative_cwd,
+          cipd_packages=cipd_packages)
+
+      task_slice = task.request[0]
+      task_dimensions = task_slice.dimensions
+      task_dimensions.update(dimensions)
+      task_slice = task_slice.with_dimensions(**task_dimensions)
+      task.request = task.request.with_slice(0, task_slice)
+
+      swarming_tasks.append(task)
+      api.chromium_swarming.trigger_task(task)
+
+  # Collect all task result
+  for task in swarming_tasks:
+    api.chromium_swarming.collect_task(task)
+
+  # TODO(jiesheng): Upload trace result to GCS.
 
 
 def GenTests(api):
@@ -138,6 +195,7 @@ def GenTests(api):
                               'os': 'Linux',
                               'pool': 'fake-pool',
                           },
+                          'service_account': 'test_account',
                       },
                   }],
               },
@@ -148,6 +206,10 @@ def GenTests(api):
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
                       test_names=['test1', 'test2'],
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_web_tests',
+                      test_names=['test3', 'test4'],
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
@@ -195,6 +257,7 @@ def GenTests(api):
                               'os': 'Linux',
                               'pool': 'fake-pool',
                           },
+                          'service_account': 'test_account',
                       },
                   }],
               },
@@ -237,6 +300,7 @@ def GenTests(api):
                               'os': 'Linux',
                               'pool': 'fake-pool',
                           },
+                          'service_account': 'test_account',
                       },
                   }],
               },
@@ -295,6 +359,7 @@ def GenTests(api):
                               'os': 'Linux',
                               'pool': 'fake-pool',
                           },
+                          'service_account': 'test_account',
                       },
                   }],
               },
@@ -336,6 +401,7 @@ def GenTests(api):
                               'os': 'Linux',
                               'pool': 'fake-pool',
                           },
+                          'service_account': 'test_account',
                       },
                   }],
               },

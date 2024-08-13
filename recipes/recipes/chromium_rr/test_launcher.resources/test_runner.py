@@ -65,29 +65,30 @@ def main(args):
 
   for test_name in args.test:
     test_name_plain = sanitize_test_name(test_name, '_')
-    test_cmd = args.test_cmd
-    test_cmd.append(test_name)
     if not test_name_plain:
       continue
+    test_cmd = args.test_cmd
+    test_cmd.append(test_name)
     for i in range(MAX_RUNS):
-      run_cmd(test_cmd, '../')
+      run_cmd(test_cmd, './')
+      # TODO(jiesheng): Select test traces to upload based on test result.
       # Pack the test trace and upload the trace and test result file to output
       # dir.
-      result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../')
+      result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../../')
       if result == 0:
         run_cmd([
             'tar', '--exclude', './db*', '--use-compress-program=zstd', '-cf',
-            'trace.tar', f'../{TRACE_DIR}'
+            'trace.tar', f'../../{TRACE_DIR}'
         ], './')
         os.renames('trace.tar',
                    f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
         os.renames(
-            f'../{TEST_RESULT_FILE}', f'{args.output_dir}/{test_name_plain}/'
+            f'./{TEST_RESULT_FILE}', f'{args.output_dir}/{test_name_plain}/'
             f'{str(i)}/{TEST_RESULT_FILE}')
       else:
         logging.error('Result of running rr pack is %r', result)
       # Remove the trace dir.
-      run_cmd(['rm', '-rf', TRACE_DIR], '../')
+      run_cmd(['rm', '-rf', TRACE_DIR], '../../')
 
 
 if __name__ == '__main__':
