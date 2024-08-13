@@ -332,12 +332,18 @@ def maybe_increment_version(api,
         limit=20,
         step_test_data=api.gerrit.test_api.get_empty_changes_response_data,
     )
-    if [c for c in commits if c['subject'] == subject(latest_version)]:
+
+    new_version = latest_version.with_incremented_patch()
+
+    def is_version_change(commit):
+      return (commit['subject'] == subject(latest_version) or
+              commit['subject'] == subject(new_version))
+
+    if any(is_version_change(c) for c in commits):
       step_result = api.step('Stale version change CL found!', cmd=None)
       step_result.presentation.status = 'FAILURE'
       build_results.success = False
     else:
-      new_version = latest_version.with_incremented_patch()
       api.v8.update_version_cl(
           source_dir,
           ref,
