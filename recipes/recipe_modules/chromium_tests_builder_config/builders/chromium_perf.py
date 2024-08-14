@@ -283,11 +283,6 @@ _AddBuildSpec(
     'chromecast-linux-builder-perf', 'linux', bisect_archive_build=True)
 
 
-_AddIsolatedTestSpec('android-pixel2-perf', 'android',
-                     'android_arm64-builder-perf')
-_AddIsolatedTestSpec('android-pixel2_webview-perf', 'android',
-                     'android_arm64-builder-perf')
-
 _AddIsolatedTestSpec('android-pixel4-perf', 'android',
                      'android_arm64-builder-perf')
 _AddIsolatedTestSpec('android-pixel4_webview-perf', 'android',
@@ -360,11 +355,6 @@ _AddIsolatedTestSpec(
 # Perf result processors
 _AddIsolatedTestSpec('linux-processor-perf', 'linux', 'linux-perf')
 _AddIsolatedTestSpec('linux-r350-processor-perf', 'linux', 'linux-r350-perf')
-
-_AddIsolatedTestSpec('android-pixel2-processor-perf', 'android',
-                     'android-pixel2-perf')
-_AddIsolatedTestSpec('android-pixel2_webview-processor-perf', 'android',
-                     'android-pixel2_webview-perf')
 
 _AddIsolatedTestSpec('win-10-processor-perf', 'win', 'win-10-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-processor-perf', 'win',
