@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -240,5 +242,18 @@ def GenTests(api):
       api.path.exists(
           api.path.cache_dir.joinpath('builder', 'src', 'out', 'Release')),
       api.post_process(post_process.MustRun, 'remove legacy build dir'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'build_dir_name_experiment',
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          experiments=['chromium.use_per_builder_build_dir_name'],
+      ),
+      # The arg after '-C' on the cmd line should be the path to the build-dir.
+      api.post_check(post_process.StepCommandContains, 'compile',
+                     ['-C', re.compile('.+fake-builder')]),
       api.post_process(post_process.DropExpectation),
   )

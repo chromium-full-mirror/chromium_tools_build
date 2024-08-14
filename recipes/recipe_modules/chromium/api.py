@@ -6,6 +6,7 @@ import collections
 import collections.abc
 import contextlib
 import functools
+import hashlib
 import re
 import textwrap
 
@@ -162,12 +163,24 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     # TODO(crbug.com/355218109): Remove the legacy naming scheme.
     legacy_path = source_dir / 'out' / self.c.build_config_fs
+    new_path = None
     if self.c.shared_build_dir:
-      # We can't trust that the disk will have enough room for both build-dirs.
-      if self.m.path.exists(legacy_path):
-        self.m.file.rmtree('remove legacy build dir', legacy_path)
-      return source_dir / 'out' / f'shared-{self.c.build_config_fs}'
-    return legacy_path
+      new_path = source_dir / 'out' / f'shared-{self.c.build_config_fs}'
+    elif ('chromium.use_per_builder_build_dir_name'
+          in self.m.buildbucket.build.input.experiments):
+      # Add "/" to prevent collisions since it can't show up in a builder name.
+      hash_input = '{}/{}/{}'.format(
+          self.m.buildbucket.build.builder.project,
+          self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder).encode()
+      hash_part = hashlib.sha256(hash_input).hexdigest()[:4]
+      builder_name_part = ('_'.join(
+          self.m.buildbucket.build.builder.builder.split())[:25])
+      new_path = source_dir / 'out' / (hash_part + '-' + builder_name_part)
+    # We can't trust that the disk will have enough room for both build-dirs.
+    if new_path and self.m.path.exists(legacy_path):
+      self.m.file.rmtree('remove legacy build dir', legacy_path)
+    return new_path or legacy_path
 
   def _ninja_path(self, source_dir: Path) -> Path:
     """The path to the ninja executable.
