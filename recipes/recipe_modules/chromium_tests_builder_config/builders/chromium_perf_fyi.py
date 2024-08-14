@@ -32,12 +32,6 @@ def _AddIsolatedTestSpec(name,
     spec = spec.evolve(parent_builder_group=parent_builder_group)
   SPEC[name] = spec
 
-_AddIsolatedTestSpec(
-    'android-pixel2-perf-fyi',
-    'android',
-    parent_buildername='android_arm64-builder-perf',
-    parent_builder_group='chromium.perf')
-
 _AddBuildSpec('android-cfi-builder-perf-fyi', 'android', target_bits=32)
 
 _AddBuildSpec('android_arm64-cfi-builder-perf-fyi', 'android')
