@@ -81,9 +81,53 @@ class V8Version:
     patch_str = '.%s' % self.patch if self.patch and self.patch != '0' else ''
     return f'{self.major}.{self.minor}.{self.build}{patch_str}'
 
+  def with_build(self, build):
+    return V8Version(self.major, self.minor, build, 0)
+
+  def with_patch(self, patch):
+    return V8Version(self.major, self.minor, self.build, patch)
+
   def with_incremented_patch(self):
-    return V8Version(
-        self.major, self.minor, self.build, str(int(self.patch) + 1))
+    return self.with_patch(str(int(self.patch) + 1))
+
+  def with_increment_for_chromium(self, chromium_version):
+    """Returns a version with an increment for dev or mini branches
+    that's unlikely to clash with any other version.
+
+    This pads a number in front of the existing build-level part of the
+    version.
+
+    We can't just update the patch level on the tip of such branches as e.g.
+    on mini branches, the original XXXX and the mini branch XXXX_YY might get
+    released with the same patch level otherwise. And the same canary/dev
+    branches, which could theoretically clash with the current roll branch
+    if it independently got patched before.
+
+    These increments aren't very logical, they just aim to be unique, retain
+    4 digit versions (as they are consumed like that in many places), with
+    numbers that fit into an x86 int.
+    """
+    chromium_version = str(chromium_version)
+    if '_' in chromium_version:
+      # Mini branch.
+      pad = int(chromium_version.rsplit('_', maxsplit=1)[-1])
+    else:
+      # Canary/dev branch.
+      pad = int(chromium_version)
+    assert pad > 0
+
+    pad = f'{pad}0'
+    if self.build.startswith(pad):
+      # We already landed the disambiguating version on that branch. In this
+      # case we can bump the patch level from here on.
+      return self.with_incremented_patch()
+
+    # Now we should end up with a typical V8 version's build level of 3 digits
+    # or less. Just ensure it's not a different padded large version from
+    # above.
+    assert len(self.build) <= 4, 'Unsupported V8 version or branch.'
+
+    return self.with_build(f'{pad}{self.build}')
 
   def update_version_file_blob(self, blob):
     """Takes a version file's text and returns it with this object's version.

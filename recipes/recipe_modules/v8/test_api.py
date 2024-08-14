@@ -167,14 +167,20 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
     skip_fragments = map(re.escape, step_names)
     return r'^((?!(.*\.)?%s).)*$' % '|'.join(skip_fragments)
 
-  def version_file(self, patch_level, desc,
-      count=1, prefix='', major=3, minor=4):
+  def version_file(self,
+                   patch_level,
+                   desc,
+                   count=1,
+                   prefix='',
+                   major=3,
+                   minor=4,
+                   build=3):
     # Recipe step name disambiguation.
     suffix = ' (%d)' % count if count > 1 else ''
     return self.override_step_data(
         '%sCheck %s version file%s' % (prefix, desc, suffix),
         self.m.raw_io.stream_output_text(
-            VERSION_FILE_TMPL % (major, minor, 3, patch_level),
+            VERSION_FILE_TMPL % (major, minor, build, patch_level),
             stream='stdout'),
     )
 

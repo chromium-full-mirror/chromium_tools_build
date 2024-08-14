@@ -192,8 +192,9 @@ def update_v8_branch(api, source_dir, branch_version, chromium_version,
             build_results)
 
     else:
+      new_version = version_at_head.with_incremented_patch()
       maybe_increment_version(api, source_dir, branch_ref, version_at_head,
-                              build_results)
+                              new_version, build_results)
 
 
 def update_chromium_branch(api, source_dir, chromium_version, build_results):
@@ -208,15 +209,14 @@ def update_chromium_branch(api, source_dir, chromium_version, build_results):
     if current_branch_has_version_change(api):
       verify_version_tag(api, dry_run, version_at_head, build_results)
     else:
-      # TODO(http://b/353262752): Implement a version update that doesn't clash
-      # if branch_ref is a chromium ref like here. In this case we'd update for
-      # 1234 and V8 11.2.345.1 like 11.2.12340345.1 and for a mini branch
-      # 1234_23, 11.2.230345.1.
+      new_version = version_at_head.with_increment_for_chromium(
+          chromium_version)
       maybe_increment_version(
           api,
           source_dir,
           branch_ref,
           version_at_head,
+          new_version,
           build_results,
           dry_run=dry_run)
 
@@ -319,6 +319,7 @@ def maybe_increment_version(api,
                             source_dir,
                             ref,
                             latest_version,
+                            new_version,
                             build_results,
                             dry_run=None):
   with api.step.nest('Increment version from %s' % latest_version):
@@ -332,8 +333,6 @@ def maybe_increment_version(api,
         limit=20,
         step_test_data=api.gerrit.test_api.get_empty_changes_response_data,
     )
-
-    new_version = latest_version.with_incremented_patch()
 
     def is_version_change(commit):
       return (commit['subject'] == subject(latest_version) or
@@ -391,8 +390,9 @@ def GenTests(api):
         *test_data,
         **kwargs)
 
-  def version_file(patch_level, description, prefix=''):
-    return api.v8.version_file(patch_level, description, prefix=prefix, major=11)
+  def version_file(patch_level, description, prefix='', build_level=3):
+    return api.v8.version_file(
+        patch_level, description, prefix=prefix, major=11, build=build_level)
 
   yield test(
       'branches-to-update-version-for',
@@ -613,24 +613,44 @@ def GenTests(api):
       'chromium-branches-to-update-version-for',
       tracked_branches_count(1),
       milestones(112),
-      chromium_versions("5112", "5112_42", "5113"),
+      chromium_versions("5112", "5112_42", "5113", "5114"),
+
+      # Data for mini branch.
       version_file(
           3,
           'remotes/origin/chromium/5112_42',
-          prefix="Checking Chromium branch 5112_42."),
-      version_file(
-          4,
-          'latest',
-          prefix="Checking Chromium branch 5112_42.Increment version from 11.4.3.3."
+          prefix="Checking Chromium branch 5112_42.",
       ),
       version_file(
           3,
-          'remotes/origin/chromium/5113',
-          prefix="Checking Chromium branch 5113."),
+          'latest',
+          prefix="Checking Chromium branch 5112_42.Increment version from 11.4.3.3."
+      ),
+
+      # Data for canary/dev branch.
       version_file(
-          4,
+          3,
+          'remotes/origin/chromium/5113',
+          prefix="Checking Chromium branch 5113.",
+      ),
+      version_file(
+          3,
           'latest',
           prefix="Checking Chromium branch 5113.Increment version from 11.4.3.3."
+      ),
+
+      # Like above, but with an existing version change on the branch.
+      version_file(
+          0,
+          'remotes/origin/chromium/5114',
+          prefix="Checking Chromium branch 5114.",
+          build_level=511403,
+      ),
+      version_file(
+          0,
+          'latest',
+          prefix="Checking Chromium branch 5114.Increment version from 11.4.511403.",
+          build_level=511403,
       ),
 
       # Dummy data for the V8 branch check, since there's always one V8 branch.
