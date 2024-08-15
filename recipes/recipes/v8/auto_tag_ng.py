@@ -175,7 +175,7 @@ def update_v8_branch(api, source_dir, branch_version, chromium_version,
     version_at_head = api.v8.read_version_from_ref(source_dir, "HEAD",
                                                    branch_ref)
     if current_branch_has_version_change(api):
-      verify_version_tag(api, api.v8.dry_run, version_at_head, build_results)
+      verify_version_tag(api, version_at_head, build_results)
       has_pgo_tag = verify_pgo_tag(api, version_at_head)
 
       # TODO(crbug.com/1382471): We can remove this again if there are no back-
@@ -198,27 +198,18 @@ def update_v8_branch(api, source_dir, branch_version, chromium_version,
 
 
 def update_chromium_branch(api, source_dir, chromium_version, build_results):
-  # TODO(http://b/353262752): Drop dry-run once the correct version update is
-  # implemented.
-  dry_run = True
   with api.step.nest(f'Checking Chromium branch {chromium_version}'):
     branch_ref = f'remotes/origin/chromium/{chromium_version}'
     api.v8.git_output('checkout', branch_ref)
     version_at_head = api.v8.read_version_from_ref(source_dir, "HEAD",
                                                    branch_ref)
     if current_branch_has_version_change(api):
-      verify_version_tag(api, dry_run, version_at_head, build_results)
+      verify_version_tag(api, version_at_head, build_results)
     else:
       new_version = version_at_head.with_increment_for_chromium(
           chromium_version)
-      maybe_increment_version(
-          api,
-          source_dir,
-          branch_ref,
-          version_at_head,
-          new_version,
-          build_results,
-          dry_run=dry_run)
+      maybe_increment_version(api, source_dir, branch_ref, version_at_head,
+                              new_version, build_results)
 
 
 def current_branch_has_version_change(api):
@@ -226,7 +217,7 @@ def current_branch_has_version_change(api):
       'show', api.v8.VERSION_FILE, ok_ret='any', name='Proof of version change')
 
 
-def verify_version_tag(api, dry_run, version_at_branch_head, build_results):
+def verify_version_tag(api, version_at_branch_head, build_results):
   with api.step.nest('Verify version tag'):
     commit_at_tag = get_commit_at_tag(api, version_at_branch_head)
     commit_at_head = api.v8.git_output(
@@ -234,7 +225,7 @@ def verify_version_tag(api, dry_run, version_at_branch_head, build_results):
     assert commit_at_head, 'Expected a checkout, but no head revision found.'
     if commit_at_head != commit_at_tag:
       # Tag latest version.
-      if dry_run:
+      if api.v8.dry_run:
         api.step('Dry-run tag %s' % version_at_branch_head, cmd=None)
       else:
         api.git('tag', str(version_at_branch_head), 'HEAD')
@@ -315,13 +306,8 @@ def push_ref(api, repo, ref, hsh):
   api.git('push', repo, '+%s:%s' % (hsh, ref))
 
 
-def maybe_increment_version(api,
-                            source_dir,
-                            ref,
-                            latest_version,
-                            new_version,
-                            build_results,
-                            dry_run=None):
+def maybe_increment_version(api, source_dir, ref, latest_version, new_version,
+                            build_results):
   with api.step.nest('Increment version from %s' % latest_version):
     commits = api.gerrit.get_changes(
         'https://chromium-review.googlesource.com',
@@ -348,8 +334,7 @@ def maybe_increment_version(api,
           ref,
           new_version,
           push_account=PUSH_ACCOUNT,
-          bot_commit=True,
-          dry_run=dry_run)
+          bot_commit=True)
       build_results.performed_actions.append("Version updated %s" % new_version)
 
 
@@ -692,9 +677,7 @@ def GenTests(api):
           'latest',
           prefix="Checking V8 branch 11.2.Increment version from 11.4.3.2."),
       api.post_process(
-          MustRun,
-          'Checking Chromium branch 5113.Verify version tag.Dry-run tag 11.4.3.3'
-      ),
+          MustRun, 'Checking Chromium branch 5113.Verify version tag.git push'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -736,7 +719,7 @@ def GenTests(api):
           prefix="Checking V8 branch 11.2.Increment version from 11.4.3.2."),
       api.post_process(
           DoesNotRunRE, 'Checking Chromium branch 5113.'
-          'Verify version tag.Dry-run tag 11.4.3.3'),
+          'Verify version tag.git push'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )

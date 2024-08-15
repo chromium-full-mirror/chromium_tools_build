@@ -1463,8 +1463,7 @@ class V8Api(recipe_api.RecipeApi):
                         latest_version,
                         push_account,
                         bot_commit=False,
-                        extra_edits=None,
-                        dry_run=None):
+                        extra_edits=None):
     """Update the version on branch 'ref'.
 
       Args:
@@ -1477,10 +1476,7 @@ class V8Api(recipe_api.RecipeApi):
         bot_commit: Use True to allow a bot commit. This also force lands
             the CL
         extra_edits: Callback used to edit extra files before generating the CL
-        dry_run: If true, don't upload the CL. If None, use defaults to
-            determine dry-run state.
       """
-    dry_run = self.dry_run if dry_run is None else dry_run
     self.m.git('branch', '-D', 'work', ok_ret='any')
     self.m.git('clean', '-ffd')
 
@@ -1516,7 +1512,7 @@ class V8Api(recipe_api.RecipeApi):
     # Commit and push changes.
     self.m.git('commit', '-am', f'Version {latest_version}')
 
-    if dry_run:
+    if self.dry_run:
       self.m.step('Dry-run commit', cmd=None)
     else:
       upload_cmd = [

@@ -446,8 +446,44 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Checking Chromium branch 5114.Increment version from 11.4.511403.Dry-run commit",
+    "cmd": [
+      "git",
+      "cl",
+      "upload",
+      "-f",
+      "--bypass-hooks",
+      "--send-mail",
+      "--no-autocc",
+      "--set-bot-commit"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5114.Increment version from 11.4.511403.git cl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "cl",
+      "land",
+      "-f",
+      "--bypass-hooks"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5114.Increment version from 11.4.511403.git cl (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -717,8 +753,44 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Checking Chromium branch 5113.Increment version from 11.4.3.3.Dry-run commit",
+    "cmd": [
+      "git",
+      "cl",
+      "upload",
+      "-f",
+      "--bypass-hooks",
+      "--send-mail",
+      "--no-autocc",
+      "--set-bot-commit"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5113.Increment version from 11.4.3.3.git cl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "cl",
+      "land",
+      "-f",
+      "--bypass-hooks"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5113.Increment version from 11.4.3.3.git cl (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -988,8 +1060,44 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.Dry-run commit",
+    "cmd": [
+      "git",
+      "cl",
+      "upload",
+      "-f",
+      "--bypass-hooks",
+      "--send-mail",
+      "--no-autocc",
+      "--set-bot-commit"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git cl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "cl",
+      "land",
+      "-f",
+      "--bypass-hooks"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking Chromium branch 5112_42.Increment version from 11.4.3.3.git cl (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
