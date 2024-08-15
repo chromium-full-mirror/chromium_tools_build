@@ -504,6 +504,8 @@ class ChromiumApi(recipe_api.RecipeApi):
               ['python3', clang_crashreports_script, '--source', source],
               **kwargs)
 
+        self.m.ninjalog.upload(name, ninja_command, ninja_step_result.retcode)
+
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 
     ninja_no_work = 'ninja: no work to do.'
@@ -601,6 +603,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         source_dir,
         deps_cache_by_step=self.c.compile_py.reclient_deps_cache_by_step,
         skip_log_upload=skip_log_upload,
+        skip_ninjalog_upload=True,
         bootstrap_extra_env=reclient_extra_env,
         invocation_id=ninja_invocation_id) as p:
       ninja_result = self._run_ninja(
@@ -614,17 +617,16 @@ class ChromiumApi(recipe_api.RecipeApi):
       p.build_exit_status = ninja_result.retcode
     return ninja_result
 
-  def _run_ninja_without_remote(self,
-                                source_dir,
-                                ninja_command,
-                                ninja_log_outdir,
-                                *,
-                                name=None,
-                                ninja_env=None,
-                                skip_log_upload=False,
-                                **kwargs):
+  def _run_ninja_without_reclient(self,
+                                  source_dir,
+                                  ninja_command,
+                                  ninja_log_outdir,
+                                  *,
+                                  name=None,
+                                  ninja_env=None,
+                                  **kwargs):
     """
-    Run ninja and uploads the ninja logs.
+    Run ninja.
 
     Args:
       source_dir: The path to the top-level repo.
@@ -634,7 +636,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       ninja_log_outdir: Directory of ninja log. (e.g. "out/Release")
       name: Name of compile step.
       ninja_env: Environment for ninja.
-      skip_log_upload: Skip uploading the ninja log.
 
     Returns:
       A named tuple with the fields
@@ -645,37 +646,13 @@ class ChromiumApi(recipe_api.RecipeApi):
       InfraFailure from compile step
       StepFailure from compile confirm no-op step
     """
-    compile_exit_status = 1
-    try:
-      ninja_result = self._run_ninja(
-          source_dir,
-          ninja_command=ninja_command,
-          name=name or 'compile',
-          ninja_env=ninja_env,
-          **kwargs)
-      compile_exit_status = ninja_result.retcode
-      return ninja_result
-    except self.m.step.StepFailure as ex:
-      compile_exit_status = ex.retcode
-      raise ex
-    finally:
-      if not skip_log_upload:
-        upload_ninja_log_args = [
-            '--gsutil-py-path',
-            self.m.depot_tools.gsutil_py_path,
-            '--ninja-log-outdir',
-            ninja_log_outdir,
-            '--ninja-log-command-file',
-            self.m.json.input(ninja_command),
-            '--build-exit-status',
-            compile_exit_status,
-        ]
-        self.m.step(
-            name='upload_ninja_log',
-            cmd=[
-                'vpython3',
-                self.repo_resource('recipes', 'upload_ninja_logs.py')
-            ] + upload_ninja_log_args)
+    ninja_result = self._run_ninja(
+        source_dir,
+        ninja_command=ninja_command,
+        name=name or 'compile',
+        ninja_env=ninja_env,
+        **kwargs)
+    return ninja_result
 
   @contextlib.contextmanager
   def guard_compile(self, build_dir: Path, *, suffix=''):
@@ -838,7 +815,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             ninja_invocation_id=ninja_invocation_id,
             **kwargs)
       else:
-        ninja_result = self._run_ninja_without_remote(
+        ninja_result = self._run_ninja_without_reclient(
             source_dir,
             ninja_command=command,
             ninja_env=ninja_env,

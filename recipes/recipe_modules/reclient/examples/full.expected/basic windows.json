@@ -482,7 +482,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]\\ninja_log.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "infra_step": true,
     "name": "postprocess for reclient.create ninja log gzip",
@@ -499,15 +499,15 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\ninja_log.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/ninja_log.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "infra_step": true,
     "name": "postprocess for reclient.gsutil upload ninja_log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/ninja_log.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/reclient/ninja_log.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz@@@"
     ]
   },
   {

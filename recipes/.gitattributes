@@ -12,7 +12,6 @@
 /runisolatedtest.py               recipes
 /runtest.py                       recipes
 /tee.py                           recipes
-/upload_ninja_logs.py*            recipes
 /withxvfb.py                      recipes
 /xvfb.py                          recipes
 /zip_build.py                     recipes

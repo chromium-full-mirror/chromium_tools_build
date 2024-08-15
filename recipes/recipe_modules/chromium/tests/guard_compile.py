@@ -51,16 +51,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'cancel',
-      api.override_step_data(
-          'compile', retcode=1, global_shutdown_event='after'),
-      api.post_check(post_process.MustRun, 'create compile guard'),
-      api.post_check(post_process.DoesNotRun, 'remove compile guard'),
-      api.expect_status('CANCELED'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'recovery',
       api.path.exists(api.path.cache_dir /
                       'builder/src/out/Release/CR_COMPILE_GUARD.txt'),

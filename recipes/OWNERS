@@ -4,9 +4,6 @@ per-file README.recipes.md=*
 # recipes.py is auto-copied by the recipe roller.
 per-file recipes.py=recipe-mega-autoroller@chops-service-accounts.iam.gserviceaccount.com
 
-per-file ninja_log_utils.py=file://recipes/BUILD_TEAM_OWNERS
-per-file upload_ninja_logs.py*=file://recipes/BUILD_TEAM_OWNERS
-
 # For reverts only
 agrieve@chromium.org
 

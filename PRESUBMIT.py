@@ -177,7 +177,6 @@ _PY3_8_FILES = (
     'recipes/unittests/recipe_test.py',
     'recipes/unittests/runisolatedtest_test.py',
     'recipes/unittests/zip_build_test.py',
-    'recipes/upload_ninja_logs.py',
     'recipes/xvfb.py',
     'recipes/zip_build.py',
     'scripts/common/chromium_utils.py',

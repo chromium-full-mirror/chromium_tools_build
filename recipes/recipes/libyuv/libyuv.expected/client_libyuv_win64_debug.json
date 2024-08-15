@@ -185,6 +185,101 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]\\builder\\src\\out\\Debug_x64\\.ninja_log",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]\\builder\\src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "libyuv:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read ninja log"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake gzip data",
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "cwd": "[CACHE]\\builder\\src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "libyuv:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create ninja log gzip"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "cwd": "[CACHE]\\builder\\src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "libyuv:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload ninja_log",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
       "[CACHE]\\builder\\src\\out\\Debug_x64",
@@ -209,37 +304,6 @@
       }
     },
     "name": "compile confirm no-op"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "RECIPE_REPO[build]\\recipes\\upload_ninja_logs.py",
-      "--gsutil-py-path",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "--ninja-log-outdir",
-      "[CACHE]\\builder\\src\\out\\Debug_x64",
-      "--ninja-log-command-file",
-      "[\"[CACHE]\\\\builder\\\\src\\\\third_party\\\\ninja\\\\ninja\", \"-C\", \"[CACHE]\\\\builder\\\\src\\\\out\\\\Debug_x64\"]",
-      "--build-exit-status",
-      "0"
-    ],
-    "cwd": "[CACHE]\\builder\\src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "libyuv:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "upload_ninja_log"
   },
   {
     "cmd": [

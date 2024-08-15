@@ -8,6 +8,7 @@ from PB.recipe_modules.build.reclient import rbe_metrics_bq
 DEPS = [
     'depot_tools/gclient',
     'depot_tools/gsutil',
+    'ninjalog',
     'recipe_engine/archive',
     'recipe_engine/buildbucket',
     'recipe_engine/file',

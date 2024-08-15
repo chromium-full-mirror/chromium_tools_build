@@ -4,7 +4,6 @@
 """API for interacting with the re-client remote compiler."""
 
 import contextlib
-import gzip
 import io
 import os
 import re
@@ -375,6 +374,7 @@ class ReclientApi(recipe_api.RecipeApi):
       buildtools_dir: Path | None = None,
       deps_cache_by_step=False,
       skip_log_upload=False,
+      skip_ninjalog_upload=False,
       exec_strategy=None,
       bootstrap_extra_env: dict | None = None,
       invocation_id=None,
@@ -389,6 +389,7 @@ class ReclientApi(recipe_api.RecipeApi):
       buildtools_dir: The path to the buildtools directory. If not provided,
         then the 'buildtools' subdirectory of `source_dir` will be used.
       skip_log_upload: When true skip log uploading including cloudtail.
+      skip_ninjalog_upload: When true skip ninjalog uploading.
       bootstrap_extra_env: Additional env vars for reclient to be used by bootstrap.
       invocation_id: ID of the build invocation.
     """
@@ -444,9 +445,9 @@ class ReclientApi(recipe_api.RecipeApi):
               self._upload_reclient_traces(buildtools_dir, reclient_log_dir)
             filename_maker = FilenameMaker(self.m.time.utcnow(),
                                            self.m.uuid.random())
-            if ninja_command:
-              self._upload_ninja_log(ninja_step_name, ninja_command,
-                                     p.build_exit_status, filename_maker)
+            if ninja_command and not skip_ninjalog_upload:
+              self.m.ninjalog.upload(ninja_step_name, ninja_command,
+                                     p.build_exit_status)
             self._upload_rpl(reclient_log_dir, filename_maker)
             log_dir_files = self.m.file.listdir(
                 'list reclient log directory',
@@ -778,74 +779,6 @@ class ReclientApi(recipe_api.RecipeApi):
     trace_list = ('https://console.cloud.google.com/traces/list?project=' +
                   self.rbe_project)
     step_result.presentation.links['trace_list'] = trace_list
-
-  def _upload_ninja_log(self, name, ninja_command, build_exit_status,
-                        filename_maker):
-    """
-    Upload several logs to GCS, including:
-    * ninja command line args
-    * ninja logs
-    * build id, build exit status, etc.
-
-    Args:
-      name: Name of the build step
-      ninja_command: Command used for build.
-                     (e.g. ['ninja', '-C', 'out/Release'])
-      build_exit_status: Exit status of ninja or other build commands like
-                         make. (e.g. 0)
-
-    Raises:
-      InfraFailure: If there is an error during the GCS uploading.
-    """
-    log_index = ninja_command.index('-C') + 1
-    ninja_log_outdir = ninja_command[log_index].replace('/', self.m.path.sep)
-
-    # Metadata schema:
-    # https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/appengine/chromium_build_stats/ninjalog/ninjalog.go;l=94-145;drc=deb62f6ebdf51d5187830310eddc9826d53dcc85
-    metadata = {
-        'cmdline': ninja_command,
-        'cwd': str(self.m.context.cwd),  # make it serializable
-        'platform': self.m.platform.name,
-        'build_id': self.m.buildbucket.build.id,
-        'step_name': name,
-        'exit': build_exit_status,
-        'env': self.m.context.env.copy(),
-    }
-    time_now = filename_maker.timestamp
-    # Must start with 'ninja_log' prefix, see
-    # https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/appengine/chromium_build_stats/app/ninja_log.go;l=311-314;drc=e507df6040ea871ba6ef6b5e7da00d8cb186a1bd
-    gzip_filename = filename_maker.make_gz('ninja_log')
-    gzip_path = self._tmp_base_dir / gzip_filename
-    # This assumes that ninja_log is small enough to be loaded into RAM. (As of
-    # 2021/01, it's around 3MB.)
-    data_txt = self.m.file.read_text(
-        'read ninja log',
-        self.m.path.join(ninja_log_outdir, '.ninja_log'),
-        include_log=False)
-    data_txt += '\n# end of ninja log\n' + self.m.json.dumps(metadata)
-    with io.BytesIO() as f_out:
-      # |gzip_out| is created at the inner `with` clause intentionally, so that
-      # its content is all flushed to |f_out| before writing the stream.
-      #
-      # Set a fixed mtime in the test, since gzip writes mtime as part of the
-      # header, see
-      # https://github.com/python/cpython/blob/8dfe15625e6ea4357a13fec7989a0e6ba2bf1359/Lib/gzip.py#L259
-      mtime = time.mktime(time_now.timetuple())
-      with gzip.GzipFile(fileobj=f_out, mode='w', mtime=mtime) as gzip_out:
-        gzip_out.write(data_txt.encode('utf-8'))
-
-      gzip_data = f_out.getvalue()
-      if self._test_data.enabled:
-        gzip_data = 'fake gzip data'
-      self.m.file.write_raw('create ninja log gzip', gzip_path, gzip_data)
-
-    gs_filename = '%s/reclient/%s' % (filename_maker.timestamp_date,
-                                      gzip_filename)
-    step_result = self.m.gsutil.upload(
-        gzip_path, _GS_BUCKET, gs_filename, name='upload ninja_log')
-    viewer_url = ('https://chromium-build-stats.appspot.com/ninja_log/' +
-                  gs_filename)
-    step_result.presentation.links['ninja_log'] = viewer_url
 
   def _upload_rpl(self, reclient_log_dir, filename_maker):
     gzip_filename = filename_maker.make_gz('reproxy_rpl')
