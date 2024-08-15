@@ -578,6 +578,11 @@ def GenTests(api):
           failures=['Test.One'],
           successes=['Test.Two'],
       ),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          'retry shards with patch',
+          successes=['Test.One'],
+      ),
       api.post_process(
           post_process.LogContains,
           'test_pre_run (retry shards with patch).[trigger] base_unittests '
@@ -797,6 +802,11 @@ def GenTests(api):
           'with patch',
           custom_os='Windows-11-19045',
           failures=['Test.Two']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          'retry shards with patch',
+          custom_os='Windows-11-19045',
+          successes=['Test.Two']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -866,6 +876,8 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'retry shards with patch', successes=['Test.One']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -897,7 +909,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'retry shards with patch'),
+          'base_unittests', 'retry shards with patch', successes=['Test.Two']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1289,7 +1301,8 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests',
           'retry shards with patch',
-          failures=['Test.One', 'Test.Three']),
+          failures=['Test.One', 'Test.Three'],
+          expected_failures=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'without patch', failures=['Test.Three']),
       api.expect_status('FAILURE'),
@@ -1438,7 +1451,10 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One', 'Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'retry shards with patch', failures=['Test.Two']),
+          'base_unittests',
+          'retry shards with patch',
+          failures=['Test.Two'],
+          successes=['Test.One']),
       api.luci_analysis.query_failure_rate_results([
           api.luci_analysis.generate_analysis(
               test_id='ninja://base_unittests/Test.One',

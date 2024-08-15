@@ -3937,6 +3937,8 @@
     "name": "collect tasks (retry shards with patch).gl_tests results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"gl_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"expected\": true, \"status\": \"PASS\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://gl_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"gl_tests\"}}, \"variantHash\": \"gl_tests_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
@@ -4019,11 +4021,11 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/1\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/0\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"1\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"0\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
@@ -4044,37 +4046,35 @@
       "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_builder_group\": \"fake-group\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_buildername\": \"fake-builder\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@}@@@",
-      "@@@STEP_LOG_END@step_metadata@@@",
-      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/1/test-results@@@",
-      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=1@@@"
+      "@@@STEP_LOG_END@step_metadata@@@"
     ]
   },
   {
     "cmd": [],
     "name": "$debug - all results (retry shards with patch)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@1.25 KB@@@",
+      "@@@STEP_TEXT@1.78 KB@@@",
       "@@@STEP_LOG_LINE@serialized results@{@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"invalid\": \"False\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"gl_tests\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
-      "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 0,@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 1,@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [],@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_passing_tests\": [],@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_skipped_tests\": [],@@@",
-      "@@@STEP_LOG_LINE@serialized results@      \"variant_hash\": \"\"@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"variant_hash\": \"gl_tests_hash\"@@@",
       "@@@STEP_LOG_LINE@serialized results@    }@@@",
       "@@@STEP_LOG_LINE@serialized results@  ],@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"unexpected_failing_suites\": []@@@",
       "@@@STEP_LOG_LINE@serialized results@}@@@",
       "@@@STEP_LOG_END@serialized results@@@",
-      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.25 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.78 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for gl_tests: 1.01 KB@@@",
-      "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
-      "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for gl_tests: 1.53 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 1@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 505.00 B@@@",
       "@@@STEP_LOG_END@memory usage@@@"
     ]
   },

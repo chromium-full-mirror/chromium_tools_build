@@ -4,6 +4,8 @@
 
 import attr
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
 
@@ -273,6 +275,137 @@ def GenTests(api):
                        'test_pre_run.basic_EVE_TOT.schedule', [
                            'tast.lacros',
                        ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'failed_and_invalid_shards_skylab',
+      api.chromium.generic_build(
+          builder_group='test_group', builder='test_builder'),
+      api.properties(
+          src_spec=[{
+              'cros_board': 'eve',
+              'cros_img': 'eve-release/R89-13631.0.0',
+              'name': 'basic_EVE_TOT',
+              'tast_expr': 'lacros.Basic',
+              'test': 'basic',
+              'timeout_sec': 3600,
+              'autotest_name': 'tast.lacros',
+              'shards': 3,
+          }],
+          test_skylab=True,
+          retry_failed_shards=False,
+          retry_invalid_shards=True,
+      ),
+      api.skylab.mock_wait_on_suites(
+          'basic_EVE_TOT',
+          3,
+          runner_builds=[(900, common_pb2.SUCCESS), (901, common_pb2.FAILURE),
+                         (902, common_pb2.INFRA_FAILURE)]),
+      api.skylab.mock_wait_on_suites(
+          'basic_EVE_TOT (retry shards)',
+          3,
+          runner_builds=[None, None, (902, common_pb2.SUCCESS)]),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT',
+                  passing_tests=['Test.Zero'],
+                  failing_tests=['Test.One']))),
+      api.override_step_data(
+          'basic_EVE_TOT results (2)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.Two']))),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
+      api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #1'),
+      api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #2'),
+      api.post_process(post_process.StepException, 'basic_EVE_TOT'),
+      api.post_process(post_process.DoesNotRun,
+                       'basic_EVE_TOT (retry shards).shard: #0'),
+      api.post_process(post_process.DoesNotRun,
+                       'basic_EVE_TOT (retry shards).shard: #1'),
+      api.post_process(post_process.StepSuccess,
+                       'basic_EVE_TOT (retry shards).shard: #2'),
+      api.post_process(post_process.StepSuccess,
+                       'basic_EVE_TOT (retry shards)'),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--board',
+                           'eve',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--image',
+                           'eve-release/R89-13631.0.0',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--timeout-mins',
+                           '60',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           'tast.lacros',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--total-shards',
+                           '3',
+                       ]),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--shard-indexes',
+                       ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--board',
+              'eve',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--image',
+              'eve-release/R89-13631.0.0',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--timeout-mins',
+              '60',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              'tast.lacros',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--total-shards',
+              '3',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--shard-indexes',
+              '2',
+          ]),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--shard-indexes',
+              '0',
+          ]),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--shard-indexes',
+              '1',
+          ]),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -610,6 +743,10 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', '', failures=['test%d' % i for i in range(11)]),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          'retry shards',
+          successes=['test%d' % i for i in range(11)]),
       api.post_process(post_process.StepTextContains, 'base_unittests',
                        ['... 1 more (11 total) ...']),
       api.post_process(post_process.DropExpectation),
