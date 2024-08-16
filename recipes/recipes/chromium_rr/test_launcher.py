@@ -13,6 +13,8 @@ from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import test_result as test_result_pb2
+from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb2
 from PB.recipes.build.chromium_rr.test_launcher import InputProperties
 
 PROPERTIES = InputProperties
@@ -26,6 +28,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/gclient',
+    'depot_tools/gsutil',
     'gn',
     'isolate',
     'depot_tools/git',
@@ -39,6 +42,9 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/time',
+    'recipe_engine/resultdb',
+    'recipe_engine/swarming',
 ]
 
 WEB_TEST_EXTRA_ARGS = [
@@ -46,6 +52,25 @@ WEB_TEST_EXTRA_ARGS = [
     '--wrapper=../../rr_tool/bin/rr record --output-trace-dir=../../trace_dir'
 ]
 RUNNER_PACKAGE_PATH = 'rr_tool_runner'
+UPLOAD_BUCKET = 'chromium-rr-traces'
+TRACE_FILE = 'trace.tar'
+
+
+def find_traces(api, target_path, invocation):
+  pass_run_dir = ''
+  failed_run_dir = ''
+  if not api.path.exists(target_path):
+    return pass_run_dir, failed_run_dir
+
+  for i, test_result in enumerate(invocation.test_results):
+    dir_path = target_path / str(i)
+    test_trace_file = target_path / str(i) / TRACE_FILE
+    if api.path.exists(test_trace_file):
+      if test_result.status == test_result_pb2.PASS and not pass_run_dir:
+        pass_run_dir = f'{dir_path}'
+      if test_result.status == test_result_pb2.FAIL and not failed_run_dir:
+        failed_run_dir = f'{dir_path}'
+  return pass_run_dir, failed_run_dir
 
 
 def RunSteps(api, properties):
@@ -156,24 +181,107 @@ def RunSteps(api, properties):
       task_slice = task.request[0]
       task_dimensions = task_slice.dimensions
       task_dimensions.update(dimensions)
+      tags = {'test_suite': [test.canonical_name]}
       task_slice = task_slice.with_dimensions(**task_dimensions)
-      task.request = task.request.with_slice(0, task_slice)
+      task.request = task.request.with_slice(0, task_slice).with_tags(tags)
 
       swarming_tasks.append(task)
-      api.chromium_swarming.trigger_task(task)
+      api.chromium_swarming.trigger_task(task, resultdb=test.spec.resultdb)
 
   # Collect all task result
+  task_results = []
   for task in swarming_tasks:
-    api.chromium_swarming.collect_task(task)
+    task_result, _ = api.chromium_swarming.collect_task(task)
+    task_results.append(task_result)
 
-  # TODO(jiesheng): Upload trace result to GCS.
+  for i, task_result in enumerate(task_results):
+    data = task_result.chromium_swarming.summary['shards'][0]
+    # TODO(jiesheng): Update fetch_rdb_results in test_utils api to and use
+    # here to get back test results.
+    inv_ids = api.resultdb.invocation_ids([data['resultdb_info']['invocation']])
+    inv_map = api.resultdb.query(inv_ids)
+    invocation = inv_map.get(inv_ids[0], None)
+    cas_digest = data.get('cas_output_root', {}).get('digest')
+    if not cas_digest or not invocation:
+      # TODO(jiesheng): Handle the missing output from task.
+      continue
+
+    digest = '{}/{}'.format(cas_digest['hash'], cas_digest['size_bytes'])
+    download_dir = api.path.cleanup_dir / f'trace_dir_{i}'
+    api.file.ensure_directory('ensure traces dir exist', download_dir)
+    api.cas.download('download test traces', digest, download_dir)
+    traces_out_dir = api.path.join(api.path.cleanup_dir, f'output_traces_{i}')
+    found_test_traces = False
+    for target_path in api.file.listdir(
+        'listdir test dirs', download_dir, test_data=['test_name']):
+      target_name = api.path.basename(target_path)
+      pass_run_dir, failed_run_dir = find_traces(api, target_path, invocation)
+      if pass_run_dir and failed_run_dir:
+        pass_run_new_dir = api.path.join(traces_out_dir, target_name,
+                                         'pass_run_trace')
+        api.file.ensure_directory('ensure pass trace dir exist',
+                                  pass_run_new_dir)
+        api.file.move('move pass trace', f'{pass_run_dir}/trace.tar',
+                      pass_run_new_dir)
+        failed_run_new_dir = api.path.join(traces_out_dir, target_name,
+                                           'failed_run_trace')
+        api.file.ensure_directory('ensure failed trace dir exist',
+                                  failed_run_new_dir)
+        api.file.move('move failed trace', f'{failed_run_dir}/trace.tar',
+                      failed_run_new_dir)
+        found_test_traces = True
+
+    if found_test_traces:
+      cur_date = api.time.utcnow().strftime('%Y-%m-%d-%H:%M:%S')
+      cloud_folder_name = f'test-rr-traces-{cur_date}'
+      api.gsutil.upload(
+          traces_out_dir,
+          UPLOAD_BUCKET,
+          cloud_folder_name,
+          args=['-r'],
+          link_name='Test rr traces')
 
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
+  inv_bundle = {
+      'task-example.swarmingserver.appspot.com-1234':
+          api.resultdb.Invocation(
+              proto=invocation_pb2.Invocation(
+                  state=invocation_pb2.Invocation.FINALIZED),
+              test_results=[
+                  test_result_pb2.TestResult(
+                      test_id='ninja://chromium/tests:browser_tests/',
+                      expected=False,
+                      status=test_result_pb2.FAIL,
+                  ),
+                  test_result_pb2.TestResult(
+                      test_id='ninja://chromium/tests:browser_tests/',
+                      expected=False,
+                      status=test_result_pb2.PASS,
+                  ),
+              ],
+          ),
+  }
+
+  def bad_summary_json():
+    step_data = api.chromium_swarming.canned_summary_output_raw()
+    step_data['shards'][0]['resultdb_info']['invocation'] = (
+        'invocations/task-example.swarmingserver.appspot.com-1234')
+    step_data['shards'][0]['cas_output_root']['digest'] = ''
+    return step_data
+
+  def good_summary_json():
+    step_data = api.chromium_swarming.canned_summary_output_raw()
+    step_data['shards'][0]['resultdb_info']['invocation'] = (
+        'invocations/task-example.swarmingserver.appspot.com-1234')
+    return step_data
+
   yield api.test(
       'happy_path_compile_test',
+      api.buildbucket.try_build(
+          project='fake-project', builder='fake-builder', build_number=1),
       api.chromium_polymorphic.triggered_properties(
           project='fake-project',
           bucket='fake-bucket',
@@ -205,7 +313,7 @@ def GenTests(api):
               target_test_infos=[
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
-                      test_names=['test1', 'test2'],
+                      test_names=['test1', 'test2', 'test3'],
                   ),
                   InputProperties.TestInfo(
                       test_suite='blink_web_tests',
@@ -216,11 +324,30 @@ def GenTests(api):
       api.override_step_data(
           'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
           api.file.read_json({'cmd': ''})),
+      api.step_data('rr tool runner for test1',
+                    api.chromium_swarming.summary(None, bad_summary_json())),
+      api.step_data('rr tool runner for test2',
+                    api.chromium_swarming.summary(None, good_summary_json())),
+      api.step_data('rr tool runner for test3',
+                    api.chromium_swarming.summary(None, good_summary_json())),
+      api.resultdb.query(step_name='rdb query', inv_bundle=inv_bundle),
+      api.resultdb.query(step_name='rdb query (2)', inv_bundle=inv_bundle),
+      api.resultdb.query(step_name='rdb query (3)', inv_bundle=inv_bundle),
+      api.path.files_exist(
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '0' /
+          'test_result',
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '0' / TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '1' /
+          'test_result',
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '1' / TRACE_FILE,
+      ),
       api.post_process(DropExpectation),
   )
 
   yield api.test(
       'happy_path_compile_test_with_child_tester',
+      api.buildbucket.try_build(
+          project='fake-project', builder='fake-builder', build_number=1),
       api.chromium_polymorphic.triggered_properties(
           project='fake-project',
           bucket='fake-bucket',
@@ -274,6 +401,10 @@ def GenTests(api):
       api.override_step_data(
           'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
           api.file.read_json({'cmd': ''})),
+      api.step_data('rr tool runner for test1',
+                    api.chromium_swarming.summary(None, good_summary_json())),
+      api.step_data('rr tool runner for test2',
+                    api.chromium_swarming.summary(None, good_summary_json())),
       api.post_process(DropExpectation),
   )
 
@@ -380,6 +511,8 @@ def GenTests(api):
 
   yield api.test(
       'builder_gn_args_test',
+      api.buildbucket.try_build(
+          project='fake-project', builder='fake-builder', build_number=1),
       api.chromium_polymorphic.triggered_properties(
           project='fake-project',
           bucket='fake-bucket',
@@ -425,5 +558,9 @@ def GenTests(api):
           'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
           api.file.read_json({'cmd': ''})),
       api.post_process(MustRun, 'write gn args'),
+      api.step_data('rr tool runner for test1',
+                    api.chromium_swarming.summary(None, good_summary_json())),
+      api.step_data('rr tool runner for test2',
+                    api.chromium_swarming.summary(None, good_summary_json())),
       api.post_process(DropExpectation),
   )

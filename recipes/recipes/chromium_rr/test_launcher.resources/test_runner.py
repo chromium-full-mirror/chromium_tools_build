@@ -12,7 +12,6 @@ import sys
 
 MAX_RUNS = 5
 TRACE_DIR = 'trace_dir'
-TEST_RESULT_FILE = 'test_result'
 
 
 def parse_args(args):
@@ -82,9 +81,6 @@ def main(args):
         ], './')
         os.renames('trace.tar',
                    f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
-        os.renames(
-            f'./{TEST_RESULT_FILE}', f'{args.output_dir}/{test_name_plain}/'
-            f'{str(i)}/{TEST_RESULT_FILE}')
       else:
         logging.error('Result of running rr pack is %r', result)
       # Remove the trace dir.
