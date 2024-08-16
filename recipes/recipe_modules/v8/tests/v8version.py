@@ -94,6 +94,17 @@ class VersionUtilsTest:
         choose_revision_to_roll(refs, '11.7.9'),
         (git_hash(2), f'found revision to roll: {git_hash(2)}'))
 
+  def test_revision_to_roll_padded_version(self):
+    refs = ref_data([
+        ('11.7.10-pgo', 2, 5),
+        ('11.7.10', 2, 5),
+        ('11.7.456709-pgo', 1, 0),
+        ('11.7.456709', 1, 0),
+    ])
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.7.456709'),
+        (git_hash(2), f'found revision to roll: {git_hash(2)}'))
+
   def test_revision_to_roll_first(self):
     refs = ref_data([
       ('11.7.9-pgo', 3, 13),

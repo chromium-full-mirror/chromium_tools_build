@@ -71,6 +71,14 @@ def sorted_improvements(version_revisions, last_version):
   returned.
   """
   last_version_normalized = normalize_version(last_version)
+
+  # TODO(https://crbug.com/353262752): Temporary fix to drop wrongly
+  # rolled padded version.
+  if last_version_normalized[2] > 999:
+    last_version_normalized = list(last_version_normalized)
+    last_version_normalized[2] = 0
+    last_version_normalized = tuple(last_version_normalized)
+
   timestamp = lambda commit_time: datetime.strptime(
       commit_time, '%a %b %d %H:%M:%S %Y %z').timestamp()
   improvements = [
