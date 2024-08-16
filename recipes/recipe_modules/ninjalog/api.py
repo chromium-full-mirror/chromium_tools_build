@@ -15,7 +15,11 @@ _NINJA_LOG_GS_BUCKET = 'chrome-goma-log'
 
 class NinjalogApi(recipe_api.RecipeApi):
 
-  def upload(self, build_step_name, ninja_command, build_exit_status):
+  def upload(self,
+             build_step_name,
+             ninja_command,
+             build_exit_status,
+             invocation_id=None):
     """
     Upload ninjalog to GCS with metadata.
 
@@ -25,6 +29,7 @@ class NinjalogApi(recipe_api.RecipeApi):
                      (e.g. ['ninja', '-C', 'out/Release'])
       build_exit_status: Exit status of ninja or other build commands like
                          make. (e.g. 0)
+      invocation_id: ID of the ninja invocation.
 
     Raises:
       InfraFailure: If there is an error during the GCS uploading.
@@ -36,6 +41,7 @@ class NinjalogApi(recipe_api.RecipeApi):
     # https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/appengine/chromium_build_stats/ninjalog/ninjalog.go;l=94-145;drc=deb62f6ebdf51d5187830310eddc9826d53dcc85
     metadata = {
         'build_id': self.m.buildbucket.build.id,
+        'invocation_id': invocation_id,
         'cmdline': ninja_command,
         'cwd': str(self.m.context.cwd),  # make it serializable
         'env': self.m.context.env.copy(),

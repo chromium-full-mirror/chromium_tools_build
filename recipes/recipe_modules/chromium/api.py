@@ -504,7 +504,8 @@ class ChromiumApi(recipe_api.RecipeApi):
               ['python3', clang_crashreports_script, '--source', source],
               **kwargs)
 
-        self.m.ninjalog.upload(name, ninja_command, ninja_step_result.retcode)
+        self.m.ninjalog.upload(name, ninja_command, ninja_step_result.retcode,
+                               ninja_invocation_id)
 
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 

@@ -447,7 +447,7 @@ class ReclientApi(recipe_api.RecipeApi):
                                            self.m.uuid.random())
             if ninja_command and not skip_ninjalog_upload:
               self.m.ninjalog.upload(ninja_step_name, ninja_command,
-                                     p.build_exit_status)
+                                     p.build_exit_status, invocation_id)
             self._upload_rpl(reclient_log_dir, filename_maker)
             log_dir_files = self.m.file.listdir(
                 'list reclient log directory',
