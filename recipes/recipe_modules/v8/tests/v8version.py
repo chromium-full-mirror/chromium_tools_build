@@ -105,6 +105,21 @@ class VersionUtilsTest:
         choose_revision_to_roll(refs, '11.7.456709'),
         (git_hash(2), f'found revision to roll: {git_hash(2)}'))
 
+  def test_revision_to_roll_nothing_new_padded_version(self):
+    refs = ref_data([
+        ('11.10.10-pgo', 3, 2),
+        ('11.10.10', 3, 2),
+        ('11.10.9.1-pgo', 2, 1),
+        ('11.10.9.1', 2, 1),
+        ('11.10.456709-pgo', 1, 0),
+        ('11.10.456709', 1, 0),
+        ('11.10.9-pgo', 1, 0),
+        ('11.10.9', 1, 0),
+    ])
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.10.10'),
+        (None, 'found no newer revision than: 11.10.10'))
+
   def test_revision_to_roll_first(self):
     refs = ref_data([
       ('11.7.9-pgo', 3, 13),

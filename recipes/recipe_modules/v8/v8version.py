@@ -60,6 +60,16 @@ def largest_major_version(versions):
   return max(normalize_version(version)[:2] for version in versions)
 
 
+# TODO(https://crbug.com/353262752): Temporary fix to drop wrongly
+# rolled padded version.
+def drop_version_padding(version):
+  if version[2] > 999:
+    version = list(version)
+    version[2] = 0
+    return tuple(version)
+  return version
+
+
 def sorted_improvements(version_revisions, last_version):
   """Returns version tuples of strictly newer versions sorted by
   commit time prioritizing patches.
@@ -70,28 +80,23 @@ def sorted_improvements(version_revisions, last_version):
   Only the version tuples of the largest major version are
   returned.
   """
-  last_version_normalized = normalize_version(last_version)
-
-  # TODO(https://crbug.com/353262752): Temporary fix to drop wrongly
-  # rolled padded version.
-  if last_version_normalized[2] > 999:
-    last_version_normalized = list(last_version_normalized)
-    last_version_normalized[2] = 0
-    last_version_normalized = tuple(last_version_normalized)
+  last_version_normalized = drop_version_padding(
+      normalize_version(last_version))
 
   timestamp = lambda commit_time: datetime.strptime(
       commit_time, '%a %b %d %H:%M:%S %Y %z').timestamp()
-  improvements = [
-    (version, revision, timestamp(commit_time))
-    for version, pgo, revision, commit_time in version_revisions
-    if not pgo and last_version_normalized < normalize_version(version)]
+  improvements = [(version, revision, timestamp(commit_time))
+                  for version, pgo, revision, commit_time in version_revisions
+                  if not pgo and last_version_normalized < drop_version_padding(
+                      normalize_version(version))]
   if not improvements:
     return
   major_version = largest_major_version(v for v, _, _ in improvements)
   for version, revision, _ in sorted(
       improvements, key=prioritize_patched, reverse=True):
-    if major_version < normalize_version(version):
+    if major_version < drop_version_padding(normalize_version(version)):
       yield version, revision
+
 
 def choose_revision_to_roll(ref_lines, last_version):
   """Choose the next V8 revision to roll based on recent tags.
