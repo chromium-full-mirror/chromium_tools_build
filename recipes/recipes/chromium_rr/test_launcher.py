@@ -241,6 +241,8 @@ def RunSteps(api, properties):
           args=['-r'],
           link_name='Test rr traces')
 
+    api.file.rmtree('rmtree %s' % download_dir, download_dir)
+
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
