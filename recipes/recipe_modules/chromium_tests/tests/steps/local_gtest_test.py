@@ -45,9 +45,10 @@ def RunSteps(api):
 
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
+  build_dir = source_dir / 'out' / 'some_build_dir'
 
   try:
-    api.test_utils.run_tests_once(checkout_dir, source_dir, [test],
+    api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir, [test],
                                   'with patch')
   finally:
     api.step('details', [])
@@ -56,7 +57,7 @@ def RunSteps(api):
         'uses_local_devices: %r' % test.uses_local_devices,
     ]
 
-    api.test_utils.run_tests_once(checkout_dir, source_dir, [test],
+    api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir, [test],
                                   'without patch')
 
 

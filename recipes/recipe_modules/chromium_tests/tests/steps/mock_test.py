@@ -26,8 +26,9 @@ def RunSteps(api):
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   try:
-    test.run(checkout_dir, source_dir, '')
+    test.run(checkout_dir, source_dir, build_dir, '')
   except api.step.InfraFailure:
     api.step.empty('infra failure in %s' % test.name)
   except api.step.StepFailure:

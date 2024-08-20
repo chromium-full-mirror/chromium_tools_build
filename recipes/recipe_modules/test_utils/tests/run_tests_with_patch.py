@@ -53,8 +53,9 @@ def RunSteps(api, retry_failed_shards, test_kwargs_list):
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   invalid, failing = api.test_utils.run_tests_with_patch(
-      checkout_dir, source_dir, tests, **run_tests_kwargs)
+      checkout_dir, source_dir, build_dir, tests, **run_tests_kwargs)
 
   if invalid:
     api.step('%s invalid' % ','.join(sorted(t.name for t in invalid)), None)

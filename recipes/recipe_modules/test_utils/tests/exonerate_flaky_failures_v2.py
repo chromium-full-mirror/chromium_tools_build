@@ -81,9 +81,11 @@ def RunSteps(api, known_luci_analysis_flakes_expectations, weak_flaky_failures,
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   api.test_utils.run_tests(
       checkout_dir,
       source_dir,
+      build_dir,
       tests,
       'with patch',
       retry_failed_shards=True,

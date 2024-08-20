@@ -383,6 +383,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     test_runner = self.m.chromium_tests.create_test_runner(
         checkout_dir,
         source_dir,
+        build_dir,
         tests,
         surface_invalid_results_as_infra_failure=True)
     test_failure_summary = test_runner()

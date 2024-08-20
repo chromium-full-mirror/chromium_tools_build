@@ -57,9 +57,10 @@ def RunSteps(api):
 
   checkout_dir = api.path.cache_dir / 'builder'
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   try:
     _, invalid_suites, failed_suites = api.test_utils.run_tests_once(
-        checkout_dir, source_dir, [test], '')
+        checkout_dir, source_dir, build_dir, [test], '')
   finally:
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [

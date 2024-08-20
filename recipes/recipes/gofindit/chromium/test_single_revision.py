@@ -101,8 +101,8 @@ def RunSteps(api, properties):
       suffix = 'bisection'
       with api.chromium_tests.wrap_chromium_tests(
           checkout_dir, source_dir, build_dir, tests=step_tests):
-        api.test_utils.run_tests_once(checkout_dir, source_dir, step_tests,
-                                      suffix)
+        api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir,
+                                      step_tests, suffix)
       test_results = fetch_test_results(api, properties.tests_to_run,
                                         step_tests, suffix)
       run_succeeded = True

@@ -471,6 +471,7 @@ class AbstractTest(abc.ABC):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
@@ -1365,6 +1366,7 @@ class TestWrapper(
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
@@ -1378,7 +1380,8 @@ class TestWrapper(
 
     if self._info_message:
       info_messages = itertools.chain([self._info_message], info_messages)
-    return self._test.run(checkout_dir, source_dir, suffix, info_messages)
+    return self._test.run(checkout_dir, source_dir, build_dir, suffix,
+                          info_messages)
 
 
 class CiOnlyTestSpec(TestWrapperSpec):
@@ -1564,6 +1567,7 @@ class ExperimentalTest(TestWrapper):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
@@ -1571,6 +1575,7 @@ class ExperimentalTest(TestWrapper):
       return super().run(
           checkout_dir,
           source_dir,
+          build_dir,
           self._experimental_suffix(suffix),
           info_messages,
       )
@@ -1753,10 +1758,11 @@ class ScriptTest(LocalTest):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
-    del checkout_dir
+    del checkout_dir, build_dir
 
     run_args = []
 
@@ -1875,9 +1881,11 @@ class LocalGTestTest(LocalTest):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
+    del build_dir
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -2620,13 +2628,14 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
     """Waits for launched test to finish and collects the results."""
     # There's no guarantee that a checkout exists for a swarming test, so
     # checkout_dir and source_dir shouldn't be used
-    del checkout_dir, source_dir
+    del checkout_dir, source_dir, build_dir
 
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
@@ -2774,10 +2783,11 @@ class LocalIsolatedScriptTest(LocalTest):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
-    del checkout_dir
+    del checkout_dir, build_dir
 
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
@@ -3044,10 +3054,11 @@ class MockTest(AbstractSwarmingTest, Test):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
-    del checkout_dir, source_dir
+    del checkout_dir, source_dir, build_dir
 
     with self._mock_exit_codes():
       step_result = self.api.m.step(self.step_name(suffix), ['mock_test'])
@@ -3282,12 +3293,13 @@ class SkylabTest(AbstractSkylabTest, Test):
       self,
       checkout_dir: Path,
       source_dir: Path,
+      build_dir: Path,
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
     # There's no guarantee that a checkout exists for a skylab test, so
     # checkout_dir and source_dir shouldn't be used
-    del checkout_dir, source_dir
+    del checkout_dir, source_dir, build_dir
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
       self.api.m.skylab.fetch_test_runners(self, suffix)

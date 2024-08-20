@@ -112,7 +112,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
             t.spec, resultdb=attr.evolve(t.spec.resultdb, enable=False))
 
     test_runner = self.m.chromium_tests.create_test_runner(
-        checkout_dir, source_dir, tests)
+        checkout_dir, source_dir, build_path, tests)
     with self.m.chromium_tests.wrap_chromium_tests(
         checkout_dir, source_dir, build_path, tests=tests):
       self.m.chromium_tests.configure_swarming(True)

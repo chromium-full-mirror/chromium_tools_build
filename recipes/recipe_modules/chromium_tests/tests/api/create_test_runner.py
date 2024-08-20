@@ -29,9 +29,11 @@ def RunSteps(api):
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   test_runner = api.chromium_tests.create_test_runner(
       checkout_dir,
       source_dir,
+      build_dir,
       tests=[
           steps.LocalGTestTestSpec.create('base_unittests').get_test(
               api.chromium_tests),

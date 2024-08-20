@@ -66,18 +66,21 @@ def RunSteps(api, is_swarming_test=True):
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   api.chromium_swarming.path_to_merge_scripts = source_dir / 'merge_scripts'
   api.chromium_swarming.set_default_dimension('pool', 'foo')
 
   api.test_utils.run_tests(
       checkout_dir,
       source_dir,
+      build_dir,
       tests,
       'with patch',
       retry_failed_shards=True,
       retry_invalid_shards=True)
 
-  api.test_utils.run_tests(checkout_dir, source_dir, tests, 'without patch')
+  api.test_utils.run_tests(checkout_dir, source_dir, build_dir, tests,
+                           'without patch')
 
 
 def GenTests(api):

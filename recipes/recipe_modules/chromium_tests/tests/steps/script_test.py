@@ -36,8 +36,9 @@ def RunSteps(api):
 
   checkout_dir = api.path.cache_dir / 'builder'
   source_dir = checkout_dir / 'src'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   try:
-    test.run(checkout_dir, source_dir, '')
+    test.run(checkout_dir, source_dir, build_dir, '')
   finally:
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [

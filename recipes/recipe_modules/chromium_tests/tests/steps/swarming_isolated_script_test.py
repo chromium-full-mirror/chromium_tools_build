@@ -83,8 +83,9 @@ def RunSteps(api):
 
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
+  build_dir = source_dir / 'out' / 'some_build_dir'
   try:
-    api.test_utils.run_tests_once(checkout_dir, source_dir, [test],
+    api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir, [test],
                                   'with patch')
 
   finally:
@@ -92,7 +93,7 @@ def RunSteps(api):
       test._only_retry_failed_tests = True
 
       test.pre_run('without patch')
-      test.run(checkout_dir, source_dir, 'without patch')
+      test.run(checkout_dir, source_dir, build_dir, 'without patch')
 
     result = api.step('details', [])
     result.presentation.logs['details'] = [

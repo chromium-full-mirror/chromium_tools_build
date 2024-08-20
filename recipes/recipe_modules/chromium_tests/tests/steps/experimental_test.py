@@ -76,9 +76,10 @@ def RunSteps(api):
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
 
   experimental_test.pre_run(suffix)
-  experimental_test.run(checkout_dir, source_dir, suffix)
+  experimental_test.run(checkout_dir, source_dir, build_dir, suffix)
 
   if not experiment_on:
     return

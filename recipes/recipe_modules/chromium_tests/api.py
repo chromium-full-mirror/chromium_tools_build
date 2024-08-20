@@ -445,6 +445,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def create_test_runner(self,
                          checkout_dir: Path,
                          source_dir: Path,
+                         build_dir: Path,
                          tests,
                          *,
                          suffix='',
@@ -457,6 +458,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Args
       checkout_dir: The directory where the checkout was performed.
       source_dir: The path to the top-level repo.
+      build_dir: Path to the build dir.
       tests: List of step.Test objects to be run.
       suffix: Suffix to be passed when running the tests.
       serialize_tests: True if this bot should run all tests serially
@@ -485,6 +487,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         invalid_tests, failed_tests = self.m.test_utils.run_tests(
             checkout_dir,
             source_dir,
+            build_dir,
             tl,
             suffix,
             retry_failed_shards=retry_failed_shards,
@@ -1560,6 +1563,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           self.m.test_utils.run_tests_with_patch(
               task.checkout_dir,
               task.source_dir,
+              task.build_dir,
               task.test_suites,
               retry_failed_shards=task.should_retry_failures_with_changes))
 
@@ -1596,6 +1600,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.test_utils.run_tests(
           task.checkout_dir,
           task.source_dir,
+          task.build_dir,
           failing_test_suites,
           'without patch',
           sort_by_shard=True)
@@ -2374,6 +2379,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           build_dir,
           tests=test_objects_by_suffix[general_suffix]):
         self.m.test_utils.run_tests_for_flake_endorser(checkout_dir, source_dir,
+                                                       build_dir,
                                                        test_objects_by_suffix)
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
@@ -2937,6 +2943,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     test_runner = self.create_test_runner(
         checkout_dir,
         source_dir,
+        build_dir,
         tests,
         serialize_tests=builder_config.serialize_tests,
         retry_failed_shards=builder_config.retry_failed_shards,

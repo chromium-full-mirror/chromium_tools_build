@@ -35,6 +35,7 @@ def RunSteps(api):
   # Fake path, as the real one depends on having done a chromium checkout.
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   api.profiles.source_dir = source_dir
   api.chromium_swarming.path_to_merge_scripts = source_dir / 'merge_scripts'
   api.chromium_swarming.set_default_dimension('pool', 'foo')
@@ -56,7 +57,8 @@ def RunSteps(api):
 
   try:
     assert len(test.get_invocation_names('')) == 0
-    api.test_utils.run_tests_once(checkout_dir, source_dir, [test], '')
+    api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir, [test],
+                                  '')
     assert len(test.get_invocation_names('')) > 0
     assert test.runs_on_swarming
   finally:

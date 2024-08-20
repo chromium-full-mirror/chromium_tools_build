@@ -260,6 +260,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           self.m.test_utils.run_tests_with_patch(
               checkout_dir,
               source_dir,
+              build_dir,
               tests,
               retry_failed_shards=builder_config.retry_failed_shards,
           ))
@@ -379,6 +380,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       self.m.test_utils.run_tests(
           checkout_dir,
           source_dir,
+          build_dir,
           failing_test_suites,
           'without patch',
           sort_by_shard=True)

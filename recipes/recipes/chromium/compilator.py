@@ -196,6 +196,7 @@ def compilator_steps(api, properties):
       test_runner = api.chromium_tests.create_test_runner(
           checkout_dir,
           source_dir,
+          build_dir,
           local_tests,
           suffix='with patch',
       )

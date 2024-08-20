@@ -152,9 +152,11 @@ def RunSteps(api, did_complete_first_run, did_complete_retry_shards,
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
+  build_dir = source_dir / 'out' / 'some_build_dir'
   invalid_suites, failed_tests = api.test_utils.run_tests(
       checkout_dir,
       source_dir,
+      build_dir,
       tests,
       '',
       retry_failed_shards=retry_failed_shards,

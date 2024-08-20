@@ -64,6 +64,7 @@ class ChromiumReviverApi(recipe_api.RecipeApi):
       test_runner = self.m.chromium_tests.create_test_runner(
           checkout_dir,
           source_dir,
+          build_dir,
           tests,
           serialize_tests=builder_config.serialize_tests,
           surface_invalid_results_as_infra_failure=True)
