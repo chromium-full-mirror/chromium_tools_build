@@ -374,7 +374,7 @@ def clang_tot(c):
 def internal_isolate_paths(c):
   c.project_generator.isolate_map_paths = [
       'internal/testing/buildbot/gn_isolate_map.pyl',
-      'testing/buildbot/gn_isolate_map.pyl',
+      '/infra/config/generated/testing/gn_isolate_map.pyl',
   ]
 
 
@@ -602,5 +602,5 @@ def mac_toolchain(c):
 def android_internal_isolate_maps(c):
   c.project_generator.isolate_map_paths = [
       'clank/build/bot/gn_isolate_map.pyl',
-      'testing/buildbot/gn_isolate_map.pyl',
+      'infra/config/generated/testing/gn_isolate_map.pyl',
   ]

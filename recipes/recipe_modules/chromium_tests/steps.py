@@ -763,7 +763,7 @@ class TestSpec(AbstractTestSpec):
   Attributes:
     * name - The displayed name of the test.
     * target_name - The ninja build target for the test, a key in
-      //testing/buildbot/gn_isolate_map.pyl, e.g. "browser_tests".
+      one of the gn_isolate_map.pyl files being used, e.g. "browser_tests".
     * full_test_target - A fully qualified Ninja target, e.g.
       "//chrome/test:browser_tests".
     * waterfall_builder_group - The matching waterfall builder group.
