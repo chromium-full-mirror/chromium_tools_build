@@ -171,7 +171,7 @@ def RunSteps(api, properties):
       task_input = api.isolate.isolated_tests.get(test.isolate_target)
 
       task = api.chromium_swarming.task(
-          name=f'rr tool runner for {test_name}',
+          name=f'rr tool runner for {test_name} in {test_info.test_suite}',
           raw_cmd=command,
           cas_input_root=task_input,
           service_account=test.spec.service_account,
@@ -324,11 +324,11 @@ def GenTests(api):
       api.override_step_data(
           'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
           api.file.read_json({'cmd': ''})),
-      api.step_data('rr tool runner for test1',
+      api.step_data('rr tool runner for test1 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, bad_summary_json())),
-      api.step_data('rr tool runner for test2',
+      api.step_data('rr tool runner for test2 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
-      api.step_data('rr tool runner for test3',
+      api.step_data('rr tool runner for test3 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
       api.resultdb.query(step_name='rdb query', inv_bundle=inv_bundle),
       api.resultdb.query(step_name='rdb query (2)', inv_bundle=inv_bundle),
@@ -401,9 +401,9 @@ def GenTests(api):
       api.override_step_data(
           'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
           api.file.read_json({'cmd': ''})),
-      api.step_data('rr tool runner for test1',
+      api.step_data('rr tool runner for test1 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
-      api.step_data('rr tool runner for test2',
+      api.step_data('rr tool runner for test2 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
       api.post_process(DropExpectation),
   )
@@ -558,9 +558,9 @@ def GenTests(api):
           'Read [CACHE]/builder/src/out/Release/blink_wpt_tests.isolate',
           api.file.read_json({'cmd': ''})),
       api.post_process(MustRun, 'write gn args'),
-      api.step_data('rr tool runner for test1',
+      api.step_data('rr tool runner for test1 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
-      api.step_data('rr tool runner for test2',
+      api.step_data('rr tool runner for test2 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
       api.post_process(DropExpectation),
   )
