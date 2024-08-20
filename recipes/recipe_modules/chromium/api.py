@@ -473,6 +473,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       if ninja_invocation_id and 'ninja_invocation_id' not in ninja_step_result.presentation.tags:
         ninja_step_result.presentation.tags[
             'ninja_invocation_id'] = ninja_invocation_id
+      if ex.was_cancelled:
+        raise
       if ninja_step_result.retcode != 1:
         raise self.m.step.InfraFailure(
             ninja_step_result.name, result=ninja_step_result)
