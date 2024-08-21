@@ -275,8 +275,9 @@ class SsciAPI(recipe_api.RecipeApi):
                 'digest': spdx_digest,
                 'file': f'gs://{sbom_bucket}/{full_path}',
                 'filename': final_artifact_name,
-                'target': entry_point,
-                'sbom_name': filename
+                'sbom_name': filename,
+                'sbom_path': f'{spdx_file}',
+                'target': entry_point
             }
         })
 
