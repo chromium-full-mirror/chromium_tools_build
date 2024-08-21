@@ -128,6 +128,8 @@ class _PropertiesAssembler:
             builder_spec.clobber,
         'build_gs_bucket':
             builder_spec.build_gs_bucket,
+        'mb_phase_for_tests':
+            builder_spec.mb_phase_for_tests,
         'run_tests_serially':
             builder_spec.serialize_tests,
         'expose_trigger_properties':

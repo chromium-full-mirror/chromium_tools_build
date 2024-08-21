@@ -755,3 +755,17 @@ target_os=['os']
                        ]),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'mb_phase',
+      boilerplate(
+          ctbc_properties=gen_ctbc_properties(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  mb_phase_for_tests='some-mb-phase',
+              ),),),
+      api.post_process(post_process.StepCommandContains, 'lookup GN args',
+                       ['some-mb-phase']),
+      api.post_process(post_process.DropExpectation),
+  )

@@ -9,7 +9,7 @@ import "go.chromium.org/luci/buildbucket/proto/builder_common.proto";
 
 // The details configuring execution for a single builder
 //
-// Next ID: 18
+// Next ID: 19
 message BuilderSpec {
   // Required, the builder group that the builder is a part of
   //
@@ -114,6 +114,9 @@ message BuilderSpec {
   // This must be set for builders with the BUILDER bot type that trigger
   // testers that will run non-isolated tests.
   string build_gs_bucket = 11;
+
+  // The 'mb' phase that the compiling-builder used to compile any tests.
+  string mb_phase_for_tests = 18;
 
   // Whether swarming tests should be run serially
   //

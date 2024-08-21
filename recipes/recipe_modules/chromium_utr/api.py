@@ -83,7 +83,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     self.m.code_coverage.build_dir = build_path
 
     result = self.prerun_checks(properties, source_dir, build_path,
-                                compiling_builder_id)
+                                compiling_builder_id, compiling_builder_config)
     if result != None:
       return result
 
@@ -279,13 +279,16 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       self,
       source_dir: Path,
       build_dir: Path,
-      builder_id: chromium.BuilderId,
+      compiling_builder_id: chromium.BuilderId,
+      compiling_builder_config: ctbc.BuilderConfig,
   ) -> str:
     """Check if the args.gn file is acceptable to use for the selected builder
 
     Args:
         build_dir: Path to the build dir being used
         builder_id: The BuilderId for the builder being run
+        compiling_builder_id: BuilderId for the compiling builder
+        compiling_builder_config: BuilderId for the given builder
     Returns:
         A string that represents the error or an empty string when there is no
         warning
@@ -295,7 +298,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return [l.strip() for l in args.splitlines() if l.startswith('import(')]
 
     builder_gn_args = self.m.chromium.mb_lookup(
-        source_dir, builder_id, recursive=False, name='lookup_builder_gn_args')
+        source_dir,
+        compiling_builder_id,
+        recursive=False,
+        phase=compiling_builder_config.mb_phase_for_tests,
+        name='lookup_builder_gn_args')
     builder_imports = get_imports(builder_gn_args)
     builder_gn_args = self.m.gn.parse_gn_args(builder_gn_args)
 
@@ -370,7 +377,20 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       source_dir: Path,
       build_path: Path,
       compiling_builder_id: chromium.BuilderId,
+      compiling_builder_config: ctbc.BuilderConfig,
   ) -> result_pb2.RawResult:
+    """Checks that local conditions are right to continue with the build.
+
+    Args:
+      properties: Request given to the recipe
+      source_dir: The path to the top-level repo
+      build_path: Path to the build dir being used
+      compiling_builder_id: BuilderId for the compiling builder
+      compiling_builder_config: BuilderId for the compiling builder
+
+    Returns:
+      None if everything is OK. Otherwise a RawResult that will trigger a rerun
+    """
     # TODO(crbug.com/41492686): Combine these checks so they can be prompted in
     # one interation of the recipe invocations
 
@@ -386,7 +406,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if (self.m.path.exists(build_path / 'args.gn') and
         not properties.rerun_options.bypass_gn_args):
       error_message = self.check_gn_args(source_dir, build_path,
-                                         compiling_builder_id)
+                                         compiling_builder_id,
+                                         compiling_builder_config)
       if error_message:
         rerun_options = [
             self.create_prompt_option(
@@ -556,6 +577,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       properties: Request,
       tests: Iterable[Test],
       builder_id: chromium.BuilderId,
+      builder_config: ctbc.BuilderConfig,
       preserve_gn_args: bool,
       source_dir: Path,
       build_dir: Path,
@@ -567,6 +589,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         properties: Request given to the recipe
         tests: Iterable of test objects to be compiled
         builder_id: The ID of the builder to compile for
+        builder_config: BuilderConfig of the given builder
         preserve_gn_args: Bool whether to have the recipe overwrite the gn args
           with the builder_id's gn args
         build_dir: Path to the directory to use for building
@@ -603,6 +626,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
             source_dir,
             builder_id,
             recursive=False,
+            phase=builder_config.mb_phase_for_tests,
             name='lookup_builder_gn_args')
       else:
         gn_args, _ = self.m.gn.read_args(build_dir)
@@ -631,6 +655,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           builder_id,
           name='generate_build_files',
           recursive_lookup=True,
+          phase=builder_config.mb_phase_for_tests,
           isolated_targets=tests_to_isolate)
 
     # Some tests don't require anything to be compiled.
@@ -720,8 +745,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     if should_build:
       raw_result, generated_isolates = self.compile_targets(
-          properties, tests, builder_id, preserve_gn_args, source_dir,
-          build_dir, builder_recipe)
+          properties, tests, builder_id, builder_config, preserve_gn_args,
+          source_dir, build_dir, builder_recipe)
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
     skylab_tests = [test for test in tests if test.runs_on_skylab]
@@ -730,7 +755,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       # all other instances, we need to ask mb.py to do so specifically. Do so
       # for *all* possible targets. This shouldn't take much longer, and
       # simplifies things a bit.
-      self.m.chromium.mb_isolate_everything(source_dir, build_dir, None)
+      self.m.chromium.mb_isolate_everything(
+          source_dir, build_dir, None, phase=builder_config.mb_phase_for_tests)
 
     isolate_tests = [test for test in tests if test.isolate_target]
     if isolate_tests:

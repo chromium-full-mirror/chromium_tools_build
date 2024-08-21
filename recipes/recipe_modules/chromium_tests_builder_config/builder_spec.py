@@ -138,6 +138,9 @@ class BuilderSpec:
   # that will run non-isolated tests
   build_gs_bucket = attrib(str, default=None)
 
+  # The 'mb' phase that the compiling-builder used to compile any tests.
+  mb_phase_for_tests = attrib(str, default=None)
+
   # A bool controlling whether swarming tests should be run serially
   # If not True, requests for test tasks are issued to swarming in parallel
   # Running tests in serial can be useful if you have limited hardware capacity

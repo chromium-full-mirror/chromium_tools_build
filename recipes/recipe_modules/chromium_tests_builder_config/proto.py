@@ -156,6 +156,7 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
       android_version=obj.android_version_file or None,
       clobber=obj.clobber,
       build_gs_bucket=obj.build_gs_bucket or None,
+      mb_phase_for_tests=obj.mb_phase_for_tests or None,
       serialize_tests=obj.run_tests_serially,
       perf_isolate_upload=obj.perf_isolate_upload,
       expose_trigger_properties=obj.expose_trigger_properties,
