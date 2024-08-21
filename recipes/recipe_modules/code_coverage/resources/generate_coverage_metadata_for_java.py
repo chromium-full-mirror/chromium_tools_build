@@ -563,11 +563,13 @@ def main():
   logging.info('Found coverage files: %s', str(coverage_files))
 
   try:
-    cmd = [
-        'java', '-jar',
-        os.path.join(params.src_path, 'third_party', 'jacoco', 'lib',
-                     'jacococli.jar'), 'report'
-    ]
+    jacococli_jar = os.path.join(params.src_path, 'third_party', 'jacoco',
+                                 'cipd', 'lib', 'jacococli.jar')
+    # TODO: Remove the fallback once no builders are building old versions of chromium/src.
+    if not os.path.exists(jacococli_jar):
+      jacococli_jar = os.path.join(params.src_path, 'third_party', 'jacoco',
+                                   'lib', 'jacococli.jar')
+    cmd = ['java', '-jar', jacococli_jar, 'report']
     host_coverage_files = [
         f for f in coverage_files if f.endswith('junit_tests.exec') and
         re.match(params.exec_filename_pattern, f)
