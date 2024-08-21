@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import collections
+from collections.abc import Iterable
 import copy
 import datetime
 import decimal
@@ -966,10 +967,14 @@ class SwarmingApi(recipe_api.RecipeApi):
                                          shard_indices, resultdb_enabled),
         infra_step=True,
         **kwargs)
-    step_result.presentation.step_text += task.text_for_step(
-        self.m.buildbucket.build.builder.project, self.m.led.shadowed_bucket or
-        self.m.buildbucket.build.builder.bucket,
-        self.m.buildbucket.build.builder.builder)
+
+    test_suite_name = task.test_suite_name
+    instructions = task.get_local_instruction()
+    if test_suite_name:
+      instructions = self.m.repro_instructions.get_utr_instruction(
+          'compile-and-test', [test_suite_name]) + instructions
+    step_result.presentation.step_text += (task.text_for_step() + instructions)
+
     if task.instructions_tag:
       step_result.presentation.tags[
           'resultdb.instruction.id'] = task.instructions_tag
@@ -1017,10 +1022,14 @@ class SwarmingApi(recipe_api.RecipeApi):
                                          [shard_index], resultdb_enabled),
         infra_step=True,
         **kwargs)
-    step_result.presentation.step_text += task.text_for_step(
-        self.m.buildbucket.build.builder.project, self.m.led.shadowed_bucket or
-        self.m.buildbucket.build.builder.bucket,
-        self.m.buildbucket.build.builder.builder)
+
+    test_suite_name = task.test_suite_name
+    instructions = task.get_local_instruction()
+    if test_suite_name:
+      instructions = self.m.repro_instructions.get_utr_instruction(
+          'compile-and-test', [test_suite_name]) + instructions
+    step_result.presentation.step_text += (task.text_for_step() + instructions)
+
     if task.instructions_tag:
       step_result.presentation.tags[
           'resultdb.instruction.id'] = task.instructions_tag
@@ -1359,10 +1368,14 @@ class SwarmingApi(recipe_api.RecipeApi):
         task_args=collect_task_args,
         step_test_data=step_test_data,
         **kwargs)
-    step_result.presentation.step_text += task.text_for_step(
-        self.m.buildbucket.build.builder.project, self.m.led.shadowed_bucket or
-        self.m.buildbucket.build.builder.bucket,
-        self.m.buildbucket.build.builder.builder)
+
+    test_suite_name = task.test_suite_name
+    instructions = task.get_local_instruction()
+    if test_suite_name:
+      instructions = self.m.repro_instructions.get_utr_instruction(
+          'compile-and-test', [test_suite_name]) + instructions
+    step_result.presentation.step_text += (task.text_for_step() + instructions)
+
     if task.instructions_tag:
       step_result.presentation.tags[
           'resultdb.instruction.id'] = task.instructions_tag
@@ -1852,6 +1865,8 @@ class SwarmingTask:
     attempt. The actual triggered shards from this attempt can be obtained by
     directly accessing the member.
     """
+    if not self._trigger_output:
+      return None
     # JSON results of 'trigger' step converted for luci-go client.
     # This is used for isolated script tasks.
     tasks = sorted(self._trigger_output['tasks'].values(),
@@ -1869,7 +1884,22 @@ class SwarmingTask:
         'tasks': {task['shard_index']: task for task in tasks},
     }
 
-  def text_for_step(self, project_name, bucket_name, builder_name):
+  @property
+  def test_suite_name(self) -> str | None:
+    """Gets the test suite name that this task belongs to
+
+    This is based on the test_suite tag which is getting set in step.py which
+    might not be set by all uses of this module.
+    """
+    # TODO(crbug.com/350641999): Clean-up how we handle and set swarming tags
+    # throughout the Chromium recipe stack.
+    for t in self.request.tags or []:
+      k, v = t.split(':', 1)
+      if k == 'test_suite':
+        return v
+    return None
+
+  def text_for_step(self):
     """Returns the markdown step text for the test's step display in Milo."""
     lines = []
 
@@ -1883,10 +1913,7 @@ class SwarmingTask:
       lines.append('Run on Device OS: %r' % dimensions['device_os'])
     elif dimensions.get('os'):
       lines.append('Run on OS: %r' % dimensions['os'])
-
-    lines.append(self.get_local_instruction())
-    lines.append(
-        self.get_utr_instruction(project_name, bucket_name, builder_name))
+    lines.append('')
     return '<br/>'.join(lines)
 
   def get_local_instruction(self, *, extra_args=None) -> str:
@@ -1903,62 +1930,11 @@ class SwarmingTask:
     cmd = cmd.removeprefix('luci-auth.exe context -- ')
     lines = []
     if len(cmd) <= 1000:
-      lines.append('Test command:')
+      lines.append('Test command to run from the build dir:<br/>')
       lines.append('```' + cmd + '```')
     else:
       lines.append('Test command too long to list. See "shard #0" link below '
                    'for the full invocation.')
-    lines.append('')
-    return '<br/>'.join(lines)
-
-  def get_utr_instruction(self,
-                          project_name,
-                          bucket_name,
-                          builder_name,
-                          *,
-                          extra_args=None):
-    # TODO(crbug.com/350641999): Clean-up how we handle and set swarming tags
-    # throughout the Chromium recipe stack.
-    test_name = None
-    for t in self.request.tags or []:
-      k, v = t.split(':', 1)
-      if k == 'test_suite':
-        test_name = v
-        break
-    # This "test_suite" tag depends on the value set in steps.py, so might not
-    # be set for all uses of this recipe module. Use that as an indication that
-    # this module is being used outside of a Chrome/Chromium builder.
-    if not test_name:
-      return ''
-
-    def quote_as_needed(s):
-      if len(s.split()) > 1:
-        return '"' + s + '"'
-      return s
-
-    utr_cmd = [
-        'vpython3',
-        'tools/utr',
-        '-p',
-        quote_as_needed(project_name),
-        '-B',
-        quote_as_needed(bucket_name),
-        '-b',
-        quote_as_needed(builder_name),
-        '-t',
-        quote_as_needed(test_name),
-        'compile-and-test',
-    ]
-    if extra_args:
-      utr_cmd.append('--')
-      utr_cmd.extend(extra_args)
-    utr_cmd = ' '.join(utr_cmd)
-    utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
-    lines = []
-    lines.append(
-        f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
-        'checkout:')
-    lines.append('```' + utr_cmd + '```')
     lines.append('')
     return '<br/>'.join(lines)
 

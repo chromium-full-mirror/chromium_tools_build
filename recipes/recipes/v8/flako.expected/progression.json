@@ -365,7 +365,7 @@
     "name": "calibration attempt 1.check mjsunit/foobar at #0.check mjsunit/foobar at #0 - shard 0 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```python3 -u tools/run-tests.py --progress=verbose --outdir=out/build --timeout=20 --swarming --variants=stress_foo --exit-after-n-failures=4 --foo-flag --bar-flag mjsunit/foobar --random-seed-stress-count=1000000 --total-timeout-sec=120```<br/><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```python3 -u tools/run-tests.py --progress=verbose --outdir=out/build --timeout=20 --swarming --variants=stress_foo --exit-after-n-failures=4 --foo-flag --bar-flag mjsunit/foobar --random-seed-stress-count=1000000 --total-timeout-sec=120```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

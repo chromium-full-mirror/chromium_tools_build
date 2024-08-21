@@ -2633,7 +2633,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update invocation instructions",
+    "name": "update invocation instructions with patch",
     "stdin": "{\"invocation\": {\"instructions\": {}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",

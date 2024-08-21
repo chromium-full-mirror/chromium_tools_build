@@ -583,15 +583,6 @@ class AbstractTest(abc.ABC):
     """Whether to check flakiness for new tests in try jobs."""
     raise NotImplementedError()  # pragma: no cover
 
-  @abc.abstractmethod
-  def get_instructions(self) -> Iterable[instruction_pb.Instruction]:
-    """Gets the reproduction instructions to be attached to the invocation
-
-    See the invocation and instruction restrictions at:
-    https://source.chromium.org/chromium/infra/infra_superproject/+/main:infra/go/src/go.chromium.org/luci/resultdb/proto/v1/instruction.proto
-    """
-    raise NotImplementedError()  # pragma: no cover
-
   def failures_including_retry(
       self,
       suffix: str,
@@ -896,10 +887,6 @@ class Test(AbstractTest):
     # inspecting JSON.
     self._failure_on_exit_suffix_map = {}
 
-    # Tag to apply to the tests step that will display the reproduction
-    # instructions
-    self._instructions_tag = f'{self.spec.name}_instructions_tag'
-
   @property
   def spec(self) -> AbstractTestSpec:
     return self._spec
@@ -969,10 +956,6 @@ class Test(AbstractTest):
   def api(self):
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
-
-  def get_instructions(self) -> Iterable[instruction_pb.Instruction]:
-    """Gets the reproduction instructions to be attached to the invocation"""
-    return []
 
   def get_rdb_results(self, suffix: str) -> util.RDBPerSuiteResults:
     return self._rdb_results.get(suffix)
@@ -1117,8 +1100,8 @@ class Test(AbstractTest):
       else:
         step_result.presentation.links[failure] = results_url
 
-  def _instructions_tag_for_sufix(self, instruction_type: str,
-                                  suffix: str) -> str:
+  def _instructions_tag_for_suffix(self, instruction_type: str,
+                                   suffix: str) -> str:
     identifiers = [self.name, instruction_type, suffix]
     return 'tag_' + str(
         hashlib.sha1(''.join(
@@ -2226,35 +2209,17 @@ class SwarmingTest(Test, AbstractSwarmingTest):
   def shards(self) -> int:
     return self.spec.shards
 
-  def get_instructions(self) -> Iterable[instruction_pb.Instruction]:
+  def _add_instructions(self):
     """Gets the reproduction instructions to be attached to the invocation"""
-    instructions = []
+
     for suffix, task in self._tasks.items():
-      instructions.append(
-          instruction_pb.Instruction(
-              id=self._instructions_tag_for_sufix('step', suffix),
-              descriptive_name=f'{self.name} instructions'[:100],
-              type=instruction_pb.InstructionType.STEP_INSTRUCTION,
-              targeted_instructions=[
-                  instruction_pb.TargetedInstruction(
-                      content=task.get_utr_instruction(
-                          self.api.m.buildbucket.build.builder.project,
-                          self.api.m.led.shadowed_bucket or
-                          self.api.m.buildbucket.build.builder.bucket,
-                          self.api.m.buildbucket.build.builder.builder,
-                      ),
-                      targets=[
-                          instruction_pb.InstructionTarget.REMOTE,
-                      ],
-                  ),
-                  instruction_pb.TargetedInstruction(
-                      content=task.get_local_instruction(),
-                      targets=[
-                          instruction_pb.InstructionTarget.LOCAL,
-                      ],
-                  ),
-              ],
-          ))
+      self.api.m.repro_instructions.create_step_instruction(
+          self._instructions_tag_for_suffix('step', suffix),
+          f'{self.name} instructions',
+          task.get_local_instruction(),
+          self.api.m.repro_instructions.get_utr_instruction(
+              'compile-and-test', [self.name]),
+      )
 
       test_invocations = [
           inv if '/' not in inv else inv.split('/')[1]
@@ -2266,36 +2231,13 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         # {{test.tags.test_name}} which will be replaced in milo with the
         # actual test name
         filter_arg = f'{self.option_flags.filter_flag}={{{{test.tags.test_name}}}}'
-        instructions.append(
-            instruction_pb.Instruction(
-                id=self._instructions_tag_for_sufix('test', suffix),
-                type=instruction_pb.InstructionType.TEST_RESULT_INSTRUCTION,
-                descriptive_name=f'{self.name} instructions'[:100],
-                targeted_instructions=[
-                    instruction_pb.TargetedInstruction(
-                        targets=[
-                            instruction_pb.InstructionTarget.REMOTE,
-                        ],
-                        content=task.get_utr_instruction(
-                            self.api.m.buildbucket.build.builder.project,
-                            self.api.m.led.shadowed_bucket or
-                            self.api.m.buildbucket.build.builder.bucket,
-                            self.api.m.buildbucket.build.builder.builder,
-                            extra_args=[filter_arg]),
-                    ),
-                    instruction_pb.TargetedInstruction(
-                        targets=[
-                            instruction_pb.InstructionTarget.LOCAL,
-                        ],
-                        content=task.get_local_instruction(
-                            extra_args=[filter_arg]),
-                    ),
-                ],
-                instruction_filter=instruction_pb.InstructionFilter(
-                    invocation_ids=instruction_pb
-                    .InstructionFilterByInvocationID(
-                        invocation_ids=test_invocations))))
-    return instructions
+        self.api.m.repro_instructions.create_test_result_instruction(
+            self._instructions_tag_for_suffix('test', suffix),
+            f'{self.name} instructions',
+            task.get_local_instruction(extra_args=[filter_arg]),
+            self.api.m.repro_instructions.get_utr_instruction(
+                'compile-and-test', [self.name], extra_args=['--', filter_arg]),
+            test_invocations=test_invocations)
 
   def did_complete(self, suffix) -> bool:
     return suffix in self._tasks and not self._tasks[
@@ -2624,6 +2566,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self.api.m.chromium_swarming.trigger_task(
         self._tasks[suffix], resultdb=resultdb)
 
+    # Add instructions now that we have invocations
+    self._add_instructions()
+
   def run(
       self,
       checkout_dir: Path,
@@ -2714,7 +2659,7 @@ class SwarmingGTestTest(SwarmingTest):
         relative_cwd=self.relative_cwd,
         cas_input_root=cas_input_root,
         collect_json_output_override=json_override,
-        instructions_tag=self._instructions_tag_for_sufix('step', suffix))
+        instructions_tag=self._instructions_tag_for_suffix('step', suffix))
     extra_args = list(self.spec.args) + cmd_filters
     merged_filter_file_arg = ';'.join(
         arg[len('--test-launcher-filter-file='):]
@@ -2906,7 +2851,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
         raw_cmd=cmd,
         relative_cwd=self.relative_cwd,
         cas_input_root=cas_input_root,
-        instructions_tag=self._instructions_tag_for_sufix('step', suffix))
+        instructions_tag=self._instructions_tag_for_suffix('step', suffix))
 
     self._apply_swarming_task_config(task, suffix,
                                      '--isolated-script-test-filter', '::',
