@@ -225,7 +225,7 @@ def GenTests(api):
           'test_pre_run.basic_EVE_TOT.schedule', [
               '--lacros-gcs-path',
               'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/'
-              f'{TAST_TARGET}/lacros_compressed.squash'
+              f'{TAST_TARGET}/skylab_runtime_deps.tar.zst'
           ]),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #0'),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
@@ -386,7 +386,7 @@ def GenTests(api):
           'test_pre_run.basic_EVE_TOT.schedule', [
               '--lacros-gcs-path', 'gs://chrome-test-builds/lacros/'
               f'8945511751514863184_with_patch/{GTEST_TARGET}/'
-              'lacros_compressed.squash'
+              'skylab_runtime_deps.tar.zst'
           ]),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
       api.post_process(

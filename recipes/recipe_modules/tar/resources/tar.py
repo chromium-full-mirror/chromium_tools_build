@@ -8,6 +8,7 @@ recipe module internally. Should not be used elsewhere.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from typing import Dict, Optional
 import json
 import os
 import subprocess
@@ -15,7 +16,8 @@ import sys
 import tarfile
 
 
-def tar_with_subprocess(root, output, entries, compression):
+def tar_with_subprocess(root, output: str, entries: Dict[str, str],
+                        compression: str, compression_level: Optional[int]):
   """tars set of files and directories using 'tar' utility.
 
   Works only on Linux and Mac, uses system 'tar' program.
@@ -24,6 +26,10 @@ def tar_with_subprocess(root, output, entries, compression):
     root: absolute path to a directory that will become a root of the archive.
     output: absolute path to a destination archive.
     entries: list of dicts, describing what to tar, see tar/api.py.
+    compression: the compression algorithm to use, can be 'gz', 'bz2' or 'zstd'.
+    compression_level: the compression level for zstd, valid values are between
+                       1 and 20. Compression level for other algorithms are not
+                       handled.
 
   Returns:
     Exit code (0 on success).
@@ -54,6 +60,15 @@ def tar_with_subprocess(root, output, entries, compression):
   options = '-cv'
   if compression in ['gz', 'bz2']:
     options += {'gz': 'z', 'bz2': 'j'}[compression]
+  elif compression == 'zstd':
+    if compression_level is not None:
+      compression = compression + " -" + str(compression_level)
+    # Set multithreaded zstd for compression.
+    compression += " -T0"
+    # zstd compression doesn't have one letter options, append to args directly.
+    args += ['-I', compression]
+  elif compression != "":
+    raise AssertionError("Unknown compression method: %s" % (compression,))
 
   # Sequence of options must have f at the end to define the output.
   # -cv[z/j]f
@@ -126,6 +141,7 @@ def main():
   entries = data['entries']
   output = data['output']
   compression = data['compression']
+  compression_level = data.get('compression_level')
   root = data['root'].rstrip(os.path.sep) + os.path.sep
 
   # Archive root directory should exist and be an absolute path.
@@ -145,7 +161,8 @@ def main():
       exit_code = tar_with_python(root, output, entries, compression)
     else:
       # On mac and linux 'tar' utility handles symlink and file modes.
-      exit_code = tar_with_subprocess(root, output, entries, compression)
+      exit_code = tar_with_subprocess(root, output, entries, compression,
+                                      compression_level)
   finally:
     # On non-zero exit code or on unexpected exception, clean up.
     if exit_code:
