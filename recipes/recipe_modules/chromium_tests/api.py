@@ -267,6 +267,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             builder_config,
                             got_revisions,
                             source_dir,
+                            build_dir,
                             *,
                             targets_spec_dir: Path | None = None,
                             checkout_dir: Path | None = None,
@@ -279,6 +280,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       got_revisions (dict): revisions checked out for src and other deps.
         Usually stored in the bot_update step presentation properties.
       source_dir: The path to the top-level repo.
+      build_dir: Path to the build dir.
       targets_spec_dir: Path to directory containing targets specs. If
         this is None, checkout_dir must be non-None and
         get_targets_spec_dir will be called.
@@ -316,7 +318,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     def memoized_scripts_compile_targets_fn():
       nonlocal scripts_compile_targets
       if scripts_compile_targets is None:
-        scripts_compile_targets = scripts_compile_targets_fn(source_dir)
+        scripts_compile_targets = scripts_compile_targets_fn(
+            source_dir, build_dir)
       return scripts_compile_targets
 
     targets_specs_by_builder_by_group = {}
@@ -413,6 +416,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_config,
         update_result.properties,
         source_dir,
+        build_dir,
         checkout_dir=update_result.checkout_dir)
 
     return update_result, build_dir, targets_config
@@ -1635,10 +1639,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_spec.build_gs_bucket,
         extra_url_components=self.m.builder_group.for_current)
 
-  def get_common_args_for_scripts(self, source_dir: Path):
+  def get_common_args_for_scripts(self, source_dir: Path, build_dir: Path):
     args = []
 
-    args.extend(['--build-config-fs', self.m.chromium.c.build_config_fs])
+    args.extend(['--build-dir', build_dir])
 
     paths = {
         'checkout': source_dir,
@@ -1662,7 +1666,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return args, paths, properties
 
-  def get_compile_targets_for_scripts(self, source_dir: Path):
+  def get_compile_targets_for_scripts(self, source_dir: Path, build_dir: Path):
     """This gets the combined compile_targets information from the
     //testing/scripts/get_compile_targets.py script.
 
@@ -1686,7 +1690,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     TODO:
       * Only gather targets for the scripts that we might concievably run.
     """
-    common_args, _, _ = self.get_common_args_for_scripts(source_dir)
+    common_args, _, _ = self.get_common_args_for_scripts(source_dir, build_dir)
     result = self.m.step(
         name='get compile targets for scripts',
         cmd=[

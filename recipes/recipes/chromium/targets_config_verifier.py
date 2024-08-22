@@ -170,9 +170,10 @@ def _get_targets_config(
         builder_config,
         got_revisions={},
         source_dir=source_dir,
+        build_dir=None,
         targets_spec_dir=targets_spec_dir,
         precommit_details=precommit_details,
-        scripts_compile_targets_fn=lambda source_dir: {},
+        scripts_compile_targets_fn=lambda source_dir, build_dir: {},
     )
 
 

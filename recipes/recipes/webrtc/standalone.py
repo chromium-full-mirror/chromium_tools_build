@@ -39,6 +39,7 @@ def RunSteps(api):
       builder_config,
       update_result.properties,
       source_dir,
+      build_dir,
       checkout_dir=checkout_dir)
 
   api.chromium_swarming.configure_swarming(precommit=api.tryserver.is_tryserver)

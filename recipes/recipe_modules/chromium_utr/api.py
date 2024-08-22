@@ -714,7 +714,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     preserve_gn_args = properties.rerun_options.preserve_gn_args
     builder_recipe = properties.builder_recipe
     targets_config = self.m.chromium_tests.create_targets_config(
-        builder_config, got_revisions, source_dir, checkout_dir=checkout_dir)
+        builder_config,
+        got_revisions,
+        source_dir,
+        build_dir,
+        checkout_dir=checkout_dir)
 
     def _get_matching_test(requested_test_name):
       for t in targets_config.all_tests:

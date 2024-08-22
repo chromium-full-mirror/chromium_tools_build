@@ -136,6 +136,7 @@ class ANGLEApi(recipe_api.RecipeApi):
           self._builder_config,
           update_result.properties,
           source_dir,
+          build_dir,
           checkout_dir=checkout_dir)
 
       if self.m.tryserver.is_tryserver:

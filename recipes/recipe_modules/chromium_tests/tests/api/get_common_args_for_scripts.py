@@ -15,10 +15,12 @@ DEPS = [
 
 def RunSteps(api):
   source_dir = api.path.cache_dir / 'builder/src'
+  build_dir = source_dir / 'out' / 'some-build-dir'
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
-  common_args, _, _ = api.chromium_tests.get_common_args_for_scripts(source_dir)
+  common_args, _, _ = api.chromium_tests.get_common_args_for_scripts(
+      source_dir, build_dir)
   api.step(
       'sample script',
       [
@@ -36,8 +38,8 @@ def GenTests(api):
           builder='linux-perf',
       ),
       api.post_process(StepCommandContains, 'sample script', [
-          '--build-config-fs',
-          'Release',
+          '--build-dir',
+          '[CACHE]/builder/src/out/some-build-dir',
           '--paths',
           '{"checkout": "[CACHE]/builder/src"}',
           '--properties',

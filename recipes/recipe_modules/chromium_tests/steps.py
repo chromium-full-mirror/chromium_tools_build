@@ -1745,7 +1745,7 @@ class ScriptTest(LocalTest):
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
-    del checkout_dir, build_dir
+    del checkout_dir
 
     run_args = []
 
@@ -1772,7 +1772,8 @@ class ScriptTest(LocalTest):
     # Enforce that all scripts are in the specified directory for
     # consistency.
     common_args, paths, properties = (
-        self.api.m.chromium_tests.get_common_args_for_scripts(source_dir))
+        self.api.m.chromium_tests.get_common_args_for_scripts(
+            source_dir, build_dir))
     cmd = ([
         'vpython3',
         (source_dir / 'testing/scripts' /

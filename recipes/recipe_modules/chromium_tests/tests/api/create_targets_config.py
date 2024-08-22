@@ -67,6 +67,7 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   update_result = api.chromium_checkout.ensure_checkout()
+  build_dir = update_result.checkout_dir / 'src' / 'out' / 'some-build-dir'
   targets_config = api.chromium_tests.create_targets_config(
       builder_config,
       {
@@ -80,6 +81,7 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
           "got_webrtc_revision_cp": "refs/heads/main@{#36539}",
       },
       update_result.source_root.path,
+      build_dir,
       checkout_dir=update_result.checkout_dir,
       targets_spec_dir=targets_spec_dir,
       precommit_details=(generators.PrecommitDetails()
