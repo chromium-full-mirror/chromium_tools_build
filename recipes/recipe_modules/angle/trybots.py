@@ -126,6 +126,11 @@ _SPEC = {
                 try_spec.TryMirror.create(
                     builder_group='angle',
                     buildername='linux-exp-test',
+                    tester='linux-exp-nvidia',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-exp-test',
                     tester='linux-exp-swiftshader',
                 ),
             ],
