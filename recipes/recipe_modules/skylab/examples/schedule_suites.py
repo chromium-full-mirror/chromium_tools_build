@@ -167,6 +167,13 @@ REQUESTS = [
         autotest_name='chromium',
         run_cft=True,
     ),
+    gen_skylab_test(
+        'm88_gtest_test_args',
+        tast_expr=None,
+        test_args=LACROS_GTEST_ARGS,
+        autotest_name='chromium',
+        cros_cbx=True,
+    ),
 ]
 
 BUILD_VARIANT_REQUESTS = [
@@ -784,9 +791,18 @@ def GenTests(api):
 
   yield api.test(
       'enable-cft',
-      api.properties(requests=REQUESTS[6:]),
+      api.properties(requests=REQUESTS[6:7]),
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[6].name + '.schedule',
                        '--run-cft'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'require-cbx',
+      api.properties(requests=REQUESTS[7:]),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[6].name + '.schedule',
+                       '--cbx'),
       api.post_process(post_process.DropExpectation),
   )

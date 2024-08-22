@@ -106,6 +106,8 @@ def schedule_skylab_tests(opts):
     req.params.scheduling.CopyFrom(_scheduling_for_pool(opts.pool))
     req.params.scheduling.qs_account = opts.qs_account
     req.params.decorations.tags.append(f'label-board:{opts.board}')
+    if opts.cbx:
+      req.params.decorations.tags.append('label-cbx:True')
     # TODO(b/242007010): Known issues in CTP that mixes build_target and DUT board.
     # Keep DUT board until issues is fixed.
     req.params.software_attributes.build_target.name = opts.board
@@ -237,6 +239,8 @@ def main(args):
   subparser.add_argument('--board', type=str, help='ChromeOS board name.')
   subparser.add_argument(
       '--model', type=str, default=None, help='ChromeOS model name.')
+  subparser.add_argument(
+      '--cbx', action='store_true', help='Require CBX model.')
   subparser.add_argument(
       '--bucket',
       type=str,

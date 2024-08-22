@@ -146,6 +146,9 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.cros_model:
         cmd.extend(['--model', test.spec.cros_model])
 
+      if test.spec.cros_cbx:
+        cmd.extend(['--cbx'])
+
       if test.spec.bucket:
         cmd.extend(['--bucket', test.spec.bucket])
 

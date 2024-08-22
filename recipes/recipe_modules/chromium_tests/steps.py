@@ -3052,6 +3052,15 @@ class SkylabTestSpec(TestSpec):
   cros_build_target = attrib(str, default='')
   # The CrOS DUT model.
   cros_model = attrib(str, default='')
+  # Reqiure a CBX/Chromebook Plus DUT.
+  # Even for the same board (like brya), not all DUTs or models have CBX
+  # features.
+  # Larger DUT pool like ChromeOS's main pool MANAGED_DUT_QUOTA contains all
+  # DUTs used by ChromeOS majority of testing, and mixes all kinds of devices.
+  # SkylabTestSpec can configure cros_model to limit to a particular model with
+  # CBX enabled, but can also use cros_cbx without cros_model to have larger
+  # capacity of DUTs running CBX tests.
+  cros_cbx = attrib(bool, default=False)
   # Use the LKGM version of CrOS image.
   # When this is set to true, cros_img must be empty.
   use_lkgm = attrib(bool, default=False)
