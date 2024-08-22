@@ -367,6 +367,82 @@ class TestUtilsApi(recipe_api.RecipeApi):
     return 'https://ci.chromium.org/ui/inv/{}/test-results'.format(
         invocation_id)
 
+  def fetch_rdb_results(self,
+                        test,
+                        suffix,
+                        test_invocation_names=None,
+                        force_fetch_all_results=False):
+    """Queries RDB for the given test's results.
+
+    If suite has allowed_failure_percentage configured, need to fetch all
+    results, in spite of the input force_fetch_all_results, to calculate the
+    failure rate.
+
+    If Flake Endorser is enabled and the target result count is not too large
+    (the limit is set in flakiness module), the method collects all results.
+    Otherwise, the method collects only test results from variants that have
+    unexpected results. |force_fetch_all_results| can be used to override Flake
+    Endorser status and target result count limit.
+
+    Args:
+      test: steps.Test object for the given test.
+      suffix: Test name suffix.
+      resultdb_api: Recipe API object for the resultdb recipe module.
+      flakiness_api: Recipe API object for the flakiness recipe module.
+      test_invocation_names: Test invocation names to fetch test results. If not
+        provided, will use from invocation names from input test.
+      force_fetch_all_results: If True, return all tests results. All results
+        will be returned regardless if the test has `allowed_failure_percentage`
+        specified or if Flake Endorser is enabled and the result sizes are below
+        a limit.
+    """
+    if not test.is_enabled:
+      res = RDBPerSuiteResults.create({},
+                                      failure_on_exit=False,
+                                      total_tests_ran=0,
+                                      suite_name=test.canonical_name,
+                                      test_id_prefix=test.test_id_prefix)
+    elif not (invocation_names := test_invocation_names or
+              test.get_invocation_names(suffix)):
+      # If we can't find invocation names and resultdb is enabled for the test,
+      # just mark its status as invalid.
+      failure_on_exit = True
+      total_tests_ran = 0
+      if not test.spec.resultdb.enable:
+        failure_on_exit = test.failure_on_exit(suffix)
+        total_tests_ran = 1
+      res = RDBPerSuiteResults.create({},
+                                      failure_on_exit=failure_on_exit,
+                                      total_tests_ran=total_tests_ran,
+                                      suite_name=test.canonical_name,
+                                      test_id_prefix=test.test_id_prefix)
+    else:
+      test_stats = self.m.resultdb.query_test_result_statistics(
+          invocations=invocation_names, step_name='%s stats' % test.name)
+      variants_with_unexpected_results = True
+      if (force_fetch_all_results or test.spec.allowed_failure_percentage or
+          (self.m.flakiness and self.m.flakiness.check_for_flakiness and
+           test_stats.total_test_results
+           <= self.m.flakiness.PER_TEST_OBJECT_RESULT_LIMIT)):
+        variants_with_unexpected_results = False
+      # TODO(crbug.com/1366463): Add default test data for "check flakiness"
+      # steps.
+      unexpected_result_invocations = self.m.resultdb.query(
+          inv_ids=self.m.resultdb.invocation_ids(invocation_names),
+          variants_with_unexpected_results=variants_with_unexpected_results,
+          limit=0,
+          step_name='%s results' % test.name,
+          tr_fields=RDBPerSuiteResults.NEEDED_FIELDS,
+      )
+      res = RDBPerSuiteResults.create(
+          unexpected_result_invocations,
+          suite_name=test.canonical_name,
+          total_tests_ran=test_stats.total_test_results,
+          allow_flaky_passes=suffix != 'without patch',
+          failure_on_exit=test.failure_on_exit(suffix),
+          test_id_prefix=test.test_id_prefix)
+    test.update_rdb_results(suffix, res)
+
   def _exonerate_unrelated_failures(self, test_suites, suffix):
     """Notifies RDB of any unexpected test failure that doesn't fail the build.
 
@@ -1321,77 +1397,6 @@ class TestGroup:
             self.resultdb_api.invocation_ids(invocation_names),
             step_name=step_name)
 
-  def fetch_rdb_results(self,
-                        test,
-                        suffix,
-                        flakiness_api,
-                        force_fetch_all_results=False):
-    """Queries RDB for the given test's results.
-
-    If suite has allowed_failure_percentage configured, need to fetch all
-    results, in spite of the input force_fetch_all_results, to calculate the
-    failure rate.
-
-    If Flake Endorser is enabled and the target result count is not too large
-    (the limit is set in flakiness module), the method collects all results.
-    Otherwise, the method collects only test results from variants that have
-    unexpected results. |force_fetch_all_results| can be used to override Flake
-    Endorser status and target result count limit.
-
-    Args:
-      test: steps.Test object for the given test.
-      suffix: Test name suffix.
-      flakiness_api: Recipe API object for the flakiness recipe module.
-      force_fetch_all_results: If True, return all tests results. All results
-        will be returned regardless if the test has `allowed_failure_percentage`
-        specified or if Flake Endorser is enabled and the result sizes are below
-        a limit.
-    """
-    if not test.is_enabled:
-      res = RDBPerSuiteResults.create({},
-                                      failure_on_exit=False,
-                                      total_tests_ran=0,
-                                      suite_name=test.canonical_name,
-                                      test_id_prefix=test.test_id_prefix)
-    elif not (invocation_names := test.get_invocation_names(suffix)):
-      # If we can't find invocation names and resultdb is enabled for the test,
-      # just mark its status as invalid.
-      failure_on_exit = True
-      total_tests_ran = 0
-      if not test.spec.resultdb.enable:
-        failure_on_exit = test.failure_on_exit(suffix)
-        total_tests_ran = 1
-      res = RDBPerSuiteResults.create({},
-                                      failure_on_exit=failure_on_exit,
-                                      total_tests_ran=total_tests_ran,
-                                      suite_name=test.canonical_name,
-                                      test_id_prefix=test.test_id_prefix)
-    else:
-      test_stats = self.resultdb_api.query_test_result_statistics(
-          invocations=invocation_names, step_name='%s stats' % test.name)
-      variants_with_unexpected_results = True
-      if (force_fetch_all_results or test.spec.allowed_failure_percentage or
-          (flakiness_api.check_for_flakiness and test_stats.total_test_results
-           <= flakiness_api.PER_TEST_OBJECT_RESULT_LIMIT)):
-        variants_with_unexpected_results = False
-      # TODO(crbug.com/1366463): Add default test data for "check flakiness"
-      # steps.
-      unexpected_result_invocations = self.resultdb_api.query(
-          inv_ids=self.resultdb_api.invocation_ids(invocation_names),
-          variants_with_unexpected_results=variants_with_unexpected_results,
-          limit=0,
-          step_name='%s results' % test.name,
-          tr_fields=RDBPerSuiteResults.NEEDED_FIELDS,
-      )
-      res = RDBPerSuiteResults.create(
-          unexpected_result_invocations,
-          suite_name=test.canonical_name,
-          total_tests_ran=test_stats.total_test_results,
-          allow_flaky_passes=suffix != 'without patch',
-          failure_on_exit=test.failure_on_exit(suffix),
-          test_id_prefix=test.test_id_prefix)
-    test.update_rdb_results(suffix, res)
-
 
 class LocalGroup(TestGroup):
 
@@ -1410,7 +1415,7 @@ class LocalGroup(TestGroup):
     for t in self._test_suites:
       with self._handle_test_errors(api):
         t.run(checkout_dir, source_dir, build_dir, suffix)
-      self.fetch_rdb_results(t, suffix, api.flakiness)
+      api.test_utils.fetch_rdb_results(t, suffix)
 
     self.include_rdb_invocation(
         suffix, step_name='include local test invocations')
@@ -1452,7 +1457,7 @@ class SwarmingGroup(TestGroup):
     """Executes the |run| method of each test."""
     for test in self._test_suites:
       if not test.is_enabled:
-        self.fetch_rdb_results(test, suffix, api.flakiness)
+        api.test_utils.fetch_rdb_results(test, suffix)
         test.run(checkout_dir, source_dir, build_dir, suffix)
 
     attempts = 0
@@ -1468,7 +1473,7 @@ class SwarmingGroup(TestGroup):
                 attempts=attempts))
         for task_set in finished_sets:
           test = self._task_ids_to_test[tuple(task_set)]
-          self.fetch_rdb_results(test, suffix, api.flakiness)
+          api.test_utils.fetch_rdb_results(test, suffix)
 
       for task_set in finished_sets:
         test = self._task_ids_to_test[tuple(task_set)]
@@ -1495,7 +1500,7 @@ class SwarmingGroup(TestGroup):
       for test in self._task_ids_to_test.values():
         # We won't collect any already collected tasks, as they're removed from
         # self._task_ids_to_test
-        self.fetch_rdb_results(test, suffix, api.flakiness)
+        api.test_utils.fetch_rdb_results(test, suffix)
         test.run(checkout_dir, source_dir, suffix)
 
 
@@ -1542,8 +1547,7 @@ class SkylabGroup(TestGroup):
       # failures within their builds. So the same suffix may have multiple test
       # runs. We need to fetch all the results for a suffix, or the recipe
       # can not separate the flaky tests and deterministic failures.
-      self.fetch_rdb_results(
-          t, suffix, api.flakiness, force_fetch_all_results=True)
+      api.test_utils.fetch_rdb_results(t, suffix, force_fetch_all_results=True)
       with self._handle_test_errors(api):
         t.run(checkout_dir, source_dir, build_dir, suffix)
 
