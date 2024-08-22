@@ -1207,7 +1207,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       ]
 
     if self.use_java_coverage:
-      jacococli_jar = self.source_dir / 'third_party/jacoco/lib/cipd/jacococli.jar'
+      jacococli_jar = self.source_dir / 'third_party/jacoco/cipd/lib/jacococli.jar'
       # TODO: Remove the fallback once no builders are building old versions of chromium/src.
       if not self.m.path.exists(jacococli_jar):
         jacococli_jar = self.source_dir / 'third_party/jacoco/lib/jacococli.jar'
