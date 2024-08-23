@@ -61,7 +61,7 @@ message TarZstdParams {
 }
 
 
-// Next id: 22
+// Next id: 23
 message ArchiveData {
   // A list of relative paths to files that should be archived. All files are
   // relative to the build directory, which is passed alongside this proto to
@@ -228,12 +228,11 @@ message ArchiveData {
   // provenance to that.
   bool requires_provenance = 18;
 
-  // If set to true, generate a single Software Bill of Materials (SBOM) based
-  // on all the files that make up the final archive. Each dependency that is
-  // required to produce each file in the archive will be included in the
-  // final combined SBOM, and will be uploaded to the gcs_path specified in
-  // this message.
-  bool requires_sbom = 20;
+  // If provided, generate a single Software Bill of Materials (SBOM) and
+  // upload with the same name as the gcs_path. ARCHIVE_TYPE_ZIP and
+  // ARCHIVE_TYPE_FILE are only supported at this time, if the requires_provenance
+  // flag is true then the SBOM will be reported as well using the files digest.
+  SBOMConfig requires_sbom = 22;
 
   // A string key to override the default base directory (build dir)
   // for the given file(s), dir(s) for this ArchiveData definition.
@@ -319,4 +318,14 @@ message InputProperties {
   //   },],
   // }
   repeated string source_side_spec_path = 3;
+}
+
+// Next id: 3
+message SBOMConfig {
+  // Build the SBOM based on the supplied gn_targets.
+  repeated string gn_targets = 1;
+  // Optionally upload the SBOM and generated artifacts
+  // to another folder in addition to the path specified
+  // in gcs_path field.
+  string gcs_folder = 2;
 }
