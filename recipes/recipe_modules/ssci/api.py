@@ -277,9 +277,10 @@ class SsciAPI(recipe_api.RecipeApi):
                 'filename': final_artifact_name,
                 'sbom_name': filename,
                 'sbom_path': f'{spdx_file}',
-                'target': entry_point
+                'target': entry_point,
             }
         })
+        return final_artifact_name
 
   def run(
       self,
@@ -292,6 +293,7 @@ class SsciAPI(recipe_api.RecipeApi):
       chrome_version=None,
       platform=None,
       to_rename=None,
+      archive_name=None,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -320,6 +322,10 @@ class SsciAPI(recipe_api.RecipeApi):
       for target in targets:
         targetFlags.extend(["--target", target])
 
+      extra_flags = []
+      if archive_name:
+        extra_flags.extend(["--archive-name", archive_name])
+
       depbot_result = self.m.step(
           'run depbot',
           [
@@ -328,7 +334,7 @@ class SsciAPI(recipe_api.RecipeApi):
               self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
               '--json-output-dir', depbot_json_output_dir,
               '--json-summary-file', depbot_json_summary_file
-          ] + targetFlags,
+          ] + targetFlags + extra_flags,
           cost=self.m.step.ResourceCost(
               cpu=2 * self.m.step.CPU_CORE, memory=4000),
           step_test_data=(lambda: self.m.json.test_api.output(
@@ -377,6 +383,24 @@ class SsciAPI(recipe_api.RecipeApi):
                                    minimal_config, third_party_out, to_rename))
         for fut in self.m.futures.iwait(futures):
           fut.result()
+
+      # If an archive summary is present build an SBOM for that archive.
+      archive_summary = depbot_execution_summary.get("archive")
+      if archive_summary is not None:
+        target = {
+            "entry_point": archive_summary.get("name"),
+            "target": ",".join(archive_summary.get("targets")),
+            "artifacts_file_path": archive_summary.get("artifacts_file_path"),
+            "libraries_file_path": archive_summary.get("libraries_file_path")
+        }
+        final = self._target_specific_steps(target, src_dir, sbom_bucket,
+                                            sbom_folder, sbom_filename_postfix,
+                                            chrome_version, minimal_config,
+                                            third_party_out, to_rename)
+
+        del self.generated_sbom_artifacts[final]["target"]
+        self.generated_sbom_artifacts[final]["targets"] = archive_summary.get(
+            "targets")
 
       info_step = self.m.step.empty("SBOM's generated")
       if depbot_execution_summary.get("targets") is None:
