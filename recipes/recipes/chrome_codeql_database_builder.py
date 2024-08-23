@@ -41,6 +41,7 @@ def RunSteps(api):
   api.gclient.runhooks()
   build_dir = source_dir / 'out/release'
   gn_path = api.depot_tools.gn_py_path
+  ninja_path = source_dir / 'third_party/ninja/ninja'
   cipd_root = api.path.start_dir / 'cipd'
   raw_databases_path = api.path.mkdtemp('codeql_dbs')
   with api.context(cwd=source_dir, env_suffixes={'PATH': [cipd_root]}):
@@ -54,15 +55,13 @@ def RunSteps(api):
     codeql_path = codeql_root / 'codeql'
     api.step(
         'gn gen out/release',
-        ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
-    api.chromium.compile(
-        source_dir, build_dir, use_reclient=True, targets=['all'])
+        ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=false'])
     codeql_script_path = source_dir.joinpath('tools', 'codeql',
                                              'index_target.py')
     api.step('index_target.py', [
         'vpython3', codeql_script_path, '--out_path', build_dir, '--db_path',
         raw_databases_path, '--codeql_binary_path', codeql_path, '--gn_path',
-        gn_path
+        gn_path, '--ninja_path', ninja_path
     ])
 
     # TODO(flowerhack): In a future CL (after we're uploading logs and
