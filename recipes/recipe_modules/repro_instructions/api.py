@@ -161,7 +161,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       The UTR command that can be run from chromium/src checkout
     """
 
-    def quote_as_needed(s):
+    def sanitize_arg(s):
+      s = s.replace('"', '\\"').replace("'", "\\'")
       if len(s.split()) > 1:
         return '"' + s + '"'
       return s
@@ -170,14 +171,11 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         'vpython3',
         'tools/utr',
         '-p',
-        quote_as_needed(self.m.buildbucket.build.builder.project),
+        self.m.buildbucket.build.builder.project,
         '-B',
-        quote_as_needed(self.m.led.shadowed_bucket or
-                        self.m.buildbucket.build.builder.bucket),
+        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
         '-b',
-        quote_as_needed(
-            self.m.buildbucket.build.builder.builder.replace('-compilator',
-                                                             '')),
+        self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
     ]
     if not test_names:
       test_names = []
@@ -188,7 +186,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     if extra_args:
       utr_cmd.extend(extra_args)
 
-    utr_cmd = ' '.join(utr_cmd)
+    utr_cmd = ' '.join([sanitize_arg(arg) for arg in utr_cmd])
     utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
     lines = []
     lines.append(
