@@ -194,7 +194,6 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     lines.append(
         f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
         'checkout:')
-    lines.append('')
     lines.append('```' + utr_cmd + '```')
     lines.append('')
     return '<br/>'.join(lines)

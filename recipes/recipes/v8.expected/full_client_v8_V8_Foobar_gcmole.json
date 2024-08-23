@@ -712,7 +712,7 @@
     "name": "GCMole - x64 - local.GCMole - x64 - prepare on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py collect x64 --output ${ISOLATED_OUTDIR}/callgraph.bin```<br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py collect x64 --output ${ISOLATED_OUTDIR}/callgraph.bin```<br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1260,7 +1260,7 @@
     "name": "GCMole - test - local.GCMole - test - prepare on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py collect ia32 --output ${ISOLATED_OUTDIR}/callgraph.bin --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py collect ia32 --output ${ISOLATED_OUTDIR}/callgraph.bin --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1587,7 +1587,7 @@
     },
     "name": "GCMole ia32 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py ia32```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py ia32```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1673,7 +1673,7 @@
     },
     "name": "GCMole x64 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py x64```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py x64```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1759,7 +1759,7 @@
     },
     "name": "GCMole arm on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py arm```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py arm```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1845,7 +1845,7 @@
     },
     "name": "GCMole arm64 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py arm64```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py arm64```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1931,7 +1931,7 @@
     },
     "name": "GCMole - arm64 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py arm64```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py arm64```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2017,7 +2017,7 @@
     },
     "name": "GCMole - x64 on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py check x64```<br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py check x64```<br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2130,7 +2130,7 @@
     },
     "name": "GCMole - test on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py ia32 --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py ia32 --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2216,7 +2216,7 @@
     },
     "name": "GCMole - test on Ubuntu-16.04 (2)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command to run from the build dir:<br/><br/>```vpython3 -u tools/gcmole/run-gcmole.py check ia32 --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py check ia32 --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

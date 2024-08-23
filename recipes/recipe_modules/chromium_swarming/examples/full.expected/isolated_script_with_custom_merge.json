@@ -814,7 +814,7 @@
     },
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command to run from the build dir:<br/><br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"interrupted\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"links\": {@@@",

@@ -1373,8 +1373,9 @@ class SwarmingApi(recipe_api.RecipeApi):
     instructions = task.get_local_instruction()
     if test_suite_name:
       instructions = self.m.repro_instructions.get_utr_instruction(
-          'compile-and-test', [test_suite_name]) + instructions
-    step_result.presentation.step_text += (task.text_for_step() + instructions)
+          'compile-and-test', [test_suite_name]) + '<br/>' + instructions
+    step_result.presentation.step_text += (
+        task.text_for_step() + '<br/>' + instructions)
 
     if task.instructions_tag:
       step_result.presentation.tags[
@@ -1930,7 +1931,7 @@ class SwarmingTask:
     cmd = cmd.removeprefix('luci-auth.exe context -- ')
     lines = []
     if len(cmd) <= 1000:
-      lines.append('Test command to run from the build dir:<br/>')
+      lines.append('Test command to run from the build dir:')
       lines.append('```' + cmd + '```')
     else:
       lines.append('Test command too long to list. See "shard #0" link below '
