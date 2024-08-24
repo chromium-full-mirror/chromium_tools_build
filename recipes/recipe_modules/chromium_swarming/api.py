@@ -1929,6 +1929,10 @@ class SwarmingTask:
     # TODO(crbug.com/1498156): Remove this once swarming sets up BOTO itself.
     cmd = cmd.removeprefix('luci-auth context -- ')
     cmd = cmd.removeprefix('luci-auth.exe context -- ')
+
+    # Swap ISOLATED_OUTDIR for a temp folder that will exist for the dev
+    cmd = cmd.replace('${ISOLATED_OUTDIR}', 'tmp')
+
     lines = []
     if len(cmd) <= 1000:
       lines.append('Test command to run from the build dir:')

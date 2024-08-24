@@ -2148,7 +2148,7 @@
       }
     },
     "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"Android64 (dbg)\\\" -t dummy_test compile-and-test```<br/>\", \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/>\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_6e0978deee2ba9d0859d5cdcb2eab3a63b0f3633\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"Android64 (dbg)\\\" -t dummy_test compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/>\", \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json --gtest_filter={{test.tags.test_name}}```<br/>\", \"targets\": [\"LOCAL\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"Android64 (dbg)\\\" -t dummy_test compile-and-test```<br/>\", \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/>\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_6e0978deee2ba9d0859d5cdcb2eab3a63b0f3633\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"Android64 (dbg)\\\" -t dummy_test compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/>\", \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/>\", \"targets\": [\"LOCAL\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -2167,7 +2167,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -2193,7 +2193,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json --gtest_filter={{test.tags.test_name}}```<br/>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -2561,7 +2561,7 @@
       "resultdb.instruction.id": "tag_27061c33fbd705e8013fb6e4911a4cc36922eada"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \"Android64 (dbg)\" -t dummy_test compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \"Android64 (dbg)\" -t dummy_test compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

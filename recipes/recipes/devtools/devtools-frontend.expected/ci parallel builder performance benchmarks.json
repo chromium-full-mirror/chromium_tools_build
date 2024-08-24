@@ -1511,7 +1511,7 @@
     "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage front_end```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage front_end```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1599,7 +1599,7 @@
     "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage test/interactions```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage test/interactions```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1687,7 +1687,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1775,7 +1775,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1863,7 +1863,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1951,7 +1951,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2039,7 +2039,7 @@
     "name": "Run tests.Performance Tests.Performance Tests shards results.Performance Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --verbose=2 --coverage test/perf```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --coverage test/perf```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

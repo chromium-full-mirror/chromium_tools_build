@@ -207,7 +207,7 @@
     },
     "name": "Fuzz on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```tools/jsfunfuzz/fuzz-harness.sh out/build/d8 ${ISOLATED_OUTDIR}/fuzz-results-deafbeefdeafbeefdeafbeefdeafbeefdeafbeef.tar.bz2```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```tools/jsfunfuzz/fuzz-harness.sh out/build/d8 tmp/fuzz-results-deafbeefdeafbeefdeafbeefdeafbeefdeafbeef.tar.bz2```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
