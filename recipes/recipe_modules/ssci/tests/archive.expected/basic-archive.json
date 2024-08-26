@@ -1184,9 +1184,9 @@
     "name": "SSCI collection.SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json', 'filename': 'ExampleCanary.apk', 'sbom_name': 'ExampleCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_3/spdx-out.json', 'target': 'Example.apk'}@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@AnotherCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json', 'filename': 'AnotherCanary.apk', 'sbom_name': 'AnotherCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_4/spdx-out.json', 'target': 'Another.apk'}@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@exampleCanary.zip:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json', 'filename': 'exampleCanary.zip', 'sbom_name': 'exampleCanary.zip.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_5/spdx-out.json', 'targets': ['//example:example', '//another:another']}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'filename': 'ExampleCanary.apk', 'sbom_name': 'ExampleCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_3/spdx-out.json', 'target': 'Example.apk', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@AnotherCanary.apk:{'digest': 'testhash', 'filename': 'AnotherCanary.apk', 'sbom_name': 'AnotherCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_4/spdx-out.json', 'target': 'Another.apk', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@exampleCanary.zip:{'digest': 'testhash', 'filename': 'exampleCanary.zip', 'sbom_name': 'exampleCanary.zip.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_5/spdx-out.json', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json', 'targets': ['//example:example', '//another:another']}@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@"
     ]
   },

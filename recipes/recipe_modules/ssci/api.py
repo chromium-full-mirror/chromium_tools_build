@@ -213,22 +213,23 @@ class SsciAPI(recipe_api.RecipeApi):
 
     with self.m.step.nest('target specific steps for %s' % display_name):
 
-      for data_name, bq_table, proto_name, data_file in [
-          ("artifacts", self.bq_art_table, "ArtifactBigQueryRow",
-           artifact_file),
-          ("libraries", self.bq_lib_table, "LibraryBigQueryRow", library_file)
-      ]:
-        # Renames the files so they align with their generated SBOMs.
-        # eg. SystemWebViewStable.apk.libraries.json
-        filename = self._make_filename_from_target(
-            entry_point_name, f"{filename_postfix or ''}.{data_name}")
-        self._upload_collected_data(
-            data_name,
-            extra_depbot_columns + [bq_table, proto_name],
-            data_file,
-            filename,
-            sbom_folder,
-            use_bq_write_api=True)
+      if sbom_bucket and sbom_folder:
+        for data_name, bq_table, proto_name, data_file in [
+            ("artifacts", self.bq_art_table, "ArtifactBigQueryRow",
+             artifact_file),
+            ("libraries", self.bq_lib_table, "LibraryBigQueryRow", library_file)
+        ]:
+          # Renames the files so they align with their generated SBOMs.
+          # eg. SystemWebViewStable.apk.libraries.json
+          filename = self._make_filename_from_target(
+              entry_point_name, f"{filename_postfix or ''}.{data_name}")
+          self._upload_collected_data(
+              data_name,
+              extra_depbot_columns + [bq_table, proto_name],
+              data_file,
+              filename,
+              sbom_folder,
+              use_bq_write_api=True)
 
       # Combines the recipe name with the DepBot target as the product name.
       final_artifact_name = self._make_filename_from_target(
@@ -260,26 +261,28 @@ class SsciAPI(recipe_api.RecipeApi):
                 }], name="spdx")))
 
       spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
+      filename = self._make_filename_from_target(
+          entry_point_name, filename_postfix, file_extension="spdx.json")
+
+      self.generated_sbom_artifacts.update({
+          final_artifact_name: {
+              'digest': spdx_digest,
+              'filename': final_artifact_name,
+              'sbom_name': filename,
+              'sbom_path': f'{spdx_file}',
+              'target': entry_point,
+          }
+      })
 
       if sbom_bucket and sbom_folder:
-        filename = self._make_filename_from_target(
-            entry_point_name, filename_postfix, file_extension="spdx.json")
-
         full_path = pathlib.Path(sbom_folder, self.execution_id,
                                  filename).as_posix()
         self.m.gsutil.upload(
             spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM")
 
-        self.generated_sbom_artifacts.update({
-            final_artifact_name: {
-                'digest': spdx_digest,
-                'file': f'gs://{sbom_bucket}/{full_path}',
-                'filename': final_artifact_name,
-                'sbom_name': filename,
-                'sbom_path': f'{spdx_file}',
-                'target': entry_point,
-            }
-        })
+        self.generated_sbom_artifacts[final_artifact_name][
+            'file'] = f'gs://{sbom_bucket}/{full_path}'
+
         return final_artifact_name
 
   def run(
