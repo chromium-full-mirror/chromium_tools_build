@@ -536,12 +536,6 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def _all_tests(self, suffix: str) -> Set[str]:
-    # TODO(crbug.com/359921630): Refactor some child class to make rdb fully
-    # useful so we don't need _all_tests.
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
   def notrun_failures(self, suffix: str) -> Set[str]:
     """Returns tests that had status NOTRUN/UNKNOWN.
 
@@ -610,18 +604,14 @@ class AbstractTest(abc.ABC):
       retry_suffix = ' '.join([retry_suffix, suffix])
     retry_shards_valid = self.has_valid_results(retry_suffix)
     if retry_shards_valid:
-      retry_shards_all = self._all_tests(retry_suffix)
       retry_shards_failures = self.deterministic_failures(retry_suffix)
-      retry_shards_fixes = set(retry_shards_all) - set(retry_shards_failures)
 
     if original_run_valid and retry_shards_valid:
       # Returning retry_shards_failures ensures that if there were passed
       # tests in the original run that failed in the retry shards, those
       # failures are exposed in the build.
       return True, (
-          set(set(failures) - retry_shards_fixes).union(
-              set(retry_shards_failures)) -
-          self.known_luci_analysis_flaky_failures)
+          set(retry_shards_failures) - self.known_luci_analysis_flaky_failures)
 
     if original_run_valid:
       return True, set(failures) - self.known_luci_analysis_flaky_failures
@@ -1025,10 +1015,6 @@ class Test(AbstractTest):
         'have valid results.')
     return set(
         t.test_name for t in self._rdb_results[suffix].unexpected_skipped_tests)
-
-  def _all_tests(self, suffix: str) -> Set[str]:
-    assert suffix in self._rdb_results
-    return {t.test_name for t in self.get_rdb_results(suffix).all_tests}
 
   @property
   def uses_local_devices(self) -> bool:
@@ -1599,14 +1585,6 @@ class ExperimentalTest(TestWrapper):
       # Call the wrapped test's implementation in case it has side effects,
       # but ignore the result.
       super().notrun_failures(self._experimental_suffix(suffix))
-    return set()
-
-  #override
-  def _all_tests(self, suffix: str) -> Set[str]:  # pragma: no cover
-    if self._actually_has_valid_results(suffix):
-      # Call the wrapped test's implementation in case it has side effects,
-      # but ignore the result.
-      super()._all_tests(self._experimental_suffix(suffix))
     return set()
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
@@ -3026,15 +3004,6 @@ class MockTest(AbstractSwarmingTest, Test):
     if suffix in self.spec.per_suffix_failures:  # pragma: no cover
       return self.spec.per_suffix_failures[suffix]
     return set(self._failures)
-
-  def _all_tests(self, suffix: str) -> Set[str]:
-    # We don't know any passed, skipped tests on this MockTest.
-    # Assuming all_tests = union set of failures on all suffixes.
-    result = set()
-    for failures in self.spec.per_suffix_failures.values():  # pragma: no cover
-      result = result.union(set(failures))
-    result = result.union(set(self._failures))
-    return result
 
   def compile_targets(self) -> Iterable[str]:  # pragma: no cover
     return []

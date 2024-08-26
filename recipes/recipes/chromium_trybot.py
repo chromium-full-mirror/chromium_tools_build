@@ -388,8 +388,6 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'gl_tests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'gl_tests', 'retry shards with patch', successes=['Test.One']),
   )
 
   yield api.test(
@@ -865,8 +863,6 @@ def GenTests(api):
       swarmed_webkit_tests(),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'blink_web_tests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'blink_web_tests', 'retry shards with patch', successes=['Test.One']),
   )
 
   # This tests what happens if we don't trip the thresholds listed

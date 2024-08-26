@@ -29,10 +29,7 @@ class SkylabTestApi(recipe_test_api.RecipeTestApi):
           [(900 + i), common_pb2.SUCCESS] for i in range(total_shards)
       ]
     res = {}
-    for i, shard_result in enumerate(runner_builds):
-      if shard_result is None:  #pragma: no cover
-        continue
-      build_id, status = shard_result
+    for i, (build_id, status) in enumerate(runner_builds):
       res[str(i)] = {
           'url': ('https://ci.chromium.org/p/chromeos/builders/test_runner/'
                   f'test_runner/b{build_id}'),

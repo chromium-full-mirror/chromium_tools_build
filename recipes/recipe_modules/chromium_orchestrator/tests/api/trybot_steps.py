@@ -719,8 +719,6 @@ def GenTests(api):
       ),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'retry shards with patch', successes=['Test.One']),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
           is_compile_phase=False),
@@ -756,8 +754,6 @@ def GenTests(api):
       ),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'retry shards with patch', successes=['Test.One']),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
           is_compile_phase=False),
@@ -799,10 +795,6 @@ def GenTests(api):
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'content_unittests',
-          'retry shards with patch',
-          successes=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -849,15 +841,9 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'content_unittests',
-          'retry shards with patch',
-          successes=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'without patch', successes=['Test.One']),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
       api.post_process(CheckTestStatus, 'browser_tests', 'Failure'),
@@ -1148,13 +1134,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'content_unittests',
-          'retry shards with patch',
-          successes=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'without patch', successes=['Test.One']),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
       api.post_process(post_process.DoesNotRun,
                        'content_unittests (without patch)'),
@@ -1365,10 +1345,6 @@ def GenTests(api):
           expected_skips=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'content_unittests',
-          'retry shards with patch',
-          successes=['Test.One']),
       api.post_process(post_process.SummaryMarkdownRE,
                        '.*headless_python_unittests.*'),
       api.post_process(post_process.MustRun,
@@ -1585,8 +1561,6 @@ def GenTests(api):
                              "**headless_python_unittests** failed.")),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'retry shards with patch', successes=['Test.One']),
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('FAILURE'),
@@ -1692,10 +1666,6 @@ def GenTests(api):
                     api.file.read_json(fake_command_lines)),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'content_unittests',
-          'retry shards with patch',
-          successes=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(

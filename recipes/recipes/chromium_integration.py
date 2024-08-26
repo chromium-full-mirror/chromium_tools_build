@@ -77,8 +77,7 @@ def GenTests(api):
       return api.chromium_tests.gen_swarming_and_rdb_results(
           'blink_web_tests',
           suffix,
-          failures=[] if is_successful else ['Test.One'],
-          successes=['Test.One'] if is_successful else [])
+          failures=[] if is_successful else ['Test.One'])
 
     result = blink_test_setup()
 

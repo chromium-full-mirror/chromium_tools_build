@@ -391,8 +391,6 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', '', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'retry shards', successes=['Test.One']),
       api.expect_status('SUCCESS'),
       api.post_process(post_process.MustRun, 'base_unittests'),
       api.post_process(post_process.MustRun, 'base_unittests (retry shards)'),

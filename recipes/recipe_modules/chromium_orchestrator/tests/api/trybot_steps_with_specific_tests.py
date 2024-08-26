@@ -661,10 +661,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One', 'Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests',
-          'retry shards with patch',
-          failures=['Test.Two'],
-          successes=['Test.One']),
+          'base_unittests', 'retry shards with patch', failures=['Test.Two']),
       api.luci_analysis.query_failure_rate_results([
           api.luci_analysis.generate_analysis(
               test_id='ninja://base_unittests/Test.One',
