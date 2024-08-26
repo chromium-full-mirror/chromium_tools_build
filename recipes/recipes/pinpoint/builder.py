@@ -45,8 +45,6 @@ _PINPOINT_MAPPING = {
     'Mac arm Builder Perf': ('chromium.perf.pinpoint', 'mac-arm-builder-perf'),
     'Mac arm Builder Perf PGO':
         ('chromium.perf.pinpoint', 'mac-arm-builder-perf-pgo'),
-    'Mac arm Builder Perf Local':
-        ('chromium.perf.pinpoint', 'mac-arm-builder-perf-local'),
     'mac-laptop_high_end-perf':
         ('chromium.perf.pinpoint', 'mac-laptop_high_end-perf'),
     'Win x64 Builder Perf': ('chromium.perf.pinpoint', 'win64-builder-perf'),
