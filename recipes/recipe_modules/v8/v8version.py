@@ -60,9 +60,10 @@ def largest_major_version(versions):
   return max(normalize_version(version)[:2] for version in versions)
 
 
-# TODO(https://crbug.com/353262752): Temporary fix to drop wrongly
-# rolled padded version.
 def drop_version_padding(version):
+  """Ensures padded versions are ignored for selecting roll candidates by
+  removing the padded build level from the version.
+  """
   if version[2] > 999:
     version = list(version)
     version[2] = 0
@@ -80,8 +81,15 @@ def sorted_improvements(version_revisions, last_version):
   Only the version tuples of the largest major version are
   returned.
   """
-  last_version_normalized = drop_version_padding(
-      normalize_version(last_version))
+  last_version_normalized = normalize_version(last_version)
+
+  # Ensure that we never by mistake roll revisions that are treated as padded
+  # versions below. Typical release cycles stay far below 500. This safeguard
+  # theoretically allows to roll up to version 899 and then flag new rolls as
+  # failure. If this ever happens, this number could be flexed to 999 as a
+  # mitigation.
+  assert last_version_normalized[2] < 899,\
+         'Rolling padded versions is not supported.'
 
   timestamp = lambda commit_time: datetime.strptime(
       commit_time, '%a %b %d %H:%M:%S %Y %z').timestamp()

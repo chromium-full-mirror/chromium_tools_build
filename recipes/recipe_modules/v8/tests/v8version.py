@@ -101,9 +101,8 @@ class VersionUtilsTest:
         ('11.7.456709-pgo', 1, 0),
         ('11.7.456709', 1, 0),
     ])
-    self.assertEqual(
-        choose_revision_to_roll(refs, '11.7.456709'),
-        (git_hash(2), f'found revision to roll: {git_hash(2)}'))
+    with self.api.assertions.assertRaises(AssertionError):
+      choose_revision_to_roll(refs, '11.7.456709')
 
   def test_revision_to_roll_nothing_new_padded_version(self):
     refs = ref_data([
