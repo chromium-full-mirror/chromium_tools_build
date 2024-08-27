@@ -37,9 +37,18 @@ def RunSteps(api):
   checkout_dir = api.path.cache_dir / 'builder'
   source_dir = checkout_dir / 'src'
   build_dir = source_dir / 'out' / 'some_build_dir'
+
   try:
-    test.run(checkout_dir, source_dir, build_dir, '')
+    api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir, [test],
+                                  'with patch')
+
   finally:
+    if test.with_patch_failures_including_retry():
+      test._only_retry_failed_tests = True
+
+      test.pre_run('without patch')
+      test.run(checkout_dir, source_dir, build_dir, 'without patch')
+
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [
         'compile_targets: {!r}'.format(test.compile_targets()),
@@ -54,11 +63,11 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.post_process(StepCommandContains, 'script_test', [
+      api.post_process(StepCommandContains, 'script_test (with patch)', [
           'vpython3',
           '[CACHE]/builder/src/testing/scripts/script.py',
       ]),
-      api.post_process(StepCommandContains, 'script_test', [
+      api.post_process(StepCommandContains, 'script_test (with patch)', [
           '--args',
           '["some", "args"]',
       ]),
@@ -73,10 +82,9 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.override_step_data('script_test', api.json.output({})),
-      api.post_process(MustRun,
-                       'script_test with suffix  had an invalid result'),
-      api.expect_status('FAILURE'),
+      api.override_step_data('script_test (with patch)', api.json.output({})),
+      api.post_process(
+          MustRun, 'script_test with suffix with patch had an invalid result'),
       api.post_process(DropExpectation),
   )
 
@@ -87,12 +95,23 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.override_step_data(
-          'script_test',
+          'script_test (with patch)',
           api.json.output({
               'valid': True,
               'failures': ['TestOne']
-          })),
-      api.post_process(StepTextEquals, 'script_test',
+          }),
+          api.m.raw_io.stream_output_text(
+              ('rdb-stream: included "invocations/script_test" in'
+               ' "invocations/build-inv"'),
+              'stderr',
+          ),
+      ),
+      api.override_step_data(
+          'script_test results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'script_test', failing_tests=['TestOne']))),
+      api.post_process(StepTextEquals, 'script_test (with patch)',
                        '<br/>failures:<br/>TestOne<br/>'),
       api.post_process(DropExpectation),
   )

@@ -1024,7 +1024,7 @@ class Test(AbstractTest):
     step_name = _add_suffix(self.name, suffix)
     return step_name
 
-  def _tests_to_retry(self, suffix):
+  def _tests_to_retry(self, suffix: str) -> Set[str] | None:
     """Computes the tests to run on an invocation of the test suite.
 
     Args:
@@ -1729,9 +1729,9 @@ class ScriptTest(LocalTest):
 
     tests_to_retry = self._tests_to_retry(suffix)
     if tests_to_retry:
-      run_args.extend(['--filter-file',
-                       self.api.m.json.input(tests_to_retry)
-                      ])  # pragma: no cover
+      run_args.extend(
+          ['--filter-file',
+           self.api.m.json.input(sorted(tests_to_retry))])
 
     resultdb = self._prep_local_rdb(source_dir)
 
