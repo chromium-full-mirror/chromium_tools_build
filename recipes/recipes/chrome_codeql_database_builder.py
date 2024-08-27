@@ -124,18 +124,18 @@ def RunSteps(api):
       logs_zip_out_path = codeql_dbs_with_logs_out_dir / logs_zip_out_filename
       api.zip.directory('zip codeql dir', raw_database_path, logs_zip_out_path)
 
-      api.gsutil.upload(
-          codeql_dbs_out_dir,
-          UPLOAD_BUCKET,
-          cloud_folder_name,
-          args=['-r'],
-          link_name='CodeQL databases')
-      api.gsutil.upload(
-          codeql_dbs_with_logs_out_dir,
-          UPLOAD_BUCKET,
-          cloud_folder_name,
-          args=['-r'],
-          link_name='CodeQL databases with logs')
+    api.gsutil.upload(
+        codeql_dbs_out_dir,
+        UPLOAD_BUCKET,
+        cloud_folder_name,
+        args=['-r'],
+        link_name='CodeQL databases')
+    api.gsutil.upload(
+        codeql_dbs_with_logs_out_dir,
+        UPLOAD_BUCKET,
+        cloud_folder_name,
+        args=['-r'],
+        link_name='CodeQL databases with logs')
 
 def GenTests(api):
   yield api.test(
