@@ -1439,3 +1439,71 @@ class ArchiveApi(recipe_api.RecipeApi):
             'instance': create_results[1]
         }
     return upload_results
+
+  def _generate_sbom(
+      self,
+      source_dir: Path,
+      build_dir: Path,
+      chrome_version,
+      gn_targets,
+      artifact_name,
+      platform,
+      sbom_gcs_folder=None,
+  ):
+    sbom_bucket = None
+    sbom_folder = None
+
+    # Parse sbom_gcs_folder if provided.
+    if sbom_gcs_folder:
+      if not sbom_gcs_folder.startswith('gs://'):
+        raise recipe_api.StepFailure(
+            'sbom_gcs_folder must be a GCS path (gs://bucket/folder): %s' %
+            sbom_gcs_folder)
+
+      path = sbom_gcs_folder.removeprefix("gs://")
+      sbom_bucket, *sbom_folder = path.split("/", 1)
+      sbom_folder = sbom_folder[0] if sbom_folder else '/'
+
+    return self.m.ssci.run(
+        src_dir=source_dir,
+        build_dir=build_dir,
+        chrome_version=chrome_version,
+        sbom_bucket=sbom_bucket,
+        sbom_folder=sbom_folder,
+        targets=gn_targets,
+        archive_name=artifact_name,
+        platform=platform)
+
+  def _archive_sbom(self,
+                    artifact_path: Path,
+                    sbom_path: Path,
+                    gcs_location,
+                    report_sbom_for_artifact=False):
+
+    artifact_name = self.m.path.basename(artifact_path)
+    sbom_name = self.m.path.basename(sbom_path)
+    gcs_sbom_location = f'{gcs_location}/{sbom_name}'
+
+    with self.m.step.nest(f'Archive SBOM {sbom_name}'):
+      self.m.gsutil(['cp', sbom_path, gcs_sbom_location],
+                    version=None,
+                    name=f'Copy {artifact_name} SBOM')
+
+    if report_sbom_for_artifact:
+      with self.m.step.nest(f'Report SBOM {sbom_name}') as presentation:
+
+        artifact_digest = self.m.file.file_hash(
+            artifact_path, test_data='artifact_testhash')
+        sbom_digest = self.m.file.file_hash(
+            sbom_path, test_data='sbom_testhash')
+
+        @self.m.time.exponential_retry(
+            retries=3,
+            delay=datetime.timedelta(seconds=60),
+        )
+        def _retry_report_sbom():
+          self.m.bcid_reporter.report_sbom(sbom_digest, gcs_sbom_location,
+                                           artifact_digest)
+          presentation.status = self.m.step.active_result.presentation.status
+
+        _retry_report_sbom()

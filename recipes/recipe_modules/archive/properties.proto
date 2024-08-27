@@ -324,8 +324,10 @@ message InputProperties {
 message SBOMConfig {
   // Build the SBOM based on the supplied gn_targets.
   repeated string gn_targets = 1;
-  // Optionally upload the SBOM and generated artifacts
-  // to another folder in addition to the path specified
-  // in gcs_path field.
+  // Optionally upload the generated artifacts including
+  // the SBOM to this folder. The SBOM will still be
+  // uploaded with the archived artifact in the archiveData.gcs_path.
+  // This should be a fully qualified gcs path, such as
+  // 'gs://bucket/folder'.
   string gcs_folder = 2;
 }

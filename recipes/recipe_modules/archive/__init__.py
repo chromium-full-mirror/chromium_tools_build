@@ -6,6 +6,7 @@ from PB.recipe_modules.build.archive import properties
 
 DEPS = [
     'build',
+    'build/ssci',
     'chromium',
     'depot_tools/depot_tools',
     'depot_tools/gitiles',
