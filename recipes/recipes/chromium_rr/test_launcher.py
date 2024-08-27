@@ -216,13 +216,15 @@ def RunSteps(api, properties):
         'listdir test dirs', download_dir, test_data=['test_name']):
       target_name = api.path.basename(target_path)
       pass_run_dir, failed_run_dir = find_traces(api, target_path, invocation)
-      if pass_run_dir and failed_run_dir:
-        pass_run_new_dir = api.path.join(traces_out_dir, target_name,
-                                         'pass_run_trace')
-        api.file.ensure_directory('ensure pass trace dir exist',
-                                  pass_run_new_dir)
-        api.file.move('move pass trace', f'{pass_run_dir}/trace.tar',
-                      pass_run_new_dir)
+      if failed_run_dir:
+        # Pass Run trace is optional if failed run trace exists.
+        if pass_run_dir:
+          pass_run_new_dir = api.path.join(traces_out_dir, target_name,
+                                           'pass_run_trace')
+          api.file.ensure_directory('ensure pass trace dir exist',
+                                    pass_run_new_dir)
+          api.file.move('move pass trace', f'{pass_run_dir}/trace.tar',
+                        pass_run_new_dir)
         failed_run_new_dir = api.path.join(traces_out_dir, target_name,
                                            'failed_run_trace')
         api.file.ensure_directory('ensure failed trace dir exist',
