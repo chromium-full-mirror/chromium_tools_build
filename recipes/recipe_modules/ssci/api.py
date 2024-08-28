@@ -286,7 +286,7 @@ class SsciAPI(recipe_api.RecipeApi):
         self.generated_sbom_artifacts[
             final_artifact_name].file = f'gs://{sbom_bucket}/{full_path}'
 
-        return final_artifact_name
+      return final_artifact_name
 
   def run(
       self,
