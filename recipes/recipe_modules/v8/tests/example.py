@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine import post_process
+from recipe_engine.post_process import (DoesNotRun, DropExpectation,
+                                        LogContains, MustRun)
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -43,11 +44,25 @@ def GenTests(api):
          _job_exists(api, 'v8_triggered_bot') +
          api.v8.check_in_any_arg('compile', 'v8/out/build') +
          api.v8.check_in_any_arg('isolate tests (perf)', 'v8/out/build') +
-         api.post_process(post_process.DropExpectation))
+         api.post_process(DropExpectation))
 
   yield (api.v8.test('client.v8', 'V8 Foobar', 'compile_failure') +
          api.step_data('compile', retcode=1) + api.expect_status('FAILURE') +
-         api.post_process(post_process.DropExpectation))
+         api.post_process(DoesNotRun, 'isolate tests') +
+         api.post_process(DropExpectation))
+
+  always_isolate_properties = {
+      '$build/v8': {
+          'always_isolate_targets': ['x19']
+      },
+  }
+  yield (api.v8.test('client.v8', 'V8 Foobar', 'always_isolate') +
+         api.step_data('compile', retcode=1) + api.expect_status('FAILURE') +
+         api.properties(**always_isolate_properties) +
+         api.post_process(MustRun, 'isolate tests') + api.post_process(
+             LogContains, 'generate_build_files', 'swarming-targets-file.txt',
+             ['bot_default', 'perf', 'x19']) +
+         api.post_process(DropExpectation))
 
 
 def _job_exists(api, builder_name):

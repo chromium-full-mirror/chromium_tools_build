@@ -290,6 +290,7 @@ class V8Api(recipe_api.RecipeApi):
     self.revision_cp = None
     self.revision_number = None
     self.use_remoteexec = properties.get('use_remoteexec', False)
+    self.always_isolate_targets = properties.get('always_isolate_targets', [])
     self.recipe_result = RawResult(status=common_pb.SUCCESS)
     self._build_config = None
 
@@ -716,7 +717,7 @@ class V8Api(recipe_api.RecipeApi):
           step_name='isolate tests (perf)',
       )
       self.m.v8_tests.isolated_tests.update(self.m.isolate.isolated_tests)
-    elif isolate_targets:
+    if isolate_targets:
       self.m.isolate.isolate_tests(
           build_dir,
           targets=isolate_targets,
@@ -828,6 +829,9 @@ class V8Api(recipe_api.RecipeApi):
       if self.bot_config.get('triggers_proxy', False):
         isolate_targets = isolate_targets + ['perf']
 
+      # Extra targets to isolate also on compilation errors.
+      isolate_targets += self.always_isolate_targets
+
       # Sort and dedupe.
       isolate_targets = sorted(list(set(isolate_targets)))
 
@@ -857,7 +861,9 @@ class V8Api(recipe_api.RecipeApi):
 
       raw_result = self.m.chromium.compile(
           source_dir, build_dir, use_reclient=self.use_remoteexec, **kwargs)
+
       if raw_result.status != common_pb.SUCCESS:
+        self.isolate_tests(build_dir, self.always_isolate_targets)
         return raw_result
 
       self.isolate_tests(build_dir, isolate_targets)
