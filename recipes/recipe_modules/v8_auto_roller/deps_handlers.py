@@ -50,7 +50,7 @@ class DEPSRollHandler(RollHandler, ABC):
 class TrustedRollHandler(DEPSRollHandler):
 
   def upload_flags(self):
-    return ['--set-bot-commit']
+    return ['--set-bot-commit', '--use-commit-queue']
 
   def name(self):
     return 'trusted'

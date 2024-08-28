@@ -866,7 +866,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'dummy roll (trusted)', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['Rolling ninja: version:2@1.8.2.chromium.3..version:2@1.8.2.chromium.4', 'Rolling tools/clang: https://chromium.googlesource.com/chromium/src/tools/clang/+log/d3f34f8..4', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/chromium/src/tools/clang/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/chromium/src/tools/clang/+/beefdea', 'Rolling tools/luci-go: git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9..git_revision:3d8f881462b1a93c7525499381fafc8a08691be7', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
+      "{'subject': 'dummy roll (trusted)', 'upload_flags': ['--set-bot-commit', '--use-commit-queue'], 'commit_msg_lines': ['Rolling ninja: version:2@1.8.2.chromium.3..version:2@1.8.2.chromium.4', 'Rolling tools/clang: https://chromium.googlesource.com/chromium/src/tools/clang/+log/d3f34f8..4', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/chromium/src/tools/clang/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/chromium/src/tools/clang/+/beefdea', 'Rolling tools/luci-go: git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9..git_revision:3d8f881462b1a93c7525499381fafc8a08691be7', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -1360,7 +1360,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'dummy roll (reviewed)', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling mock-package-latest: 6fd66957f08bb752dca714a591c84587c9d70763..resolved-instance_id-of-instance_id_1---', 'Rolling mock-package-without-latest-ref: 7fd66957f08bb752dca714a591c84587c9d70764..resolved-instance_id-of-no-latest-------', 'Rolling mock-skip-chromium-roll: https://chromium.googlesource.com/mock/skip-chromium-roll/+log/1..3', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/mock/skip-chromium-roll/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/mock/skip-chromium-roll/+/beefdea', 'Rolling mock-tot-retsam-rolled: https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/beefdea', 'Rolling mock-tot-rolled: https://chromium.googlesource.com/tot-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-rolled/+/beefdea', 'Rolling tools/clang-reviewed: https://example.com/tools/clang-reviewed/+log/d3f34f8..5', 'Commit 1 (Tex)\\nhttps://example.com/tools/clang-reviewed/+/deadbee', 'Commit 0 (Mex)\\nhttps://example.com/tools/clang-reviewed/+/beefdea', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
+      "{'subject': 'dummy roll (reviewed)', 'upload_flags': ['--dry-run'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling mock-package-latest: 6fd66957f08bb752dca714a591c84587c9d70763..resolved-instance_id-of-instance_id_1---', 'Rolling mock-package-without-latest-ref: 7fd66957f08bb752dca714a591c84587c9d70764..resolved-instance_id-of-no-latest-------', 'Rolling mock-skip-chromium-roll: https://chromium.googlesource.com/mock/skip-chromium-roll/+log/1..3', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/mock/skip-chromium-roll/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/mock/skip-chromium-roll/+/beefdea', 'Rolling mock-tot-retsam-rolled: https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/beefdea', 'Rolling mock-tot-rolled: https://chromium.googlesource.com/tot-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-rolled/+/beefdea', 'Rolling tools/clang-reviewed: https://example.com/tools/clang-reviewed/+log/d3f34f8..5', 'Commit 1 (Tex)\\nhttps://example.com/tools/clang-reviewed/+/deadbee', 'Commit 0 (Mex)\\nhttps://example.com/tools/clang-reviewed/+/beefdea', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -1742,7 +1742,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'Roll puppeteer-core', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/RECORDER_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
+      "{'subject': 'Roll puppeteer-core', 'upload_flags': ['--dry-run'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/RECORDER_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -1920,7 +1920,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'Roll browser-protocol', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
+      "{'subject': 'Roll browser-protocol', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -2266,7 +2266,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': '[test262] Roll test262', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'range 1..3', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'no-export: true', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
+      "{'subject': '[test262] Roll test262', 'upload_flags': ['--set-bot-commit', '--use-commit-queue'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'range 1..3', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'no-export: true', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {

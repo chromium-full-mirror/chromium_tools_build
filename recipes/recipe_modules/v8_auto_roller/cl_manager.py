@@ -59,7 +59,6 @@ class CLManager:
           'cl',
           'upload',
           '-f',
-          '--use-commit-queue',
           '--bypass-hooks',
           '--send-mail',
       ]

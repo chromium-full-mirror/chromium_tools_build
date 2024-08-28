@@ -535,11 +535,11 @@
       "cl",
       "upload",
       "-f",
-      "--use-commit-queue",
       "--bypass-hooks",
       "--send-mail",
       "-b",
-      "dummy:123"
+      "dummy:123",
+      "--dry-run"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {

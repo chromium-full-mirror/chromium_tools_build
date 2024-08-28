@@ -7,8 +7,9 @@ from .handler_base import RollHandler
 from collections import namedtuple
 
 
-SupportedScript = namedtuple('SupportedScript',
-                             ['title', 'exe', 'args', 'message'])
+SupportedScript = namedtuple(
+    'SupportedScript', ['title', 'exe', 'args', 'message', 'bot_commit'],
+    defaults=[None, None, None, None, False])
 """A dict of supported scripted rolls. The key is the script key and the value
 is a tuple of the title and the path elements to the script.
 """
@@ -31,7 +32,7 @@ SUPPORTED_SCRIPTS = {
                 '--ref', 'working-tree', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
                 '--update-node'
             ], 'In case of failures or errors, reach out to someone from '
-            'config/owner/COMMON_OWNERS.'),
+            'config/owner/COMMON_OWNERS.', True),
     # Add more scripts here
 }
 
@@ -56,6 +57,14 @@ class ScriptedRollHandler(RollHandler):
     self.script = script
     self.key = key
     self.updated = False
+
+  def upload_flags(self):
+    flags = ['--dry-run']
+
+    if self.script.bot_commit:
+      flags += ['--set-bot-commit']
+
+    return flags
 
   def name(self):
     return self.script.title

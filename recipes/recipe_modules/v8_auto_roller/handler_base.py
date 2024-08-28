@@ -70,7 +70,7 @@ class RollHandler(ABC):
     pass  # pragma: no cover
 
   def upload_flags(self):
-    return []
+    return ['--dry-run']
 
   @abstractmethod
   def commit_msg_lines(self, changes):

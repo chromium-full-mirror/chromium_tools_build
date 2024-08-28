@@ -95,4 +95,4 @@ class Test262ImportHandler(RollHandler):
     ], self.config.get('manual_roll_reviewers'))
 
   def upload_flags(self):
-    return ['--set-bot-commit']
+    return ['--set-bot-commit', '--use-commit-queue']
