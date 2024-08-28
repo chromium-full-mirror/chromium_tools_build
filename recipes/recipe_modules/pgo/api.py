@@ -215,7 +215,7 @@ class PgoApi(recipe_api.RecipeApi):
           test_verification_success = True
 
         if not test_verification_success:
-          tests_failing_verification.append(test.target_name)
+          tests_failing_verification.append(test.name)
 
       # Empty failed_benchmarks and missing_files is logged irrespective of
       # step status.
