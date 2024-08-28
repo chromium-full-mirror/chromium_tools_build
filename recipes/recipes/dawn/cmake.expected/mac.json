@@ -482,6 +482,35 @@
   },
   {
     "cmd": [
+      "python3",
+      "./src/tint/cmd/bench/generate_benchmark_inputs.py",
+      "wgsl",
+      "cmake-build/tint",
+      "--check-stale"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check generated benchmark inputs header"
+  },
+  {
+    "cmd": [
       "./tools/run",
       "tests",
       "--tint",

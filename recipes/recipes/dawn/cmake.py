@@ -503,6 +503,11 @@ def RunSteps(api,
       with api.context(cwd=source_dir):
         tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
 
+        api.step('Check generated benchmark inputs header', [
+            'python3', './src/tint/cmd/bench/generate_benchmark_inputs.py',
+            'wgsl', tint_exe, '--check-stale'
+        ])
+
         # TODO(crbug.com/tint/2034): Add back glsl once we fix the ~7x slowdown in Windows Debug builds
         if (api.platform.is_win or api.platform.is_mac) and debug:
           e2e_test_formats = 'wgsl,spvasm,msl,hlsl'
