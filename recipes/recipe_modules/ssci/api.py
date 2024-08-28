@@ -7,7 +7,9 @@ import os
 import pathlib
 
 from recipe_engine import recipe_api
+from google.protobuf import json_format as jsonpb
 
+from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 
 @dataclasses.dataclass
 class CIPDPkg:
@@ -264,15 +266,16 @@ class SsciAPI(recipe_api.RecipeApi):
       filename = self._make_filename_from_target(
           entry_point_name, filename_postfix, file_extension="spdx.json")
 
-      self.generated_sbom_artifacts.update({
-          final_artifact_name: {
-              'digest': spdx_digest,
-              'filename': final_artifact_name,
-              'sbom_name': filename,
-              'sbom_path': f'{spdx_file}',
-              'target': entry_point,
-          }
-      })
+      generated_sbom = GeneratedSBOM(
+          digest=spdx_digest,
+          filename=final_artifact_name,
+          sbom_name=filename,
+          sbom_path=f'{spdx_file}',
+          target=entry_point,
+      )
+
+      self.generated_sbom_artifacts.update(
+          {final_artifact_name: generated_sbom})
 
       if sbom_bucket and sbom_folder:
         full_path = pathlib.Path(sbom_folder, self.execution_id,
@@ -280,8 +283,8 @@ class SsciAPI(recipe_api.RecipeApi):
         self.m.gsutil.upload(
             spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM")
 
-        self.generated_sbom_artifacts[final_artifact_name][
-            'file'] = f'gs://{sbom_bucket}/{full_path}'
+        self.generated_sbom_artifacts[
+            final_artifact_name].file = f'gs://{sbom_bucket}/{full_path}'
 
         return final_artifact_name
 
@@ -401,18 +404,24 @@ class SsciAPI(recipe_api.RecipeApi):
                                             chrome_version, minimal_config,
                                             third_party_out, to_rename)
 
-        del self.generated_sbom_artifacts[final]["target"]
-        self.generated_sbom_artifacts[final]["targets"] = archive_summary.get(
-            "targets")
+        self.generated_sbom_artifacts[final].ClearField("target")
+        self.generated_sbom_artifacts[final].targets.extend(
+            archive_summary.get("targets"))
+
+      generated_sbom_artifacts_json = {
+          k: jsonpb.MessageToDict(a, preserving_proto_field_name=True)
+          for k, a in self.generated_sbom_artifacts.items()
+      }
 
       info_step = self.m.step.empty("SBOM's generated")
       if depbot_execution_summary.get("targets") is None:
         info_step.presentation.status = self.m.step.FAILURE
         info_step.presentation.step_text = 'no targets found'
-        return self.generated_sbom_artifacts
+        return generated_sbom_artifacts_json
+
 
       # set generated in output properties
       info_step.presentation.logs['ssci_generated_artifacts'] = [
-          f"{k}:{v}" for k, v in self.generated_sbom_artifacts.items()
+          f"{k}:{v}" for k, v in generated_sbom_artifacts_json.items()
       ]
-      return self.generated_sbom_artifacts
+      return generated_sbom_artifacts_json

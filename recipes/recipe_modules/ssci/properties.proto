@@ -39,3 +39,24 @@ message InputProperties {
   // enable the uploading of data collected from the various SSCI binaries.
   bool enable_upload_collected_data = 11;
 }
+
+message GeneratedSBOM {
+  // digest of the generated SBOM.
+  string digest = 1;
+  // GCS URI of the generated SBOM file.
+  string file = 2;
+  // Name of the artifact for which the SBOM was generated.
+  string filename = 3;
+  // Name of the generated SBOM.
+  string sbom_name = 4;
+  // Local on disk path to the generated SBOM.
+  string sbom_path = 5;
+  // The target used to build the SBOM, such as a GN target
+  // or a reference to something a GN target outputs.
+  string target = 6;
+  // The same target as above however in the case of an
+  // archive SBOM, multiple targets will produce a combined
+  // SBOM and those targets will be here instead of the field
+  // above.
+  repeated string targets = 7;
+}

@@ -927,7 +927,7 @@
     "name": "SSCI collection.SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleStable.apk:{'digest': 'testhash', 'filename': 'ExampleStable.apk', 'sbom_name': 'ExampleStable.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_3/spdx-out.json', 'target': 'Example.apk', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleStable.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json', 'filename': 'ExampleStable.apk', 'sbom_name': 'ExampleStable.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_3/spdx-out.json', 'target': 'Example.apk'}@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@"
     ]
   },
@@ -1149,7 +1149,7 @@
     "name": "SSCI collection (2).SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'filename': 'ExampleCanary.apk', 'sbom_name': 'ExampleCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_6/spdx-out.json', 'target': 'Example.apk', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json', 'filename': 'ExampleCanary.apk', 'sbom_name': 'ExampleCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_6/spdx-out.json', 'target': 'Example.apk'}@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@"
     ]
   },
