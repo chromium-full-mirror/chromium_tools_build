@@ -3392,7 +3392,7 @@
       "cmake-build/tint",
       "--verbose",
       "--format",
-      "wgsl,spvasm,msl,hlsl,glsl,msl-ir,hlsl-ir"
+      "wgsl,spvasm,msl,hlsl,glsl,msl-ir,hlsl-ir,glsl-ir"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {

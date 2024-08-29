@@ -513,7 +513,7 @@ def RunSteps(api,
           # TODO(crbug.com/362783220): IR validation is very slow on Windows (and only enabled in debug)
           e2e_test_formats = 'wgsl,spvasm,msl,hlsl'
         else:
-          e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl,msl-ir,hlsl-ir'
+          e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl,msl-ir,hlsl-ir,glsl-ir'
         api.step(
             'Run Tint end-to-end tests', [
                 './tools/run', 'tests', '--tint', tint_exe, '--verbose',
