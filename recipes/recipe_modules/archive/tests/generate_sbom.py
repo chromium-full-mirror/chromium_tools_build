@@ -3,12 +3,14 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains, MustRun
+from PB.recipe_modules.build.archive.properties import ArchiveData, SBOMConfig
 
 DEPS = [
     'archive',
     'chromium',
     'depot_tools/bot_update',
     'depot_tools/gclient',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/runtime',
@@ -39,6 +41,35 @@ def RunSteps(api):
       report_sbom_for_artifact=True,
   )
 
+  api.archive.generate_and_upload_sbom(
+      source_dir=source_dir,
+      build_dir=source_dir / 'Release/out',
+      archive_data=ArchiveData(
+          requires_sbom=SBOMConfig(gn_targets=["example", "example_2"],),
+          requires_provenance=True,
+          archive_type=ArchiveData.ARCHIVE_TYPE_ZIP,
+      ),
+      report_artifacts=True,
+      archived_files={
+          source_dir / 'Release/out/myfile.zip': 'gs://mybucket/myfile.zip'
+      },
+  )
+
+  api.archive.generate_and_upload_sbom(
+      source_dir=source_dir,
+      build_dir=source_dir / 'Release/out',
+      archive_data=ArchiveData(
+          requires_sbom=SBOMConfig(gn_targets=["example", "example_2"],),
+          requires_provenance=True,
+          archive_type=ArchiveData.ARCHIVE_TYPE_FILES,
+      ),
+      report_artifacts=True,
+      archived_files={
+          source_dir / 'Release/out/myfile0.deb': 'gs://mybucket/myfile0.deb',
+          source_dir / 'Release/out/myfile1.deb': 'gs://mybucket/myfile1.deb'
+      },
+  )
+
 
 def GenTests(api):
 
@@ -48,14 +79,8 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.post_process(
-          MustRun,
-          'Archive SBOM artifact.deb.spdx.json for artifact.deb.gsutil Copy artifact.deb SBOM'
-      ),
-      api.post_process(
-          MustRun,
-          'Report SBOM artifact.deb.spdx.json for artifact.deb.snoop: report_sbom'
-      ),
+      api.post_process(MustRun,
+                       'Report SBOM artifact.deb.spdx.json for artifact.deb'),
       api.post_process(
           StepCommandContains,
           'Report SBOM artifact.deb.spdx.json for artifact.deb.snoop: report_sbom',
@@ -65,5 +90,115 @@ def GenTests(api):
               'gs://my-bucket/my/folder/artifact.deb.spdx.json',
               '-sbom-subject', 'artifact_testhash'
           ]),
+      api.post_process(
+          StepCommandContains,
+          'Archive SBOM artifact.deb.spdx.json for artifact.deb.gsutil Copy artifact.deb SBOM',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[START_DIR]/src/Release/out/sbom.spdx.json",
+              "gs://my-bucket/my/folder/artifact.deb.spdx.json"
+          ]),
+      api.post_process(MustRun,
+                       'Archive SBOM myfile0.deb.spdx.json for myfile0.deb'),
+      api.post_process(MustRun,
+                       'Archive SBOM myfile1.deb.spdx.json for myfile1.deb'),
+      api.post_process(MustRun,
+                       'Report SBOM myfile0.deb.spdx.json for myfile0.deb'),
+      api.post_process(MustRun,
+                       'Report SBOM myfile1.deb.spdx.json for myfile1.deb'),
+      api.override_step_data(
+          "SSCI collection.run depbot",
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "Example.apk",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }, {
+                      "entry_point": "Another.apk",
+                      "target": "//another:another",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+                  "archive": {
+                      "name": "myfile.zip",
+                      "targets": ["example", "example_2"],
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  },
+              })),
+      api.override_step_data(
+          "SSCI collection (2).run depbot",
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "Example.apk",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }, {
+                      "entry_point": "Another.apk",
+                      "target": "//another:another",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+                  "archive": {
+                      "name": "myfile.zip",
+                      "targets": ["example", "example_2"],
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  },
+              })),
+      api.override_step_data(
+          "SSCI collection (3).run depbot",
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "Example.apk",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }, {
+                      "entry_point": "Another.apk",
+                      "target": "//another:another",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+                  "archive": {
+                      "name": "myfile0.deb",
+                      "targets": ["example", "example_2"],
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  },
+              })),
+      api.override_step_data(
+          "SSCI collection (4).run depbot",
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "Example.apk",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }, {
+                      "entry_point": "Another.apk",
+                      "target": "//another:another",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+                  "archive": {
+                      "name": "myfile1.deb",
+                      "targets": ["example", "example_2"],
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  },
+              })),
       api.post_process(DropExpectation),
   )

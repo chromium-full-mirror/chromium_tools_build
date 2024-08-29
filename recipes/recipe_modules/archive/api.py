@@ -14,6 +14,8 @@ from google.protobuf import json_format
 
 from PB.recipe_modules.build.archive.properties import ArchiveData, \
                                                        InputProperties
+from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
+
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
@@ -874,6 +876,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     upload_results = {}
     upload_results['cipd'] = {}
     upload_results['gcs'] = []
+    upload_results['sbom'] = {}
     upload_results['update_properties'] = update_properties
     upload_results['custom_vars'] = custom_vars
 
@@ -896,6 +899,9 @@ class ArchiveApi(recipe_api.RecipeApi):
               report_artifacts=report_artifacts,
               should_batch=should_batch)
           upload_results['gcs'].append(gcs_uploads)
+          upload_results['sbom'].update(
+              self.generate_and_upload_sbom(source_dir, build_dir, archive_data,
+                                            gcs_uploads, report_artifacts))
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
             self.cipd_archive(
@@ -1439,6 +1445,68 @@ class ArchiveApi(recipe_api.RecipeApi):
             'instance': create_results[1]
         }
     return upload_results
+
+  def generate_and_upload_sbom(self, source_dir: Path, build_dir: Path,
+                               archive_data, archived_files, report_artifacts):
+    """Generates, uploads and reports SBOMs for already archived files.
+
+    If multiple files are included, each file will have its own SBOM
+    referencing the same dependencies. However, the title within
+    each SBOM document will specifically detail the individual file
+    it was created for.
+
+    Args:
+      source_dir: The path to the top-level repo.
+      build_dir: The absolute path to the build output directory, e.g.
+                 [cache]/builder/src/out/Release
+      archive_data: An instance of
+                    archive/properties.proto:InputProperties.archive_datas.
+      archived_files: Dict of archived_file and the gcs upload path. eg:
+        {archive_file: gcs_path}.
+      report_artifacts: A boolean flag to enable artifact reporting. This is
+                        set by recipe that uses this module.
+    Returns:
+      A dict of {archive_file: gcs_path}, the gcs_path is the path to the
+      new SBOM.
+    """
+    version = self.m.chromium.get_version(source_dir)
+    version_string = "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
+                                      version['BUILD'], version['PATCH'])
+    sboms = {}
+    if archive_data.HasField('requires_sbom'):
+      sbom_config = archive_data.requires_sbom
+
+      if len(sbom_config.gn_targets) > 0:
+        if archive_data.archive_type in (ArchiveData.ARCHIVE_TYPE_ZIP,
+                                         ArchiveData.ARCHIVE_TYPE_FILES):
+          for file, gcs_uri in archived_files.items():
+            artifact_name = self.m.path.basename(file)
+            gcs_folder = gcs_uri.rsplit("/", 1)[0]
+
+            generated_sboms = self._generate_sbom(
+                source_dir=source_dir,
+                build_dir=build_dir,
+                chrome_version=version_string,
+                gn_targets=sbom_config.gn_targets,
+                artifact_name=artifact_name,
+                platform=self.m.platform.name,
+                sbom_gcs_folder=sbom_config.gcs_folder,
+            )
+
+            # Convert to proto
+            sbom = json_format.ParseDict(
+                generated_sboms[artifact_name],
+                GeneratedSBOM(),
+                ignore_unknown_fields=True)
+
+            sboms.update(
+                self._archive_sbom(
+                    artifact_path=file,
+                    sbom_path=sbom.sbom_path,
+                    gcs_path=self.m.path.join(gcs_folder, sbom.sbom_name),
+                    report_sbom_for_artifact=(
+                        report_artifacts and archive_data.requires_provenance)))
+    return sboms
 
   def _generate_sbom(
       self,
