@@ -63,7 +63,7 @@ class CfTPinRollHandler(RollHandler):
     return CFT_PIN_CL_SUBJECT
 
   def upload_flags(self):
-    return ['--set-bot-commit']
+    return ['--set-bot-commit', '--use-commit-queue']
 
   def commit_msg_lines(self, changes):
     lines = []

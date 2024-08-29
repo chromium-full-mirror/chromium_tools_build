@@ -1562,7 +1562,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'Update Chrome (for Testing) PIN', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['\\nRoll created at https://cr-buildbucket.appspot.com/build/0', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
+      "{'subject': 'Update Chrome (for Testing) PIN', 'upload_flags': ['--set-bot-commit', '--use-commit-queue'], 'commit_msg_lines': ['\\nRoll created at https://cr-buildbucket.appspot.com/build/0', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
