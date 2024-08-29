@@ -1477,20 +1477,20 @@ class ArchiveApi(recipe_api.RecipeApi):
   def _archive_sbom(self,
                     artifact_path: Path,
                     sbom_path: Path,
-                    gcs_location,
+                    gcs_path,
                     report_sbom_for_artifact=False):
 
     artifact_name = self.m.path.basename(artifact_path)
-    sbom_name = self.m.path.basename(sbom_path)
-    gcs_sbom_location = f'{gcs_location}/{sbom_name}'
+    sbom_name = self.m.path.basename(gcs_path)
 
-    with self.m.step.nest(f'Archive SBOM {sbom_name}'):
-      self.m.gsutil(['cp', sbom_path, gcs_sbom_location],
+    with self.m.step.nest(f'Archive SBOM {sbom_name} for {artifact_name}'):
+      self.m.gsutil(['cp', sbom_path, gcs_path],
                     version=None,
                     name=f'Copy {artifact_name} SBOM')
 
     if report_sbom_for_artifact:
-      with self.m.step.nest(f'Report SBOM {sbom_name}') as presentation:
+      with self.m.step.nest(
+          f'Report SBOM {sbom_name} for {artifact_name}') as presentation:
 
         artifact_digest = self.m.file.file_hash(
             artifact_path, test_data='artifact_testhash')
@@ -1502,8 +1502,10 @@ class ArchiveApi(recipe_api.RecipeApi):
             delay=datetime.timedelta(seconds=60),
         )
         def _retry_report_sbom():
-          self.m.bcid_reporter.report_sbom(sbom_digest, gcs_sbom_location,
+          self.m.bcid_reporter.report_sbom(sbom_digest, gcs_path,
                                            artifact_digest)
           presentation.status = self.m.step.active_result.presentation.status
 
         _retry_report_sbom()
+
+    return {artifact_path: gcs_path}

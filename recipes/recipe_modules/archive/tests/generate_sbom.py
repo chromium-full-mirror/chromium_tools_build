@@ -35,7 +35,7 @@ def RunSteps(api):
   api.archive._archive_sbom(
       artifact_path=source_dir / 'Release/out' / 'artifact.deb',
       sbom_path=source_dir / 'Release/out' / 'sbom.spdx.json',
-      gcs_location='gs://my-bucket/my/folder',
+      gcs_path='gs://my-bucket/my/folder/artifact.deb.spdx.json',
       report_sbom_for_artifact=True,
   )
 
@@ -49,15 +49,21 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.post_process(
-          MustRun, 'Archive SBOM sbom.spdx.json.gsutil Copy artifact.deb SBOM'),
-      api.post_process(MustRun,
-                       'Report SBOM sbom.spdx.json.snoop: report_sbom'),
-      api.post_process(StepCommandContains,
-                       'Report SBOM sbom.spdx.json.snoop: report_sbom', [
-                           '[START_DIR]/reporter/snoopy_broker', '-report-gcs',
-                           '-digest', 'sbom_testhash', '-gcs-uri',
-                           'gs://my-bucket/my/folder/sbom.spdx.json',
-                           '-sbom-subject', 'artifact_testhash'
-                       ]),
+          MustRun,
+          'Archive SBOM artifact.deb.spdx.json for artifact.deb.gsutil Copy artifact.deb SBOM'
+      ),
+      api.post_process(
+          MustRun,
+          'Report SBOM artifact.deb.spdx.json for artifact.deb.snoop: report_sbom'
+      ),
+      api.post_process(
+          StepCommandContains,
+          'Report SBOM artifact.deb.spdx.json for artifact.deb.snoop: report_sbom',
+          [
+              '[START_DIR]/reporter/snoopy_broker', '-report-gcs', '-digest',
+              'sbom_testhash', '-gcs-uri',
+              'gs://my-bucket/my/folder/artifact.deb.spdx.json',
+              '-sbom-subject', 'artifact_testhash'
+          ]),
       api.post_process(DropExpectation),
   )
