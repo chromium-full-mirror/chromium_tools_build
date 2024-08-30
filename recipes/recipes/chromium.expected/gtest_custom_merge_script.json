@@ -55,7 +55,7 @@
       "resultdb.instruction.id": "tag_bfcb1bca2658a771f8db9083f041886997f23f37"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t browser_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t browser_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",

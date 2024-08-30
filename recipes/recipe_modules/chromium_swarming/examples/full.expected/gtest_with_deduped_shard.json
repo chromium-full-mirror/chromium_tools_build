@@ -979,7 +979,7 @@
     },
     "name": "hello_world on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```hello_world.exe --test-launcher-summary-output=tmp/output.json```<br/><br>Total shard runtime (0s) + overhead(0s): 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```hello_world.exe --test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Total shard runtime (0s) + overhead(0s): 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

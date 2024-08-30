@@ -1930,13 +1930,17 @@ class SwarmingTask:
     cmd = cmd.removeprefix('luci-auth context -- ')
     cmd = cmd.removeprefix('luci-auth.exe context -- ')
 
+    lines = []
     # Swap ISOLATED_OUTDIR for a temp folder that will exist for the dev
+    include_mkdir = '${ISOLATED_OUTDIR}' in cmd
     cmd = cmd.replace('${ISOLATED_OUTDIR}', 'tmp')
 
-    lines = []
     if len(cmd) <= 1000:
       lines.append('Test command to run from the build dir:')
       lines.append('```' + cmd + '```')
+      if include_mkdir:
+        lines.append(
+            '<br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*')
     else:
       lines.append('Test command too long to list. See "shard #0" link below '
                    'for the full invocation.')

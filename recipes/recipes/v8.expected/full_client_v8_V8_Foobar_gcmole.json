@@ -712,7 +712,7 @@
     "name": "GCMole - x64 - local.GCMole - x64 - prepare on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py collect x64 --output tmp/callgraph.bin```<br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py collect x64 --output tmp/callgraph.bin```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1260,7 +1260,7 @@
     "name": "GCMole - test - local.GCMole - test - prepare on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py collect ia32 --output tmp/callgraph.bin --test-run```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/gcmole/run-gcmole.py collect ia32 --output tmp/callgraph.bin --test-run```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

@@ -2886,7 +2886,7 @@
     "name": "collect profiles.1.1.2.0 x86.pgo profile 1.1.2.0 x86 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2964,7 +2964,7 @@
     "name": "collect profiles.1.1.2.0 x64.pgo profile 1.1.2.0 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3042,7 +3042,7 @@
     "name": "collect profiles.1.1.2.0 x86-rl.pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3120,7 +3120,7 @@
     "name": "collect profiles.1.1.2.0 x64-rl.pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3198,7 +3198,7 @@
     "name": "collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3276,7 +3276,7 @@
     "name": "collect profiles.1.1.1.4 x64.pgo profile 1.1.1.4 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3354,7 +3354,7 @@
     "name": "collect profiles.1.1.1.4 x86-rl.pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3432,7 +3432,7 @@
     "name": "collect profiles.1.1.1.4 x64-rl.pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
