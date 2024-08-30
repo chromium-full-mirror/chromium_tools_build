@@ -5,13 +5,15 @@
 from collections import defaultdict
 import contextlib
 import itertools
+import json
 import re
 
 from recipe_engine.post_process import (
-    Filter,
     DoesNotRun,
     DoesNotRunRE,
     DropExpectation,
+    Filter,
+    LogContains,
     MustRun,
     StepCommandContains,
 )
@@ -45,6 +47,7 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
     'recipe_engine/swarming',
+    'recipe_engine/time',
     'test_utils',
     'v8',
     'v8_orchestrator',
@@ -88,6 +91,14 @@ MAX_PARALLEL_VERSIONS = 5
 V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
 VERSION_CUTOFF = (11, 2)
+
+# Define the hours passed for each retry after the initial run, e.g. [0, 6, 24]
+# retries profile building after 0 hours, 6 hours, and 24 hours. If they all
+# fail, a total of four attempts have been made.
+RETRY_INTERVAL = [0, 6, 24]
+
+# Do not retry if the first version failure is older than the specified value.
+RETRY_TIMEOUT = 24 * 5
 
 BLOCKLIST_BUCKET = 'chromium-v8-builtins-pgo-state'
 BLOCKLIST_FILE = 'blocked-versions.txt'
@@ -265,6 +276,11 @@ def init_trackers_for_candidate_versions(
   tags = filter_tags_by_cutoff(tags, version_cutoff)
   tags = filter_blocked_tags(api, tags)
   tags = filter_max_parallel_tags(tags, max_parallel_versions)
+
+  api.step.active_result.presentation.logs['filtered tags'] = api.json.dumps(
+      tags, indent=2)
+
+  # TODO(b/353419839): Add the retry attempt number to the profile tracker logs.
   return create_profile_trackers(tags)
 
 
@@ -305,17 +321,59 @@ def filter_max_parallel_tags(tags, parallel) -> list[tuple[VersionTuple, str]]:
 def filter_blocked_tags(api, tags) -> list[tuple[VersionTuple, str]]:
   """Load a blocklist from a storage bucket, and remove blocked versions."""
   blocked = download_blocked_versions(api)
-  blocked = {normalize_version(v.split()[0]) for v in blocked if v}
+  api.step.active_result.presentation.logs['blocked versions'] = api.json.dumps(
+      blocked, indent=2)
 
-  return [t for t in tags if t[0] not in blocked]
+  blocked_versions = []
+  for version, justification in blocked.items():
+    normalized_version = normalize_version(version)
+
+    # Custom blocking, e.g. {"reason": "crbug.com/40245627"}.
+    if "reason" in justification:
+      blocked_versions.append(normalized_version)
+      continue
+
+    # Blocked due to PGO builder failures, e.g.
+    # {"failures": [{"build": "<build-link>", "time": 1724865633}]}.
+    retry_count = len(justification["failures"]) - 1
+    if retry_count >= len(RETRY_INTERVAL):
+      blocked_versions.append(normalized_version)
+      continue
+
+    first_run = justification["failures"][0]
+    seconds_since = api.time.time() - first_run["time"]
+    if RETRY_INTERVAL[retry_count] * 3600 > seconds_since:
+      blocked_versions.append(normalized_version)
+      continue
+
+    if seconds_since > RETRY_TIMEOUT * 3600:
+      blocked_versions.append(normalized_version)
+      continue
+
+  return [t for t in tags if t[0] not in blocked_versions]
 
 
-def download_blocked_versions(api) -> list[str]:
+def download_blocked_versions(api) -> dict[str, any]:
   result = api.gsutil.cat(BLOCKLIST_PATH, stdout=api.raw_io.output())
-  blocked = result.stdout.decode().strip()
-  if not blocked:
-    return []
-  return blocked.split('\n')
+  blocked_lines = result.stdout.decode().strip()
+
+  blocked_versions = defaultdict(dict)
+  for line in blocked_lines.split('\n'):
+    if line.startswith('#'):
+      continue
+    if not line:
+      continue
+
+    version, justification = line.split(maxsplit=1)
+    try:
+      blocked_versions[version] = api.json.loads(justification)
+    except json.decoder.JSONDecodeError:
+      blocked_versions[version] = {
+          "reason": "Justification cannot be parsed",
+          "original_justification": justification,
+      }
+
+  return blocked_versions
 
 
 def create_profile_trackers(selected_versions) -> list[VersionProfileTrack]:
@@ -566,26 +624,41 @@ def add_comment_to_gerrit_changes(api, profile_trackers):
 @with_wrapper_step
 def report_exceptions(api, profile_trackers):
   failed_versions = {t.version for t in profile_trackers if t.exception}
+
   if not failed_versions:
     return result_pb2.RawResult(status=common_pb.SUCCESS)
 
   update_blocked_version_file(api, failed_versions)
-
   return result_pb2.RawResult(
       status=common_pb.FAILURE,
       summary_markdown='Some versions encounterd exceptions')
 
 
 def update_blocked_version_file(api, failed_versions):
-  blocked_versions = download_blocked_versions(api)
-  details = api.json.dumps({'failures': [api.buildbucket.build_url()]})
+  blocked = download_blocked_versions(api)
+  build_failure = {
+      "build": api.buildbucket.build_url(),
+      "time": api.time.time(),
+  }
 
   for version in failed_versions:
-    blocked_versions.append(f'{version} {details}')
+    blocked[version].setdefault('failures', []).append(build_failure)
 
-  upload_content = api.raw_io.input_text('\n'.join(blocked_versions))
+  blockfile_lines = []
+  for version, justification in blocked.items():
+    blockfile_lines.append(f'{version} {api.json.dumps(justification)}')
+
+  upload_content = api.raw_io.input_text('\n'.join([
+      '# If you manually add a version to this list, use the format:',
+      '# <major>.<minor>.<build>.<patch> {"reason": "<Link to CL or bug>"}',
+      '#',
+      '# Example:',
+      '# 12.8.5.0 {"reason": "crbug.com/40245627"}',
+  ] + blockfile_lines))
   api.gsutil.upload(
-      upload_content, BLOCKLIST_BUCKET, BLOCKLIST_FILE,
+      upload_content,
+      BLOCKLIST_BUCKET,
+      BLOCKLIST_FILE,
       name=f'upload {BLOCKLIST_FILE}')
 
 
@@ -649,11 +722,25 @@ def GenTests(api):
         for version, arch in itertools.product(versions, archs)
     ]
 
+  def blocked_version_line(version, failures_hours_ago=None):
+    if failures_hours_ago is None:
+      failures_hours_ago = [0] * 4
 
-  def main_scenario(name, *args, **kwargs):
+    failures = api.json.dumps([{
+        "build": "url1",
+        "time": 1700000000 - 3600 * hours
+    } for hours in failures_hours_ago])
+    justification = '{"failures": ' + failures + '}'
+
+    return f'{version} {justification}'
+
+  def main_scenario(name, *args, max_parallel_versions=2, **kwargs):
     return api.test(
         name,
-        api.properties(max_parallel_versions=2, version_number_cutoff=(1, 1)),
+        api.properties(
+            max_parallel_versions=max_parallel_versions,
+            version_number_cutoff=(1, 1)), api.time.seed(1700000000),
+        api.time.step(10),
         stdout(
             'init trackers for candidate versions.git ls-remote', '\n'.join([
                 '1234 refs/tags/0.1.10.1',
@@ -666,9 +753,7 @@ def GenTests(api):
                 'cd12 refs/tags/1.1.1.4',
                 '43ff refs/tags/1.1.2',
                 '',
-            ])),
-        *args, **kwargs
-    )
+            ])), *args, **kwargs)
 
   yield main_scenario(
       'basic',
@@ -763,7 +848,14 @@ def GenTests(api):
       api.post_process(
           StepCommandContains,
           'report exceptions.gsutil upload blocked-versions.txt', [
-              '1.1.1.4 {"failures": ["https://cr-buildbucket.appspot.com/build/0"]}'
+              '\n'.join([
+                  '# If you manually add a version to this list, use the format:',
+                  '# <major>.<minor>.<build>.<patch> {"reason": "<Link to CL or bug>"}',
+                  '#',
+                  '# Example:',
+                  '# 12.8.5.0 {"reason": "crbug.com/40245627"}',
+                  '1.1.1.4 {"failures": [{"build": "https://cr-buildbucket.appspot.com/build/0", "time": 1700000010}]}',
+              ])
           ]),
       api.post_process(DropExpectation),
       status='FAILURE',
@@ -807,18 +899,24 @@ def GenTests(api):
       status='FAILURE',
   )
 
+  mock_block_file = '\n'.join([
+      '# A multiline comment which is ignored',
+      '# by the parser.',
+      blocked_version_line('1.1.1.2'),
+      blocked_version_line('1.1.1.4'),
+      '1.1.1.5 {"reason": "crbug.com/12345"}',
+      '',
+  ])
   yield api.test(
       'version_blocklist',
       api.properties(
           max_parallel_versions=100, version_number_cutoff=(1, 1, 1)),
-      stdout(
-          'init trackers for candidate versions.git ls-remote',
-          'ab34 refs/tags/1.1.1.1\n'
-          'abde refs/tags/1.1.1.2\n'),
-      stdout_binary(
-          'init trackers for candidate versions.gsutil cat',
-          '1.1.1.2 {"failures": ["url1", "url2"]}\n'
-          '1.1.1.4 {"failures": ["url3", "url4"]}'),
+      stdout('init trackers for candidate versions.git ls-remote',
+             'ab34 refs/tags/1.1.1.1\n'
+             'abde refs/tags/1.1.1.2\n'),
+      stdout_binary('init trackers for candidate versions.gsutil cat',
+                    mock_block_file),
+      stdout_binary('report exceptions.gsutil cat', mock_block_file),
       api.post_process(
           MustRun,
           'trigger compilators.1.1.1.1 x86',
@@ -841,5 +939,86 @@ def GenTests(api):
       *mock_profiles(['1.1.2.0'], ['x64']),
       *mock_profiles(['1.1.1.4'], ['x64'], content='invalid-content'),
       api.expect_exception('AssertionError'),
+      api.post_process(DropExpectation),
+  )
+
+  retry_versions = [
+      {
+          'version': '1.1.1.2',
+          'failed_hours_ago': [0],
+          'retry': True
+      },
+      {
+          'version': '1.1.1.3',
+          'failed_hours_ago': [0, 0],
+          'retry': False
+      },
+      {
+          'version': '1.1.1.4',
+          'failed_hours_ago': [7, 7],
+          'retry': True
+      },
+      {
+          'version': '1.1.1.5',
+          'failed_hours_ago': [7, 7, 1],
+          'retry': False
+      },
+      {
+          'version': '1.1.1.6',
+          'failed_hours_ago': [25, 24, 19],
+          'retry': True
+      },
+      {
+          'version': '1.1.1.7',
+          'failed_hours_ago': [360],
+          'retry': False
+      },
+  ]
+  profiled_versions = [rv['version'] for rv in retry_versions if rv['retry']]
+  skipped_versions = [rv['version'] for rv in retry_versions if not rv['retry']]
+  download_blockfile = '\n'.join([
+      '# A multiline comment which is ignored',
+      '# by the parser.',
+      *[
+          blocked_version_line(
+              rv['version'], failures_hours_ago=rv['failed_hours_ago'])
+          for rv in retry_versions
+      ],
+      '',
+  ])
+  yield main_scenario(
+      'retry_timing',
+      stdout(
+          'init trackers for candidate versions.git ls-remote', '\n'.join(
+              [f'abde refs/tags/{rv["version"]}' for rv in retry_versions])),
+      stdout_binary('init trackers for candidate versions.gsutil cat',
+                    download_blockfile),
+      *mock_compilation(profiled_versions, all_tracks),
+      *mock_profiles(profiled_versions, all_tracks),
+      api.post_process(
+          MustRun,
+          *[f'trigger compilators.{v} x86' for v in profiled_versions],
+      ),
+      api.post_process(
+          DoesNotRun,
+          *[f'trigger compilators.{v} x86' for v in skipped_versions],
+      ),
+      api.post_process(DropExpectation),
+      max_parallel_versions=len(retry_versions),
+  )
+
+  download_blockfile = '12.5.4.1 {[@;invalid json'
+  yield main_scenario(
+      'version_blockfile_invalid_justification',
+      stdout('init trackers for candidate versions.git ls-remote',
+             'abde refs/tags/12.5.4.1'),
+      stdout_binary('init trackers for candidate versions.gsutil cat',
+                    download_blockfile),
+      api.post_process(DoesNotRun, 'trigger compilators.12.5.4.1 x86'),
+      api.post_process(LogContains,
+                       'init trackers for candidate versions.gsutil cat',
+                       'blocked versions', [
+                           '"reason": "Justification cannot be parsed"',
+                       ]),
       api.post_process(DropExpectation),
   )

@@ -42,7 +42,30 @@
     "infra_step": true,
     "name": "init trackers for candidate versions.gsutil cat",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@blocked versions@{}@@@",
+      "@@@STEP_LOG_END@blocked versions@@@",
+      "@@@STEP_LOG_LINE@filtered tags@[@@@",
+      "@@@STEP_LOG_LINE@filtered tags@  [@@@",
+      "@@@STEP_LOG_LINE@filtered tags@    [@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      2,@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      0@@@",
+      "@@@STEP_LOG_LINE@filtered tags@    ],@@@",
+      "@@@STEP_LOG_LINE@filtered tags@    \"43ff\"@@@",
+      "@@@STEP_LOG_LINE@filtered tags@  ],@@@",
+      "@@@STEP_LOG_LINE@filtered tags@  [@@@",
+      "@@@STEP_LOG_LINE@filtered tags@    [@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
+      "@@@STEP_LOG_LINE@filtered tags@      4@@@",
+      "@@@STEP_LOG_LINE@filtered tags@    ],@@@",
+      "@@@STEP_LOG_LINE@filtered tags@    \"cd12\"@@@",
+      "@@@STEP_LOG_LINE@filtered tags@  ]@@@",
+      "@@@STEP_LOG_LINE@filtered tags@]@@@",
+      "@@@STEP_LOG_END@filtered tags@@@"
     ]
   },
   {
