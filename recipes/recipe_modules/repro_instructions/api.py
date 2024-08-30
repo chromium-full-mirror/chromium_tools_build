@@ -67,26 +67,30 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
-    local_instruction = instruction_pb.TargetedInstruction(
-        content=local_content,
-        targets=[
-            instruction_pb.InstructionTarget.LOCAL,
-        ])
+    local_instruction = None
+    if local_content:
+      local_instruction = instruction_pb.TargetedInstruction(
+          content=local_content,
+          targets=[
+              instruction_pb.InstructionTarget.LOCAL,
+          ])
+    remote_instruction = None
+    if remote_content:
+      remote_instruction = instruction_pb.TargetedInstruction(
+          content=remote_content,
+          targets=[
+              instruction_pb.InstructionTarget.REMOTE,
+          ])
 
     instruction = instruction_pb.Instruction(
         id=tag,
         descriptive_name=description[:100],
         type=instruction_pb.InstructionType.STEP_INSTRUCTION,
-        targeted_instructions=[
-            instruction_pb.TargetedInstruction(
-                content=remote_content,
-                targets=[
-                    instruction_pb.InstructionTarget.REMOTE,
-                ],
-            ),
-            local_instruction,
-        ],
     )
+    if local_content:
+      instruction.targeted_instructions.append(local_instruction)
+    if remote_content:
+      instruction.targeted_instructions.append(remote_instruction)
     self._instructions[tag] = instruction
 
   def create_test_result_instruction(
@@ -142,56 +146,3 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
                 invocation_ids=test_invocations)),
     )
     self._instructions[tag] = instruction
-
-  def get_utr_instruction(self,
-                          command: str,
-                          test_names: Iterable[str],
-                          extra_args: Iterable[str] | None = None) -> str:
-    """ Provides the Universal Test Runner (UTR) steps to reproduce a step
-
-    Adds any provided local and remote instructions for to the provided by
-    attaching the tag and instruction id. This must be called before the step
-    has been finalized.
-
-    Args:
-      command: The UTR command to run (eg 'compile', 'compile-and-run')
-      test_names: Test names to invoke UTR with or none to compile all
-      extra_args: Any extra args to append to the command (eg a test filter)
-    Returns:
-      The UTR command that can be run from chromium/src checkout
-    """
-
-    def sanitize_arg(s):
-      s = s.replace('"', '\\"').replace("'", "\\'")
-      if len(s.split()) > 1:
-        return '"' + s + '"'
-      return s
-
-    utr_cmd = [
-        'vpython3',
-        'tools/utr',
-        '-p',
-        self.m.buildbucket.build.builder.project,
-        '-B',
-        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
-        '-b',
-        self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
-    ]
-    if not test_names:
-      test_names = []
-    for test in test_names:
-      utr_cmd.extend(['-t', test])
-    utr_cmd.append(command)
-
-    if extra_args:
-      utr_cmd.extend(extra_args)
-
-    utr_cmd = ' '.join([sanitize_arg(arg) for arg in utr_cmd])
-    utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
-    lines = []
-    lines.append(
-        f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
-        'checkout:')
-    lines.append('```' + utr_cmd + '```')
-    lines.append('')
-    return '<br/>'.join(lines)

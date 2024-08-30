@@ -13,6 +13,8 @@ from recipe_engine import recipe_api
 from recipe_engine import util as recipe_util
 from recipe_engine.config_types import Path
 
+from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_instruction
+
 from . import types as chromium_swarming
 
 _PER_TARGET_SWARMING_DIMS = collections.defaultdict(
@@ -394,7 +396,8 @@ class SwarmingApi(recipe_api.RecipeApi):
            trigger_script=None,
            relative_cwd=None,
            collect_json_output_override=None,
-           instructions_tag=None):
+           instructions_tag=None,
+           include_utr_instruction=False):
     """Returns a new SwarmingTask instance to run an isolated executable on
     Swarming.
 
@@ -459,6 +462,8 @@ class SwarmingApi(recipe_api.RecipeApi):
           passed to the collect script.
       * instructions_tag: Tag to attach to the step which will link the
           reproduction instructions
+      * include_utr_instruction: Whether or not to include UTR in reproduction
+          instructions
     """
 
     if not collect_step:
@@ -535,7 +540,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         merge=merge,
         trigger_script=trigger_script,
         collect_json_output_override=collect_json_output_override,
-        instructions_tag=instructions_tag)
+        instructions_tag=instructions_tag,
+        include_utr_instruction=include_utr_instruction)
 
   def gtest_task(self,
                  raw_cmd,
@@ -545,6 +551,7 @@ class SwarmingApi(recipe_api.RecipeApi):
                  merge=None,
                  relative_cwd=None,
                  instructions_tag=None,
+                 include_utr_instruction=False,
                  **kwargs):
     """Returns a new SwarmingTask instance to run an isolated gtest on Swarming.
 
@@ -587,6 +594,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         raw_cmd=raw_cmd,
         relative_cwd=relative_cwd,
         instructions_tag=instructions_tag,
+        include_utr_instruction=include_utr_instruction,
         **kwargs)
     return task
 
@@ -594,7 +602,8 @@ class SwarmingApi(recipe_api.RecipeApi):
                            raw_cmd=None,
                            relative_cwd=None,
                            cas_input_root='',
-                           instructions_tag=None):
+                           instructions_tag=None,
+                           include_utr_instruction=False):
     """Returns a new SwarmingTask to run an isolated script test on Swarming.
 
     At the time of this writting, this code is used by WebRTC and
@@ -625,7 +634,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         raw_cmd=raw_cmd,
         relative_cwd=relative_cwd,
         cas_input_root=cas_input_root,
-        instructions_tag=instructions_tag)
+        instructions_tag=instructions_tag,
+        include_utr_instruction=include_utr_instruction)
     task.extra_args = extra_args
     task.merge = merge
     return task
@@ -970,9 +980,14 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     test_suite_name = task.test_suite_name
     instructions = task.get_local_instruction()
-    if test_suite_name:
-      instructions = self.m.repro_instructions.get_utr_instruction(
-          'compile-and-test', [test_suite_name]) + instructions
+    if test_suite_name and task.include_utr_instruction:
+      remote_instruction = get_utr_instruction(
+          'compile-and-test', self.m.buildbucket.build.builder.project,
+          self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
+          [test_suite_name])
+      if remote_instruction:
+        instructions = remote_instruction + '<br/>' + instructions
     step_result.presentation.step_text += (task.text_for_step() + instructions)
 
     if task.instructions_tag:
@@ -1025,9 +1040,14 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     test_suite_name = task.test_suite_name
     instructions = task.get_local_instruction()
-    if test_suite_name:
-      instructions = self.m.repro_instructions.get_utr_instruction(
-          'compile-and-test', [test_suite_name]) + instructions
+    if test_suite_name and task.include_utr_instruction:
+      remote_instruction = get_utr_instruction(
+          'compile-and-test', self.m.buildbucket.build.builder.project,
+          self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
+          [test_suite_name])
+      if remote_instruction:
+        instructions = remote_instruction + '<br/>' + instructions
     step_result.presentation.step_text += (task.text_for_step() + instructions)
 
     if task.instructions_tag:
@@ -1371,9 +1391,14 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     test_suite_name = task.test_suite_name
     instructions = task.get_local_instruction()
-    if test_suite_name:
-      instructions = self.m.repro_instructions.get_utr_instruction(
-          'compile-and-test', [test_suite_name]) + '<br/>' + instructions
+    if test_suite_name and task.include_utr_instruction:
+      remote_instruction = get_utr_instruction(
+          'compile-and-test', self.m.buildbucket.build.builder.project,
+          self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
+          [test_suite_name])
+      if remote_instruction:
+        instructions = remote_instruction + '<br/>' + instructions
     step_result.presentation.step_text += (
         task.text_for_step() + '<br/>' + instructions)
 
@@ -1777,7 +1802,8 @@ class SwarmingTask:
                task_to_retry=None,
                trigger_script=None,
                collect_json_output_override=None,
-               instructions_tag=None):
+               instructions_tag=None,
+               include_utr_instruction=False):
 
     """Configuration of a swarming task.
 
@@ -1812,6 +1838,8 @@ class SwarmingTask:
           passed to the collect script.
       * instructions_tag: Tag to attach to the step which will link the
           reproduction instructions
+      * include_utr_instruction: Whether or not to include UTR reproduction
+          instructions
     """
     self._server = server
     self._trigger_output = None
@@ -1837,6 +1865,11 @@ class SwarmingTask:
     self.wait_for_capacity = False
     self.collect_json_output_override = collect_json_output_override
     self._instructions_tag = instructions_tag
+    self._include_utr_instruction = include_utr_instruction
+
+  @property
+  def include_utr_instruction(self):
+    return self._include_utr_instruction
 
   @property
   def task_name(self):

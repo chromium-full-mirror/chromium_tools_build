@@ -248,16 +248,15 @@ class TestUtilsApi(recipe_api.RecipeApi):
     ]
     return groups
 
-  def run_tests_once(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      test_suites,
-      suffix,
-      *,
-      sort_by_shard=False,
-  ):
+  def run_tests_once(self,
+                     checkout_dir: Path,
+                     source_dir: Path,
+                     build_dir: Path,
+                     test_suites,
+                     suffix,
+                     *,
+                     sort_by_shard=False,
+                     include_utr_instruction=False):
     """Runs a set of tests once. Used as a helper function by run_tests.
 
     Args:
@@ -283,7 +282,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     with self.m.step.nest(nest_name):
       for group in groups:
-        group.pre_run(self.m, suffix)
+        group.pre_run(self.m, suffix, include_utr_instruction)
 
     # Update the instructions for the test result instructions
     if test_suites:
@@ -318,13 +317,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     return rdb_results, bad_results_dict['invalid'], bad_results_dict['failed']
 
-  def run_tests_for_flake_endorser(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      test_objects_by_suffix,
-  ):
+  def run_tests_for_flake_endorser(self,
+                                   checkout_dir: Path,
+                                   source_dir: Path,
+                                   build_dir: Path,
+                                   test_objects_by_suffix,
+                                   include_utr_instruction: bool = False):
     """Runs tests flake endorser test reruns.
 
     RDB results and failed/invalid test_suites isn't returned because flake
@@ -346,7 +344,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
       nest_name = 'test_pre_run (%s)' % suffix
       with self.m.step.nest(nest_name):
         for group in groups:
-          group.pre_run(self.m, suffix)
+          group.pre_run(self.m, suffix, include_utr_instruction)
 
     for suffix in suffixes:
       groups = groups_by_suffix[suffix]
@@ -1022,7 +1020,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
                 *,
                 sort_by_shard=False,
                 retry_failed_shards=False,
-                retry_invalid_shards=False):
+                retry_invalid_shards=False,
+                include_utr_instruction=False):
     """Runs a list of test suites and returns the failed ones.
 
     If retry_[failed|invalid]_shards is true, this method retries shards that
@@ -1061,7 +1060,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
             build_dir,
             test_suites,
             suffix,
-            sort_by_shard=sort_by_shard))
+            sort_by_shard=sort_by_shard,
+            include_utr_instruction=include_utr_instruction))
 
     _allowed_failing_suites = {
         x.name
@@ -1104,7 +1104,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
         build_dir,
         swarming_test_suites,
         retry_suffix,
-        sort_by_shard=True)
+        sort_by_shard=True,
+        include_utr_instruction=include_utr_instruction)
 
     invalid_test_suites = self._still_invalid_suites(
         old_invalid_suites=invalid_test_suites,
@@ -1131,7 +1132,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
                            source_dir: Path,
                            build_dir: Path,
                            test_suites,
-                           retry_failed_shards=False):
+                           retry_failed_shards=False,
+                           include_utr_instruction=False):
     """Runs tests and returns failures.
 
     Args:
@@ -1159,6 +1161,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         sort_by_shard=True,
         retry_failed_shards=retry_failed_shards,
         retry_invalid_shards=retry_failed_shards,
+        include_utr_instruction=include_utr_instruction,
     )
 
   # TODO(crbug/1314194): Refactor ignored_failures and ignored_flakes to take
@@ -1349,7 +1352,10 @@ class TestGroup:
     self._test_suites = test_suites
     self.resultdb_api = resultdb_api
 
-  def pre_run(self, api, suffix):  # pragma: no cover
+  def pre_run(self,
+              api,
+              suffix,
+              include_utr_instruction=False):  # pragma: no cover
     """Executes the |pre_run| method of each test.
 
     Args:
@@ -1403,11 +1409,11 @@ class LocalGroup(TestGroup):
   def __init__(self, test_suites, resultdb):
     super().__init__(test_suites, resultdb)
 
-  def pre_run(self, api, suffix):
+  def pre_run(self, api, suffix, include_utr_instruction=False):
     """Executes the |pre_run| method of each test."""
     for t in self._test_suites:
       with self._handle_test_errors(api):
-        t.pre_run(suffix)
+        t.pre_run(suffix, include_utr_instruction)
 
   def run(self, api, checkout_dir: Path, source_dir: Path, build_dir: Path,
           suffix):
@@ -1427,19 +1433,21 @@ class SwarmingGroup(TestGroup):
     super().__init__(test_suites, resultdb)
     self._task_ids_to_test = {}
 
-  def pre_run(self, api, suffix):
+  def pre_run(self, api, suffix, include_utr_instruction=False):
     """Executes the |pre_run| method of each test."""
     # Universal Test Runner is running on annotation run mode
     # which does not support concurrency
     if api.futures.concurrency_client.supports_concurrency:
       futures = []
       for t in self._test_suites:
-        futures.append(api.futures.spawn_immediate(t.pre_run, suffix))
+        futures.append(
+            api.futures.spawn_immediate(t.pre_run, suffix,
+                                        include_utr_instruction))
       for f in futures:
         f.result()
     else:  #pragma nocover
       for t in self._test_suites:
-        t.pre_run(suffix)
+        t.pre_run(suffix, include_utr_instruction)
 
     for t in self._test_suites:
       if not t.is_enabled:
@@ -1511,7 +1519,7 @@ class SkylabGroup(TestGroup):
     self.ctp_build_timeout_sec = 3600
     self.ctp_build_ids = set()
 
-  def pre_run(self, api, suffix):
+  def pre_run(self, api, suffix, include_utr_instruction=False):
     """Schedule each Skylab test request to a CTP build."""
     for t in self._test_suites:
       if not t.is_enabled:
@@ -1519,7 +1527,7 @@ class SkylabGroup(TestGroup):
       # Respect timeout of each test run by this CTP build.
       self.ctp_build_timeout_sec = max(t.spec.timeout_sec,
                                        self.ctp_build_timeout_sec)
-      t.pre_run(suffix)
+      t.pre_run(suffix, include_utr_instruction)
       for build_id in t.ctp_build_ids.values():
         if not build_id in self.ctp_build_ids:
           self.ctp_build_ids.add(build_id)

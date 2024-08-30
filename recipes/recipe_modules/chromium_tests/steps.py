@@ -55,6 +55,7 @@ from RECIPE_MODULES.build.test_utils import util
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
                                              mapping, sequence)
 from RECIPE_MODULES.build.skylab.test_runner import TestRunner
+from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_instruction
 
 # Pylint doesn't understand an abstract class hierarchy where a subclass will
 # override some of the abstract methods of its base and remain abstract itself.
@@ -462,7 +463,7 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     """Steps to execute before running the test."""
     raise NotImplementedError()  # pragma: no cover
 
@@ -876,6 +877,10 @@ class Test(AbstractTest):
     # _rdb_results above, can safely handle any type of test failure without
     # inspecting JSON.
     self._failure_on_exit_suffix_map = {}
+
+    # Include the UTR instructions in the reproduction instruction to run this
+    # test
+    self._include_utr_instruction = False
 
   @property
   def spec(self) -> AbstractTestSpec:
@@ -1327,9 +1332,9 @@ class TestWrapper(
   def is_enabled(self):
     return not self._disabled_message and self._test.is_enabled
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     if not self._disabled_message:
-      return self._test.pre_run(suffix)
+      return self._test.pre_run(suffix, include_utr_instruction)
 
   def run(
       self,
@@ -1525,9 +1530,10 @@ class ExperimentalTest(TestWrapper):
     return self._test.step_name(self._experimental_suffix(suffix))
 
   #override
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     try:
-      return super().pre_run(self._experimental_suffix(suffix))
+      return super().pre_run(
+          self._experimental_suffix(suffix), include_utr_instruction)
     except self.api.m.step.StepFailure:
       pass
 
@@ -1617,7 +1623,7 @@ class LocalTest(Test):
   def locality(self) -> TestLocality:
     return TestLocality.LOCAL
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     del suffix
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
@@ -2188,16 +2194,23 @@ class SwarmingTest(Test, AbstractSwarmingTest):
   def shards(self) -> int:
     return self.spec.shards
 
-  def _add_instructions(self):
+  def _add_instructions(self, include_utr_instruction: bool):
     """Gets the reproduction instructions to be attached to the invocation"""
 
     for suffix, task in self._tasks.items():
+      remote_instruction = None
+      if include_utr_instruction:
+        remote_instruction = get_utr_instruction(
+            'compile-and-test', self.api.m.buildbucket.build.builder.project,
+            self.api.m.led.shadowed_bucket or
+            self.api.m.buildbucket.build.builder.bucket,
+            self.api.m.buildbucket.build.builder.builder.replace(
+                '-compilator', ''), [self.name])
       self.api.m.repro_instructions.create_step_instruction(
           self._instructions_tag_for_suffix('step', suffix),
           f'{self.name} instructions',
           task.get_local_instruction(),
-          self.api.m.repro_instructions.get_utr_instruction(
-              'compile-and-test', [self.name]),
+          remote_instruction,
       )
 
       test_invocations = [
@@ -2210,12 +2223,20 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         # {{test.tags.test_name}} which will be replaced in milo with the
         # actual test name
         filter_arg = f'{self.option_flags.filter_flag}={{{{test.tags.test_name}}}}'
+        if include_utr_instruction:
+          remote_instruction = get_utr_instruction(
+              'compile-and-test',
+              self.api.m.buildbucket.build.builder.project,
+              self.api.m.led.shadowed_bucket or
+              self.api.m.buildbucket.build.builder.bucket,
+              self.api.m.buildbucket.build.builder.builder.replace(
+                  '-compilator', ''), [self.name],
+              extra_args=['--', filter_arg])
         self.api.m.repro_instructions.create_test_result_instruction(
             self._instructions_tag_for_suffix('test', suffix),
             f'{self.name} instructions',
             task.get_local_instruction(extra_args=[filter_arg]),
-            self.api.m.repro_instructions.get_utr_instruction(
-                'compile-and-test', [self.name], extra_args=['--', filter_arg]),
+            remote_instruction,
             test_invocations=test_invocations)
 
   def did_complete(self, suffix) -> bool:
@@ -2227,6 +2248,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       self,
       suffix: str,
       cas_input_root: str,
+      include_utr_instruction: bool,
   ) -> chromium_swarming.SwarmingTask:
     """Creates a swarming task. Must be overridden in subclasses.
 
@@ -2517,7 +2539,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       return task.get_invocation_names()
     return []
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     """Launches the test on Swarming."""
     assert suffix not in self._tasks, ('Test %s was already triggered' %
                                        self.step_name(suffix))
@@ -2531,7 +2553,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
                      self.isolate_target))
 
     # Create task.
-    self._tasks[suffix] = self._create_task(suffix, task_input)
+    self._tasks[suffix] = self._create_task(suffix, task_input,
+                                            include_utr_instruction)
 
     # Export TARGET_PLATFORM to resultdb tags
     resultdb = self.spec.resultdb
@@ -2546,7 +2569,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         self._tasks[suffix], resultdb=resultdb)
 
     # Add instructions now that we have invocations
-    self._add_instructions()
+    self._add_instructions(include_utr_instruction)
 
   def run(
       self,
@@ -2620,6 +2643,7 @@ class SwarmingGTestTest(SwarmingTest):
       self,
       suffix: str,
       cas_input_root: str,
+      include_utr_instruction: bool,
   ) -> chromium_swarming.SwarmingTask:
     json_override = None
     # TODO(crbug.com/1255217): Remove this android exception when logcats and
@@ -2638,7 +2662,8 @@ class SwarmingGTestTest(SwarmingTest):
         relative_cwd=self.relative_cwd,
         cas_input_root=cas_input_root,
         collect_json_output_override=json_override,
-        instructions_tag=self._instructions_tag_for_suffix('step', suffix))
+        instructions_tag=self._instructions_tag_for_suffix('step', suffix),
+        include_utr_instruction=include_utr_instruction)
     extra_args = list(self.spec.args) + cmd_filters
     merged_filter_file_arg = ';'.join(
         arg[len('--test-launcher-filter-file='):]
@@ -2823,6 +2848,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
       self,
       suffix: str,
       cas_input_root: str,
+      include_utr_instruction: bool,
   ) -> chromium_swarming.SwarmingTask:
     cmd = self.raw_cmd
 
@@ -2830,7 +2856,8 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
         raw_cmd=cmd,
         relative_cwd=self.relative_cwd,
         cas_input_root=cas_input_root,
-        instructions_tag=self._instructions_tag_for_suffix('step', suffix))
+        instructions_tag=self._instructions_tag_for_suffix('step', suffix),
+        include_utr_instruction=include_utr_instruction)
 
     self._apply_swarming_task_config(task, suffix,
                                      '--isolated-script-test-filter', '::',
@@ -2967,7 +2994,7 @@ class MockTest(AbstractSwarmingTest, Test):
       self._failures.append('test_failure')
       raise
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     with self._mock_exit_codes():
       self.api.m.step('pre_run {}'.format(self.step_name(suffix)),
                       ['mock_test.pre_run'])
@@ -3205,7 +3232,7 @@ class SkylabTest(AbstractSkylabTest, Test):
       return [f'invocations/build-{build_id}']
     return []
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     retry_shards = []
     for tr in self.test_runner_builds.get(
         self.api.m.test_utils.remove_retry_shards(suffix), []):

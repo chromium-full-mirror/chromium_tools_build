@@ -264,6 +264,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               build_dir,
               tests,
               retry_failed_shards=builder_config.retry_failed_shards,
+              include_utr_instruction=True,
           ))
 
       if (tests and self.m.code_coverage.using_coverage and
@@ -384,7 +385,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           build_dir,
           failing_test_suites,
           'without patch',
-          sort_by_shard=True)
+          sort_by_shard=True,
+          include_utr_instruction=True)
 
     # unrecoverable_test_suites are those that passed without a patch, so the
     # failures must be due to the CL

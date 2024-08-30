@@ -456,7 +456,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          serialize_tests=False,
                          retry_failed_shards=False,
                          retry_invalid_shards=False,
-                         surface_invalid_results_as_infra_failure=False):
+                         surface_invalid_results_as_infra_failure=False,
+                         include_utr_instruction=False):
     """Creates a test runner to run a set of tests.
 
     Args
@@ -474,6 +475,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         See run_tests documentation in test_utils module.
       surface_invalid_results_as_infra_failure: If true, an infra failure will
         be returned when all the failed tests have invalid results.
+      include_utr_instruction: Whether or not to include UTR in reproduction
+          instructions
 
     Returns:
       A function that can be passed to setup_chromium_tests or run directly.
@@ -495,7 +498,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             tl,
             suffix,
             retry_failed_shards=retry_failed_shards,
-            retry_invalid_shards=retry_invalid_shards)
+            retry_invalid_shards=retry_invalid_shards,
+            include_utr_instruction=include_utr_instruction)
         all_failed_tests = all_failed_tests.union(failed_tests, invalid_tests)
 
       self.m.chromium_swarming.report_stats()
@@ -1569,7 +1573,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               task.source_dir,
               task.build_dir,
               task.test_suites,
-              retry_failed_shards=task.should_retry_failures_with_changes))
+              retry_failed_shards=task.should_retry_failures_with_changes,
+              include_utr_instruction=True))
 
       if self.m.code_coverage.using_coverage:
         self.m.code_coverage.process_coverage_data(task.test_suites)
@@ -1607,7 +1612,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           task.build_dir,
           failing_test_suites,
           'without patch',
-          sort_by_shard=True)
+          sort_by_shard=True,
+          include_utr_instruction=True)
 
       # Returns test suites whose failure is probably the CL's fault
       return None, self.summarize_test_failures(task.test_suites,
@@ -2382,9 +2388,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           source_dir,
           build_dir,
           tests=test_objects_by_suffix[general_suffix]):
-        self.m.test_utils.run_tests_for_flake_endorser(checkout_dir, source_dir,
-                                                       build_dir,
-                                                       test_objects_by_suffix)
+        self.m.test_utils.run_tests_for_flake_endorser(
+            checkout_dir,
+            source_dir,
+            build_dir,
+            test_objects_by_suffix,
+            include_utr_instruction=True)
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
 
@@ -2954,6 +2963,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         retry_invalid_shards=any(
             t.runs_on_skylab or (t.runs_on_swarming and t.isolate_profile_data)
             for t in tests),
+        include_utr_instruction=True,
     )
     with self.wrap_chromium_tests(
         checkout_dir, source_dir, build_dir, tests=tests):
