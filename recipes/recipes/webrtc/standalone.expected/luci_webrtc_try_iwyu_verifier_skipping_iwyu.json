@@ -350,7 +350,11 @@
     "name": "parse description",
     "stdin": "Change commit message",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"No-Iwyu\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"skip\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
     ]
   },
@@ -2054,92 +2058,6 @@
     ]
   },
   {
-    "cmd": [
-      "git",
-      "-c",
-      "core.quotePath=false",
-      "diff",
-      "--cached",
-      "--name-only"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git diff to analyze patch (2)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
-      "@@@STEP_LOG_END@files@@@",
-      "@@@SET_BUILD_PROPERTY@affected_files@{\"first_100\": [\"src/foo.cc\"], \"total_count\": 1}@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "tools/clang/scripts/generate_compdb.py",
-      "--filter_arg",
-      "exec_root",
-      "-p",
-      "out/iwyu_verifier",
-      ">",
-      "out/iwyu_verifier/compile_commands.json"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "generate compile commands"
-  },
-  {
-    "cmd": [
-      "tools_webrtc/iwyu/apply-include-cleaner",
-      "-r",
-      "-c",
-      "-w",
-      "out/iwyu_verifier",
-      "foo.cc"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "apply-include-cleaner foo.cc",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "failure": {
-      "failure": {},
-      "humanReason": "Run \"tools_webrtc/iwyu/apply-include-cleaner\" to fix this bot !<br>Add a \"No-Iwyu: [reason]\" footer in the commit description to skip this bot."
-    },
     "name": "$result"
   }
 ]

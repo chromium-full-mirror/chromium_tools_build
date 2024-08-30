@@ -321,11 +321,15 @@ class WebRTCApi(recipe_api.RecipeApi):
   def include_cleaner(self, builder_id):
     GENERATE_DATABASE = 'tools/clang/scripts/generate_compdb.py'
     INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply-include-cleaner'
+    SKIP_FOOTER = 'No-Iwyu'
+
+    result = result_pb.RawResult(status=common_pb.SUCCESS)
+    if SKIP_FOOTER in self.m.tryserver.get_footers():
+      return result
+
     build_dir = 'out/' + builder_id.builder
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True)
-
-    result = result_pb.RawResult(status=common_pb.SUCCESS)
     with self.m.context(cwd=self.m.path.checkout_dir):
       self.m.step('generate compile commands', [
           GENERATE_DATABASE, '--filter_arg', 'exec_root', '-p', build_dir, '>',
@@ -340,8 +344,10 @@ class WebRTCApi(recipe_api.RecipeApi):
           if step_result.exc_result.retcode != 0:
             result = result_pb.RawResult(
                 status=common_pb.FAILURE,
-                summary_markdown=('Run ' + INCLUDE_CLEANER +
-                                  ' to fix this bot !'))
+                summary_markdown='Run "' + INCLUDE_CLEANER +
+                '" to fix this bot !<br>Add a "' + SKIP_FOOTER +
+                ': [reason]" footer in the commit description to skip this bot.'
+            )
     return result
 
   def build_with_reclient(self, step_name, source_dir: Path, cmd):

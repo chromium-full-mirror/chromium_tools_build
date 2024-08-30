@@ -132,6 +132,9 @@ def GenTests(api):
   builder_id = chromium.BuilderId.create_for_group('tryserver.webrtc',
                                                    'iwyu_verifier')
   yield generate_builder(builder_id, fail_iwyu=True, suffix='_failing_iwyu')
+  yield generate_builder(
+      builder_id, suffix='_skipping_iwyu') + api.tryserver.get_footers(
+          {'No-Iwyu': ['skip']})
 
   builder_id = chromium.BuilderId.create_for_group('client.webrtc.perf',
                                                    'Perf Linux Bionic')
