@@ -15,6 +15,7 @@ class WebRTCBuilderSpec(builder_spec.BuilderSpec):
   binary_size_files = attrib(tuple, default=None)
   archive_apprtc = attrib(bool, default=False)
   build_android_archive = attrib(bool, default=False)
+  include_cleaner = attrib(bool, default=False)
   phases = attrib(tuple, default=(None,))
 
 
@@ -805,6 +806,15 @@ _TRYSERVER_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_PLATFORM': 'ios',
                 'TARGET_ARCH': 'intel',
+                'TARGET_BITS': 64,
+            }),
+    'iwyu_verifier':
+        WebRTCBuilderSpec.create(
+            include_cleaner=True,
+            chromium_config='webrtc_default',
+            gclient_config='webrtc_use_include_cleaner',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
                 'TARGET_BITS': 64,
             }),
     'linux_asan':

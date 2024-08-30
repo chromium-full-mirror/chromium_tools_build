@@ -81,6 +81,8 @@ def RunSteps(api):
       api.webrtc.build_android_archive(source_dir)
     if builder_spec.archive_apprtc:
       api.webrtc.package_apprtcmobile(build_dir, builder_id)
+    if builder_spec.include_cleaner:
+      return api.webrtc.include_cleaner(builder_id)
 
     tests_to_run = [
         t for t in targets_config.tests_on(builder_id)
@@ -126,6 +128,10 @@ def GenTests(api):
       builder_id,
       fail_android_archive=True,
       suffix='_failing_archive')
+
+  builder_id = chromium.BuilderId.create_for_group('tryserver.webrtc',
+                                                   'iwyu_verifier')
+  yield generate_builder(builder_id, fail_iwyu=True, suffix='_failing_iwyu')
 
   builder_id = chromium.BuilderId.create_for_group('client.webrtc.perf',
                                                    'Perf Linux Bionic')

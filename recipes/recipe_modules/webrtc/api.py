@@ -7,6 +7,8 @@ import urllib
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine import result as result_pb
 from RECIPE_MODULES.build.chromium_tests_builder_config import builder_spec
 
 from . import builders
@@ -48,6 +50,11 @@ def _get_test_targets_from_config(targets_config, phase):
 def _is_triggering_perf_tests(builder_id, builder_config):
   to_trigger = builder_config.builder_db.builder_graph[builder_id]
   return any(builders.BUILDERS_DB[b].perf_id for b in to_trigger)
+
+
+def _is_cpp_file(file):
+  return file.endswith('.cc') or file.endswith('.c') or file.endswith(
+      '.cpp') or file.endswith('.h') or file.endswith('.hpp')
 
 
 class WebRTCApi(recipe_api.RecipeApi):
@@ -310,6 +317,32 @@ class WebRTCApi(recipe_api.RecipeApi):
         infra_step=True,
         step_test_data=self.test_api.example_binary_sizes)
     result.presentation.properties['binary_sizes'] = result.json.output
+
+  def include_cleaner(self, builder_id):
+    GENERATE_DATABASE = 'tools/clang/scripts/generate_compdb.py'
+    INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply-include-cleaner'
+    build_dir = 'out/' + builder_id.builder
+    affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
+        report_via_property=True)
+
+    result = result_pb.RawResult(status=common_pb.SUCCESS)
+    with self.m.context(cwd=self.m.path.checkout_dir):
+      self.m.step('generate compile commands', [
+          GENERATE_DATABASE, '--filter_arg', 'exec_root', '-p', build_dir, '>',
+          build_dir + '/compile_commands.json'
+      ])
+      for f in affected_files:
+        if _is_cpp_file(f):
+          step_result = self.m.step(
+              'apply-include-cleaner ' + f,
+              [INCLUDE_CLEANER, '-r', '-c', '-w', build_dir, f],
+              raise_on_failure=False)
+          if step_result.exc_result.retcode != 0:
+            result = result_pb.RawResult(
+                status=common_pb.FAILURE,
+                summary_markdown=('Run ' + INCLUDE_CLEANER +
+                                  ' to fix this bot !'))
+    return result
 
   def build_with_reclient(self, step_name, source_dir: Path, cmd):
     cmd += ['--use-remoteexec']

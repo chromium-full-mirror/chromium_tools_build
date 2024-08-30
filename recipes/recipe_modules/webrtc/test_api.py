@@ -39,6 +39,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
                        fail_compile=False,
                        suffix='',
                        fail_android_archive=False,
+                       fail_iwyu=False,
                        is_experimental=False,
                        gn_analyze_output=None,
                        tags=None):
@@ -46,8 +47,8 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
     builder_name = _sanitize_builder_name(builder_id.builder)
     project = 'webrtc-internal' if 'internal' in builder_id.group else 'webrtc'
     test_target = 'dummy_test'
-    status = ('FAILURE' if fail_compile or failing_test or fail_android_archive
-              else 'SUCCESS')
+    status = ('FAILURE' if fail_compile or failing_test or
+              fail_android_archive or fail_iwyu else 'SUCCESS')
 
     chromium_kwargs = builder_config.chromium_config_kwargs
     test = self.test(
@@ -95,6 +96,12 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
       step_test_data = recipe_test_api.StepTestData()
       step_test_data.retcode = 1
       test += self.override_step_data('build android archive', step_test_data)
+
+    if fail_iwyu:
+      step_test_data = recipe_test_api.StepTestData()
+      step_test_data.retcode = 1
+      test += self.override_step_data('apply-include-cleaner foo.cc',
+                                      step_test_data)
 
     git_repo = 'https://webrtc.googlesource.com/src'
     nb_phase = 3 if 'more_configs' in builder_name else 1

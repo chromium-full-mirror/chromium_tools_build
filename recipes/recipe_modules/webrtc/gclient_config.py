@@ -37,6 +37,12 @@ def webrtc_use_clang_coverage(c):
   c.solutions[0].custom_vars['checkout_clang_coverage_tools'] = 'True'
 
 
+@CONFIG_CTX(includes=['webrtc'])
+def webrtc_use_include_cleaner(c):
+  """clang-include-cleaner is built as part of the "clangd" package."""
+  c.solutions[0].custom_vars['checkout_clangd'] = 'True'
+
+
 @CONFIG_CTX()
 def _webrtc(c):
   """Add the main solution for WebRTC standalone builds.
