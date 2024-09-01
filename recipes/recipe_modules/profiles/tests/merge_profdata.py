@@ -19,7 +19,9 @@ def RunSteps(api):
   new_path = '/some/other/path/llvm-profdata'
   api.profiles.llvm_profdata_exec = new_path
   assert api.profiles.llvm_profdata_exec == new_path
-  api.profiles.merge_profdata('some_artifact', '.*', sparse=True)
+  weights = {'weight': 2}
+  api.profiles.merge_profdata(
+      'some_artifact', '.*', sparse=True, weights=weights)
 
 
 def GenTests(api):

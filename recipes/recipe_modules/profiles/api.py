@@ -122,7 +122,8 @@ class ProfilesApi(recipe_api.RecipeApi):
   def merge_profdata(self,
                      output_artifact,
                      profdata_filename_pattern=None,
-                     sparse=False):
+                     sparse=False,
+                     weights=None):
     """Helper function to invoke 'merge_steps.py'.
 
     Args:
@@ -131,6 +132,7 @@ class ProfilesApi(recipe_api.RecipeApi):
         'merge_steps.py' when searching for .profdata files.
       sparse (bool): (optional) flag to invoke the merge script with sparse.
         Defaults to False.
+      weights (dictionary): maps from benchmark to weight.
     """
     cmd = [
         'python3',
@@ -153,6 +155,13 @@ class ProfilesApi(recipe_api.RecipeApi):
       cmd += [
           '--sparse',
       ]
+
+    if weights:
+      for benchmark, weight in weights.items():
+        cmd += [
+            '--weight',
+            f'{benchmark}:{weight}',
+        ]
 
     self.m.step('merge all profile files into a single .profdata', cmd)
 
