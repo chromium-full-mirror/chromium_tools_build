@@ -4,6 +4,9 @@ per-file README.recipes.md=*
 # recipes.py is auto-copied by the recipe roller.
 per-file recipes.py=recipe-mega-autoroller@chops-service-accounts.iam.gserviceaccount.com
 
+# Teams should be able to update their own OWNERS files.
+per-file SECURITY_TEAM_OWNERS=file:SECURITY_TEAM_OWNERS
+
 # For reverts only
 agrieve@chromium.org
 
