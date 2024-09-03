@@ -31,7 +31,7 @@ def main():
         else:
           os.remove(d)
       except FileNotFoundError as e:
-        print(e, flle=sys.stderr)
+        print(e, file=sys.stderr)
 
 
 if '__main__' == __name__:
