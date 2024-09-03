@@ -96,11 +96,6 @@ BUILDERS['official.toolchain'] = {
 
 BUILDERS = freeze(BUILDERS)
 
-ARM_MAC_BUILDERS = (
-    'mac_upload_clang_arm',
-    'toolchain-packager-mac-arm',
-)
-
 # GCS bucket where the official packagers upload archives.
 GCS_BUCKET_PROD = 'chromium-browser-toolchain-prod'
 
@@ -123,8 +118,6 @@ def RunSteps(api, properties):
       if api.buildbucket.builder_name in BUILDERS['official.toolchain'][
           'builders'].keys():
         args += ['--bucket', GCS_BUCKET_PROD]
-      if api.buildbucket.builder_name in ARM_MAC_BUILDERS:
-        args += ['--build-mac-arm']
       if properties.llvm_revision:
         args += ['--revision', properties.llvm_revision]
       api.step('package clang', [
