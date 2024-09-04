@@ -336,7 +336,8 @@ class WebRTCApi(recipe_api.RecipeApi):
           build_dir + '/compile_commands.json'
       ])
       for f in affected_files:
-        if _is_cpp_file(f):
+        if _is_cpp_file(f) and self.m.path.exists(
+            self.m.path.checkout_dir.joinpath(f)):
           step_result = self.m.step(
               'apply-include-cleaner ' + f,
               [INCLUDE_CLEANER, '-r', '-c', '-w', build_dir, f],
