@@ -2273,13 +2273,15 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     """
     del suffix, step_result
 
-  def _shards_to_retry_with(self, original_num_shards, num_tests_to_retry):
+  def _shards_to_retry_with(self, original_num_shards, num_tests_to_retry,
+                            test_options):
     """Calculates the number of shards to run when retrying this test.
 
     Args:
       original_num_shards: The number of shards used to run the test when it
                            first ran.
       num_tests_to_retry: The number of tests we're trying to retry.
+      test_options: The TestOptions for running for a given retry.
 
     Returns:
       The number of shards to use when retrying tests that failed.
@@ -2288,11 +2290,11 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     tests ran in that case. It doesn't make sense to ask how this test should
     run when retried, if it hasn't run already.
     """
-    with_patch_total = self._rdb_results['with patch'].total_tests_ran
-    with_patch_retry_total = (
-        self._rdb_results['retry shards with patch'].total_tests_ran
-        if 'retry shards with patch' in self._rdb_results else 0)
-    total_tests_ran = max(with_patch_total, with_patch_retry_total)
+    if original_num_shards <= 1:
+      return original_num_shards
+
+    total_tests_ran = max(
+        result.total_tests_ran for result in self._rdb_results.values())
     assert total_tests_ran, (
         "We cannot compute the total number of tests to re-run if no tests "
         "were run 'with patch'. Expected the results tracker to contain key "
@@ -2317,7 +2319,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     return int(
         min(
             max(
-                original_num_shards * REPEAT_COUNT_FOR_FAILING_TESTS *
+                original_num_shards * (test_options.repeat_count or 1) *
                 (float(num_tests_to_retry) / total_tests_ran), 1),
             original_num_shards,
             num_tests_to_retry,
@@ -2327,13 +2329,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
                                   filter_delimiter, extra_args):
     """Applies shared configuration for swarming tasks.
     """
-    tests_to_retry = self._tests_to_retry(suffix)
-    test_options = self.test_options.for_running(suffix, tests_to_retry)
-    args = test_options.add_args(extra_args, self.option_flags)
-
     add_one_test_shard_enabled = False
     shards = self.spec.shards
-
     # When this experiment is enabled, we want to trigger suites with one
     # additional shard so that we can go back and query for test overhead
     # estimations.
@@ -2348,6 +2345,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     if add_one_test_shard_enabled:
       shards += 1
 
+    tests_to_retry = self._tests_to_retry(suffix)
     if tests_to_retry:
       # The filter list is eventually passed to the binary over the command
       # line.  On Windows, the command line max char limit is 8191 characters.
@@ -2358,15 +2356,17 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       expected_filter_length = (
           sum(len(x) for x in tests_to_retry) +
           len(tests_to_retry) * len(filter_delimiter))
+      if expected_filter_length >= char_limit:
+        tests_to_retry = None
 
-      if expected_filter_length < char_limit:
-        test_list = filter_delimiter.join(tests_to_retry)
-        # Append filter with individual tests to retry
-        args = _merge_arg(args, filter_flag, test_list)
-        # Only reassign total shards for without patch suffix. For retry
-        # shards with patch, we want to retry the same failed shard indices.
-        if suffix == 'without patch':
-          shards = self._shards_to_retry_with(shards, len(tests_to_retry))
+    test_options = self.test_options.for_running(suffix, tests_to_retry)
+    args = test_options.add_args(extra_args, self.option_flags)
+    if tests_to_retry:
+      test_list = filter_delimiter.join(tests_to_retry)
+      # Append filter with individual tests to retry
+      args = _merge_arg(args, filter_flag, test_list)
+      shards = self._shards_to_retry_with(shards, len(tests_to_retry),
+                                          test_options)
 
     task.extra_args.extend(args)
     task.shards = shards
@@ -2438,7 +2438,11 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # task.shard_indices dictates how many shards will be triggered
     # CI builders retry invalid shards with the suffix "retry shards", instead
     # of "retry shards with patch" so check for both options.
-    if suffix in ['retry shards', 'retry shards with patch']:
+    # We will re-calculate the number of shards for tests_to_retry and retry the
+    # same failed shard indices otherwise.
+    if not tests_to_retry and suffix in [
+        'retry shards', 'retry shards with patch'
+    ]:
       if suffix == 'retry shards':
         # CI builders use the default '' suffix when calling run_tests()
         # in test_utils/api

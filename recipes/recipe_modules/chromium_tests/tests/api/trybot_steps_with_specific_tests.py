@@ -565,6 +565,7 @@ def GenTests(api):
                       'test': 'base_unittests',
                       'retry_only_failed_tests': True,
                       'swarming': {
+                          'shards': 2,
                           'dimensions': {
                               'os': 'Linux',
                           },
@@ -578,6 +579,11 @@ def GenTests(api):
           failures=['Test.One'],
           successes=['Test.Two'],
       ),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (retry shards with patch)' +
+          '.[trigger] base_unittests (retry shards with patch)', lambda check,
+          req: check('GTEST_TOTAL_SHARDS' not in req[0].env_vars)),
       api.post_process(
           post_process.LogContains,
           'test_pre_run (retry shards with patch).[trigger] base_unittests '
@@ -591,6 +597,49 @@ def GenTests(api):
           '(retry shards with patch)',
           'json.input',
           ['Test.Two'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  VeryLongTestName = 'VeryLo' + 'o' * 90 + 'ngTestName.'
+  yield api.test(
+      'retry_only_failed_tests_with_long_filter_list',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'retry_only_failed_tests': True,
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          'with patch',
+          failures=[VeryLongTestName + str(i) for i in range(1000)],
+          successes=['Test.Two'],
+      ),
+      api.post_process(
+          post_process.LogDoesNotContain,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests '
+          '(retry shards with patch)',
+          'json.input',
+          ['--gtest_filter'],
       ),
       api.post_process(post_process.DropExpectation),
   )
