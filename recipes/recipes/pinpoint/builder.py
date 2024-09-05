@@ -31,8 +31,6 @@ _PINPOINT_MAPPING = {
         ('chromium.perf.pinpoint', 'android_arm64_high_end-builder-perf'),
     'Android arm64 High End Compile Perf PGO':
         ('chromium.perf.pinpoint', 'android_arm64_high_end-builder-perf-pgo'),
-    'Chromecast Linux Builder Perf':
-        ('chromium.perf.pinpoint', 'chromecast-linux-builder-perf'),
     'Chromeos Amd64 Generic Lacros Builder Perf':
         ('chromium.perf.pinpoint', 'chromeos-amd64-generic-lacros-builder-perf'
         ),

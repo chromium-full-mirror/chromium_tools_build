@@ -279,9 +279,6 @@ _AddBuildSpec('linux-builder-perf', 'linux', bisect_archive_build=True)
 _AddBuildSpec('linux-builder-perf-pgo', 'linux', bisect_archive_build=True)
 _AddBuildSpec('linux-builder-perf-rel', 'linux')
 
-_AddBuildSpec(
-    'chromecast-linux-builder-perf', 'linux', bisect_archive_build=True)
-
 
 _AddIsolatedTestSpec('android-pixel4-perf', 'android',
                      'android_arm64-builder-perf')
