@@ -164,15 +164,12 @@ class SsciAPI(recipe_api.RecipeApi):
 
     return f"{filename}{artifact_postfix or ''}{artifact_ext}{file_extension}"
 
-  def _setup_ssci_tools(self):
+  def _setup_ssci_tools(self, tools):
     """
     Gets each of the CIPD tools needed to run the SSCI collection steps and verifies
     the package version.
     """
-    for cipd_tool in [
-        self.depbot, self.bqupload, self.partybot, self.ssci_tool,
-        self.ssci_uploader
-    ]:
+    for cipd_tool in tools:
       cipd_tool.tool_path = self.m.cipd.ensure_tool(cipd_tool.pkg_path,
                                                     cipd_tool.ensure_version)
 
@@ -316,7 +313,10 @@ class SsciAPI(recipe_api.RecipeApi):
 
     with self.m.step.nest('SSCI collection'):
       self.execution_id = f"luci-{self.m.buildbucket.build.id}"
-      self._setup_ssci_tools()
+      self._setup_ssci_tools(tools=[
+          self.depbot, self.bqupload, self.partybot, self.ssci_tool,
+          self.ssci_uploader
+      ])
 
       # prepare outputs.
       depbot_json_output_dir = self.m.path.mkdtemp()
@@ -425,3 +425,60 @@ class SsciAPI(recipe_api.RecipeApi):
           f"{k}:{v}" for k, v in generated_sbom_artifacts_json.items()
       ]
       return generated_sbom_artifacts_json
+
+  def merge_sboms(
+      self,
+      name,
+      chrome_version=None,
+      sbom_paths=None,
+      platform=None,
+  ):
+
+    self._setup_ssci_tools(tools=[self.ssci_tool])
+
+    if platform is None:
+      platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+
+    recipe_name = self.m.properties["recipe"].split("/")[-1]
+    product = f'{recipe_name}.{self.execution_id}.{name}'
+    p_version = self._get_product_version(chrome_version)
+
+    spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
+    spdx_out = self.m.json.output(name=product, leak_to=spdx_file)
+
+    with self.m.context(cwd=self.m.path.dirname(self.ssci_tool.tool_path)):
+      self.m.step(
+          'run ssci tool to merge SBOMs',
+          [
+              "vpython3",
+              "--vpython-spec=.vpython3",
+              "-m",
+              "ssci",
+              "spdx",
+              "-ssci-version",
+              self.ssci_tool.resolved_version,
+              "-output-file",
+              spdx_out,
+              "-product",
+              product,
+              "-product-version",
+              p_version,
+              "-platform",
+              platform,
+              "-document-paths",
+          ] + sbom_paths,
+          step_test_data=(lambda: self.m.json.test_api.output(
+              data=[{
+                  "spdx": "yes"
+              }], name="spdx")))
+
+    spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
+
+    return jsonpb.MessageToDict(
+        GeneratedSBOM(
+            digest=spdx_digest,
+            filename=name,
+            sbom_name=f"{name}.spdx.json",
+            sbom_path=f'{spdx_file}',
+        ),
+        preserving_proto_field_name=True)
