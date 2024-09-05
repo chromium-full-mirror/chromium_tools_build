@@ -200,10 +200,6 @@ def publish_coverage_points(api, source_dir, skip):
   if api.tryserver.is_tryserver or skip:
     return
   with api.step.nest('Coverage'):
-
-    api.devtools.run_node_script(source_dir, 'Combining coverage reports',
-                                 'merge_coverage_reports.js')
-
     dimensions = ["lines", "statements", "functions", "branches"]
 
     report_file = source_dir / 'karma-coverage/coverage-summary.json'

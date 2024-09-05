@@ -76,21 +76,7 @@ class InteractionsTests(ExonerableTests):
       yield
 
   def _post_collect(self):
-    self.copy_coverage_data()
     self.copy_golden_snapshots()
-
-  def copy_coverage_data(self):
-    if not self.coverage:
-      return
-    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
-    coverage_data_dir = (
-        self.output_dir / shard_output_dir / 'interactions-coverage')
-    self.api.file.rmtree(
-        'remove coverage files if they exist',
-        self.api.path.join(self.source_dir, 'interactions-coverage'))
-    self.api.file.copytree(
-        'copy interaction tests coverage data', coverage_data_dir,
-        self.api.path.join(self.source_dir, 'interactions-coverage'))
 
   def copy_golden_snapshots(self):
     # TODO:(liviurau) Remove this after fast build gets fixed for the new runner
