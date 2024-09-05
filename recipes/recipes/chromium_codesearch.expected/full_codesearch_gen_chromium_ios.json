@@ -612,32 +612,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ensure java kzip directory"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "rmcontents",
-      "[CACHE]/builder/src/out/ios-Debug/kzip"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "clean up java kzip directory"
+    "name": "java kzip"
   },
   {
     "cmd": [

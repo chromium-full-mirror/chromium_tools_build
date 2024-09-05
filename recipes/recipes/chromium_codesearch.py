@@ -264,10 +264,7 @@ def RunSteps(api, properties):
 
   # Prepare Java Kythe output directory
   kzip_dir = api.codesearch.c.javac_extractor_output_dir
-  api.file.ensure_directory('ensure java kzip directory', kzip_dir)
-  # The directory might already exist and contain files from a previous run.
-  # Make sure we don't accidentally reuse old files.
-  api.file.rmcontents('clean up java kzip directory', kzip_dir)
+  api.file.ensure_directory('java kzip', kzip_dir)
 
   # Create sentinel file to keep track of whether compilation succeeded.
   api.file.write_text(
