@@ -207,6 +207,14 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "SBOM's generated",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@merged@{\"digest\": \"testhash\", \"filename\": \"merged\", \"sbom_name\": \"merged.spdx.json\", \"sbom_path\": \"[CLEANUP]/tmp_tmp_1/spdx-out.json\"}@@@",
+      "@@@STEP_LOG_END@merged@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

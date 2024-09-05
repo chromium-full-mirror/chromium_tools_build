@@ -474,7 +474,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
     spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
 
-    return jsonpb.MessageToDict(
+    generated_sbom_json = jsonpb.MessageToDict(
         GeneratedSBOM(
             digest=spdx_digest,
             filename=name,
@@ -482,3 +482,8 @@ class SsciAPI(recipe_api.RecipeApi):
             sbom_path=f'{spdx_file}',
         ),
         preserving_proto_field_name=True)
+
+    info_step = self.m.step.empty("SBOM's generated")
+    info_step.presentation.logs[name] = self.m.json.dumps(generated_sbom_json)
+
+    return generated_sbom_json
