@@ -6,6 +6,10 @@ syntax = "proto3";
 
 package recipe_modules.build.ssci;
 
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
 message InputProperties {
   // bq_artifact_table is the BQ table where artifact rows will be written
   // to it has the form project.dataset.table.
@@ -59,4 +63,35 @@ message GeneratedSBOM {
   // SBOM and those targets will be here instead of the field
   // above.
   repeated string targets = 7;
+}
+
+message GenerationResult {
+  // buildbucket ID.
+  string buildbucket_id = 1;
+  // Name of the builder.
+  string builder_name = 2;
+  // LUCI realm of the builder.
+  string builder_realm = 3;
+  // Duration to generate the SBOMs.
+  google.protobuf.Duration duration = 4;
+  // List of SBOMs by name.
+  repeated string list_of_sboms = 5;
+  // The GCS bucket the SBOM was written in by this module.
+  string sbom_bucket = 6;
+  // List of SBOMs generated.
+  repeated GeneratedSBOM sboms_built = 7;
+  // Status of the generation.
+  enum Status {
+    OK = 0;
+    NOT_OK = 1;
+  }
+  Status status = 8;
+  // List of targets used to produce the SBOMs.
+  repeated string targets = 9;
+  // Timestamp of when the generation took place.
+  google.protobuf.Timestamp timestamp = 10;
+  // A flexible dictionary storing arbitrary JSON data, organized
+  // by unique keys. Usually this is data specific to the recipe
+  // calling this module such as chromium_version or git commit.
+  map<string, google.protobuf.Value> json_data = 11;
 }
