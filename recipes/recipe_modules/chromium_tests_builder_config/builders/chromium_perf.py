@@ -210,71 +210,6 @@ _AddBuildSpec(
     target_arch='arm',
 )
 
-# Adapted from 'lacros-amd64-generic-chrome' and 'lacros-arm-generic-chrome'
-# to measure binary size.
-SPEC.update({
-    'chromeos-amd64-generic-lacros-builder-perf':
-        builder_spec.BuilderSpec.create(
-            chromium_config='chromium_perf',
-            gclient_apply_config=[
-                'chromeos', 'checkout_lacros_sdk', 'checkout_pgo_profiles'
-            ],
-            gclient_config='chromium_perf',
-            perf_isolate_upload=True,
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_ARCH': 'intel',
-                'TARGET_BITS': 64,
-                'TARGET_CROS_BOARDS': 'amd64-generic:eve:octopus',
-                'TARGET_PLATFORM': 'chromeos',
-            },
-            simulation_platform='linux',
-            bisect_archive_build=True,
-            bisect_gs_bucket='chrome-test-builds',
-            bisect_gs_extra='official-by-commit',
-        ),
-    'chromeos-arm-generic-lacros-builder-perf':
-        builder_spec.BuilderSpec.create(
-            chromium_config='chromium_perf',
-            gclient_apply_config=[
-                'chromeos', 'checkout_lacros_sdk', 'checkout_pgo_profiles'
-            ],
-            gclient_config='chromium_perf',
-            perf_isolate_upload=True,
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-                'TARGET_CROS_BOARDS': 'arm-generic',
-                'TARGET_PLATFORM': 'chromeos',
-            },
-            simulation_platform='linux',
-            bisect_archive_build=True,
-            bisect_gs_bucket='chrome-test-builds',
-            bisect_gs_extra='official-by-commit',
-        ),
-    'chromeos-arm64-generic-lacros-builder-perf':
-        builder_spec.BuilderSpec.create(
-            chromium_config='chromium_perf',
-            gclient_apply_config=[
-                'chromeos', 'checkout_lacros_sdk', 'checkout_pgo_profiles'
-            ],
-            gclient_config='chromium_perf',
-            perf_isolate_upload=True,
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 64,
-                'TARGET_CROS_BOARDS': 'arm64-generic',
-                'TARGET_PLATFORM': 'chromeos',
-            },
-            simulation_platform='linux',
-            bisect_archive_build=True,
-            bisect_gs_bucket='chrome-test-builds',
-            bisect_gs_extra='official-by-commit',
-        ),
-})
-
 _AddBuildSpec('linux-builder-perf', 'linux', bisect_archive_build=True)
 _AddBuildSpec('linux-builder-perf-pgo', 'linux', bisect_archive_build=True)
 _AddBuildSpec('linux-builder-perf-rel', 'linux')
@@ -333,21 +268,6 @@ _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')
 
-_AddIsolatedTestSpec(
-    'lacros-eve-perf',
-    'chromeos',
-    'chromeos-amd64-generic-lacros-builder-perf',
-    target_bits=64,
-    target_arch='intel',
-    cros_boards='amd64-generic:eve:octopus')
-
-_AddIsolatedTestSpec(
-    'lacros-x86-perf',
-    'chromeos',
-    'chromeos-amd64-generic-lacros-builder-perf',
-    target_bits=64,
-    target_arch='intel',
-    cros_boards='amd64-generic:eve:octopus')
 
 # Perf result processors
 _AddIsolatedTestSpec('linux-processor-perf', 'linux', 'linux-perf')
