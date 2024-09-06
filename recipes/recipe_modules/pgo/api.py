@@ -253,14 +253,10 @@ class PgoApi(recipe_api.RecipeApi):
     # Ensure a profdata was generated per test, before even starting to process
     self.ensure_profdata_files(tests)
 
-    with self.m.step.nest('Processing PGO .profraw data') as presentation:
+    with self.m.step.nest('Processing PGO .profraw data'):
       # weights maps from benchmark name to weight (matching is done on the
       # full path using endswith).
       weights = {}
-      # Debugging code, will be removed shortly.
-      presentation.logs['builder_name_1'] = self.m.buildbucket.builder_name
-      presentation.logs[
-          'builder_name_2'] = self.m.buildbucket.build.builder.builder
       # TODO(b/363195532): generalize this. For now, it's hardcoded for
       # mac-arm-pgo.
       if self.m.buildbucket.builder_name == 'mac-arm-pgo':
