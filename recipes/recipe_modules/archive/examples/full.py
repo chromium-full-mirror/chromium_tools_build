@@ -72,7 +72,8 @@ def RunSteps(api):
         update_properties=update_properties,
         custom_vars=custom_vars,
         report_artifacts=True,
-        should_batch=api.properties.get('should_batch', False))
+        should_batch=api.properties.get('should_batch', False),
+        generate_sboms=True)
     api.archive.generic_archive_after_tests(
         checkout_dir=checkout_dir,
         source_dir=source_dir,

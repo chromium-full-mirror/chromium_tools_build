@@ -839,7 +839,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                       custom_vars=None,
                       config=None,
                       report_artifacts=False,
-                      should_batch=False):
+                      should_batch=False,
+                      generate_sboms=False):
     """Archives one or multiple packages to either google cloud storage or CIPD.
 
     The exact configuration of the archive is specified by InputProperties. See
@@ -863,6 +864,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                         set by recipe that uses this module.
       should_batch: A boolean for batching file operations via resource script,
                     to avoid too many steps in the build.
+      generate_sboms: A Boolean for enabling SBOM generation and reporting, set
+                      by the recipe using this module.
 
     Returns:
       A dictionary that stores custom_vars and update_properties, as well as
@@ -899,9 +902,11 @@ class ArchiveApi(recipe_api.RecipeApi):
               report_artifacts=report_artifacts,
               should_batch=should_batch)
           upload_results['gcs'].append(gcs_uploads)
-          upload_results['sbom'].update(
-              self.generate_and_upload_sbom(source_dir, build_dir, archive_data,
-                                            gcs_uploads, report_artifacts))
+          if generate_sboms:
+            upload_results['sbom'].update(
+                self.generate_and_upload_sbom(source_dir, build_dir,
+                                              archive_data, gcs_uploads,
+                                              report_artifacts))
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
             self.cipd_archive(
