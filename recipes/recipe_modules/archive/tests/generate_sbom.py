@@ -79,20 +79,18 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.post_process(MustRun,
-                       'Report SBOM artifact.deb.spdx.json for artifact.deb'),
+      api.post_process(MustRun, 'Report SBOM artifact.deb.spdx.json'),
+      api.post_process(StepCommandContains,
+                       'Report SBOM artifact.deb.spdx.json.snoop: report_sbom',
+                       [
+                           '[START_DIR]/reporter/snoopy_broker', '-report-gcs',
+                           '-digest', 'sbom_testhash', '-gcs-uri',
+                           'gs://my-bucket/my/folder/artifact.deb.spdx.json',
+                           '-sbom-subject', 'artifact_testhash'
+                       ]),
       api.post_process(
           StepCommandContains,
-          'Report SBOM artifact.deb.spdx.json for artifact.deb.snoop: report_sbom',
-          [
-              '[START_DIR]/reporter/snoopy_broker', '-report-gcs', '-digest',
-              'sbom_testhash', '-gcs-uri',
-              'gs://my-bucket/my/folder/artifact.deb.spdx.json',
-              '-sbom-subject', 'artifact_testhash'
-          ]),
-      api.post_process(
-          StepCommandContains,
-          'Archive SBOM artifact.deb.spdx.json for artifact.deb.gsutil Copy artifact.deb SBOM',
+          'Archive SBOM artifact.deb.spdx.json.gsutil Copy artifact.deb.spdx.json SBOM',
           [
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
@@ -100,14 +98,10 @@ def GenTests(api):
               "[START_DIR]/src/Release/out/sbom.spdx.json",
               "gs://my-bucket/my/folder/artifact.deb.spdx.json"
           ]),
-      api.post_process(MustRun,
-                       'Archive SBOM myfile0.deb.spdx.json for myfile0.deb'),
-      api.post_process(MustRun,
-                       'Archive SBOM myfile1.deb.spdx.json for myfile1.deb'),
-      api.post_process(MustRun,
-                       'Report SBOM myfile0.deb.spdx.json for myfile0.deb'),
-      api.post_process(MustRun,
-                       'Report SBOM myfile1.deb.spdx.json for myfile1.deb'),
+      api.post_process(MustRun, 'Archive SBOM myfile0.deb.spdx.json'),
+      api.post_process(MustRun, 'Archive SBOM myfile1.deb.spdx.json'),
+      api.post_process(MustRun, 'Report SBOM myfile0.deb.spdx.json'),
+      api.post_process(MustRun, 'Report SBOM myfile1.deb.spdx.json'),
       api.override_step_data(
           "SSCI collection.run depbot",
           api.json.output(
