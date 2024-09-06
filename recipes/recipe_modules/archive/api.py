@@ -796,10 +796,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     source_side_archive_spec = self._get_source_side_archive_spec(
         checkout_dir, config.source_side_spec_path)
     if source_side_archive_spec:
-      return json_format.ParseDict(
+      source_side_config = json_format.ParseDict(
           source_side_archive_spec,
           InputProperties(),
           ignore_unknown_fields=True)
+      if config.verify_paths_only:
+        source_side_config.verify_paths_only = True
+      return source_side_config
     return config
 
   def _validate_paths(self, name, archive_data, base_path, paths):
@@ -829,6 +832,52 @@ class ArchiveApi(recipe_api.RecipeApi):
           raise recipe_api.StepFailure('Missing %s' % name)
 
     return valid
+
+  def _expand_archive_files(self, base_path, file_globs):
+    """Expand the archive files from file_globs"""
+    expanded_files = set()
+    for filename in file_globs:
+      for f in self.m.file.glob_paths(
+          'expand file globs',
+          base_path,
+          filename,
+          test_data=('glob1.txt', 'glob2.txt')):
+        # Turn the returned Path object back into a string relative to
+        # base_path.
+        assert base_path.base == f.base
+        assert base_path in f.parents
+        common_pieces = f.pieces[len(base_path.pieces):]
+        expanded_files.add(os.path.sep.join(common_pieces))
+    return expanded_files
+
+  def _verify_gcs_archive_paths(self, checkout_dir: Path, build_dir: Path,
+                                archive_data):
+    base_path = build_dir
+    if archive_data.base_dir:
+      base_path = checkout_dir / archive_data.base_dir
+
+    expanded_files = set(archive_data.files)
+    expanded_files |= self._expand_archive_files(base_path,
+                                                 archive_data.file_globs)
+    self._validate_paths('files', archive_data, base_path, expanded_files)
+    self._validate_paths('directories', archive_data, base_path,
+                         list(archive_data.dirs))
+
+  def _verify_archive_paths(
+      self,
+      checkout_dir: Path,
+      build_dir: Path,
+      *,
+      archive_config: InputProperties = None,
+  ):
+    """Verify the existence of the paths in archive config."""
+    with self.m.step.nest('Verify Archive Paths', status='last'):
+      for archive_data in archive_config.archive_datas:
+        self._verify_gcs_archive_paths(checkout_dir, build_dir, archive_data)
+      if archive_config.cipd_archive_datas:
+        raise self.m.step.StepFailure(
+            'verify_paths_only only applies to archive_datas '
+            'but cipd_archive_datas specified.')
 
   def generic_archive(self,
                       checkout_dir: Path,
@@ -887,6 +936,11 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     if (not archive_config.archive_datas and
         not archive_config.cipd_archive_datas):
+      return upload_results
+
+    if archive_config.verify_paths_only:
+      self._verify_archive_paths(
+          checkout_dir, build_dir, archive_config=archive_config)
       return upload_results
 
     with self.m.step.nest('Generic Archiving Steps', status='last'):
@@ -948,6 +1002,9 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     if (not archive_config.archive_datas and
         not archive_config.cipd_archive_datas):
+      return
+
+    if archive_config.verify_paths_only:
       return
 
     with self.m.step.nest('Generic Archiving Steps After Tests'):
@@ -1043,19 +1100,8 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     gcs_args = []
     expanded_files = set(archive_data.files)
-    for filename in archive_data.file_globs:
-      for f in self.m.file.glob_paths(
-          'expand file globs',
-          base_path,
-          filename,
-          test_data=('glob1.txt', 'glob2.txt')):
-        # Turn the returned Path object back into a string relative to
-        # base_path.
-        assert base_path.base == f.base
-        assert base_path in f.parents
-        common_pieces = f.pieces[len(base_path.pieces):]
-        expanded_files.add(os.path.sep.join(common_pieces))
-
+    expanded_files |= self._expand_archive_files(base_path,
+                                                 archive_data.file_globs)
     expanded_files = set(
         self._validate_paths('files', archive_data, base_path, expanded_files))
 

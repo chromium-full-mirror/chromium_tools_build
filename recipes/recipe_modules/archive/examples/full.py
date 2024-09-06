@@ -32,6 +32,8 @@ TEST_COMMIT_POSITON_MAIN='refs/heads/B1@{#123456}'
 TEST_HASH_COMPONENT='deadbeefdda2b170692f8e762d43b7e8e7a96686'
 TEST_COMMIT_POSITON_COMPONENT = 'refs/heads/main@{#234}'
 
+source_side_spec_path = ['archive', 'foo.json']
+
 
 def RunSteps(api):
   checkout_dir = api.path.cleanup_dir
@@ -59,6 +61,7 @@ def RunSteps(api):
     api.chromium.set_config('chromium')
 
     build_dir = api.m.path.mkdtemp()
+    api.path.mock_add_paths(checkout_dir.joinpath(*source_side_spec_path))
     api.path.mock_add_paths(build_dir / 'existing-dir')
     api.path.mock_add_paths(build_dir / 'existing-file.json')
     api.path.mock_add_paths(
@@ -566,6 +569,35 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  input_properties.verify_paths_only = True
+
+  yield api.test(
+      'verify_archive_paths_fail_missing_files',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.post_process(post_process.StepFailure,
+                       'Verify Archive Paths.Validate files'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  input_properties.source_side_spec_path.extend(source_side_spec_path)
+  input_properties.verify_paths_only = True
+
+  yield api.test(
+      'verify_paths_only_should_copy_to_source_side_archive_spec',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.archive._read_source_side_archive_spec(source_side_spec_path[-1], {
+          "archive_datas": [{
+              "files": ["missing-file.json",],
+          },],
+      }),
+      api.post_process(post_process.StepFailure,
+                       'Verify Archive Paths.Validate files'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
   input_properties = properties.InputProperties()
   archive_data = properties.ArchiveData()
   archive_data.dirs.extend(['missing-dir', 'existing-dir'])
@@ -583,6 +615,58 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.post_process(post_process.StepFailure,
                        'Generic Archiving Steps.Validate directories'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties.verify_paths_only = True
+
+  yield api.test(
+      'verify_archive_paths_fail_missing_dirs',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.post_process(post_process.StepFailure,
+                       'Verify Archive Paths.Validate directories'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.file_globs.extend(['missing-file.json', '*-file.json'])
+  input_properties.archive_datas.extend([archive_data])
+  input_properties.verify_paths_only = True
+
+  yield api.test(
+      'verify_archive_paths_missing_glob_is_allowed',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.files.extend(['base-dir-file.json'])
+  archive_data.base_dir = 'base_dir'
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_ZIP
+  input_properties.archive_datas.extend([archive_data])
+  input_properties.verify_paths_only = True
+
+  yield api.test(
+      'verify_archive_paths_with_base_dir',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  input_properties.archive_datas.extend([properties.ArchiveData()])
+  input_properties.cipd_archive_datas.extend([properties.CIPDArchiveData()])
+  input_properties.verify_paths_only = True
+
+  yield api.test(
+      'verify_archive_paths_should_fail_with_cipd_archive_datas',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.post_check(post_process.StepFailure, 'Verify Archive Paths'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

@@ -318,6 +318,13 @@ message InputProperties {
   //   },],
   // }
   repeated string source_side_spec_path = 3;
+
+  // Verify the paths specified in the archive_datas without uploading the
+  // archive. This option can be used in testing builders to verify the
+  // correctness of build results and the archive config.
+  // This option could be enabled via archive input properties with
+  // source_side_spec_path specified.
+  bool verify_paths_only = 4;
 }
 
 // Next id: 3
