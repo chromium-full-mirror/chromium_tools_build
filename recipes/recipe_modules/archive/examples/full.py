@@ -1174,3 +1174,56 @@ def GenTests(api):
                        ]),
       api.post_process(post_process.DropExpectation),
   )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.dirs.extend(['anydir'])
+  archive_data.gcs_bucket = 'any-bucket'
+  archive_data.gcs_path = 'x86/{%position%}_{%commit%}_{%timestamp%}/chrome'
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_ZIP
+  archive_data.latest_upload.gcs_path = "x86/latest/latest.txt"
+  archive_data.latest_upload.gcs_file_content = \
+      '{%position%}_{%commit%}_{%timestamp%}'
+  archive_data.requires_sbom.gn_targets.append("//my-target")
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_with_generate_sbom',
+      api.properties(
+          gcs_archive=True,
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          **{'$build/archive': input_properties}),
+      api.post_process(post_process.MustRun,
+                       'Generic Archiving Steps.SSCI collection'),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.dirs.extend(['anydir'])
+  archive_data.gcs_bucket = 'any-bucket'
+  archive_data.gcs_path = 'x86/{%position%}_{%commit%}_{%timestamp%}/chrome'
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_ZIP
+  archive_data.latest_upload.gcs_path = "x86/latest/latest.txt"
+  archive_data.latest_upload.gcs_file_content = \
+      '{%position%}_{%commit%}_{%timestamp%}'
+  archive_data.requires_sbom.gn_targets.append("//my-target")
+  archive_data.requires_sbom.gcs_folder = "bad-folder"
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_with_generate_sbom_failure',
+      api.properties(
+          gcs_archive=True,
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          **{'$build/archive': input_properties}),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )

@@ -957,10 +957,15 @@ class ArchiveApi(recipe_api.RecipeApi):
               should_batch=should_batch)
           upload_results['gcs'].append(gcs_uploads)
           if generate_sboms:
-            upload_results['sbom'].update(
-                self.generate_and_upload_sbom(source_dir, build_dir,
-                                              archive_data, gcs_uploads,
-                                              report_artifacts))
+            # TODO(b/356745797): Remove try/except once SBOM generation
+            # is stable.
+            try:
+              upload_results['sbom'].update(
+                  self.generate_and_upload_sbom(source_dir, build_dir,
+                                                archive_data, gcs_uploads,
+                                                report_artifacts))
+            except self.m.step.StepFailure:
+              pass
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
             self.cipd_archive(
