@@ -1,0 +1,22 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package recipes.build.chrome_codeql_database_builder;
+
+message InputProperties {
+  // Version string should be one of tag, ref, or instance ID, as defined in
+  // the CIPD package system.
+  // Check https://chrome-infra-packages.appspot.com/p/infra/3pp/tools/codeql/linux-amd64
+  // and click on the instance of interest for examples of these.
+  // The most recent instance is always tagged "latest", and other versions can
+  // be selected most easily via tags of the form
+  // "version:[CIPD_prefix]@[codeql_version_number]", e.g. "version 3@2.18.2".
+  // The CIPD_prefix is assigned at the time the package is added to CIPD.
+  // For a canonical list of CodeQL packages with their corresponding version
+  // numbers see:
+  // https://github.com/github/codeql-cli-binaries/releases
+  string codeql_version = 1;
+}
+

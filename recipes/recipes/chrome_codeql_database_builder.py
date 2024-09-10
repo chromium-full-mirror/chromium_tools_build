@@ -9,6 +9,8 @@ Upload destination is specified by UPLOAD_BUCKET.
 """
 
 from recipe_engine import post_process
+from recipe_engine.recipe_api import Property
+from PB.recipes.build.chrome_codeql_database_builder import InputProperties
 
 DEPS = [
     'chromium_tests',
@@ -22,6 +24,7 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/time',
     'recipe_engine/step',
@@ -29,10 +32,14 @@ DEPS = [
     'reclient',
 ]
 
+PROPERTIES = InputProperties
+
 UPLOAD_BUCKET = 'chrome-codeql-databases'
 
 
-def RunSteps(api):
+def RunSteps(api, properties):
+  if not properties.codeql_version:
+    raise api.step.StepFailure('No CodeQL version provided')
   api.gclient.set_config('chromium')
   api.chromium.set_config()
   api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
@@ -46,11 +53,8 @@ def RunSteps(api):
   raw_databases_path = api.path.mkdtemp('codeql_dbs')
   with api.context(cwd=source_dir, env_suffixes={'PATH': [cipd_root]}):
     codeql_root = api.path.start_dir / 'codeql'
-    # If we end up needing to change this version frequently, consider changing
-    # this to use an input property to set the version instead of hardcoding it
-    # here.
     ensure_file = api.cipd.EnsureFile().add_package(
-        'infra/3pp/tools/codeql/${platform}', 'version:2@2.15.4')
+        'infra/3pp/tools/codeql/${platform}', properties.codeql_version)
     api.cipd.ensure(codeql_root, ensure_file)
     codeql_path = codeql_root / 'codeql'
     api.step(
@@ -140,5 +144,12 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
+      api.properties(InputProperties(codeql_version='latest')),
       api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'no CodeQL version provided',
+      api.properties(InputProperties(codeql_version='')),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )
