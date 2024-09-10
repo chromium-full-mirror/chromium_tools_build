@@ -1148,6 +1148,10 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def StepTextDoesNotContain(check, step_odict, step, unexpected_substrs):
+    for unexpected in unexpected_substrs:
+      check(unexpected not in step_odict[step].step_text)
+
   yield api.test(
       'retry_without_patch_with_all_skips_and_exit_code',
       api.platform('linux', 64),
@@ -1175,15 +1179,22 @@ def GenTests(api):
               },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'with patch', failures=['Test.Two']),
+          'base_unittests',
+          'with patch',
+          failures=['Test.Two'],
+          successes=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'without patch', skips=['Test.Two']),
       api.post_process(
           post_process.StepTextContains,
-          'base_unittests (test results summary)', [
-              'Tests failed with patch, and caused build to fail:<br/>'
-              'Test.Two<br/>'
-          ]),
+          'base_unittests (test results summary)',
+          ['Test.Two'],
+      ),
+      api.post_process(
+          StepTextDoesNotContain,
+          'base_unittests (test results summary)',
+          ['Test.One'],
+      ),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
@@ -1380,7 +1391,10 @@ def GenTests(api):
           },
       }),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'with patch', failures=['Test.Two']),
+          'base_unittests',
+          'with patch',
+          failures=['Test.Two'],
+          successes=['Test.One']),
       api.luci_analysis.query_failure_rate_results([
           api.luci_analysis.generate_analysis(
               test_id='ninja://base_unittests/Test.Two',
@@ -1394,10 +1408,14 @@ def GenTests(api):
                        'base_unittests (without patch)'),
       api.post_process(
           post_process.StepTextContains,
-          'base_unittests (test results summary)', [
-              'Tests failed with patch, but ignored as they are known to be '
-              'flaky (see Test Results Tab for more info):<br/>Test.Two<br/>'
-          ]),
+          'base_unittests (test results summary)',
+          ['Test.Two'],
+      ),
+      api.post_process(
+          StepTextDoesNotContain,
+          'base_unittests (test results summary)',
+          ['Test.One'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1432,7 +1450,10 @@ def GenTests(api):
           },
       }),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'with patch', failures=['Test.Two']),
+          'base_unittests',
+          'with patch',
+          failures=['Test.Two'],
+          successes=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'retry shards with patch', failures=['Test.Two']),
       api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
@@ -1441,10 +1462,14 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
       api.post_process(
           post_process.StepTextContains,
-          'base_unittests (test results summary)', [
-              'Tests failed with patch, and caused build to fail:<br/>'
-              'Test.Two<br/>'
-          ]),
+          'base_unittests (test results summary)',
+          ['Test.Two'],
+      ),
+      api.post_process(
+          StepTextDoesNotContain,
+          'base_unittests (test results summary)',
+          ['Test.One'],
+      ),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
@@ -1506,10 +1531,14 @@ def GenTests(api):
                        'base_unittests (without patch)'),
       api.post_process(
           post_process.StepTextContains,
-          'base_unittests (test results summary)', [
-              'Tests failed with patch, but ignored as they are known to be '
-              'flaky (see Test Results Tab for more info):<br/>Test.Two<br/>'
-          ]),
+          'base_unittests (test results summary)',
+          ['Test.Two'],
+      ),
+      api.post_process(
+          StepTextDoesNotContain,
+          'base_unittests (test results summary)',
+          ['Test.One'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1701,9 +1730,15 @@ def GenTests(api):
           },
       }),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', 'with patch', failures=['BaseTest.One']),
+          'base_unittests',
+          'with patch',
+          failures=['BaseTest.One'],
+          successes=['BaseTest.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'url_unittests', 'with patch', failures=['UrlTest.One']),
+          'url_unittests',
+          'with patch',
+          failures=['UrlTest.One'],
+          successes=['UrlTest.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'url_unittests', 'retry shards with patch', failures=['UrlTest.One']),
       api.luci_analysis.query_failure_rate_results([
@@ -1715,16 +1750,24 @@ def GenTests(api):
       ]),
       api.post_process(
           post_process.StepTextContains,
-          'base_unittests (test results summary)', [
-              'Tests failed with patch, but ignored as they are known to be '
-              'flaky (see Test Results Tab for more info):'
-              '<br/>BaseTest.One<br/>'
-          ]),
-      api.post_process(post_process.StepTextContains,
-                       'url_unittests (test results summary)', [
-                           'Tests failed with patch, and caused build to fail:'
-                           '<br/>UrlTest.One<br/>'
-                       ]),
+          'base_unittests (test results summary)',
+          ['BaseTest.One'],
+      ),
+      api.post_process(
+          StepTextDoesNotContain,
+          'base_unittests (test results summary)',
+          ['BaseTest.Two'],
+      ),
+      api.post_process(
+          post_process.StepTextContains,
+          'url_unittests (test results summary)',
+          ['UrlTest.One'],
+      ),
+      api.post_process(
+          StepTextDoesNotContain,
+          'url_unittests (test results summary)',
+          ['UrlTest.Two'],
+      ),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )

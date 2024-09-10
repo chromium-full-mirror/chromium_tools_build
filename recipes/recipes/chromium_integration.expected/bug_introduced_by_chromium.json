@@ -3252,7 +3252,7 @@
       "resultdb.instruction.id": "tag_cca00cde0fe10f6c2ce581a9b6592dfb4ff8acba"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p project -B try -b fake-try-builder -t blink_web_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=tmp/output.json --isolated-script-test-perf-output=tmp/perftest-output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p project -B try -b fake-try-builder -t blink_web_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=tmp/output.json --isolated-script-test-perf-output=tmp/perftest-output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>[Test.One](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One)<br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3305,7 +3305,6 @@
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
       "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@",
-      "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -4056,7 +4055,7 @@
       "resultdb.instruction.id": "tag_11d8899754bbc478241a312d1a16af0ed7da62f4"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p project -B try -b fake-try-builder -t blink_web_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=tmp/output.json --isolated-script-test-perf-output=tmp/perftest-output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p project -B try -b fake-try-builder -t blink_web_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=tmp/output.json --isolated-script-test-perf-output=tmp/perftest-output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>[Test.One](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One)<br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4107,7 +4106,6 @@
       "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_buildername\": \"fake-builder\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@}@@@",
       "@@@STEP_LOG_END@step_metadata@@@",
-      "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -6479,7 +6477,7 @@
       "resultdb.instruction.id": "tag_8a31c35c702e9155b1ae2f06dd4efaa9e64683f7"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p project -B try -b fake-try-builder -t blink_web_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=tmp/output.json --isolated-script-test-perf-output=tmp/perftest-output.json --gtest_repeat=10 --test-launcher-retry-limit=0 --isolated-script-test-filter=Test.One```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p project -B try -b fake-try-builder -t blink_web_tests compile-and-test```<br/><br/>Test command to run from the build dir:<br/>```--isolated-script-test-output=tmp/output.json --isolated-script-test-perf-output=tmp/perftest-output.json --gtest_repeat=10 --test-launcher-retry-limit=0 --isolated-script-test-filter=Test.One```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>[Test.One](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One)<br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -6532,7 +6530,6 @@
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
       "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=2@@@",
-      "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -6695,7 +6692,7 @@
     "cmd": [],
     "name": "blink_web_tests (test results summary)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>Tests failed with patch, but ignored as they also fail without patch (see Test Results Tab for more info):<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@<br/>Tests failed with patch, but ignored as they also fail without patch (see Test Results Tab for more info):<br/>[Test.One](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One)<br/>@@@",
       "@@@STEP_LOG_LINE@failures ignored as they also fail without patch@[@@@",
       "@@@STEP_LOG_LINE@failures ignored as they also fail without patch@  \"Test.One\"@@@",
       "@@@STEP_LOG_LINE@failures ignored as they also fail without patch@]@@@",

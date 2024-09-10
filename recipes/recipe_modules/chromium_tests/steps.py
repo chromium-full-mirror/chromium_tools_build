@@ -1076,7 +1076,7 @@ class Test(AbstractTest):
     if not rdb_results or not rdb_results.unexpected_failing_tests:
       return
 
-    failures, failures_text = self.api.m.test_utils.limit_failures(
+    _, failures_text = self.api.m.test_utils.limit_failures(
         sorted([t.test_name for t in rdb_results.unexpected_failing_tests]))
     display_text = self.api.m.presentation_utils.format_step_text(
         [['deterministic failures [caused step to fail]:', failures_text]])
@@ -1084,12 +1084,6 @@ class Test(AbstractTest):
       step_result.step_text += display_text
     else:
       step_result.presentation.step_text += display_text
-    for failure in failures:
-      results_url = self.api.get_milo_test_results_url(failure)
-      if as_nested_step:
-        step_result.links[failure] = results_url
-      else:
-        step_result.presentation.links[failure] = results_url
 
   def _instructions_tag_for_suffix(self, instruction_type: str,
                                    suffix: str) -> str:

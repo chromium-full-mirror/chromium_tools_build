@@ -111,7 +111,9 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'script_test', failing_tests=['TestOne']))),
-      api.post_process(StepTextEquals, 'script_test (with patch)',
-                       '<br/>failures:<br/>TestOne<br/>'),
+      api.post_process(
+          StepTextEquals, 'script_test (with patch)',
+          '<br/>failures:<br/>[TestOne](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=TestOne)<br/>'
+      ),
       api.post_process(DropExpectation),
   )

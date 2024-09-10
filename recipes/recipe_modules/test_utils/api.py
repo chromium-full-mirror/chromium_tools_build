@@ -6,6 +6,7 @@ import contextlib
 import itertools
 import traceback
 from collections.abc import Iterable
+from urllib.parse import urlencode
 
 from recipe_engine import recipe_api
 from recipe_engine import util as recipe_util
@@ -85,6 +86,14 @@ class TestUtilsApi(recipe_api.RecipeApi):
     self._min_failed_suites_to_skip_retry = (
         properties.min_failed_suites_to_skip_retry or 5)
 
+  def get_milo_test_results_url(self, test_name):
+    """Returns a URL to the "Test Results" tab in Milo for the current build."""
+    url = 'https://luci-milo.appspot.com/ui/inv/'
+    inv_name = self.m.resultdb.current_invocation
+    if inv_name.startswith('invocations/'):
+      inv_name = inv_name[12:]
+    return url + inv_name + '/test-results?' + urlencode({'q': test_name})
+
   def limit_failures(self, failures, limit=None):
     """Limit failures of a step to prevent large results JSON.
 
@@ -104,13 +113,19 @@ class TestUtilsApi(recipe_api.RecipeApi):
     if limit is None:
       limit = self._max_reported_failures
     if len(failures) <= limit:
-      return failures, failures
+      return failures, [
+          f'[{failure}]({self.get_milo_test_results_url(failure)})'
+          for failure in failures
+      ]
     overflow_line = '... %d more (%d total) ...' % (len(failures) - limit,
                                                     len(failures))
     # failures might be a set, which doesn't support slicing, so create a list
     # out of an islice so that only the elemnts we are keeping are copied
     limited_failures = list(itertools.islice(failures, limit))
-    return limited_failures, limited_failures + [overflow_line]
+    return limited_failures, [
+        f'[{failure}]({self.get_milo_test_results_url(failure)})'
+        for failure in limited_failures
+    ] + [overflow_line]
 
   def present_gtest_failures(self, step_result, presentation=None):
     """Update a step result's presentation with details of gtest failures.

@@ -9,7 +9,6 @@ import contextlib
 import itertools
 import time
 import traceback
-from urllib.parse import urlencode
 
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
@@ -2987,14 +2986,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           test_success=test_success)
       self.m.test_utils.record_suite_statuses(tests, '')
       return test_failure_summary
-
-  def get_milo_test_results_url(self, test_name):
-    """Returns a URL to the "Test Results" tab in Milo for the current build."""
-    url = 'https://luci-milo.appspot.com/ui/inv/'
-    inv_name = self.m.resultdb.current_invocation
-    if inv_name.startswith('invocations/'):
-      inv_name = inv_name[12:]
-    return url + inv_name + '/test-results?' + urlencode({'q': test_name})
 
   def find_suites_to_skip(self):
     """Returns a set of tests that has passed in the same patchset."""
