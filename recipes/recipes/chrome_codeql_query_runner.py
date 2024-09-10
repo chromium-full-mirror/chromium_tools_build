@@ -10,6 +10,7 @@ Upload destination is specified by UPLOAD_BUCKET.
 
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
+from PB.recipes.build.chrome_codeql import InputProperties
 import re
 
 DEPS = [
@@ -36,16 +37,7 @@ DOWNLOAD_BUCKET = 'chrome-codeql-databases'
 UPLOAD_BUCKET = 'chrome-codeql-query-results'
 DOWNLOAD_URL_PREFIX = 'https://storage.googleapis.com/chrome-codeql-databases/'
 DATABASE_FILE_SUFFIX = "database.zip"
-# If we end up needing to change this version frequently, consider changing
-# this to use an input property to set the version instead of hardcoding it
-# here.
-PROPERTIES = {
-    'codeql_version':
-        Property(
-            kind=str,
-            help="Which version of the CodeQL binary to use",
-            default="latest"),
-}
+PROPERTIES = InputProperties
 
 
 def download_database(api, db_name, basename_of_directory, datetime):
@@ -78,7 +70,9 @@ def checkout_chromium(api):
   return source_dir
 
 
-def RunSteps(api, codeql_version):
+def RunSteps(api, properties):
+  if not properties.codeql_version:
+    raise api.step.StepFailure('No CodeQL version provided')
   # Get the list of folders containing CodeQL databases.
   gsutil_list_result = api.gsutil.list(
       name="list of folders",
@@ -143,7 +137,7 @@ def RunSteps(api, codeql_version):
   with api.context(cwd=source_dir, env_suffixes={'PATH': [cipd_root]}):
     codeql_root = api.path.start_dir / 'codeql'
     ensure_file = api.cipd.EnsureFile().add_package(
-        'infra/3pp/tools/codeql/${platform}', codeql_version)
+        'infra/3pp/tools/codeql/${platform}', properties.codeql_version)
     api.cipd.ensure(codeql_root, ensure_file)
     codeql_path = codeql_root / 'codeql'
 
@@ -177,7 +171,7 @@ def RunSteps(api, codeql_version):
 def GenTests(api):
   yield api.test(
       'no files returned',
-      api.properties(codeql_version='latest'),
+      api.properties(InputProperties(codeql_version='latest')),
       api.step_data('gsutil list of folders', stdout=api.raw_io.output('')),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
@@ -185,7 +179,7 @@ def GenTests(api):
 
   yield api.test(
       'totally invalid list of files',
-      api.properties(codeql_version='latest'),
+      api.properties(InputProperties(codeql_version='latest')),
       api.step_data(
           'gsutil list of folders',
           stdout=api.raw_io.output('gs://ageage/\ngs://ageagea/\n')),
@@ -195,7 +189,7 @@ def GenTests(api):
 
   yield api.test(
       'valid-ish list of files but no datetimes available',
-      api.properties(codeql_version='latest'),
+      api.properties(InputProperties(codeql_version='latest')),
       api.step_data(
           'gsutil list of folders',
           stdout=api.raw_io.output('gs://foo/bar/\ngs://baz/bat/\n')),
@@ -205,10 +199,16 @@ def GenTests(api):
 
   yield api.test(
       'valid list of files',
-      api.properties(codeql_version='latest'),
+      api.properties(InputProperties(codeql_version='latest')),
       api.step_data(
           'gsutil list of folders',
           stdout=api.raw_io.output(('gs://codeql-2024-08-30-12:11:11/bar/\n'
                                     'gs://codeql-2024-08-29-12:11:11/bat/\n'))),
       api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'no CodeQL version provided',
+      api.properties(InputProperties(codeql_version='')),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )

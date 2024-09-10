@@ -10,7 +10,7 @@ Upload destination is specified by UPLOAD_BUCKET.
 
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
-from PB.recipes.build.chrome_codeql_database_builder import InputProperties
+from PB.recipes.build.chrome_codeql import InputProperties
 
 DEPS = [
     'chromium_tests',

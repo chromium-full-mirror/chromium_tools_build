@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 syntax = "proto3";
-package recipes.build.chrome_codeql_database_builder;
+package recipes.build.chrome_codeql;
 
 message InputProperties {
   // Version string should be one of tag, ref, or instance ID, as defined in
