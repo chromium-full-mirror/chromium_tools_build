@@ -1953,7 +1953,16 @@ class SwarmingTask:
   def get_local_instruction(self, *, extra_args=None) -> str:
     if not extra_args:
       extra_args = []
-    cmd = ' '.join(self.base_command + self.extra_args + extra_args)
+
+    def sanitize_arg(s):
+      if len(s.split()) > 1:
+        return '"' + s + '"'
+      return s
+
+    cmd = ' '.join([
+        sanitize_arg(arg)
+        for arg in (self.base_command + self.extra_args + extra_args)
+    ])
     # The `luci-auth context` bit is used for a small subset of tests that need
     # to make authenticated GS calls. Were a dev to run the test command
     # locally, it'd likely be unneeded since:

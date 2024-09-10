@@ -896,3 +896,20 @@ def GenTests(api):
       api.expect_exception('ValueError'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'sanitize_spaces_in_repro_instruction',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.step_data(
+          'archive for linux',
+          stdout=api.raw_io.output_text(
+              'hash_for_linux/size hello_world.isolated')),
+      api.properties(
+          platforms=('linux',), gtest_task=True, raw_cmd=['foo bar']),
+      api.post_check(post_process.StepTextContains,
+                     'hello_world on Ubuntu-16.04', ['"foo bar"']),
+      api.post_process(post_process.DropExpectation),
+  )
