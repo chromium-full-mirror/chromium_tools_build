@@ -96,6 +96,44 @@ def GenTests(api):
   )
 
   yield api.test(
+      'ci-with-args',
+      ci_build(
+          test_spec={
+              'name': 'base_unittests',
+              'script': 'gtest_test.py',
+              'args': ['common-arg'],
+              'precommit_args': ['try-arg'],
+              'non_precommit_args': ['ci-arg'],
+          }),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          '--args',
+          api.json.dumps(['common-arg', 'ci-arg']),
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'try-with-args',
+      try_build(
+          test_spec={
+              'name': 'base_unittests',
+              'script': 'gtest_test.py',
+              'args': ['common-arg'],
+              'precommit_args': ['try-arg'],
+              'non_precommit_args': ['ci-arg'],
+          }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'base_unittests (with patch)',
+          [
+              '--args',
+              api.json.dumps(['common-arg', 'try-arg']),
+          ],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'test_suite_with_decription_on_tryserver',
       try_build(
           test_spec={

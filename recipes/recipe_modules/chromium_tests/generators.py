@@ -487,6 +487,12 @@ class Generator:
 
     substitutions = {'name': name}
 
+    script_args = raw_test_spec.get('args', [])
+    if self._precommit_details:
+      script_args.extend(raw_test_spec.get('precommit_args', []))
+    else:
+      script_args.extend(raw_test_spec.get('non_precommit_args', []))
+
     return steps.ScriptTestSpec.create(
         name,
         script=script,
@@ -494,7 +500,7 @@ class Generator:
             string.Template(s).safe_substitute(substitutions)
             for s in all_compile_targets.get(script, [])
         ],
-        script_args=raw_test_spec.get('args', []),
+        script_args=script_args,
     )
 
   def _generate_isolated_script_test_spec(
