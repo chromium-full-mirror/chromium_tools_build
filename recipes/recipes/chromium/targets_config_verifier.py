@@ -98,10 +98,22 @@ def RunSteps(api, properties):
   for f in affected_files:
     if match := targets_spec_file_re.match(f):
       builder_dir = match.group(1)
+      properties_file = f'{builder_dir}/properties.json'
+      # The builder is either being deleted or switched to not being
+      # bootstrapped. The latter case should be rare and wouldn't be easy to
+      # distinguish, so just assume a deletion and don't try to verify the
+      # builder.
+      if (properties_file in affected_files and
+          not api.path.exists(properties_file)):
+        continue
       bucket = match.group(2)
       precommit_details_by_builder_dir[builder_dir] = (
           fake_precommit_details
           if bucket in properties.precommit_buckets else None)
+
+  if not precommit_details_by_builder_dir:
+    api.step.empty('all affected builders are being deleted')
+    return None
 
   starlark_config_by_builder_dir = {}
   with api.step.nest('get patched targets configs'):
@@ -778,6 +790,27 @@ def GenTests(api):
           non_existent_tester_group='fake-tester-group',
       ),
       api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  builder_dir = f'{builder_config_dir}/fake-bucket/fake-builder'
+  yield api.test(
+      'deleted-builder',
+      api.buildbucket.try_build(),
+      api.properties(
+          targets_config_verifier_pb.InputProperties(
+              builder_config_directory=builder_config_dir)),
+      api.tryserver.get_files_affected_by_patch(
+          [
+              f'{builder_dir}/properties.json',
+              f'{builder_dir}/targets/fake-builder-group.json',
+          ],
+          step_name=(
+              'determine affected targets spec files.git diff to analyze patch'
+          ),
+      ),
+      api.post_check(post_process.MustRun,
+                     'all affected builders are being deleted'),
       api.post_process(post_process.DropExpectation),
   )
 
