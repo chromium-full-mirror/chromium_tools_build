@@ -1535,9 +1535,10 @@ class ArchiveApi(recipe_api.RecipeApi):
       if len(sbom_config.gn_targets) > 0:
         if archive_data.archive_type in (ArchiveData.ARCHIVE_TYPE_ZIP,
                                          ArchiveData.ARCHIVE_TYPE_FILES):
-          for file, gcs_uri in archived_files.items():
-            artifact_name = self.m.path.basename(gcs_uri)
-            gcs_folder = gcs_uri.rsplit("/", 1)[0]
+          for file, gcs_path in archived_files.items():
+            artifact_name = self.m.path.basename(gcs_path)
+            gcs_folder, _ = self.m.path.split(gcs_path)
+            gcs_folder = '' if gcs_folder == gcs_path else gcs_folder
 
             generated_sboms = self._generate_sbom(
                 source_dir=source_dir,
@@ -1559,7 +1560,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                 self._archive_sbom(
                     artifact_path=file,
                     sbom_path=sbom.sbom_path,
-                    gcs_path=self.m.path.join(gcs_folder, sbom.sbom_name),
+                    gcs_bucket=archive_data.gcs_bucket,
+                    gcs_dest=self.m.path.join(gcs_folder, sbom.sbom_name),
                     report_sbom_for_artifact=(
                         report_artifacts and archive_data.requires_provenance)))
     return sboms
@@ -1601,15 +1603,20 @@ class ArchiveApi(recipe_api.RecipeApi):
   def _archive_sbom(self,
                     artifact_path: Path,
                     sbom_path: Path,
-                    gcs_path,
+                    gcs_bucket,
+                    gcs_dest,
                     report_sbom_for_artifact=False):
 
-    sbom_name = self.m.path.basename(gcs_path)
+    sbom_name = self.m.path.basename(gcs_dest)
 
     with self.m.step.nest(f'Archive SBOM {sbom_name}'):
-      self.m.gsutil(['cp', sbom_path, gcs_path],
-                    version=None,
-                    name=f'Copy {sbom_name} SBOM')
+      gcs_path = 'gs://' + self.m.path.join(gcs_bucket, gcs_dest)
+
+      self.m.gsutil.upload(
+          sbom_path,
+          bucket=gcs_bucket,
+          dest=gcs_dest,
+          name=f'upload {gcs_dest}')
 
     if report_sbom_for_artifact:
       with self.m.step.nest(f'Report SBOM {sbom_name}') as presentation:

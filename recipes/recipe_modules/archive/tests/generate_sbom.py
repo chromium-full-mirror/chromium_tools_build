@@ -37,7 +37,16 @@ def RunSteps(api):
   api.archive._archive_sbom(
       artifact_path=source_dir / 'Release/out' / 'artifact.deb',
       sbom_path=source_dir / 'Release/out' / 'sbom.spdx.json',
-      gcs_path='gs://my-bucket/my/folder/artifact.deb.spdx.json',
+      gcs_bucket='my-bucket',
+      gcs_dest='my/folder/artifact.deb.spdx.json',
+      report_sbom_for_artifact=True,
+  )
+
+  api.archive._archive_sbom(
+      artifact_path=source_dir / 'Release/out' / 'artifact.deb',
+      sbom_path=source_dir / 'Release/out' / 'sbom.spdx.json',
+      gcs_bucket="my-bucket",
+      gcs_dest='my/folder2/artifact2.deb.spdx.json',
       report_sbom_for_artifact=True,
   )
 
@@ -48,11 +57,10 @@ def RunSteps(api):
           requires_sbom=SBOMConfig(gn_targets=["example", "example_2"],),
           requires_provenance=True,
           archive_type=ArchiveData.ARCHIVE_TYPE_ZIP,
+          gcs_bucket='my-bucket',
       ),
       report_artifacts=True,
-      archived_files={
-          source_dir / 'Release/out/myfile.zip': 'gs://mybucket/myfile.zip'
-      },
+      archived_files={source_dir / 'Release/out/myfile.zip': 'myfile.zip'},
   )
 
   api.archive.generate_and_upload_sbom(
@@ -62,11 +70,12 @@ def RunSteps(api):
           requires_sbom=SBOMConfig(gn_targets=["example", "example_2"],),
           requires_provenance=True,
           archive_type=ArchiveData.ARCHIVE_TYPE_FILES,
+          gcs_bucket='my-bucket',
       ),
       report_artifacts=True,
       archived_files={
-          source_dir / 'Release/out/myfile0.deb': 'gs://mybucket/myfile0.deb',
-          source_dir / 'Release/out/myfile1.deb': 'gs://mybucket/myfile1.deb'
+          source_dir / 'Release/out/myfile0.deb': 'myfile0.deb',
+          source_dir / 'Release/out/somedir/myfile1.deb': 'somedir/myfile1.deb'
       },
   )
 
@@ -90,7 +99,7 @@ def GenTests(api):
                        ]),
       api.post_process(
           StepCommandContains,
-          'Archive SBOM artifact.deb.spdx.json.gsutil Copy artifact.deb.spdx.json SBOM',
+          'Archive SBOM artifact.deb.spdx.json.gsutil upload my/folder/artifact.deb.spdx.json',
           [
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
@@ -98,8 +107,46 @@ def GenTests(api):
               "[START_DIR]/src/Release/out/sbom.spdx.json",
               "gs://my-bucket/my/folder/artifact.deb.spdx.json"
           ]),
-      api.post_process(MustRun, 'Archive SBOM myfile0.deb.spdx.json'),
-      api.post_process(MustRun, 'Archive SBOM myfile1.deb.spdx.json'),
+      api.post_process(
+          StepCommandContains,
+          'Archive SBOM artifact2.deb.spdx.json.gsutil upload my/folder2/artifact2.deb.spdx.json',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[START_DIR]/src/Release/out/sbom.spdx.json",
+              "gs://my-bucket/my/folder2/artifact2.deb.spdx.json"
+          ]),
+      api.post_process(
+          StepCommandContains,
+          'Archive SBOM myfile.zip.spdx.json.gsutil upload myfile.zip.spdx.json',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[CLEANUP]/tmp_tmp_10/spdx-out.json",
+              "gs://my-bucket/myfile.zip.spdx.json"
+          ]),
+      api.post_process(
+          StepCommandContains,
+          'Archive SBOM myfile0.deb.spdx.json.gsutil upload myfile0.deb.spdx.json',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[CLEANUP]/tmp_tmp_15/spdx-out.json",
+              "gs://my-bucket/myfile0.deb.spdx.json"
+          ]),
+      api.post_process(
+          StepCommandContains,
+          'Archive SBOM myfile1.deb.spdx.json.gsutil upload somedir/myfile1.deb.spdx.json',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[CLEANUP]/tmp_tmp_20/spdx-out.json",
+              "gs://my-bucket/somedir/myfile1.deb.spdx.json"
+          ]),
       api.post_process(MustRun, 'Report SBOM myfile0.deb.spdx.json'),
       api.post_process(MustRun, 'Report SBOM myfile1.deb.spdx.json'),
       api.override_step_data(
