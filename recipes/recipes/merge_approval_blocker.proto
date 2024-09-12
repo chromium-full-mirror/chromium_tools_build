@@ -1,0 +1,21 @@
+// Copyright 2024 The LUCI Authors. All rights reserved.
+// Use of this source code is governed under the Apache License, Version 2.0
+// that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.merge_approval_blocker;
+
+// NEXT ID TO USE: 4
+message InputProperties {
+  // Args for Gerrit API call
+
+  // Base url for Gerrit CL 
+  string host = 1;
+
+  // ID of Gerrit CL
+  int32 change = 2;
+
+  // Patchset of Gerrit CL
+  int32 patchset = 3;
+}
