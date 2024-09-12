@@ -40,7 +40,7 @@ class E2ETests(ExonerableTests):
     ]
 
   def test_name_to_grep_string(self, name):
-    name = re.sub(r'^e2e/.*: ', '', name)
+    name = re.sub(r'^e2e/[^:]*: ', '', name)
     return super().test_name_to_grep_string(name)
 
   def trigger_exoneration(self, test_names):

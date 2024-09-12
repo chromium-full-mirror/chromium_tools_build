@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from .commons import Results
@@ -62,10 +64,17 @@ class DevToolsTests(ABC):
     self.env['DEBUG'] = 'puppeteer:*'
 
   def test_names_to_grep_string(self, names):
-    return '|'.join([self.test_name_to_grep_string(name) for name in names])
+    # Keep sorted for stable test expectations.
+    return '|'.join(
+        sorted(self.test_name_to_grep_string(name) for name in names))
 
   def test_name_to_grep_string(self, name):
-    return name.replace('/', ' ')
+    # Escape JS regexp characters except slashes.
+    escaped = re.sub(r'([\-\\^$*+?.()|[\]{}])', r'\\\1', name)
+    # We need to deal with slashes separately. Test IDs contain slashes that
+    # are actual spaces in the test name, while some tests have slashes in
+    # their name.
+    return escaped.replace('/', '.')
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):

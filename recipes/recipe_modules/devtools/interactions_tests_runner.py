@@ -96,5 +96,5 @@ class InteractionsTests(ExonerableTests):
         self.api.path.join(self.source_dir, 'test', 'interactions', 'goldens'))
 
   def test_name_to_grep_string(self, name):
-    name = re.sub(r'^interactions/.*: ', '', name)
+    name = re.sub(r'^interactions/[^:]*: ', '', name)
     return super().test_name_to_grep_string(name)

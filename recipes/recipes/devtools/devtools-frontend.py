@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+
 from google.protobuf import timestamp_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
@@ -429,6 +431,35 @@ def GenTests(api):
         step_name=step_name,
     )
 
+  def check_swarming_task_arg(check, steps, step, arg):
+    """Check that `arg` is passed to the command of the swarming task of a
+    step.
+    """
+    check(step in steps)
+
+    # A json string, configuring the task, is passed to the swarming command.
+    check('-json-input' in steps[step].cmd)
+    json_arg_index = steps[step].cmd.index('-json-input')
+    check(len(steps[step].cmd) > json_arg_index)
+
+    # The config must be valid json.
+    json_input = json.loads(steps[step].cmd[json_arg_index + 1])
+
+    # Dig down the structure to the wrapped command passed to the swarming
+    # task.
+    check(json_input)
+    requests = json_input.get('requests', [])
+    check(requests)
+    task_slices = requests[0].get('task_slices', [])
+    check(task_slices)
+    check('properties' in task_slices[0])
+    check('command' in task_slices[0]['properties'])
+    command = task_slices[0]['properties']['command']
+    check(command)
+
+    # Ensure the argument is part of this command.
+    check(arg in command)
+
   yield api.test(
       'failed parallel builder on E2E',
       api.builder_group.for_current('tryserver.devtools-frontend'),
@@ -452,9 +483,15 @@ def GenTests(api):
       api.post_process(MustRun, 'Run tests.E2E Tests'),
       resultdb_query(
           'Flake exonaration attempt.rdb query',
-          test_result('e2e/file1: etest1', 'e2e_tests'),
-          test_result('e2e/file2: etest2', 'e2e_tests'),
+          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
+          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
       ),
+      api.post_process(
+          check_swarming_task_arg,
+          ('Flake exonaration attempt.'
+           'Trigger Tests.Trigger E2E Tests (rerun).'
+           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
+          '--grep="etest1.first \\?\\?|etest2.second \\(to: escape\\)"'),
       api.step_data(
           'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
           api.raw_io.stream_output_text(
