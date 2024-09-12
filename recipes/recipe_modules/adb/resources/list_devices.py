@@ -23,9 +23,10 @@ output = subprocess.check_output(cmd, text=True)
 devices = []
 for line in output.splitlines():
   logging.info(line)
-  m = re.match('^([0-9A-Za-z]+)\s+device$', line)
-  if m:
-    devices.append(m.group(1))
+  if line.endswith('device'):
+    # `adb` tool shows attached authorized devices in this format:
+    # <adb_device_id> device
+    devices.append(line.split()[0])
 
 with open(outFileName, 'w') as outFile:
   json.dump(sorted(devices), outFile)
