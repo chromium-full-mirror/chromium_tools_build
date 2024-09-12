@@ -961,9 +961,14 @@ class ArchiveApi(recipe_api.RecipeApi):
             # is stable.
             try:
               upload_results['sbom'].update(
-                  self.generate_and_upload_sbom(source_dir, build_dir,
-                                                archive_data, gcs_uploads,
-                                                report_artifacts))
+                  self.generate_and_upload_sbom(
+                      source_dir,
+                      build_dir,
+                      archive_data,
+                      update_properties,
+                      gcs_uploads,
+                      custom_vars=custom_vars,
+                      report_artifacts=report_artifacts))
             except self.m.step.StepFailure:
               pass
       for cipd_archive_data in archive_config.cipd_archive_datas:
@@ -1502,8 +1507,14 @@ class ArchiveApi(recipe_api.RecipeApi):
         }
     return upload_results
 
-  def generate_and_upload_sbom(self, source_dir: Path, build_dir: Path,
-                               archive_data, archived_files, report_artifacts):
+  def generate_and_upload_sbom(self,
+                               source_dir: Path,
+                               build_dir: Path,
+                               archive_data,
+                               update_properties,
+                               archived_files,
+                               custom_vars=None,
+                               report_artifacts=False):
     """Generates, uploads and reports SBOMs for already archived files.
 
     If multiple files are included, each file will have its own SBOM
@@ -1515,10 +1526,16 @@ class ArchiveApi(recipe_api.RecipeApi):
       source_dir: The path to the top-level repo.
       build_dir: The absolute path to the build output directory, e.g.
                  [cache]/builder/src/out/Release
+      update_properties: The properties from the bot_update step (containing
+                         commit information).
       archive_data: An instance of
                     archive/properties.proto:InputProperties.archive_datas.
       archived_files: Dict of archived_file and the gcs upload path. eg:
         {archive_file: gcs_path}.
+      custom_vars: Dict of custom string substitution for gcs paths.
+                   E.g. custom_vars={'chrome_version':'1.2.3.4'}, then
+                   gcs_path='gcs/{%chrome_version%}/path' will be replaced to
+                   'gcs/1.2.3.4/path'.
       report_artifacts: A boolean flag to enable artifact reporting. This is
                         set by recipe that uses this module.
     Returns:
@@ -1531,6 +1548,10 @@ class ArchiveApi(recipe_api.RecipeApi):
     sboms = {}
     if archive_data.HasField('requires_sbom'):
       sbom_config = archive_data.requires_sbom
+
+      gcs_bucket = self._replace_placeholders(source_dir, update_properties,
+                                              custom_vars,
+                                              archive_data.gcs_bucket)
 
       if len(sbom_config.gn_targets) > 0:
         if archive_data.archive_type in (ArchiveData.ARCHIVE_TYPE_ZIP,
@@ -1560,7 +1581,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                 self._archive_sbom(
                     artifact_path=file,
                     sbom_path=sbom.sbom_path,
-                    gcs_bucket=archive_data.gcs_bucket,
+                    gcs_bucket=gcs_bucket,
                     gcs_dest=self.m.path.join(gcs_folder, sbom.sbom_name),
                     report_sbom_for_artifact=(
                         report_artifacts and archive_data.requires_provenance)))

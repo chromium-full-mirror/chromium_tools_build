@@ -53,12 +53,14 @@ def RunSteps(api):
   api.archive.generate_and_upload_sbom(
       source_dir=source_dir,
       build_dir=source_dir / 'Release/out',
+      update_properties=api.properties.get('update_properties'),
       archive_data=ArchiveData(
           requires_sbom=SBOMConfig(gn_targets=["example", "example_2"],),
           requires_provenance=True,
           archive_type=ArchiveData.ARCHIVE_TYPE_ZIP,
-          gcs_bucket='my-bucket',
+          gcs_bucket='{%gcs_bucket%}',
       ),
+      custom_vars=api.properties.get('custom_vars'),
       report_artifacts=True,
       archived_files={source_dir / 'Release/out/myfile.zip': 'myfile.zip'},
   )
@@ -66,6 +68,7 @@ def RunSteps(api):
   api.archive.generate_and_upload_sbom(
       source_dir=source_dir,
       build_dir=source_dir / 'Release/out',
+      update_properties=api.properties.get('update_properties'),
       archive_data=ArchiveData(
           requires_sbom=SBOMConfig(gn_targets=["example", "example_2"],),
           requires_provenance=True,
@@ -88,6 +91,9 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
+      api.properties(custom_vars={
+          'gcs_bucket': 'my-custom-var-bucket',
+      }),
       api.post_process(MustRun, 'Report SBOM artifact.deb.spdx.json'),
       api.post_process(StepCommandContains,
                        'Report SBOM artifact.deb.spdx.json.snoop: report_sbom',
@@ -125,7 +131,7 @@ def GenTests(api):
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
               "[CLEANUP]/tmp_tmp_10/spdx-out.json",
-              "gs://my-bucket/myfile.zip.spdx.json"
+              "gs://my-custom-var-bucket/myfile.zip.spdx.json"
           ]),
       api.post_process(
           StepCommandContains,
