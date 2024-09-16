@@ -428,7 +428,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium.apply_config('trybot_flavor')
     return builder_id, builder_config
 
-  _EXPERIMENTS_TO_FORWARD = set(('chromium.enable_cleandead',))
+  _EXPERIMENTS_TO_FORWARD = set((
+      'chromium.enable_cleandead',
+      # TODO(crbug.com/355218109): Can remove the following when it's rolled
+      # out everywhere.
+      'chromium.use_per_builder_build_dir_name',
+  ))
 
   def _trigger_compilator(self,
                           step_name,
