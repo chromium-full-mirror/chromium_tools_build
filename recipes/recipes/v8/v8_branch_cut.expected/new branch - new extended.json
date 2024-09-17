@@ -1041,7 +1041,9 @@
       "upload",
       "-f",
       "--bypass-hooks",
-      "--send-mail"
+      "--send-mail",
+      "--set-bot-commit",
+      "--dry-run"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
