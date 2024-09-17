@@ -57,8 +57,8 @@ def RunSteps(api):
   api.assertions.assertEqual(api.reclient.cache_silo, "foobar")
   api.reclient.cache_silo = tmp
 
-  api.reclient.experimental_credentials_helper = 'luci-auth'
-  api.reclient.experimental_credentials_helper_args = ' '.join([
+  api.reclient.credentials_helper = 'luci-auth'
+  api.reclient.credentials_helper_args = ' '.join([
       'token',
       '-scopes-context',
       '-json-output=-',
@@ -81,8 +81,8 @@ def RunSteps(api):
   _ = api.reclient.instance  # for code coverage
   _ = api.reclient.metrics_project
   _ = api.reclient.jobs
-  _ = api.reclient.experimental_credentials_helper
-  _ = api.reclient.experimental_credentials_helper_args
+  _ = api.reclient.credentials_helper
+  _ = api.reclient.credentials_helper_args
 
 
 def MakeTestRBEStats(num_records=0,

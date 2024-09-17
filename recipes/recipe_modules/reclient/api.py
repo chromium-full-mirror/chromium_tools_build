@@ -158,8 +158,8 @@ class ReclientApi(recipe_api.RecipeApi):
     self._scandeps_server = props.scandeps_server
     self._disable_bq_upload = props.disable_bq_upload
     self._download_remoteexec_cfg_hook_vars_used = None
-    self._experimental_credentials_helper = None
-    self._experimental_credentials_helper_args = None
+    self._credentials_helper = None
+    self._credentials_helper_args = None
 
     if self._test_data.enabled:
       self._hostname = 'fakevm999-m9'
@@ -316,20 +316,20 @@ class ReclientApi(recipe_api.RecipeApi):
     return self._props.ensure_verified
 
   @property
-  def experimental_credentials_helper(self):
-    return self._experimental_credentials_helper
+  def credentials_helper(self):
+    return self._credentials_helper
 
-  @experimental_credentials_helper.setter
-  def experimental_credentials_helper(self, val):
-    self._experimental_credentials_helper = val
+  @credentials_helper.setter
+  def credentials_helper(self, val):
+    self._credentials_helper = val
 
   @property
-  def experimental_credentials_helper_args(self):
-    return self._experimental_credentials_helper_args
+  def credentials_helper_args(self):
+    return self._credentials_helper_args
 
-  @experimental_credentials_helper_args.setter
-  def experimental_credentials_helper_args(self, val):
-    self._experimental_credentials_helper_args = val
+  @credentials_helper_args.setter
+  def credentials_helper_args(self, val):
+    self._credentials_helper_args = val
 
   def _get_platform_exe_name(self, exe_name):
     if self.m.platform.is_win:
@@ -532,8 +532,7 @@ class ReclientApi(recipe_api.RecipeApi):
     """
     reproxy_bin_path = self._get_reclient_exe_path(buildtools_dir, 'reproxy')
     enable_crash_dump = 'true' if self._scandeps_server else 'false'
-    use_gce_credentials = ('false'
-                           if self._experimental_credentials_helper else 'true')
+    use_gce_credentials = ('false' if self._credentials_helper else 'true')
     env = {
         'RBE_instance':
             self.instance,
@@ -587,10 +586,10 @@ class ReclientApi(recipe_api.RecipeApi):
             40000,
     }
 
-    if self._experimental_credentials_helper:
-      env['RBE_experimental_credentials_helper'] = self._experimental_credentials_helper
-    if self._experimental_credentials_helper_args:
-      env['RBE_experimental_credentials_helper_args'] = self._experimental_credentials_helper_args
+    if self._credentials_helper:
+      env['RBE_credentials_helper'] = self._credentials_helper
+    if self._credentials_helper_args:
+      env['RBE_credentials_helper_args'] = self._credentials_helper_args
 
     if self.metrics_project:
       env['RBE_metrics_project'] = self.metrics_project

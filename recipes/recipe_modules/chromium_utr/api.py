@@ -669,8 +669,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     use_reclient = self.get_remote_compile_options(build_dir, properties)
 
     if use_reclient:
-      self.m.reclient.experimental_credentials_helper = 'luci-auth'
-      self.m.reclient.experimental_credentials_helper_args = ' '.join([
+      self.m.reclient.credentials_helper = 'luci-auth'
+      self.m.reclient.credentials_helper_args = ' '.join([
           'token',
           '-scopes-context',
           '-json-output=-',
