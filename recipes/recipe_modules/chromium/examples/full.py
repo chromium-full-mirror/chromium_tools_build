@@ -249,9 +249,12 @@ def GenTests(api):
       'build_dir_name_experiment',
       api.chromium.ci_build(
           builder_group='fake-group',
-          builder='fake-builder',
+          builder='fake-builder-with-really-long-name',
           experiments=['chromium.use_per_builder_build_dir_name'],
       ),
+      api.path.exists(
+          api.path.cache_dir.joinpath('builder', 'src', 'out',
+                                      '7e94-fake-builder-with-really-')),
       # The arg after '-C' on the cmd line should be the path to the build-dir.
       api.post_check(post_process.StepCommandContains, 'compile',
                      ['-C', re.compile('.+fake-builder')]),

@@ -162,7 +162,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       source_dir: The path to the top-level repo.
     """
     # TODO(crbug.com/355218109): Remove the legacy naming scheme.
-    legacy_path = source_dir / 'out' / self.c.build_config_fs
+    legacy_paths = [source_dir / 'out' / self.c.build_config_fs]
     new_path = None
     if self.c.shared_build_dir:
       new_path = source_dir / 'out' / f'shared-{self.c.build_config_fs}'
@@ -175,12 +175,22 @@ class ChromiumApi(recipe_api.RecipeApi):
           self.m.buildbucket.build.builder.builder).encode()
       hash_part = hashlib.sha256(hash_input).hexdigest()[:4]
       builder_name_part = ('_'.join(
-          self.m.buildbucket.build.builder.builder.split())[:25])
+          self.m.buildbucket.build.builder.builder.split())[:15])
       new_path = source_dir / 'out' / (hash_part + '-' + builder_name_part)
+      # This was first rolled out with the names a little too long for Windows.
+      # So need to also clobber the earlier versions of that path.
+      builder_name_part_25c = ('_'.join(
+          self.m.buildbucket.build.builder.builder.split())[:25])
+      new_path_v0 = source_dir / 'out' / (
+          hash_part + '-' + builder_name_part_25c)
+      if new_path != new_path_v0:
+        legacy_paths.append(new_path_v0)
     # We can't trust that the disk will have enough room for both build-dirs.
-    if new_path and self.m.path.exists(legacy_path):
-      self.m.file.rmtree('remove legacy build dir', legacy_path)
-    return new_path or legacy_path
+    if new_path:
+      for legacy_path in legacy_paths:
+        if self.m.path.exists(legacy_path):
+          self.m.file.rmtree('remove legacy build dir', legacy_path)
+    return new_path or legacy_paths[0]
 
   def _ninja_path(self, source_dir: Path) -> Path:
     """The path to the ninja executable.
