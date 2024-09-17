@@ -573,6 +573,8 @@ class ReclientApi(recipe_api.RecipeApi):
             _DEPS_CACHE_MAX_MB[self.m.platform.name],
         'RBE_use_unified_uploads':
             'true',
+        'RBE_use_batching':
+            'true',
         'RBE_grpc_keepalive_time':
             '30s',
         'RBE_grpc_keepalive_permit_without_stream':

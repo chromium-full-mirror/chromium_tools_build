@@ -916,6 +916,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -1161,6 +1162,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -2472,6 +2474,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -2717,6 +2720,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -3948,6 +3952,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -4193,6 +4198,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -6350,6 +6356,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
@@ -6595,6 +6602,7 @@
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
+      "RBE_use_batching": "true",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true"
     },
