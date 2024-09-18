@@ -233,7 +233,7 @@ def _get_rbe_plaform_from_cfg(api, rewrapper_cfg):
 
   rbe_platform = ''
   cfg_content = api.file.read_text(
-      '',
+      f'read {rewrapper_cfg.name}',
       str(rewrapper_cfg),
       test_data='#comment\nplatform=test',
       include_log=False)
