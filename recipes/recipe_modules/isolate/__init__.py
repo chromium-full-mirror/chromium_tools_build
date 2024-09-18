@@ -19,5 +19,6 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/resultdb',
     'recipe_engine/step',
+    'siso',
     'swarming_client',
 ]

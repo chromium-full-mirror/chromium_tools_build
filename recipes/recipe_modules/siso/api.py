@@ -6,6 +6,7 @@
 import contextlib
 
 from recipe_engine import recipe_api
+from recipe_engine import step_data
 from recipe_engine.config_types import Path
 
 # GCS bucket for Siso reports.
@@ -225,6 +226,48 @@ class SisoApi(recipe_api.RecipeApi):
         return ninja_command[i + 1]
 
     return "."
+
+  def isolate_tests(self, step_name: str, source_dir: Path, build_dir: Path,
+                    tests: list[str], **kwargs) -> step_data.StepData:
+    """Uploads isolate tests to CAS server.
+
+    This API is intended to be used in api.isolate.isolate_tests for
+    chromium tests. `siso isolate` may not work for other use cases.
+    See the document of api.isolate.isolate_tests() for more details.
+
+    Args:
+      step_name: Name of the step.
+      source_dir: Path to the src root.
+      build_dir: Path to the build directory that contains tests and *.isolate.
+      tests: List of tests to upload.
+    """
+    cmd = [
+        self.siso_path(source_dir),
+        'isolate',
+        '--project',
+        self._props.project,
+        '-cas_instance',
+        self.m.cas.instance,
+        '-C',
+        build_dir,
+        '--dump_json',
+        self.m.json.output(),
+    ] + list(tests)
+    with self.m.context(cwd=source_dir):
+      return self.m.step(
+          step_name,
+          cmd,
+          step_test_data=lambda: self.m.json.test_api.output(
+              {test: '[dummy hash for %s/dummy size]' % test
+               for test in tests}),
+          **kwargs)
+
+  @property
+  def without_bytes(self) -> bool:
+    """Return True if Siso build does not downlaod remote execution outptus
+       by default.
+    """
+    return self._props.output_local_strategy == 'minimum'
 
   def check_version(self, source_dir: Path):
     """Print Siso version info"""

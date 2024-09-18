@@ -796,6 +796,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # in parentheses, if it exists. Suffix currently is something like 'with
     # patch', with no parentheses, or ''. Wrap it in parens if needed.
     name_suffix = ' (%s)' % suffix if suffix else ''
+    # When Siso build enables `without bytes` option, `isolate tests` step
+    # needs to use `siso isolate` command.
+    use_siso_isolate = self.m.siso.without_bytes
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
@@ -804,7 +807,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         targets,
         suffix=name_suffix,
         swarm_hashes_property_name=swarm_hashes_property_name,
-        verbose=True)
+        source_dir=source_dir,
+        verbose=True,
+        use_siso_isolate=use_siso_isolate)
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
     return self.set_swarming_test_execution_info(

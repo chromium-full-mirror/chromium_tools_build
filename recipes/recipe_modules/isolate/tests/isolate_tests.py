@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, PropertyEquals,
-                                        StepCommandContains)
+from recipe_engine.post_process import (DropExpectation, MustRun,
+                                        PropertyEquals, StepCommandContains)
 
 DEPS = [
     'isolate',
+    'siso',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/buildbucket',
@@ -15,7 +16,11 @@ DEPS = [
 def RunSteps(api):
   source_dir = api.path.cache_dir / 'builder/src'
   api.isolate.isolate_tests(
-      source_dir / 'out/Release', targets=['dummy_target_1', 'dummy_target_2'])
+      source_dir / 'out/Release',
+      targets=['dummy_target_1', 'dummy_target_2'],
+      source_dir=source_dir,
+      use_siso_isolate=api.properties.get('use_siso_isolate'),
+  )
 
 
 def GenTests(api):
@@ -24,6 +29,22 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'isolate tests', [
           '[CACHE]/builder/src/out/Release/dummy_target_1.isolated.gen.json',
           '[CACHE]/builder/src/out/Release/dummy_target_2.isolated.gen.json',
+      ]),
+      api.post_process(
+          PropertyEquals, 'swarm_hashes', {
+              'dummy_target_1': '[dummy hash for dummy_target_1/dummy size]',
+              'dummy_target_2': '[dummy hash for dummy_target_2/dummy size]'
+          }),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'siso_isolate_test',
+      api.properties(use_siso_isolate=True),
+      api.post_process(MustRun, 'isolate tests'),
+      api.post_process(StepCommandContains, 'isolate tests', [
+          'dummy_target_1',
+          'dummy_target_2',
       ]),
       api.post_process(
           PropertyEquals, 'swarm_hashes', {

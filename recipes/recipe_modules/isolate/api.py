@@ -82,24 +82,24 @@ class IsolateApi(recipe_api.RecipeApi):
         step_test_data=lambda: self.test_api.output_json([isolate_name]))
     return result.json.output[isolate_name]
 
-  def isolate_tests(
-      self,
-      build_dir,
-      targets,
-      verbose=False,
-      swarm_hashes_property_name='swarm_hashes',
-      step_name=None,
-      suffix='',
-      **kwargs):
+  def isolate_tests(self,
+                    build_dir,
+                    targets,
+                    verbose=False,
+                    swarm_hashes_property_name='swarm_hashes',
+                    step_name=None,
+                    suffix='',
+                    source_dir=None,
+                    use_siso_isolate=False,
+                    **kwargs):
     """Archives prepared tests in |build_dir| to isolate server.
 
-    src/tools/mb/mb.py is invoked to produce *.isolated.gen.json files that
-    describe how to archive tests.
+    src/tools/mb/mb.py is invoked to produce *.isolate and *.isolated.gen.json
+    files that describe how to archive tests.
 
-    This step then uses *.isolated.gen.json files to actually performs the
-    archival. By archiving all tests at once it is able to reduce the total
-    amount of work. Tests share many common files, and such files are processed
-    only once.
+    This step then uses the files to actually performs the archival.
+    By archiving all tests at once it is able to reduce the total amount of
+    work. Tests share many common files, and such files are processed only once.
 
     Args:
         targets: List of targets to use.
@@ -110,35 +110,44 @@ class IsolateApi(recipe_api.RecipeApi):
             make sure to pass different propery names for each invocation.
         suffix: suffix of isolate_tests step.
             e.g. ' (with patch)', ' (without patch)'.
+        use_siso_isolate (bool): If True, it uses `siso isolate` commmand
+           instead of `isolate batcharchive`.
     """
 
     # No isolated tests found.
     if not targets:  # pragma: no cover
       return
 
-    # FIXME: Differentiate between bad *.isolate and upload errors.
-    # Raise InfraFailure on upload errors.
-    args = [
-        'batcharchive',
-        '--dump-json',
-        self.m.json.output(),
-    ] + (['--verbose'] if verbose else [])
+    _step_name = step_name or ('isolate tests%s' % suffix)
+    if use_siso_isolate:
+      assert source_dir, ('`source_dir` must be set to use'
+                          'api.siso.isolate_tests().')
+      step_result = self.m.siso.isolate_tests(_step_name, source_dir, build_dir,
+                                              targets, **kwargs)
+    else:
+      # FIXME: Differentiate between bad *.isolate and upload errors.
+      # Raise InfraFailure on upload errors.
+      args = [
+          'batcharchive',
+          '--dump-json',
+          self.m.json.output(),
+      ] + (['--verbose'] if verbose else [])
 
-    args.extend(['-cas-instance', self.m.cas.instance])
+      args.extend(['-cas-instance', self.m.cas.instance])
 
-    # TODO(b/187913980): this is for investigation of upload failures.
-    args.extend(['-log-level', 'debug'])
+      # TODO(b/187913980): this is for investigation of upload failures.
+      args.extend(['-log-level', 'debug'])
 
-    args.extend([
-        build_dir.joinpath('%s.isolated.gen.json' % t)
-        for t in sorted(set(targets))
-    ])
+      args.extend([
+          build_dir.joinpath('%s.isolated.gen.json' % t)
+          for t in sorted(set(targets))
+      ])
 
-    step_result = self(
-        args,
-        step_name or ('isolate tests%s' % suffix),
-        step_test_data=lambda: self.test_api.output_json(targets),
-        **kwargs)
+      step_result = self(
+          args,
+          _step_name,
+          step_test_data=lambda: self.test_api.output_json(targets),
+          **kwargs)
 
     swarm_hashes = {}
     if step_result.json.output:

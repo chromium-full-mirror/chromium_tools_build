@@ -7,12 +7,14 @@ from recipe_engine import post_process
 DEPS = [
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/step',
     'siso',
 ]
 
 
 def RunSteps(api):
   source_dir = api.path.cache_dir / 'builder' / 'src'
+  build_dir = api.path.join('out', 'Default')
   env = {}
   if api.siso.enabled:
     api.path.mock_add_paths(
@@ -31,6 +33,9 @@ def RunSteps(api):
     )
   with api.siso.disable():
     assert not api.siso.enabled
+  if api.siso.without_bytes:
+    api.siso.isolate_tests('isolate tests', source_dir, build_dir,
+                           api.properties.get('tests'))
 
 
 def GenTests(api):
@@ -155,11 +160,15 @@ def GenTests(api):
 
   yield api.test(
       'output_local_strategy',
-      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.properties(
+          build_command=['ninja', '-C', 'out/Release'],
+          tests=['base_unittests']),
       api.siso.properties(output_local_strategy='minimum'),
       api.post_process(post_process.StepCommandContains, 'compile', [
           '--output_local_strategy',
           'minimum',
       ]),
+      api.post_process(post_process.StepCommandContains, 'isolate tests',
+                       ['base_unittests']),
       api.post_process(post_process.DropExpectation),
   )

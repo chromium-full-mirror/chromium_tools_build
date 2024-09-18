@@ -49,6 +49,7 @@ DEPS = [
     'recipe_engine/time',
     'reclient',
     'repro_instructions',
+    'siso',
     'skylab',
     'ssci',
     'symupload',
