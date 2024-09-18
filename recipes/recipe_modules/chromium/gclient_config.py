@@ -456,7 +456,7 @@ def ios_webkit_tot(c):
 def ninja_staging(c):
   cv = c.solutions[0].custom_vars
   cv['ninja_package'] = 'infra/3pp/tools/ninja/'
-  cv['ninja_version'] = 'version:2@1.12.1.chromium.4'
+  cv['ninja_version'] = 'version:3@1.12.1.chromium.4'
 
 
 @CONFIG_CTX()
