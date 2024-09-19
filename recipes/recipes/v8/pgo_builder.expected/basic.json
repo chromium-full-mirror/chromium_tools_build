@@ -1,7 +1,10 @@
 [
   {
     "cmd": [],
-    "name": "init trackers for candidate versions"
+    "name": "init trackers for candidate versions",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@profile trackers@@@"
+    ]
   },
   {
     "cmd": [
