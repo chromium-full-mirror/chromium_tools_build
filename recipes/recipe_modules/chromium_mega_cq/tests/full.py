@@ -180,3 +180,23 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
+
+  def check_cannot_outlive_parent(check, steps, step_name):
+    if not check(step_name in steps, f'step {step_name} was run'):
+      return  # pragma: no cover
+
+    req = api.json.loads(steps[step_name].logs['request'])
+    can_outlive_parent = (
+        req["requests"][0]["scheduleBuild"].get("canOutliveParent"))
+    check(can_outlive_parent == 'NO')
+
+  yield api.test(
+      'triggered-builds-cannot-outlive-parent',
+      # Experiment is always set in production and must be set for
+      # api.buildbucket.schedule_request to correctly set canOutliveParent in
+      # the request
+      api.chromium.try_build(experiments=['luci.buildbucket.parent_tracking']),
+      api.post_check(check_cannot_outlive_parent,
+                     'trigger bot1.trigger (attempt 1)'),
+      api.post_process(post_process.DropExpectation),
+  )

@@ -99,7 +99,10 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
               priority=self.m.buildbucket.swarming_priority + 10,
               tags=self.m.buildbucket.tags(**tags),
               properties=self.m.cv.props_for_child_build,
-              as_shadow_if_parent_is_led=True)
+              as_shadow_if_parent_is_led=True,
+              # This ensures the triggered builds will get canceled if this
+              # build ends
+              swarming_parent_run_id=self.m.swarming.task_id)
           req.scheduling_timeout.FromSeconds(per_build_expiration_s)
           req.execution_timeout.FromSeconds(per_build_timeout_s)
           return req
