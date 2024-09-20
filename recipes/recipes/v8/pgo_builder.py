@@ -141,14 +141,16 @@ COMPILATORS = {
 PROPERTIES = {
     'max_parallel_versions': Property(kind=int, default=MAX_PARALLEL_VERSIONS),
     'version_number_cutoff': Property(kind=tuple, default=VERSION_CUTOFF),
+    'compilators': Property(kind=list, default=None),
 }
 
 
-def RunSteps(api, max_parallel_versions, version_number_cutoff):
+def RunSteps(api, max_parallel_versions, version_number_cutoff, compilators):
   if api.buildbucket.gitiles_commit.id:
-    builder = RevisionBuilder(api, api.buildbucket.gitiles_commit.id)
+    commit_id = api.buildbucket.gitiles_commit.id
+    builder = RevisionBuilder(api, compilators, commit_id)
   else:
-    builder = VersionTagBuilder(api, max_parallel_versions,
+    builder = VersionTagBuilder(api, compilators, max_parallel_versions,
                                 version_number_cutoff)
 
   return builder.run()
@@ -248,10 +250,22 @@ class ProfileTrack:
 
 class BaseProfileBuilder(ABC):
 
-  def __init__(self, api):
+  def __init__(self, api, compilators):
     self.api = api
     self.profile_trackers = None
     self.perf_code_path = None
+    self.selected_compilator_ids = compilators
+
+  @cached_property
+  def compilators(self):
+    if not self.selected_compilator_ids:
+      return COMPILATORS
+
+    return {
+        platform: config
+        for platform, config in COMPILATORS.items()
+        if platform in self.selected_compilator_ids
+    }
 
   def run(self):
     with self.api.context(cwd=self.work_dir):
@@ -300,7 +314,7 @@ class BaseProfileBuilder(ABC):
   def trigger_compilators(self):
     for tracker in self.healthy_profile_trackers:
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
-        compilator = COMPILATORS[tracker.track]
+        compilator = self.compilators[tracker.track]
         h = self.orchestrator.trigger_compilator(
             compilator['builder'],
             revision=tracker.revision,
@@ -339,7 +353,7 @@ class BaseProfileBuilder(ABC):
         tracker.profile_dir = self.api.path.mkdtemp(
             f'v{tracker.version}_{tracker.track}')
 
-        platform = COMPILATORS[tracker.track]['platform']
+        platform = self.compilators[tracker.track]['platform']
         task = self.api.chromium_swarming.task(
             name=f'pgo profile {tracker.name}',
             task_output_dir=tracker.profile_dir,
@@ -448,21 +462,22 @@ class BaseProfileBuilder(ABC):
 
 class RevisionBuilder(BaseProfileBuilder):
 
-  def __init__(self, api, revision):
-    super().__init__(api)
+  def __init__(self, api, compilators, revision):
+    super().__init__(api, compilators)
     self.revision = revision
 
   @with_wrapper_step
   def init_trackers_for_candidate_versions(self) -> list[ProfileTrack]:
     self.profile_trackers = [
-        ProfileTrack(None, track, self.revision) for track in COMPILATORS
+        ProfileTrack(None, track, self.revision) for track in self.compilators
     ]
 
 
 class VersionTagBuilder(BaseProfileBuilder):
 
-  def __init__(self, api, max_parallel_versions, version_number_cutoff):
-    super().__init__(api)
+  def __init__(self, api, compilators, max_parallel_versions,
+               version_number_cutoff):
+    super().__init__(api, compilators)
     self.max_parallel_versions = max_parallel_versions
     self.version_number_cutoff = version_number_cutoff
 
@@ -622,13 +637,13 @@ class VersionTagBuilder(BaseProfileBuilder):
     # TODO(b/353419839): Add the retry attempt number to the profile tracker logs.
     self.profile_trackers = []
     for version, revision in tags:
-      for track in COMPILATORS:
+      for track in self.compilators:
         self.profile_trackers.append(ProfileTrack(version, track, revision))
 
   @with_wrapper_step
   def upload_to_gs(self):
     for version_trackers in self.healthy_profile_trackers_by_version:
-      if len(version_trackers) != len(COMPILATORS):
+      if len(version_trackers) != len(self.compilators):
         continue
 
       for tracker in version_trackers:
@@ -642,7 +657,7 @@ class VersionTagBuilder(BaseProfileBuilder):
   def assign_pgo_tags(self):
     """Assign `refs/tags/<version>-pgo` to versions with all profiles."""
     for version_trackers in self.healthy_profile_trackers_by_version:
-      if len(version_trackers) != len(COMPILATORS):
+      if len(version_trackers) != len(self.compilators):
         continue
 
       version = version_trackers[0].version
@@ -667,7 +682,7 @@ class VersionTagBuilder(BaseProfileBuilder):
   @with_wrapper_step
   def add_comment_to_gerrit_changes(self):
     for version_trackers in self.healthy_profile_trackers_by_version:
-      if len(version_trackers) != len(COMPILATORS):
+      if len(version_trackers) != len(self.compilators):
         continue
 
       commit = version_trackers[0].revision
@@ -781,8 +796,8 @@ def GenTests(api):
         name,
         api.properties(
             max_parallel_versions=max_parallel_versions,
-            version_number_cutoff=(1, 1)), api.time.seed(1700000000),
-        api.time.step(10),
+            version_number_cutoff=(1, 1),
+        ), api.time.seed(1700000000), api.time.step(10),
         stdout(
             'init trackers for candidate versions.git ls-remote', '\n'.join([
                 '1234 refs/tags/0.1.10.1',
@@ -806,8 +821,9 @@ def GenTests(api):
   yield api.test(
       'ci',
       api.buildbucket.ci_build(revision='c0ffee15'),
-      *mock_compilation(['c0ffee15'], all_tracks),
-      *mock_profiles(['c0ffee15'], all_tracks),
+      api.properties(compilators=['x64']),
+      *mock_compilation(['c0ffee15'], ['x64']),
+      *mock_profiles(['c0ffee15'], ['x64']),
       api.post_process(
           MustRun,
           'trigger compilators.c0ffee15 x64',
@@ -819,6 +835,7 @@ def GenTests(api):
       ),
       api.post_process(
           DoesNotRun,
+          'trigger compilators.c0ffee15 x86',
           'upload to gs',
           'assign pgo tags',
           'add_comment_to_gerrit_changes',
