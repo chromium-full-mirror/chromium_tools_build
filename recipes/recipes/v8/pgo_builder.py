@@ -145,8 +145,13 @@ PROPERTIES = {
 
 
 def RunSteps(api, max_parallel_versions, version_number_cutoff):
-  return VersionTagBuilder(api, max_parallel_versions,
-                           version_number_cutoff).run()
+  if api.buildbucket.gitiles_commit.id:
+    builder = RevisionBuilder(api, api.buildbucket.gitiles_commit.id)
+  else:
+    builder = VersionTagBuilder(api, max_parallel_versions,
+                                version_number_cutoff)
+
+  return builder.run()
 
 
 def with_wrapper_step(func):
@@ -167,10 +172,10 @@ def with_wrapper_step(func):
   return wrapped_func
 
 
-class VersionProfileTrack:
+class ProfileTrack:
   """
   A track is the process of compiling, generating and uploading the profile
-  for a single version on a track (architecture × platform). This process has
+  for a single commit on a track (architecture × platform). This process has
   multiple discrete steps. We want to run these steps in parallel for each
   versions and each track.
 
@@ -179,7 +184,7 @@ class VersionProfileTrack:
   """
 
   def __init__(self, version, track, revision) -> None:
-    self.version = '%d.%d.%d.%d' % version
+    self.version = ('%d.%d.%d.%d' % version) if version else None
     self.track = track
     self.revision = revision
     self.compilator_handler = None
@@ -215,12 +220,15 @@ class VersionProfileTrack:
 
   @property
   def name(self):
-    return f'{self.version} {self.track}'
+    return f'{self.version or self.revision[:8]} {self.track}'
 
   @property
   def presentation(self):
     result = '❌' if self.exception else '✓'
-    result += f' {self.version} {self.revision} {self.track}'
+    if self.version:
+      result += f' {self.version}'
+
+    result += f' {self.revision} {self.track}'
 
     if self.exception:
       result += f' Failure: {self.exception}'
@@ -229,6 +237,7 @@ class VersionProfileTrack:
 
   @property
   def remote_profile_path(self):
+    assert self.version, 'The track has no version assigned. No remote profile path exists.'
     return f'by-version/{self.version}/{self.track}.profile'
 
   @property
@@ -261,7 +270,8 @@ class BaseProfileBuilder(ABC):
       self.upload_to_gs()
       self.assign_pgo_tags()
       self.add_comment_to_gerrit_changes()
-      return self.report_exceptions()
+      self.report_exceptions()
+      return self.get_build_result()
 
   @cached_property
   def work_dir(self):
@@ -281,6 +291,10 @@ class BaseProfileBuilder(ABC):
     for t in self.healthy_profile_trackers:
       groups[t.version].append(t)
     return list(groups.values())
+
+  @property
+  def failed_profile_trackers(self):
+    return [t for t in self.profile_trackers if t.exception]
 
   @with_wrapper_step
   def trigger_compilators(self):
@@ -409,33 +423,40 @@ class BaseProfileBuilder(ABC):
   def init_trackers_for_candidate_versions(self):
     pass  # pragma: no cover
 
-  @abstractmethod
   def upload_to_gs(self):
-    pass  # pragma: no cover
+    pass
 
-  @abstractmethod
   def assign_pgo_tags(self):
-    pass  # pragma: no cover
+    pass
 
-  @abstractmethod
   def add_comment_to_gerrit_changes(self):
-    pass  # pragma: no cover
+    pass
 
-  @abstractmethod
-  def update_blocked_version_file(self, failed_versions):
-    pass  # pragma: no cover
-
-  @with_wrapper_step
   def report_exceptions(self):
-    failed_versions = {t.version for t in self.profile_trackers if t.exception}
+    pass
 
-    if not failed_versions:
+  def get_build_result(self):
+    failed_trackers = self.failed_profile_trackers
+
+    if not failed_trackers:
       return result_pb2.RawResult(status=common_pb.SUCCESS)
 
-    self.update_blocked_version_file(failed_versions)
-    return result_pb2.RawResult(
-        status=common_pb.FAILURE,
-        summary_markdown='Some versions encounterd exceptions')
+    msg = (f'{len(failed_trackers)} of {len(self.profile_trackers)} tracks '
+           'encounterd exceptions.')
+    return result_pb2.RawResult(status=common_pb.FAILURE, summary_markdown=msg)
+
+
+class RevisionBuilder(BaseProfileBuilder):
+
+  def __init__(self, api, revision):
+    super().__init__(api)
+    self.revision = revision
+
+  @with_wrapper_step
+  def init_trackers_for_candidate_versions(self) -> list[ProfileTrack]:
+    self.profile_trackers = [
+        ProfileTrack(None, track, self.revision) for track in COMPILATORS
+    ]
 
 
 class VersionTagBuilder(BaseProfileBuilder):
@@ -511,7 +532,6 @@ class VersionTagBuilder(BaseProfileBuilder):
 
     return [t for t in tags if t[0] not in blocked_versions]
 
-
   def upload_pgo_file(self, tracker):
     self.api.gsutil.upload(
         tracker.profile_out_file,
@@ -556,7 +576,12 @@ class VersionTagBuilder(BaseProfileBuilder):
 
     return blocked_versions
 
-  def update_blocked_version_file(self, failed_versions):
+  @with_wrapper_step
+  def report_exceptions(self):
+    failed_versions = {t.version for t in self.failed_profile_trackers}
+    if not failed_versions:
+      return
+
     blocked = self.download_blocked_versions()
     build_failure = {
         "build": self.api.buildbucket.build_url(),
@@ -584,7 +609,7 @@ class VersionTagBuilder(BaseProfileBuilder):
         name=f'upload {BLOCKLIST_FILE}')
 
   @with_wrapper_step
-  def init_trackers_for_candidate_versions(self) -> list[VersionProfileTrack]:
+  def init_trackers_for_candidate_versions(self) -> list[ProfileTrack]:
     tags = self.select_tags_without_profiles()
     tags = self.filter_tags_by_cutoff(tags, self.version_number_cutoff)
     tags = self.filter_blocked_tags(tags)
@@ -598,8 +623,7 @@ class VersionTagBuilder(BaseProfileBuilder):
     self.profile_trackers = []
     for version, revision in tags:
       for track in COMPILATORS:
-        self.profile_trackers.append(
-            VersionProfileTrack(version, track, revision))
+        self.profile_trackers.append(ProfileTrack(version, track, revision))
 
   @with_wrapper_step
   def upload_to_gs(self):
@@ -777,6 +801,30 @@ def GenTests(api):
       'basic',
       *mock_compilation(['1.1.2.0', '1.1.1.4'], all_tracks),
       *mock_profiles(['1.1.2.0', '1.1.1.4'], all_tracks),
+  )
+
+  yield api.test(
+      'ci',
+      api.buildbucket.ci_build(revision='c0ffee15'),
+      *mock_compilation(['c0ffee15'], all_tracks),
+      *mock_profiles(['c0ffee15'], all_tracks),
+      api.post_process(
+          MustRun,
+          'trigger compilators.c0ffee15 x64',
+          'download benchmark code',
+          'collect compilation isolates.c0ffee15 x64',
+          'merge isolate with benchmark.c0ffee15 x64',
+          'trigger profilers.c0ffee15 x64',
+          'validate profiles.read profile for c0ffee15 x64',
+      ),
+      api.post_process(
+          DoesNotRun,
+          'upload to gs',
+          'assign pgo tags',
+          'add_comment_to_gerrit_changes',
+          'report exceptions.gsutil upload blocked-versions.txt',
+      ),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
