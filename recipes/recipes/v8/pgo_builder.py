@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from abc import ABC, abstractmethod
 from collections import defaultdict
 import contextlib
 from functools import cached_property
@@ -144,7 +145,8 @@ PROPERTIES = {
 
 
 def RunSteps(api, max_parallel_versions, version_number_cutoff):
-  return ProfileBuilder(api).run(max_parallel_versions, version_number_cutoff)
+  return VersionTagBuilder(api, max_parallel_versions,
+                           version_number_cutoff).run()
 
 
 def with_wrapper_step(func):
@@ -235,19 +237,16 @@ class VersionProfileTrack:
             f'{self.remote_profile_path}')
 
 
-class ProfileBuilder:
+class BaseProfileBuilder(ABC):
 
   def __init__(self, api):
     self.api = api
     self.profile_trackers = None
     self.perf_code_path = None
 
-  def run(self, max_parallel_versions, version_number_cutoff):
+  def run(self):
     with self.api.context(cwd=self.work_dir):
-      self.init_trackers_for_candidate_versions(
-          max_parallel_versions,
-          version_number_cutoff,
-      )
+      self.init_trackers_for_candidate_versions()
 
       if not self.profile_trackers:
         return result_pb2.RawResult(status=common_pb.SUCCESS)
@@ -283,166 +282,6 @@ class ProfileBuilder:
       groups[t.version].append(t)
     return list(groups.values())
 
-  def get_version_revision(self, lines, pattern) -> set[tuple[str, str]]:
-    versions_revisions = set()
-    for line in lines:
-      match = re.fullmatch(pattern, line)
-      if not match:
-        continue
-      # We add the two groups in reversed order as we retrieve the revision as the
-      # first group and version as the second.
-      versions_revisions.add(match.groups()[::-1])
-    return versions_revisions
-
-  def select_tags_without_profiles(self) -> list[tuple[VersionTuple, str]]:
-    lines = self.api.v8.git_output('ls-remote', '--tags',
-                                   V8_REPO_URL).split('\n')
-
-    all_tags = self.get_version_revision(lines, VERSION_TAG_PATTERN)
-    pgo_tags = self.get_version_revision(lines, PGO_VERSION_TAG_PATTERN)
-
-    tags_without_pgo = list(all_tags - pgo_tags)
-
-    return [(normalize_version(version), revision)
-            for version, revision in tags_without_pgo]
-
-  def filter_tags_by_cutoff(self, tags,
-                            cutoff) -> list[tuple[VersionTuple, str]]:
-    return [t for t in tags if t[0] >= cutoff]
-
-  def filter_max_parallel_tags(self, tags,
-                               parallel) -> list[tuple[VersionTuple, str]]:
-    return sorted(tags, reverse=True)[:parallel]
-
-  def filter_blocked_tags(self, tags) -> list[tuple[VersionTuple, str]]:
-    """Load a blocklist from a storage bucket, and remove blocked versions."""
-    blocked = self.download_blocked_versions()
-    self.api.step.active_result.presentation.logs[
-        'blocked versions'] = self.api.json.dumps(
-            blocked, indent=2)
-
-    blocked_versions = []
-    for version, justification in blocked.items():
-      normalized_version = normalize_version(version)
-
-      # Custom blocking, e.g. {"reason": "crbug.com/40245627"}.
-      if "reason" in justification:
-        blocked_versions.append(normalized_version)
-        continue
-
-      # Blocked due to PGO builder failures, e.g.
-      # {"failures": [{"build": "<build-link>", "time": 1724865633}]}.
-      retry_count = len(justification["failures"]) - 1
-      if retry_count >= len(RETRY_INTERVAL):
-        blocked_versions.append(normalized_version)
-        continue
-
-      first_run = justification["failures"][0]
-      seconds_since = self.api.time.time() - first_run["time"]
-      if RETRY_INTERVAL[retry_count] * 3600 > seconds_since:
-        blocked_versions.append(normalized_version)
-        continue
-
-      if seconds_since > RETRY_TIMEOUT * 3600:
-        blocked_versions.append(normalized_version)
-        continue
-
-    return [t for t in tags if t[0] not in blocked_versions]
-
-  def create_profile_trackers(self,
-                              selected_versions) -> list[VersionProfileTrack]:
-    all_trackers = []
-    for version, revision in selected_versions:
-      for track in COMPILATORS:
-        all_trackers.append(VersionProfileTrack(version, track, revision))
-    return all_trackers
-
-  def upload_pgo_file(self, tracker):
-    self.api.gsutil.upload(
-        tracker.profile_out_file,
-        BUCKET_NAME,
-        tracker.remote_profile_path,
-        name=f'upload {tracker.name}')
-
-  def upload_meta_json(self, tracker_pair):
-    successful_tracks = [t.track for t in tracker_pair if not t.exception]
-    assert successful_tracks, 'Expected tracks, but none found to upload.'
-    self.api.gsutil.upload(
-        self.api.json.input({
-            'version': tracker_pair[0].version,
-            'revision': tracker_pair[0].revision,
-            'profile': successful_tracks,
-            'build_link': self.api.buildbucket.build_url(),
-        }),
-        BUCKET_NAME,
-        f'by-version/{tracker_pair[0].version}/meta.json',
-        name=f'upload metadata {tracker_pair[0].version}')
-
-  def download_blocked_versions(self) -> dict[str, any]:
-    result = self.api.gsutil.cat(
-        BLOCKLIST_PATH, stdout=self.api.raw_io.output())
-    blocked_lines = result.stdout.decode().strip()
-
-    blocked_versions = defaultdict(dict)
-    for line in blocked_lines.split('\n'):
-      if line.startswith('#'):
-        continue
-      if not line:
-        continue
-
-      version, justification = line.split(maxsplit=1)
-      try:
-        blocked_versions[version] = self.api.json.loads(justification)
-      except json.decoder.JSONDecodeError:
-        blocked_versions[version] = {
-            "reason": "Justification cannot be parsed",
-            "original_justification": justification,
-        }
-
-    return blocked_versions
-
-  def update_blocked_version_file(self, failed_versions):
-    blocked = self.download_blocked_versions()
-    build_failure = {
-        "build": self.api.buildbucket.build_url(),
-        "time": self.api.time.time(),
-    }
-
-    for version in failed_versions:
-      blocked[version].setdefault('failures', []).append(build_failure)
-
-    blockfile_lines = []
-    for version, justification in blocked.items():
-      blockfile_lines.append(f'{version} {self.api.json.dumps(justification)}')
-
-    upload_content = self.api.raw_io.input_text('\n'.join([
-        '# If you manually add a version to this list, use the format:',
-        '# <major>.<minor>.<build>.<patch> {"reason": "<Link to CL or bug>"}',
-        '#',
-        '# Example:',
-        '# 12.8.5.0 {"reason": "crbug.com/40245627"}',
-    ] + blockfile_lines))
-    self.api.gsutil.upload(
-        upload_content,
-        BLOCKLIST_BUCKET,
-        BLOCKLIST_FILE,
-        name=f'upload {BLOCKLIST_FILE}')
-
-  @with_wrapper_step
-  def init_trackers_for_candidate_versions(
-      self, max_parallel_versions, version_cutoff) -> list[VersionProfileTrack]:
-    tags = self.select_tags_without_profiles()
-    tags = self.filter_tags_by_cutoff(tags, version_cutoff)
-    tags = self.filter_blocked_tags(tags)
-    tags = self.filter_max_parallel_tags(tags, max_parallel_versions)
-
-    self.api.step.active_result.presentation.logs[
-        'filtered tags'] = self.api.json.dumps(
-            tags, indent=2)
-
-    # TODO(b/353419839): Add the retry attempt number to the profile tracker logs.
-    self.profile_trackers = self.create_profile_trackers(tags)
-
   @with_wrapper_step
   def trigger_compilators(self):
     for tracker in self.healthy_profile_trackers:
@@ -453,24 +292,6 @@ class ProfileBuilder:
             revision=tracker.revision,
             bucket=compilator['bucket'])
         tracker.compilator_handler = h
-
-  def download_benchmark_code(self):
-    with self.api.step.nest('download benchmark code'):
-      self.api.v8.git_output(
-          'clone',
-          '--depth=1',
-          '--filter=blob:none',
-          '--sparse',
-          V8_PERF_REPO_URL,
-      )
-      checkout_path = self.work_dir / 'v8-perf'
-      with self.api.context(cwd=checkout_path):
-        self.api.v8.git_output(
-            'sparse-checkout',
-            'set',
-            JET_STREAM_PATH,
-        )
-        self.perf_code_path = checkout_path / JET_STREAM_PATH
 
   @with_wrapper_step
   def collect_compilation_isolates(self):
@@ -557,6 +378,229 @@ class ProfileBuilder:
           f'Profile from tracker {tracker.name} does not match expected pattern.'
       )
 
+  def download_benchmark_code(self):
+    with self.api.step.nest('download benchmark code'):
+      self.api.v8.git_output(
+          'clone',
+          '--depth=1',
+          '--filter=blob:none',
+          '--sparse',
+          V8_PERF_REPO_URL,
+      )
+      checkout_path = self.work_dir / 'v8-perf'
+      with self.api.context(cwd=checkout_path):
+        self.api.v8.git_output(
+            'sparse-checkout',
+            'set',
+            JET_STREAM_PATH,
+        )
+        self.perf_code_path = checkout_path / JET_STREAM_PATH
+
+  @contextlib.contextmanager
+  def exception_capture(self, tracker):
+    try:
+      yield
+    except Exception as ex:
+      presentation = self.api.step.active_result.presentation
+      presentation.step_text = str(ex)
+      tracker.exception = ex
+
+  @abstractmethod
+  def init_trackers_for_candidate_versions(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def upload_to_gs(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def assign_pgo_tags(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def add_comment_to_gerrit_changes(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def update_blocked_version_file(self, failed_versions):
+    pass  # pragma: no cover
+
+  @with_wrapper_step
+  def report_exceptions(self):
+    failed_versions = {t.version for t in self.profile_trackers if t.exception}
+
+    if not failed_versions:
+      return result_pb2.RawResult(status=common_pb.SUCCESS)
+
+    self.update_blocked_version_file(failed_versions)
+    return result_pb2.RawResult(
+        status=common_pb.FAILURE,
+        summary_markdown='Some versions encounterd exceptions')
+
+
+class VersionTagBuilder(BaseProfileBuilder):
+
+  def __init__(self, api, max_parallel_versions, version_number_cutoff):
+    super().__init__(api)
+    self.max_parallel_versions = max_parallel_versions
+    self.version_number_cutoff = version_number_cutoff
+
+  def get_version_revision(self, lines, pattern) -> set[tuple[str, str]]:
+    versions_revisions = set()
+    for line in lines:
+      match = re.fullmatch(pattern, line)
+      if not match:
+        continue
+      # We add the two groups in reversed order as we retrieve the revision as the
+      # first group and version as the second.
+      versions_revisions.add(match.groups()[::-1])
+    return versions_revisions
+
+  def select_tags_without_profiles(self) -> list[tuple[VersionTuple, str]]:
+    lines = self.api.v8.git_output('ls-remote', '--tags',
+                                   V8_REPO_URL).split('\n')
+
+    all_tags = self.get_version_revision(lines, VERSION_TAG_PATTERN)
+    pgo_tags = self.get_version_revision(lines, PGO_VERSION_TAG_PATTERN)
+
+    tags_without_pgo = list(all_tags - pgo_tags)
+
+    return [(normalize_version(version), revision)
+            for version, revision in tags_without_pgo]
+
+  def filter_tags_by_cutoff(self, tags,
+                            cutoff) -> list[tuple[VersionTuple, str]]:
+    return [t for t in tags if t[0] >= cutoff]
+
+  def filter_max_parallel_tags(self, tags,
+                               parallel) -> list[tuple[VersionTuple, str]]:
+    return sorted(tags, reverse=True)[:parallel]
+
+  def filter_blocked_tags(self, tags) -> list[tuple[VersionTuple, str]]:
+    """Load a blocklist from a storage bucket, and remove blocked versions."""
+    blocked = self.download_blocked_versions()
+    self.api.step.active_result.presentation.logs[
+        'blocked versions'] = self.api.json.dumps(
+            blocked, indent=2)
+
+    blocked_versions = []
+    for version, justification in blocked.items():
+      normalized_version = normalize_version(version)
+
+      # Custom blocking, e.g. {"reason": "crbug.com/40245627"}.
+      if "reason" in justification:
+        blocked_versions.append(normalized_version)
+        continue
+
+      # Blocked due to PGO builder failures, e.g.
+      # {"failures": [{"build": "<build-link>", "time": 1724865633}]}.
+      retry_count = len(justification["failures"]) - 1
+      if retry_count >= len(RETRY_INTERVAL):
+        blocked_versions.append(normalized_version)
+        continue
+
+      first_run = justification["failures"][0]
+      seconds_since = self.api.time.time() - first_run["time"]
+      if RETRY_INTERVAL[retry_count] * 3600 > seconds_since:
+        blocked_versions.append(normalized_version)
+        continue
+
+      if seconds_since > RETRY_TIMEOUT * 3600:
+        blocked_versions.append(normalized_version)
+        continue
+
+    return [t for t in tags if t[0] not in blocked_versions]
+
+
+  def upload_pgo_file(self, tracker):
+    self.api.gsutil.upload(
+        tracker.profile_out_file,
+        BUCKET_NAME,
+        tracker.remote_profile_path,
+        name=f'upload {tracker.name}')
+
+  def upload_meta_json(self, tracker_pair):
+    successful_tracks = [t.track for t in tracker_pair if not t.exception]
+    assert successful_tracks, 'Expected tracks, but none found to upload.'
+    self.api.gsutil.upload(
+        self.api.json.input({
+            'version': tracker_pair[0].version,
+            'revision': tracker_pair[0].revision,
+            'profile': successful_tracks,
+            'build_link': self.api.buildbucket.build_url(),
+        }),
+        BUCKET_NAME,
+        f'by-version/{tracker_pair[0].version}/meta.json',
+        name=f'upload metadata {tracker_pair[0].version}')
+
+  def download_blocked_versions(self) -> dict[str, any]:
+    result = self.api.gsutil.cat(
+        BLOCKLIST_PATH, stdout=self.api.raw_io.output())
+    blocked_lines = result.stdout.decode().strip()
+
+    blocked_versions = defaultdict(dict)
+    for line in blocked_lines.split('\n'):
+      if line.startswith('#'):
+        continue
+      if not line:
+        continue
+
+      version, justification = line.split(maxsplit=1)
+      try:
+        blocked_versions[version] = self.api.json.loads(justification)
+      except json.decoder.JSONDecodeError:
+        blocked_versions[version] = {
+            "reason": "Justification cannot be parsed",
+            "original_justification": justification,
+        }
+
+    return blocked_versions
+
+  def update_blocked_version_file(self, failed_versions):
+    blocked = self.download_blocked_versions()
+    build_failure = {
+        "build": self.api.buildbucket.build_url(),
+        "time": self.api.time.time(),
+    }
+
+    for version in failed_versions:
+      blocked[version].setdefault('failures', []).append(build_failure)
+
+    blockfile_lines = []
+    for version, justification in blocked.items():
+      blockfile_lines.append(f'{version} {self.api.json.dumps(justification)}')
+
+    upload_content = self.api.raw_io.input_text('\n'.join([
+        '# If you manually add a version to this list, use the format:',
+        '# <major>.<minor>.<build>.<patch> {"reason": "<Link to CL or bug>"}',
+        '#',
+        '# Example:',
+        '# 12.8.5.0 {"reason": "crbug.com/40245627"}',
+    ] + blockfile_lines))
+    self.api.gsutil.upload(
+        upload_content,
+        BLOCKLIST_BUCKET,
+        BLOCKLIST_FILE,
+        name=f'upload {BLOCKLIST_FILE}')
+
+  @with_wrapper_step
+  def init_trackers_for_candidate_versions(self) -> list[VersionProfileTrack]:
+    tags = self.select_tags_without_profiles()
+    tags = self.filter_tags_by_cutoff(tags, self.version_number_cutoff)
+    tags = self.filter_blocked_tags(tags)
+    tags = self.filter_max_parallel_tags(tags, self.max_parallel_versions)
+
+    self.api.step.active_result.presentation.logs[
+        'filtered tags'] = self.api.json.dumps(
+            tags, indent=2)
+
+    # TODO(b/353419839): Add the retry attempt number to the profile tracker logs.
+    self.profile_trackers = []
+    for version, revision in tags:
+      for track in COMPILATORS:
+        self.profile_trackers.append(
+            VersionProfileTrack(version, track, revision))
+
   @with_wrapper_step
   def upload_to_gs(self):
     for version_trackers in self.healthy_profile_trackers_by_version:
@@ -634,27 +678,6 @@ class ProfileBuilder:
                       ),
                   ])
           })
-
-  @with_wrapper_step
-  def report_exceptions(self):
-    failed_versions = {t.version for t in self.profile_trackers if t.exception}
-
-    if not failed_versions:
-      return result_pb2.RawResult(status=common_pb.SUCCESS)
-
-    self.update_blocked_version_file(failed_versions)
-    return result_pb2.RawResult(
-        status=common_pb.FAILURE,
-        summary_markdown='Some versions encounterd exceptions')
-
-  @contextlib.contextmanager
-  def exception_capture(self, tracker):
-    try:
-      yield
-    except Exception as ex:
-      presentation = self.api.step.active_result.presentation
-      presentation.step_text = str(ex)
-      tracker.exception = ex
 
 
 def GenTests(api):
