@@ -1,0 +1,13 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package recipes.build.perf.crossbench;
+
+message InputProperties {
+  // To run Android end-to-end tests, you must set android_sdk to instruct
+  // the builder to start an Android emulator.
+  // See docs/android_emulator.md for a list of available SDKs.
+  int32 android_sdk = 1;
+}

@@ -1,0 +1,372 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'crossbench', 'url': 'https://chromium.googlesource.com/crossbench'}]",
+      "--revision_mapping_file",
+      "{\"got_revision\": \"crossbench\"}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "crossbench@HEAD"
+    ],
+    "env": {
+      "DEPOT_TOOLS_COLLECT_METRICS": "0",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "bot_update",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"crossbench\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"crossbench\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/crossbench.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"dda01e959115f7b5acaa3fb5a20f3cccc3cba1c3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": null,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"dda01e959115f7b5acaa3fb5a20f3cccc3cba1c3\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#58325}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"crossbench\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"crossbench\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/crossbench.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"dda01e959115f7b5acaa3fb5a20f3cccc3cba1c3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"dda01e959115f7b5acaa3fb5a20f3cccc3cba1c3\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#58325}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "runhooks"
+    ],
+    "cwd": "[START_DIR]/crossbench",
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "gclient runhooks"
+  },
+  {
+    "cmd": [],
+    "name": "Download avd package"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/avd",
+      "-ensure-file",
+      "chromium/tools/android/avd/linux-amd64 latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Download avd package.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/tools/android/avd/linux-amd64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Install android_33_google_apis_x64.textpb"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "install",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_33_google_apis_x64.textpb.Install Android emulator",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "xvfb-run",
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "start",
+      "--no-read-only",
+      "--wipe-data",
+      "--debug-tags",
+      "all",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_33_google_apis_x64.textpb.Start Android emulator: 0",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::adb]/resources/list_devices.py",
+      "['[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb', 'devices']",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_33_google_apis_x64.textpb.List adb devices",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "ps",
+      "aux"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd.List processes before cleaning up",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "pkill",
+      "-9",
+      "-e",
+      "-f",
+      "emulator"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd.Kill emulator cleanup",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "ps",
+      "aux"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd.List processes after cleaning up",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "xvfb-run",
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "start",
+      "--no-read-only",
+      "--wipe-data",
+      "--debug-tags",
+      "all",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_33_google_apis_x64.textpb.Start Android emulator: 1",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::adb]/resources/list_devices.py",
+      "['[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb', 'devices']",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_33_google_apis_x64.textpb.List adb devices (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"014E1F310401C009\"@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Install android_33_google_apis_x64.textpb.Set up the emulator",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "chmod",
+      "755",
+      "RECIPE[build::perf/crossbench_android].resources/avd_setup.sh"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_33_google_apis_x64.textpb.Set up the emulator.Set execute permission",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "RECIPE[build::perf/crossbench_android].resources/avd_setup.sh",
+      "[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_33_google_apis_x64.textpb.Set up the emulator.avd_setup.sh",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "crossbench/tests/end2end/runner.py",
+      "--adb-device-id=014E1F310401C009",
+      "--adb-path=[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb",
+      "--ignore-tests=desktop"
+    ],
+    "name": "Run Android End2End Tests"
+  },
+  {
+    "cmd": [],
+    "name": "Kill and cleanup avd"
+  },
+  {
+    "cmd": [
+      "ps",
+      "aux"
+    ],
+    "name": "Kill and cleanup avd.List processes before cleaning up",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "pkill",
+      "-9",
+      "-e",
+      "-f",
+      "emulator"
+    ],
+    "name": "Kill and cleanup avd.Kill emulator cleanup",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "ps",
+      "aux"
+    ],
+    "name": "Kill and cleanup avd.List processes after cleaning up",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "uninstall",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb.Uninstall Android emulator",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]
