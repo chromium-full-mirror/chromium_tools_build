@@ -67,7 +67,7 @@ def RunSteps(api, clobber, runner_args):
 
     divider = E2ETestDivider(api, source_dir, builder_config)
     trigger = SwarmingTrigger(api, cas_digest)
-    e2e_stressor = E2ETests(api, source_dir, trigger, builder_config, False,
+    e2e_stressor = E2ETests(api, source_dir, trigger, builder_config,
                             'E2E Tests', divider)
     e2e_stressor.extra_args.extend(
         runner_args.split(' ') if runner_args else [])

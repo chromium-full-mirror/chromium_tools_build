@@ -102,10 +102,10 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     tests = [
         UnitTests(api, source_dir, trigger, builder_config, coverage,
                   'Unit Tests'),
-        InteractionsTests(api, source_dir, trigger, builder_config, coverage,
+        InteractionsTests(api, source_dir, trigger, builder_config,
                           'Interactions Tests'),
-        E2ETests(api, source_dir, trigger, builder_config, coverage,
-                 'E2E Tests', divider),
+        E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests',
+                 divider),
         PerformanceTests(api, source_dir, trigger, builder_config, coverage,
                          'Performance Tests'),
     ]

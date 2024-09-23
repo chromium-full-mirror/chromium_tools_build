@@ -56,9 +56,9 @@ def RunSteps(api, clobber):
     divider = E2ETestDivider(api, source_dir, builder_config, shuffled=True)
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
-        E2ETests(api, source_dir, trigger, builder_config, False, 'E2E Tests',
+        E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests',
                  divider),
-        RepeatE2EShuffledTests(api, source_dir, trigger, builder_config, False,
+        RepeatE2EShuffledTests(api, source_dir, trigger, builder_config,
                                'Repeat E2E Tests', divider),
     ]
 

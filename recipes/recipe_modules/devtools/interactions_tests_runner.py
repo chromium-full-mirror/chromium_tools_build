@@ -18,12 +18,10 @@ class InteractionsTests(ExonerableTests):
                source_dir,
                trigger,
                builder_config,
-               coverage,
                step_name,
                bucket='devtools-frontend-screenshots'):
     self.bucket = bucket
-    super().__init__(api, source_dir, trigger, builder_config, coverage,
-                     step_name)
+    super().__init__(api, source_dir, trigger, builder_config, False, step_name)
 
   def collect(self):
     if self.api.tryserver.is_tryserver:
@@ -50,8 +48,6 @@ class InteractionsTests(ExonerableTests):
         '--swarming-output-file',
         '${ISOLATED_OUTDIR}',
     ] + self.extra_args
-    if self.coverage:
-      command.append('--coverage')
     return [command]
 
   def construct_commands(self):

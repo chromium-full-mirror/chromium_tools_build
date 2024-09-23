@@ -16,10 +16,9 @@ class E2ETests(ExonerableTests):
     prefix = 'shuffled_' if self.divider.shuffled else ''
     return prefix + 'e2e_tests'
 
-  def __init__(self, api, source_dir, trigger, builder_config, coverage,
-               step_name, divider):
-    super().__init__(api, source_dir, trigger, builder_config, coverage,
-                     step_name)
+  def __init__(self, api, source_dir, trigger, builder_config, step_name,
+               divider):
+    super().__init__(api, source_dir, trigger, builder_config, False, step_name)
     self.divider = divider
     if self.divider.shuffled:
       self.extra_args = ['--bail']
