@@ -104,7 +104,7 @@ def RunSteps(api, properties):
       # distinguish, so just assume a deletion and don't try to verify the
       # builder.
       if (properties_file in affected_files and
-          not api.path.exists(properties_file)):
+          not api.path.exists(repo_path / properties_file)):
         continue
       bucket = match.group(2)
       precommit_details_by_builder_dir[builder_dir] = (
