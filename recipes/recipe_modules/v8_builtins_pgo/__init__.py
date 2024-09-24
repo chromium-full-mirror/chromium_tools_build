@@ -1,0 +1,21 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+DEPS = [
+    'chromium_swarming',
+    'depot_tools/gerrit',
+    'depot_tools/gsutil',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cas',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
+    'recipe_engine/time',
+    'v8',
+    'v8_orchestrator',
+    'v8_tests',
+]

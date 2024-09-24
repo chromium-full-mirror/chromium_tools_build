@@ -15,6 +15,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "init trackers for candidate versions.git ls-remote",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -43,31 +55,25 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "init trackers for candidate versions.gsutil cat",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@blocked versions@{}@@@",
       "@@@STEP_LOG_END@blocked versions@@@",
-      "@@@STEP_LOG_LINE@filtered tags@[@@@",
-      "@@@STEP_LOG_LINE@filtered tags@  [@@@",
-      "@@@STEP_LOG_LINE@filtered tags@    [@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      2,@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      0@@@",
-      "@@@STEP_LOG_LINE@filtered tags@    ],@@@",
-      "@@@STEP_LOG_LINE@filtered tags@    \"43ff\"@@@",
-      "@@@STEP_LOG_LINE@filtered tags@  ],@@@",
-      "@@@STEP_LOG_LINE@filtered tags@  [@@@",
-      "@@@STEP_LOG_LINE@filtered tags@    [@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      1,@@@",
-      "@@@STEP_LOG_LINE@filtered tags@      4@@@",
-      "@@@STEP_LOG_LINE@filtered tags@    ],@@@",
-      "@@@STEP_LOG_LINE@filtered tags@    \"cd12\"@@@",
-      "@@@STEP_LOG_LINE@filtered tags@  ]@@@",
-      "@@@STEP_LOG_LINE@filtered tags@]@@@",
+      "@@@STEP_LOG_LINE@filtered tags@1.1.2.0 43ff@@@",
+      "@@@STEP_LOG_LINE@filtered tags@1.1.1.4 cd12@@@",
       "@@@STEP_LOG_END@filtered tags@@@"
     ]
   },
@@ -102,8 +108,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.2.0 x86.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001337\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -112,7 +130,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514000\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -126,17 +145,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001337\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -147,7 +173,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -178,8 +204,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.2.0 x64.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"0-00000000-0000-0000-0000-00000000133a\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -188,7 +226,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514001\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -202,17 +241,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-00000000133a\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -223,7 +269,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -254,8 +300,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.2.0 x86-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"0-00000000-0000-0000-0000-00000000133d\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -264,7 +322,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win32 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win32 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514002\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -278,17 +337,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win32 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win32 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-00000000133d\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -299,7 +365,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -330,8 +396,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.2.0 x64-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001340\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -340,7 +418,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514003\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -354,17 +433,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001340\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -375,7 +461,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -406,8 +492,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.1.4 x86.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001343\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -416,7 +514,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514004\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -430,17 +529,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001343\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -451,7 +557,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -482,8 +588,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.1.4 x64.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001346\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -492,7 +610,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514005\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -506,17 +625,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001346\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -527,7 +653,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -558,8 +684,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.1.4 x86-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001349\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -568,7 +706,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win32 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win32 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514006\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -582,17 +721,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win32 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win32 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001349\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -603,7 +749,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -634,8 +780,20 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger compilators.1.1.1.4 x64-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"0-00000000-0000-0000-0000-00000000134c\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\", \"project\": \"project\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000134c\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -644,7 +802,8 @@
       "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Win64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514007\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -658,17 +817,24 @@
       "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"bucket\": \"ci\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Win64 PGO instrumentation - builder\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"host\": \"chromium.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-00000000134c\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000134c\",@@@",
       "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -679,7 +845,7 @@
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@request@          },@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\",@@@",
@@ -709,6 +875,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "download benchmark code.git clone",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -724,6 +902,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1/v8-perf",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "download benchmark code.git sparse-checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -773,6 +963,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.2.0 x86.install infra/chromium/compilator_watcher.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
@@ -793,6 +995,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.2.0 x86.install infra/chromium/compilator_watcher.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
@@ -826,8 +1040,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_3",
       "TMPDIR": "[CLEANUP]/tmp_tmp_3"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.2.0 x86.compilator steps",
-    "stdin": "\b\u042d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012,\u0012\u0002ci\u001a&V8 Linux PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u042d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00125\n\u0007project\u0012\u0002ci\u001a&V8 Linux PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -887,8 +1113,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_5",
       "TMPDIR": "[CLEANUP]/tmp_tmp_5"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.2.0 x64.compilator steps",
-    "stdin": "\b\u046d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012.\u0012\u0002ci\u001a(V8 Linux64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u046d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00127\n\u0007project\u0012\u0002ci\u001a(V8 Linux64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -948,8 +1186,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_7",
       "TMPDIR": "[CLEANUP]/tmp_tmp_7"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.2.0 x86-rl.compilator steps",
-    "stdin": "\b\u04ad\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012,\u0012\u0002ci\u001a&V8 Win32 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u04ad\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00125\n\u0007project\u0012\u0002ci\u001a&V8 Win32 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -1009,8 +1259,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_9",
       "TMPDIR": "[CLEANUP]/tmp_tmp_9"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.2.0 x64-rl.compilator steps",
-    "stdin": "\b\u04ed\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012,\u0012\u0002ci\u001a&V8 Win64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u04ed\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00125\n\u0007project\u0012\u0002ci\u001a&V8 Win64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -1070,8 +1332,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_11",
       "TMPDIR": "[CLEANUP]/tmp_tmp_11"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.1.4 x86.compilator steps",
-    "stdin": "\b\u052d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012,\u0012\u0002ci\u001a&V8 Linux PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u052d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00125\n\u0007project\u0012\u0002ci\u001a&V8 Linux PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -1131,8 +1405,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_13",
       "TMPDIR": "[CLEANUP]/tmp_tmp_13"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.1.4 x64.compilator steps",
-    "stdin": "\b\u056d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012.\u0012\u0002ci\u001a(V8 Linux64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u056d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00127\n\u0007project\u0012\u0002ci\u001a(V8 Linux64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -1192,8 +1478,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_15",
       "TMPDIR": "[CLEANUP]/tmp_tmp_15"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.1.4 x86-rl.compilator steps",
-    "stdin": "\b\u05ad\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012,\u0012\u0002ci\u001a&V8 Win32 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u05ad\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00125\n\u0007project\u0012\u0002ci\u001a&V8 Win32 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -1253,8 +1551,20 @@
       "TMP": "[CLEANUP]/tmp_tmp_17",
       "TMPDIR": "[CLEANUP]/tmp_tmp_17"
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect compilation isolates.1.1.1.4 x64-rl.compilator steps",
-    "stdin": "\b\u05ed\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012,\u0012\u0002ci\u001a&V8 Win64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "stdin": "\b\u05ed\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u00125\n\u0007project\u0012\u0002ci\u001a&V8 Win64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@All good!@@@",
@@ -1325,6 +1635,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86.read infra revision",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1353,6 +1675,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86.install infra/tools/luci/cas.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
@@ -1373,6 +1707,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86.install infra/tools/luci/cas.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
@@ -1402,6 +1748,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1420,6 +1778,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1440,6 +1810,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1466,6 +1848,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x64.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1484,6 +1878,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x64.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1504,6 +1910,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x64.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1530,6 +1948,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86-rl.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1548,6 +1978,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86-rl.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1568,6 +2010,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x86-rl.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1594,6 +2048,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x64-rl.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1612,6 +2078,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x64-rl.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1632,6 +2110,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.2.0 x64-rl.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1658,6 +2148,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x86.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1676,6 +2178,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x86.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1696,6 +2210,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x86.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1722,6 +2248,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x64.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1740,6 +2278,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x64.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1760,6 +2310,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x64.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1786,6 +2348,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x86-rl.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1804,6 +2378,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x86-rl.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1824,6 +2410,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x86-rl.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1850,6 +2448,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x64-rl.download",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1868,6 +2478,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x64-rl.copy benchmark code",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1888,6 +2510,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "merge isolate with benchmark.1.1.1.4 x64-rl.archive",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1937,6 +2571,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.2.0 x86.install infra/tools/luci/swarming.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
@@ -1957,6 +2603,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.2.0 x86.install infra/tools/luci/swarming.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
@@ -1980,12 +2638,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.2.0 x86.[trigger] pgo profile 1.1.2.0 x86 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1993,7 +2663,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2003,14 +2673,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2071,7 +2746,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -2088,12 +2763,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.2.0 x64.[trigger] pgo profile 1.1.2.0 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2101,7 +2788,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2111,14 +2798,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2179,7 +2871,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=1@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=1@@@"
     ]
   },
   {
@@ -2196,12 +2888,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.2.0 x86-rl.[trigger] pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2209,7 +2913,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2219,14 +2923,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2287,7 +2996,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=2@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=2@@@"
     ]
   },
   {
@@ -2304,12 +3013,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.2.0 x64-rl.[trigger] pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2317,7 +3038,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2327,14 +3048,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2395,7 +3121,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=3@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
     ]
   },
   {
@@ -2412,12 +3138,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.1.4 x86.[trigger] pgo profile 1.1.1.4 x86 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2425,7 +3163,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2435,14 +3173,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2503,7 +3246,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=4@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
     ]
   },
   {
@@ -2520,12 +3263,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.1.4 x64.[trigger] pgo profile 1.1.1.4 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2533,7 +3288,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"5\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2543,14 +3298,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2611,7 +3371,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=5@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
     ]
   },
   {
@@ -2628,12 +3388,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.1.4 x86-rl.[trigger] pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2641,7 +3413,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"6\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2651,14 +3423,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2719,7 +3496,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=6@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
     ]
   },
   {
@@ -2736,12 +3513,24 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "trigger profilers.1.1.1.4 x64-rl.[trigger] pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2749,7 +3538,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"7\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2759,14 +3548,19 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci-hp\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:pgo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.ci-hp:builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -2827,7 +3621,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=7@@@"
+      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
     ]
   },
   {
@@ -2885,6 +3679,18 @@
       "PATH": [
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
     },
     "name": "collect profiles.1.1.2.0 x86.pgo profile 1.1.2.0 x86 on Ubuntu 31.41",
     "~followup_annotations": [
@@ -2964,6 +3770,18 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect profiles.1.1.2.0 x64.pgo profile 1.1.2.0 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -3041,6 +3859,18 @@
       "PATH": [
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
     },
     "name": "collect profiles.1.1.2.0 x86-rl.pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
@@ -3120,6 +3950,18 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect profiles.1.1.2.0 x64-rl.pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -3197,6 +4039,18 @@
       "PATH": [
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
     },
     "name": "collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41",
     "~followup_annotations": [
@@ -3276,6 +4130,18 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect profiles.1.1.1.4 x64.pgo profile 1.1.1.4 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -3353,6 +4219,18 @@
       "PATH": [
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
     },
     "name": "collect profiles.1.1.1.4 x86-rl.pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
@@ -3432,6 +4310,18 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "collect profiles.1.1.1.4 x64-rl.pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -3497,6 +4387,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.2.0 x86",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3515,6 +4417,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.2.0 x64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3533,6 +4447,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.2.0 x86-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3551,6 +4477,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.2.0 x64-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3569,6 +4507,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.1.4 x86",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3587,6 +4537,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.1.4 x64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3605,6 +4567,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.1.4 x86-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3623,6 +4597,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "validate profiles.read profile for 1.1.1.4 x64-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3657,6 +4643,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.2.0 x86",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3677,6 +4675,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.2.0 x64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3697,6 +4707,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.2.0 x86-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3717,6 +4739,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.2.0 x64-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3732,11 +4766,23 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x86\", \"x64\", \"x86-rl\", \"x64-rl\"], \"revision\": \"43ff\", \"version\": \"1.1.2.0\"}",
+      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\", \"profile\": [\"x86\", \"x64\", \"x86-rl\", \"x64-rl\"], \"revision\": \"43ff\", \"version\": \"1.1.2.0\"}",
       "gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload metadata 1.1.2.0",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3757,6 +4803,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.1.4 x86",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3777,6 +4835,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.1.4 x64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3797,6 +4867,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.1.4 x86-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3817,6 +4899,18 @@
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload 1.1.1.4 x64-rl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3832,11 +4926,23 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x86\", \"x64\", \"x86-rl\", \"x64-rl\"], \"revision\": \"cd12\", \"version\": \"1.1.1.4\"}",
+      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\", \"profile\": [\"x86\", \"x64\", \"x86-rl\", \"x64-rl\"], \"revision\": \"cd12\", \"version\": \"1.1.1.4\"}",
       "gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/meta.json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "upload to gs.gsutil upload metadata 1.1.1.4",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3879,6 +4985,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.2-pgo)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3911,6 +5029,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3955,6 +5085,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "add comment to gerrit changes.gerrit retrieve details for 43ff (1.1.2.0)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -3996,13 +5138,25 @@
       "--method",
       "POST",
       "--body",
-      "{\"message\": \"PGO profiles for V8 builtins have been generated in [build  0](https://cr-buildbucket.appspot.com/build/0) for the following tracks:\\n* [x86](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile)\\n* [x64](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile)\\n* [x86-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile)\\n* [x64-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile)\\n\\nIf you suspect an error caused by PGO profiles, [report a bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Client>V8) to the V8 Infra team.\"}"
+      "{\"message\": \"PGO profiles for V8 builtins have been generated in [build  8945511751514863184](https://cr-buildbucket.appspot.com/build/8945511751514863184) for the following tracks:\\n* [x86](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile)\\n* [x64](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile)\\n* [x86-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile)\\n* [x64-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile)\\n\\nIf you suspect an error caused by PGO profiles, [report a bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Client>V8) to the V8 Infra team.\"}"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "add comment to gerrit changes.gerrit add comment to 43ff (1.1.2.0)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -4029,6 +5183,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "add comment to gerrit changes.gerrit retrieve details for cd12 (1.1.1.4)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -4070,13 +5236,25 @@
       "--method",
       "POST",
       "--body",
-      "{\"message\": \"PGO profiles for V8 builtins have been generated in [build  0](https://cr-buildbucket.appspot.com/build/0) for the following tracks:\\n* [x86](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile)\\n* [x64](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile)\\n* [x86-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile)\\n* [x64-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64-rl.profile)\\n\\nIf you suspect an error caused by PGO profiles, [report a bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Client>V8) to the V8 Infra team.\"}"
+      "{\"message\": \"PGO profiles for V8 builtins have been generated in [build  8945511751514863184](https://cr-buildbucket.appspot.com/build/8945511751514863184) for the following tracks:\\n* [x86](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile)\\n* [x64](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile)\\n* [x86-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile)\\n* [x64-rl](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64-rl.profile)\\n\\nIf you suspect an error caused by PGO profiles, [report a bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Client>V8) to the V8 Infra team.\"}"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "add comment to gerrit changes.gerrit add comment to cd12 (1.1.1.4)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
