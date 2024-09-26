@@ -78,13 +78,17 @@ class CompilatorHandler:
 
 
 class ProdCompilatorHandler(CompilatorHandler):
-  def trigger_compilator(self,
+
+  def trigger_compilator(
+      self,
       compilator_name,
       revision=None,
+      project=None,
       bucket=None,
       gerrit_changes=V8OrchestratorApi.INHERIT,
   ):
     """Trigger a compilator build via buildbucket."""
+    project = project or self.api.buildbucket.INHERIT
     bucket = bucket or self.api.buildbucket.INHERIT
     if gerrit_changes == self.api.v8_orchestrator.INHERIT:
       gerrit_changes = self.api.buildbucket.INHERIT
@@ -95,6 +99,7 @@ class ProdCompilatorHandler(CompilatorHandler):
         tags=self.api.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
         properties=dict(revision=revision) if revision else {},
         gerrit_changes=gerrit_changes,
+        project=project,
         bucket=bucket,
         as_shadow_if_parent_is_led=True,
     )

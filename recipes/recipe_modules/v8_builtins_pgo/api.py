@@ -4,7 +4,7 @@
 
 from recipe_engine import recipe_api
 
-from .builders import RevisionBuilder, VersionTagBuilder
+from .builders import CiBuilder, TryBuilder, VersionTagBuilder
 
 
 class V8BuiltinsPgoApi(recipe_api.RecipeApi):
@@ -22,13 +22,16 @@ class V8BuiltinsPgoApi(recipe_api.RecipeApi):
 
   def get_builder(self, max_parallel_versions, version_number_cutoff,
                   compilators):
-    bucket = self.m.buildbucket.build.builder.bucket
     commit_id = self.m.buildbucket.gitiles_commit.id
-
     if commit_id:
       commit_id = self.m.buildbucket.gitiles_commit.id
-      return RevisionBuilder(self.m, compilators, commit_id)
+      return CiBuilder(self.m, compilators, commit_id)
 
+    changes = self.m.buildbucket.build.input.gerrit_changes
+    if changes:
+      return TryBuilder(self.m, compilators, changes[0])
+
+    bucket = self.m.buildbucket.build.builder.bucket
     if bucket == 'ci-hp':
       return VersionTagBuilder(self.m, compilators, max_parallel_versions,
                                version_number_cutoff)

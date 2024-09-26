@@ -15,7 +15,7 @@ from RECIPE_MODULES.build.v8_tests import testing as v8testing
 from RECIPE_MODULES.build.v8.v8version import VersionTuple, normalize_version
 
 from .platforms import UnixPlatform, WindowsPlatform
-from .profile_track import ProfileTrack
+from .profile_track import ChangeProfileTrack, RevisionProfileTrack, VersionProfileTrack
 
 JET_STREAM_PATH = 'benchmarks/JetStream2'
 BUCKET_NAME = 'chromium-v8-builtins-pgo'
@@ -43,27 +43,40 @@ PROFILE_PATTERN = (r'(block_hint,\w+(,\d+){3}\n)+'
                    r'(block_count,\w+(,\d+){2}\n)*'
                    r'(builtin_hash,\w+,\-?\d+\n)+')
 
-COMPILATORS = {
-    'x86': {
+COMPILATOR_CAS_INSTANCE = 'projects/chromium-swarm/instances/default_instance'
+
+COMPILATORS = [
+    {
+        'triggered_by': {'ci', 'ci-hp'},
+        'project': 'v8',
         'bucket': 'ci',
-        'builder': 'V8 Linux PGO instrumentation - builder',
-        'platform': UnixPlatform(),
+        'compilators': {
+            'x86': 'V8 Linux PGO instrumentation - builder',
+            'x64': 'V8 Linux64 PGO instrumentation - builder',
+            'x86-rl': 'V8 Win32 PGO instrumentation - builder',
+            'x64-rl': 'V8 Win64 PGO instrumentation - builder',
+        },
+        'profiling_pool': 'chromium.tests',
     },
-    'x64': {
-        'bucket': 'ci',
-        'builder': 'V8 Linux64 PGO instrumentation - builder',
-        'platform': UnixPlatform(),
+    {
+        'triggered_by': {'try'},
+        'project': 'v8',
+        'bucket': 'try',
+        'compilators': {
+            'x86': 'v8_linux_pgo_compile_rel',
+            'x64': 'v8_linux64_pgo_compile_rel',
+            'x86-rl': 'v8_win_pgo_compile_rel',
+            'x64-rl': 'v8_win64_pgo_compile_rel',
+        },
+        'profiling_pool': 'chrome.tests',
     },
-    'x86-rl': {
-        'bucket': 'ci',
-        'builder': 'V8 Win32 PGO instrumentation - builder',
-        'platform': WindowsPlatform(),
-    },
-    'x64-rl': {
-        'bucket': 'ci',
-        'builder': 'V8 Win64 PGO instrumentation - builder',
-        'platform': WindowsPlatform(),
-    },
+]
+
+PLATFORM_BY_TARGET = {
+    'x86': UnixPlatform(),
+    'x64': UnixPlatform(),
+    'x86-rl': WindowsPlatform(),
+    'x64-rl': WindowsPlatform(),
 }
 
 
@@ -95,13 +108,20 @@ class BaseProfileBuilder(ABC):
 
   @cached_property
   def compilators(self):
-    if self.selected_compilator_ids is None:
-      return COMPILATORS
+    triggered_by = self.api.buildbucket.build.builder.bucket
+    bucket_compilators = next(
+        c for c in COMPILATORS if triggered_by in c['triggered_by'])
 
+    compilator_ids = self.selected_compilator_ids
     return {
-        platform: config
-        for platform, config in COMPILATORS.items()
-        if platform in self.selected_compilator_ids
+        platform: {
+            'project': bucket_compilators['project'],
+            'bucket': bucket_compilators['bucket'],
+            'builder': name,
+            'profiling_pool': bucket_compilators['profiling_pool'],
+        }
+        for platform, name in bucket_compilators['compilators'].items()
+        if compilator_ids is None or platform in compilator_ids
     }
 
   def run(self):
@@ -152,11 +172,12 @@ class BaseProfileBuilder(ABC):
     for tracker in self.healthy_profile_trackers:
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         compilator = self.compilators[tracker.track]
-        h = self.orchestrator.trigger_compilator(
+        tracker.compilator_handler = self.orchestrator.trigger_compilator(
             compilator['builder'],
-            revision=tracker.revision,
-            bucket=compilator['bucket'])
-        tracker.compilator_handler = h
+            project=compilator['project'],
+            bucket=compilator['bucket'],
+            **tracker.compilator_kwargs,
+        )
 
   @with_wrapper_step
   def collect_compilation_isolates(self):
@@ -172,8 +193,11 @@ class BaseProfileBuilder(ABC):
     for tracker in self.healthy_profile_trackers:
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         cas_work_dir = self.api.path.mkdtemp()
-        self.api.cas.download('download', tracker.original_cas_digest,
-                              cas_work_dir)
+
+        with self.api.cas.with_instance(COMPILATOR_CAS_INSTANCE):
+          self.api.cas.download('download', tracker.original_cas_digest,
+                                cas_work_dir)
+
         self.api.file.copytree('copy benchmark code', self.perf_code_path,
                                cas_work_dir / 'JetStream2')
         tracker.augmented_cas_digest = self.api.cas.archive(
@@ -187,10 +211,7 @@ class BaseProfileBuilder(ABC):
 
     for tracker in self.healthy_profile_trackers:
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
-        tracker.profile_dir = self.api.path.mkdtemp(
-            f'v{tracker.version}_{tracker.track}')
-
-        platform = self.compilators[tracker.track]['platform']
+        platform = PLATFORM_BY_TARGET[tracker.track]
         task = self.api.chromium_swarming.task(
             name=f'pgo profile {tracker.name}',
             task_output_dir=tracker.profile_dir,
@@ -297,16 +318,33 @@ class BaseProfileBuilder(ABC):
     return result_pb2.RawResult(status=common_pb.FAILURE, summary_markdown=msg)
 
 
-class RevisionBuilder(BaseProfileBuilder):
+class CiBuilder(BaseProfileBuilder):
 
   def __init__(self, api, compilators, revision):
     super().__init__(api, compilators)
     self.revision = revision
 
   @with_wrapper_step
-  def init_trackers_for_candidate_versions(self) -> list[ProfileTrack]:
+  def init_trackers_for_candidate_versions(self):
     self.profile_trackers = [
-        ProfileTrack(None, track, self.revision) for track in self.compilators
+        RevisionProfileTrack(self.api, track, config['profiling_pool'],
+                             self.revision)
+        for track, config in self.compilators.items()
+    ]
+
+
+class TryBuilder(BaseProfileBuilder):
+
+  def __init__(self, api, compilators, change):
+    super().__init__(api, compilators)
+    self.change = change
+
+  @with_wrapper_step
+  def init_trackers_for_candidate_versions(self):
+    self.profile_trackers = [
+        ChangeProfileTrack(self.api, track, config['profiling_pool'],
+                           self.change)
+        for track, config in self.compilators.items()
     ]
 
 
@@ -461,7 +499,7 @@ class VersionTagBuilder(BaseProfileBuilder):
         name=f'upload {BLOCKLIST_FILE}')
 
   @with_wrapper_step
-  def init_trackers_for_candidate_versions(self) -> list[ProfileTrack]:
+  def init_trackers_for_candidate_versions(self):
     tags = self.select_tags_without_profiles()
     tags = self.filter_tags_by_cutoff(tags, self.version_number_cutoff)
     tags = self.filter_blocked_tags(tags)
@@ -476,8 +514,10 @@ class VersionTagBuilder(BaseProfileBuilder):
     # TODO(b/353419839): Add the retry attempt number to the profile tracker logs.
     self.profile_trackers = []
     for version, revision in tags:
-      for track in self.compilators:
-        self.profile_trackers.append(ProfileTrack(version, track, revision))
+      for track, config in self.compilators.items():
+        self.profile_trackers.append(
+            VersionProfileTrack(self.api, track, config['profiling_pool'],
+                                version, revision))
 
   @with_wrapper_step
   def upload_to_gs(self):

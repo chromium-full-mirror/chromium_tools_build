@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from abc import ABC, abstractmethod
+from functools import cached_property
 
-class ProfileTrack:
+
+class BaseProfileTrack(ABC):
   """
   A track is the process of compiling, generating and uploading the profile
   for a single commit on a track (architecture × platform). This process has
@@ -14,18 +17,31 @@ class ProfileTrack:
   properties from every step and passes it to the next one.
   """
 
-  def __init__(self, version, track, revision) -> None:
-    self.version = ('%d.%d.%d.%d' % version) if version else None
+  def __init__(self, api, track, profiling_pool):
+    self.api = api
     self.track = track
-    self.revision = revision
+    self.profiling_pool = profiling_pool
     self.compilator_handler = None
     self.compilator_properties = None
     self.original_cas_digest = None
-    self.profile_dir = None
     self.profile_task = None
     self.exception = None
 
-  @property
+  @cached_property
+  @abstractmethod
+  def id(self):
+    pass  # pragma: no cover
+
+  @cached_property
+  @abstractmethod
+  def name(self):
+    pass  # pragma: no cover
+
+  @cached_property
+  def profile_dir(self):
+    return self.api.path.mkdtemp(self.id)
+
+  @cached_property
   def profile_out_file(self):
     shard_output_dir = self.profile_task.get_task_shard_output_dirs()[0]
     return self.profile_dir / shard_output_dir / 'pgo.profile'
@@ -35,41 +51,93 @@ class ProfileTrack:
     hashes = self.compilator_properties['swarm_hashes']
     self.original_cas_digest = hashes['d8_pgo']
 
-  @property
+  @cached_property
   def test_spec(self):
     return self.compilator_properties['parent_test_spec']
 
-  @property
+  @cached_property
   def swarming_dimensions(self):
     dimensions = self.test_spec['swarming_dimensions']
-    dimensions.update({'pool': 'chromium.tests'})
+    dimensions.update({'pool': self.profiling_pool})
     return dimensions
 
-  @property
+  @cached_property
   def swarming_task_attrs(self):
     return self.test_spec['swarming_task_attrs']
 
   @property
-  def name(self):
-    return f'{self.version or self.revision[:8]} {self.track}'
-
-  @property
   def presentation(self):
-    result = '❌' if self.exception else '✓'
-    if self.version:
-      result += f' {self.version}'
-
-    result += f' {self.revision} {self.track}'
-
     if self.exception:
-      result += f' Failure: {self.exception}'
+      return f'❌ {self.name} Failure: {self.exception}'
 
-    return result
+    return f'✓ {self.name}'
 
-  @property
+  @cached_property
+  @abstractmethod
+  def compilator_kwargs(self):
+    pass  # pragma: no cover
+
+
+class VersionProfileTrack(BaseProfileTrack):
+
+  def __init__(self, api, track, profiling_pool, version, revision):
+    self.version = '%d.%d.%d.%d' % version
+    self.revision = revision
+    super().__init__(api, track, profiling_pool)
+
+  @cached_property
+  def id(self):
+    return f'v{self.version}_{self.track}'
+
+  @cached_property
+  def name(self):
+    return f'{self.version} {self.track}'
+
+  @cached_property
   def remote_profile_path(self):
-    assert self.version, 'The track has no version assigned. No remote profile path exists.'
     return f'by-version/{self.version}/{self.track}.profile'
 
   def get_profile_url(self, bucket):
     return f'https://storage.googleapis.com/{bucket}/{self.remote_profile_path}'
+
+  @cached_property
+  def compilator_kwargs(self):
+    return {'revision': self.revision}
+
+
+class RevisionProfileTrack(BaseProfileTrack):
+
+  def __init__(self, api, track, profiling_pool, revision):
+    self.revision = revision
+    super().__init__(api, track, profiling_pool)
+
+  @cached_property
+  def id(self):
+    return f'r{self.revision}_{self.track}'
+
+  @cached_property
+  def name(self):
+    return f'{self.revision[:8]} {self.track}'
+
+  @cached_property
+  def compilator_kwargs(self):
+    return {'revision': self.revision}
+
+
+class ChangeProfileTrack(BaseProfileTrack):
+
+  def __init__(self, api, track, profiling_pool, change):
+    self.change = change
+    super().__init__(api, track, profiling_pool)
+
+  @cached_property
+  def id(self):
+    return f'c{self.change.change}_{self.change.patchset}_{self.track}'
+
+  @cached_property
+  def name(self):
+    return f'crrev.com/c/{self.change.change}/{self.change.patchset} {self.track}'
+
+  @cached_property
+  def compilator_kwargs(self):
+    return {'gerrit_changes': [self.change]}
