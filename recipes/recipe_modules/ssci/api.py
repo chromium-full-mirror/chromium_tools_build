@@ -28,8 +28,6 @@ class SsciAPI(recipe_api.RecipeApi):
     self.bq_lib_table = props.bq_library_table or "projects/ssci-dev/datasets/depbot/tables/libraries"
     self.targets = props.targets
     self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
-    # Proto3 defaults boolean fields to False
-    self.minimal_spdx = props.minimal_spdx or False
     self.generated_sbom_artifacts = {}
     self.execution_id = ""
     self.build_platform = None
@@ -186,8 +184,8 @@ class SsciAPI(recipe_api.RecipeApi):
       cipd_tool.resolved_version = f"v{desc.pin.instance_id}"
 
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
-                             filename_postfix, chrome_version, minimal_config,
-                             third_party_out, to_rename):
+                             filename_postfix, chrome_version, third_party_out,
+                             to_rename):
 
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
@@ -251,8 +249,7 @@ class SsciAPI(recipe_api.RecipeApi):
                 self.partybot.resolved_version, "-ssci-version",
                 self.ssci_tool.resolved_version, "-output-file", spdx_out,
                 "-chromium-src", src_dir, "-product", product,
-                "-product-version", p_version, "-platform", self.build_platform,
-                minimal_config
+                "-product-version", p_version, "-platform", self.build_platform
             ],
             step_test_data=(lambda: self.m.json.test_api.output(
                 data=[{
@@ -373,11 +370,6 @@ class SsciAPI(recipe_api.RecipeApi):
           self.bq_thirdparty_table
       ], third_party_out, filename, sbom_folder)
 
-      # Determine whether SPDX file should be generated with minimal fields or not
-      minimal_config = "-full-spdx"
-      if self.minimal_spdx:
-        minimal_config = "-minimal-spdx"
-
       futures = []
       if depbot_execution_summary.get("targets") is not None:
         # Handle target specific steps.
@@ -386,7 +378,7 @@ class SsciAPI(recipe_api.RecipeApi):
               self.m.futures.spawn(self._target_specific_steps, target, src_dir,
                                    sbom_bucket, sbom_folder,
                                    sbom_filename_postfix, chrome_version,
-                                   minimal_config, third_party_out, to_rename))
+                                   third_party_out, to_rename))
         for fut in self.m.futures.iwait(futures):
           fut.result()
 
@@ -401,8 +393,8 @@ class SsciAPI(recipe_api.RecipeApi):
         }
         final = self._target_specific_steps(target, src_dir, sbom_bucket,
                                             sbom_folder, sbom_filename_postfix,
-                                            chrome_version, minimal_config,
-                                            third_party_out, to_rename)
+                                            chrome_version, third_party_out,
+                                            to_rename)
 
         self.generated_sbom_artifacts[final].ClearField("target")
         self.generated_sbom_artifacts[final].targets.extend(

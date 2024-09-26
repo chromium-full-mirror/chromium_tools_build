@@ -34,7 +34,10 @@ message InputProperties {
   // version of the SSCI CIPD module to use
   string ssci_version = 8;
 
-  // Whether to generate a minimal version of the SPDX file
+  // Whether to generate a minimal version of the SPDX file.
+  // This currently won't do anything, as minimal support has been removed
+  // from the SSCI tool because the likelihood of us needing to use it is
+  // very low, now we're out of scope for the EO.
   bool minimal_spdx = 9;
 
   // version of the SSCI uploader CIPD binary to use.
