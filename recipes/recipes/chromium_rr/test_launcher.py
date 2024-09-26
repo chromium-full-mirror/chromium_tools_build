@@ -156,37 +156,37 @@ def RunSteps(api, properties):
     if test_info.test_suite not in test_suite_to_tests:
       continue
     test = test_suite_to_tests[test_info.test_suite]
-    for test_name in test_info.test_names:
-      # Construct test cmd, trigger reproducing job in swarming.
-      command = [
-          'vpython3', f'../../{RUNNER_PACKAGE_PATH}/test_runner.py',
-          '--test={0}'.format(test_name),
-          '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
-      ]
-      # TODO(jiesheng): Support other test type for rr test launcher.
-      command.extend(test.raw_cmd)
-      command.extend(WEB_TEST_EXTRA_ARGS)
-      relative_cwd = str(test.relative_cwd)
-      dimensions = {'pool': 'chromium.tests.rr', 'os': 'Linux'}
-      task_input = api.isolate.isolated_tests.get(test.isolate_target)
+    # Construct test cmd, trigger reproducing job in swarming.
+    command = [
+        'vpython3', f'../../{RUNNER_PACKAGE_PATH}/test_runner.py',
+        '--test={0}'.format(test_info.test_name),
+        '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
+    ]
+    # TODO(jiesheng): Support other test type for rr test launcher.
+    command.extend(test.raw_cmd)
+    command.extend(WEB_TEST_EXTRA_ARGS)
+    relative_cwd = str(test.relative_cwd)
+    dimensions = {'pool': 'chromium.tests.rr', 'os': 'Linux'}
+    task_input = api.isolate.isolated_tests.get(test.isolate_target)
 
-      task = api.chromium_swarming.task(
-          name=f'rr tool runner for {test_name} in {test_info.test_suite}',
-          raw_cmd=command,
-          cas_input_root=task_input,
-          service_account=test.spec.service_account,
-          relative_cwd=relative_cwd,
-          cipd_packages=cipd_packages)
+    task = api.chromium_swarming.task(
+        name=f'rr tool runner for '
+        f'{test_info.test_name} in {test_info.test_suite}',
+        raw_cmd=command,
+        cas_input_root=task_input,
+        service_account=test.spec.service_account,
+        relative_cwd=relative_cwd,
+        cipd_packages=cipd_packages)
 
-      task_slice = task.request[0]
-      task_dimensions = task_slice.dimensions
-      task_dimensions.update(dimensions)
-      tags = {'test_suite': [test.canonical_name]}
-      task_slice = task_slice.with_dimensions(**task_dimensions)
-      task.request = task.request.with_slice(0, task_slice).with_tags(tags)
+    task_slice = task.request[0]
+    task_dimensions = task_slice.dimensions
+    task_dimensions.update(dimensions)
+    tags = {'test_suite': [test.canonical_name]}
+    task_slice = task_slice.with_dimensions(**task_dimensions)
+    task.request = task.request.with_slice(0, task_slice).with_tags(tags)
 
-      swarming_tasks.append(task)
-      api.chromium_swarming.trigger_task(task, resultdb=test.spec.resultdb)
+    swarming_tasks.append(task)
+    api.chromium_swarming.trigger_task(task, resultdb=test.spec.resultdb)
 
   # Collect all task result
   task_results = []
@@ -317,11 +317,23 @@ def GenTests(api):
               target_test_infos=[
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
-                      test_names=['test1', 'test2', 'test3'],
+                      test_name='test1',
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_name='test2',
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_name='test3',
                   ),
                   InputProperties.TestInfo(
                       test_suite='blink_web_tests',
-                      test_names=['test3', 'test4'],
+                      test_name='test3',
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_web_tests',
+                      test_name='test4',
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
@@ -398,7 +410,11 @@ def GenTests(api):
               target_test_infos=[
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
-                      test_names=['test1', 'test2'],
+                      test_name='test1',
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_name='test2',
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
@@ -445,7 +461,7 @@ def GenTests(api):
               target_test_infos=[
                   InputProperties.TestInfo(
                       test_suite='blink_web_tests',
-                      test_names=['test1', 'test2'],
+                      test_name='test1',
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
@@ -504,7 +520,7 @@ def GenTests(api):
               target_test_infos=[
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
-                      test_names=['test1', 'test2'],
+                      test_name='test1',
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),
@@ -548,7 +564,11 @@ def GenTests(api):
               target_test_infos=[
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
-                      test_names=['test1', 'test2'],
+                      test_name='test1',
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_name='test2',
                   ),
               ],)),
       api.builder_group.for_current('chromium.fyi'),

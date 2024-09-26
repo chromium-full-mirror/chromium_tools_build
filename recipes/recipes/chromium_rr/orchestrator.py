@@ -50,8 +50,7 @@ def RunSteps(api):
   step_result = api.step('query test data', cmd)
   query_results = step_result.json.output
 
-  builder_to_tests = collections.defaultdict(
-      lambda: collections.defaultdict(list))
+  builder_to_tests = collections.defaultdict(list)
   bug_to_test_num = collections.defaultdict(int)
   test_runner_count = 0
   for query_result in query_results:
@@ -68,11 +67,15 @@ def RunSteps(api):
         flaky_invocation_count < MIN_FLAKY_INVOCATION_COUNT or
         test_runner_count > MAX_TEST_RUNNER_COUNT):
       continue
-    builder_to_tests[builder][test_suite].append(test_name)
+    test_info = InputProperties.TestInfo()
+    test_info.test_suite = test_suite
+    test_info.test_name = test_name
+    test_info.bug_id = bug_id
+    builder_to_tests[builder].append(test_info)
     bug_to_test_num[bug_id] += 1
     test_runner_count += 1
 
-  for builder, test_suites in builder_to_tests.items():
+  for builder, test_infos in builder_to_tests.items():
     # Use hard coded chromium and ci here which is same as the values in
     # test_selection.sql.
     builder_id = builder_common_pb.BuilderID(
@@ -80,10 +83,8 @@ def RunSteps(api):
     properties = api.chromium_polymorphic.get_target_properties(builder_id)
 
     target_test_infos = InputProperties()
-    for test_suite, test_names in test_suites.items():
-      target_test_info = target_test_infos.target_test_infos.add()
-      target_test_info.test_suite = test_suite
-      target_test_info.test_names.extend(test_names)
+    for test_info in test_infos:
+      target_test_infos.target_test_infos.append(test_info)
     properties.update(
         json_format.MessageToDict(
             target_test_infos, preserving_proto_field_name=True))

@@ -10,18 +10,21 @@ package recipes.build.chromium_rr.test_launcher;
 // Next ID: 2
 message InputProperties {
 
-  // Information about tests to run by test suite
+  // Information about the target test to run
   //
   // The runner builder will compile all input test suites and run tests using
   // the rr tool in a runner script.
   //
-  // Next ID: 3
+  // Next ID: 4
   message TestInfo {
-    // The name of test suite for these target tests
+    // The name of test suite for the target test
     string test_suite = 1;
 
-    // The names of target tests
-    repeated string test_names = 2;
+    // The name of target test
+    string test_name = 2;
+
+    // The bug id of target test
+    optional string bug_id = 3;
   }
   repeated TestInfo target_test_infos = 1;
 }
