@@ -82,7 +82,7 @@ def RunSteps(api):
     if builder_spec.archive_apprtc:
       api.webrtc.package_apprtcmobile(build_dir, builder_id)
     if builder_spec.include_cleaner:
-      return api.webrtc.include_cleaner(builder_id)
+      return api.webrtc.include_cleaner(source_dir, builder_id)
 
     tests_to_run = [
         t for t in targets_config.tests_on(builder_id)
