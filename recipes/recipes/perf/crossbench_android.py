@@ -6,8 +6,7 @@ Recipe for running Crossbench's End2End tests on Android.
 '''
 
 from contextlib import contextmanager
-from PB.recipes.build.perf.crossbench import InputProperties
-from recipe_engine import post_process
+from PB.recipes.build.perf.crossbench_android import InputProperties
 
 DEPS = [
     'adb',

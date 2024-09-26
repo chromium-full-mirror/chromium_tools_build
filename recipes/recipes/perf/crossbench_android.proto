@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 syntax = "proto3";
-package recipes.build.perf.crossbench;
+package recipes.build.perf.crossbench_android;
 
 message InputProperties {
   // To run Android end-to-end tests, you must set android_sdk to instruct

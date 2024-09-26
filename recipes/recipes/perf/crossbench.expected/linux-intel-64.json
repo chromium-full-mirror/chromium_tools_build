@@ -208,7 +208,8 @@
       "vpython3",
       "crossbench/tests/end2end/runner.py",
       "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome-linux/chrome",
-      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_linux64/chromedriver"
+      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_linux64/chromedriver",
+      "--ignore-tests=android"
     ],
     "name": "Run End2End Tests"
   },
