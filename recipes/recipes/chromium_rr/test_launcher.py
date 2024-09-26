@@ -151,7 +151,7 @@ def RunSteps(api, properties):
           root='rr_tool',
       )
   ]
-  swarming_tasks = []
+  swarming_tasks_and_test_infos = []
   for test_info in properties.target_test_infos:
     if test_info.test_suite not in test_suite_to_tests:
       continue
@@ -185,16 +185,16 @@ def RunSteps(api, properties):
     task_slice = task_slice.with_dimensions(**task_dimensions)
     task.request = task.request.with_slice(0, task_slice).with_tags(tags)
 
-    swarming_tasks.append(task)
+    swarming_tasks_and_test_infos.append((task, test_info))
     api.chromium_swarming.trigger_task(task, resultdb=test.spec.resultdb)
 
   # Collect all task result
-  task_results = []
-  for task in swarming_tasks:
+  task_results_and_test_infos = []
+  for task, test_info in swarming_tasks_and_test_infos:
     task_result, _ = api.chromium_swarming.collect_task(task)
-    task_results.append(task_result)
+    task_results_and_test_infos.append((task_result, test_info))
 
-  for i, task_result in enumerate(task_results):
+  for i, (task_result, test_info) in enumerate(task_results_and_test_infos):
     data = task_result.chromium_swarming.summary['shards'][0]
     # TODO(jiesheng): Update fetch_rdb_results in test_utils api to and use
     # here to get back test results.
@@ -235,7 +235,11 @@ def RunSteps(api, properties):
 
     if found_test_traces:
       cur_date = api.time.utcnow().strftime('%Y-%m-%d-%H:%M:%S')
-      cloud_folder_name = f'test-rr-traces-{cur_date}'
+      if test_info.bug_id:
+        cloud_folder_name = (f'{test_info.bug_id}/{test_info.test_suite}'
+                             f'/test-rr-traces-{cur_date}')
+      else:
+        cloud_folder_name = f'test-rr-traces-{cur_date}'
       api.gsutil.upload(
           traces_out_dir,
           UPLOAD_BUCKET,
@@ -322,10 +326,15 @@ def GenTests(api):
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
                       test_name='test2',
+                      bug_id='123',
                   ),
                   InputProperties.TestInfo(
                       test_suite='blink_wpt_tests',
                       test_name='test3',
+                  ),
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_name='test4',
                   ),
                   InputProperties.TestInfo(
                       test_suite='blink_web_tests',
@@ -346,9 +355,12 @@ def GenTests(api):
                     api.chromium_swarming.summary(None, good_summary_json())),
       api.step_data('rr tool runner for test3 in blink_wpt_tests',
                     api.chromium_swarming.summary(None, good_summary_json())),
+      api.step_data('rr tool runner for test4 in blink_wpt_tests',
+                    api.chromium_swarming.summary(None, good_summary_json())),
       api.resultdb.query(step_name='rdb query', inv_bundle=inv_bundle),
       api.resultdb.query(step_name='rdb query (2)', inv_bundle=inv_bundle),
       api.resultdb.query(step_name='rdb query (3)', inv_bundle=inv_bundle),
+      api.resultdb.query(step_name='rdb query (4)', inv_bundle=inv_bundle),
       api.path.files_exist(
           api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '0' /
           'test_result',
@@ -356,6 +368,12 @@ def GenTests(api):
           api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '1' /
           'test_result',
           api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '1' / TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '0' /
+          'test_result',
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '0' / TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '1' /
+          'test_result',
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '1' / TRACE_FILE,
       ),
       api.post_process(DropExpectation),
   )
