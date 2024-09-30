@@ -86,7 +86,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     if 'checkout_pgo_profiles' not in gclient_apply_configs:
       gclient_apply_configs += ['checkout_pgo_profiles']
     kwargs['gclient_apply_configs'] = gclient_apply_configs
-    return self._binary_size(
+    return self.binary_size(
         binary_size_footer=constants.ANDROID_BINARY_SIZE_FOOTER_KEY,
         diff_func=self._create_diffs_android,
         analysis_cmd_func=self.get_android_size_analysis_command,
@@ -94,7 +94,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         **kwargs)
 
   def fuchsia_binary_size(self):
-    return self._binary_size(
+    return self.binary_size(
         chromium_config='chromium',
         chromium_apply_configs=['mb'],
         gclient_config='chromium',
@@ -109,17 +109,17 @@ class BinarySizeApi(recipe_api.RecipeApi):
                 'Ignore roller errors for Fuchsia.'
         })
 
-  def _binary_size(self,
-                   *,
-                   chromium_config,
-                   chromium_apply_configs=(),
-                   gclient_config,
-                   gclient_apply_configs=(),
-                   binary_size_footer,
-                   diff_func,
-                   analysis_cmd_func,
-                   analysis_warning_statuses,
-                   try_gs_analysis=False):
+  def binary_size(self,
+                  *,
+                  chromium_config,
+                  chromium_apply_configs=(),
+                  gclient_config,
+                  gclient_apply_configs=(),
+                  binary_size_footer,
+                  diff_func,
+                  analysis_cmd_func,
+                  analysis_warning_statuses,
+                  try_gs_analysis=False):
     """Determines the increase in binary size caused by the patch under test.
 
     To do so, this function:
