@@ -21,6 +21,8 @@ the polymorphic builder:
   * lookup_builder_config
 """
 
+import attr
+
 from google.protobuf import json_format
 
 from recipe_engine import recipe_api
@@ -167,10 +169,8 @@ class ChromiumPolymorphicApi(recipe_api.RecipeApi):
     if self._testers is None:
       return target_builder_id, builder_config
 
-    return target_builder_id, ctbc.BuilderConfig.create(
-        builder_config.builder_db,
-        builder_ids=[target_builder_id],
+    target_builder_config = attr.evolve(
+        builder_config,
         builder_ids_in_scope_for_testing=self._testers,
-        include_all_triggered_testers=False,
-        step_api=self.m.step,
-    )
+        include_all_triggered_testers=False)
+    return target_builder_id, target_builder_config
