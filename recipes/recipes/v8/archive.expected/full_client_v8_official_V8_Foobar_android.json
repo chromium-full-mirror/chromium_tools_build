@@ -61,7 +61,8 @@
     },
     "name": "build.compile",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337",
+      "resultdb.instruction.id": "build|compile_repro_instructions"
     },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -233,7 +234,8 @@
     },
     "name": "build (libs).compile",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d",
+      "resultdb.instruction.id": "build_libs|compile_repro_instructions"
     },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"

@@ -799,8 +799,77 @@
     },
     "name": "compile",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337",
+      "resultdb.instruction.id": "compile_repro_instructions"
     }
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "RBE_canonicalize_working_dir": "true",
+      "RBE_correlated_invocations_id": "8945511751514863184",
+      "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"MacArm64 Builder\\\" compile```<br/><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"MacArm64 Builder\\\" compile```<br/>\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"compile instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"compile_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"MacArm64 Builder\\\" compile```<br/><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p webrtc -B ci -b \\\"MacArm64 Builder\\\" compile```<br/>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
   },
   {
     "cmd": [
@@ -1867,7 +1936,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Mac M1 Arm64 12\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"MacArm64 Builder\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:MacArm64 Builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"MacArm64 Builder/0\"}}], \"timestamp\": 1337000006000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Mac M1 Arm64 12\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"compile_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"MacArm64 Builder\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:MacArm64 Builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"MacArm64 Builder/0\"}}], \"timestamp\": 1337000006000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -1884,6 +1953,12 @@
       "@@@STEP_LOG_LINE@input@                        \"deps_revision_overrides\": {@@@",
       "@@@STEP_LOG_LINE@input@                            \"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"@@@",
       "@@@STEP_LOG_LINE@input@                        },@@@",
+      "@@@STEP_LOG_LINE@input@                        \"instruction_dependencies\": [@@@",
+      "@@@STEP_LOG_LINE@input@                            {@@@",
+      "@@@STEP_LOG_LINE@input@                                \"instruction_id\": \"compile_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@input@                                \"invocation_id\": \"build-8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@input@                            }@@@",
+      "@@@STEP_LOG_LINE@input@                        ],@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_build_id\": \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_builder_group\": \"client.webrtc\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_buildername\": \"MacArm64 Builder\",@@@",
