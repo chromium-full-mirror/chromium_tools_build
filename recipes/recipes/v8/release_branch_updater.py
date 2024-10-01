@@ -87,8 +87,7 @@ def update_ref_head(api, channel, revision):
   with api.step.nest(f'Update channel {channel}'):
     api.gclient.set_config('v8')
     api.v8.checkout(revision)
-
-    _git(api, 'push', 'origin', f'{revision}:refs/heads/{channel}')
+    _git(api, 'push', 'origin', f'{revision}:refs/heads/{channel}', '-f')
 
 
 def _git(api, *cmd, **kwargs):
