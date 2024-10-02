@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 12
+// NEXT ID TO USE: 15
 message InputProperties {
   // Backend config
 
@@ -33,6 +33,12 @@ message InputProperties {
   // monitoring/observability
   bool enable_cloud_profiler = 6;
   bool enable_cloud_trace = 7;
+  // Cloud monitoring feature is available only when using the builtin RBE
+  // client. When Siso uses Reclient, Reclient sends metrics to Cloud monitoring
+  // instead.
+  bool enable_cloud_monitoring = 13;
+  // GCP project for Cloud Monitoring.
+  string metrics_project = 14;
 
   // Siso configs passed to Starlark config via `--config`.
   // In chromium, available config can be found at

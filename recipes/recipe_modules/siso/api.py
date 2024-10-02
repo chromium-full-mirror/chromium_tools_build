@@ -4,6 +4,7 @@
 """API for interacting with the siso, experimental build tool."""
 
 import contextlib
+import re
 
 from recipe_engine import recipe_api
 from recipe_engine import step_data
@@ -101,10 +102,30 @@ class SisoApi(recipe_api.RecipeApi):
           '--reapi_instance',
           self._props.reapi_instance,
       ])
-    if self._props.enable_cloud_profiler and not skip_log_upload:
-      cmd.append('--enable_cloud_profiler')
-    if self._props.enable_cloud_trace and not skip_log_upload:
-      cmd.append('--enable_cloud_trace')
+    if not skip_log_upload:
+      if self._props.enable_cloud_profiler:
+        cmd.append('--enable_cloud_profiler')
+      if self._props.enable_cloud_trace:
+        cmd.append('--enable_cloud_trace')
+      # Enable Cloud Monitoring and set relevant options.
+      # The options should be in sync with Reclient.
+      # https://source.chromium.org/chromium/infra/infra_superproject/+/main:build/recipes/recipe_modules/reclient/api.py;l=594-610;drc=6a8613f092a556c9e9554cb5249a2a97e0e4edb8
+      if self._props.enable_cloud_monitoring:
+        cmd.append('--enable_cloud_monitoring')
+        if self._props.metrics_project:
+          cmd.extend(['--metrics_project', self._props.metrics_project])
+        labels = ''
+        builder_id = self.m.buildbucket.build.builder
+        if builder_id.project:
+          labels += 'project=' + re.sub(r'[=,]', '_', builder_id.project) + ','
+        if builder_id.bucket:
+          labels += 'bucket=' + re.sub(r'[=,]', '_', builder_id.bucket) + ','
+        if builder_id.builder:
+          labels += 'builder=' + re.sub(r'[=,]', '_', builder_id.builder) + ','
+        labels += 'source=' + ('led'
+                               if self.m.led.launched_by_led else 'prod') + ','
+        labels += 'tool=siso'
+        cmd.extend(['--metrics_labels', labels])
     if len(self._props.configs) > 0:
       cmd.extend([
           '--config',

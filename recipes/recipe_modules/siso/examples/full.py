@@ -5,6 +5,7 @@
 from recipe_engine import post_process
 
 DEPS = [
+    'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
@@ -90,6 +91,24 @@ def GenTests(api):
       api.siso.properties(enable_cloud_trace=True),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['--enable_cloud_trace']),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'cloud_monitoring',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.buildbucket.ci_build(project='chromium', builder='linux-rel'),
+      api.siso.properties(
+          enable_cloud_monitoring=True,
+          metrics_project='test-metrics-proj',
+      ),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--enable_cloud_monitoring']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--metrics_project', 'test-metrics-proj']),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '--metrics_labels',
+          'project=chromium,bucket=ci,builder=linux-rel,source=prod,tool=siso',
+      ]),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
