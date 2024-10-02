@@ -165,7 +165,6 @@ REQUESTS = [
         tast_expr=None,
         test_args=LACROS_GTEST_ARGS,
         autotest_name='chromium',
-        run_cft=True,
     ),
     gen_skylab_test(
         'm88_gtest_test_args',
