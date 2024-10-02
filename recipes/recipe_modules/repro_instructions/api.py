@@ -41,7 +41,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     self.m.resultdb.update_invocation(
         step_name=step_name,
         instructions=instruction_pb.Instructions(
-            instructions=self._instructions.values()))
+            instructions=self._instructions.values()),
+        raise_on_failure=False)
 
   def create_step_instruction(
       self,
