@@ -180,8 +180,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     compiling_builder_id = chromium.BuilderId.create_for_group(
         builder_config.parent_builder_group, builder_config.parent_buildername)
-    compiling_builder_config = builder_config_module.BuilderConfig.lookup(
-        compiling_builder_id, builder_config.builder_db)
+    compiling_builder_config = attr.evolve(
+        builder_config,
+        builder_ids=[compiling_builder_id],
+        builder_ids_in_scope_for_testing=[builder_id],
+    )
     if compiling_builder_config.execution_mode != ctbc.COMPILE_AND_TEST:
       raise self.m.step.StepFailure(
           f'Unsupported UTR invocation for builder {builder_id} triggered by '
