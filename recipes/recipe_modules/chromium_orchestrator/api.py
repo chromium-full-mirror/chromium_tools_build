@@ -599,10 +599,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       CompilatorOutputProps or None
       RawResult object or None
     """
-    # Copy any instructions from the invocation since these steps are already
-    # tagged from the sub build
-    self.m.repro_instructions.process_sub_build(sub_build)
-
     # This condition should be rare as swarming only propagates
     # cancelations from parent -> child
     if sub_build.status == common_pb.CANCELED:
@@ -612,9 +608,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       raise self.m.step.InfraFailure(
           'Compilator was canceled before the parent orchestrator was canceled.'
       )
-
-    # Update step instructions from the compilator
-    self.m.repro_instructions.update_invocation_instructions()
 
     # Update the invocation so tests will inherit source position from the
     # orchestrator's invocation

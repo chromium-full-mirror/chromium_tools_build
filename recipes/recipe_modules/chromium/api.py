@@ -5,7 +5,6 @@
 import collections
 import collections.abc
 import contextlib
-from collections.abc import Iterable
 import functools
 import hashlib
 import re
@@ -19,12 +18,8 @@ from recipe_engine.config_types import Path
 from . import types as chromium
 from .config import validate_config
 
-from RECIPE_MODULES.build.chromium_tests import steps
-
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-
-from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_instruction
 
 _CR_COMPILE_GUARD_NAME = 'CR_COMPILE_GUARD.txt'
 _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
@@ -396,7 +391,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                  skip_log_upload=False,
                  resource_usage_output_file=None,
                  ninja_invocation_id=None,
-                 include_utr_instruction=False,
                  **kwargs):
     """
     Run ninja with given command and env.
@@ -413,8 +407,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       resource_usage_output_file: File which if provided will record the resource usage
                                  stats related to build step
       ninja_invocation_id: ID of the build invocation of the compile step.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
 
 
     Returns:
@@ -451,7 +443,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     step_test_data = (lambda: self.m.json.test_api.output(
         example_json, name='ninja_info') + self.m.raw_io.test_api.output_text(
             example_failure_output, name='failure_summary'))
-
     try:
       if self.m.siso.enabled:
         # TODO(b/288534744): support ninja_info with Siso.
@@ -464,7 +455,6 @@ class ChromiumApi(recipe_api.RecipeApi):
             name=name,
             step_test_data=step_test_data,
             skip_log_upload=skip_log_upload,
-            post_step_func=self._add_repro_instructions,
             resource_usage_output_file=resource_usage_output_file,
             ninja_invocation_id=ninja_invocation_id,
             **kwargs)
@@ -488,7 +478,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           if ninja_invocation_id:
             ninja_step_result.presentation.tags[
                 'ninja_invocation_id'] = ninja_invocation_id
-          self._add_repro_instructions(ninja_step_result)
     except self.m.step.StepFailure as ex:
       ninja_step_result = ex.result
       if ninja_invocation_id and 'ninja_invocation_id' not in ninja_step_result.presentation.tags:
@@ -514,7 +503,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           retcode=ninja_step_result.retcode)
 
     finally:
-      self.m.repro_instructions.update_invocation_instructions()
       if not self.m.runtime.in_global_shutdown and not skip_log_upload:
         clang_crashreports_script = (
             source_dir / 'tools/clang/scripts/process_crashreports.py')
@@ -598,7 +586,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                                skip_log_upload=False,
                                reclient_extra_env: dict | None = None,
                                ninja_invocation_id=None,
-                               include_utr_instruction=False,
                                **kwargs):
     """
     Run ninja with reclient.
@@ -614,8 +601,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       skip_log_upload: When true skip log uploading.
       reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
       ninja_invocation_id: ID of the build invocation of the compile step.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
 
     Returns:
       A named tuple with the fields
@@ -641,7 +626,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           ninja_env=ninja_env,
           skip_log_upload=skip_log_upload,
           ninja_invocation_id=ninja_invocation_id,
-          include_utr_instruction=include_utr_instruction,
           **kwargs)
       p.build_exit_status = ninja_result.retcode
     return ninja_result
@@ -653,7 +637,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                                   *,
                                   name=None,
                                   ninja_env=None,
-                                  include_utr_instruction=False,
                                   **kwargs):
     """
     Run ninja.
@@ -666,8 +649,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       ninja_log_outdir: Directory of ninja log. (e.g. "out/Release")
       name: Name of compile step.
       ninja_env: Environment for ninja.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
 
     Returns:
       A named tuple with the fields
@@ -683,30 +664,8 @@ class ChromiumApi(recipe_api.RecipeApi):
         ninja_command=ninja_command,
         name=name or 'compile',
         ninja_env=ninja_env,
-        include_utr_instruction=include_utr_instruction,
         **kwargs)
     return ninja_result
-
-  def _add_repro_instructions(self, step_result):
-    # Include instructions with no targets to compile all. This can cause
-    # the instruction to reproduce failures in compile targets that are being
-    # filtered on the builder. This is preferable to plumbing the test names
-    # through compile functions for now
-    utr_instructions = get_utr_instruction(
-        'compile',
-        self.m.buildbucket.build.builder.project,
-        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
-        self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
-        [],
-    )
-    local_instructions = (
-        utr_instructions + '<br/>*To force non-remote services '
-        'append --no-rbe and --no-siso, this will dramatically slow the build*')
-    self.m.repro_instructions.add_step_instruction(
-        step_result,
-        remote_content=utr_instructions,
-        local_content=local_instructions,
-    )
 
   @contextlib.contextmanager
   def guard_compile(self, build_dir: Path, *, suffix=''):
@@ -796,7 +755,6 @@ class ChromiumApi(recipe_api.RecipeApi):
               name=None,
               use_reclient=False,
               reclient_extra_env: dict | None = None,
-              include_utr_instruction: bool = False,
               **kwargs):
     """Return a compile.py invocation.
 
@@ -813,7 +771,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
       resource_usage_output_file (BasePath): Path to the file which will hold stats related
                                             to resource usage while compiling
-      include_utr_instruction: Whether or not to include instructions using utr
 
     Returns:
       A RawResult object with the compile step's status and failure message
@@ -869,7 +826,6 @@ class ChromiumApi(recipe_api.RecipeApi):
             name=name or 'compile',
             reclient_extra_env=reclient_extra_env,
             ninja_invocation_id=ninja_invocation_id,
-            include_utr_instruction=include_utr_instruction,
             **kwargs)
       else:
         ninja_result = self._run_ninja_without_reclient(
@@ -879,7 +835,6 @@ class ChromiumApi(recipe_api.RecipeApi):
             ninja_log_outdir=build_dir,
             name=name or 'compile',
             ninja_invocation_id=ninja_invocation_id,
-            include_utr_instruction=include_utr_instruction,
             **kwargs)
 
     if ninja_result.retcode:

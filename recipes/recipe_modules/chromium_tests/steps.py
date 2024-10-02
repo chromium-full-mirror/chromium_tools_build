@@ -48,6 +48,7 @@ from .resultdb import ResultDB
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import instruction as instruction_pb
 
 from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build.test_utils import util
@@ -2187,57 +2188,50 @@ class SwarmingTest(Test, AbstractSwarmingTest):
   def shards(self) -> int:
     return self.spec.shards
 
-  def _add_instructions(self, suffix: str, include_utr_instruction: bool):
+  def _add_instructions(self, include_utr_instruction: bool):
     """Gets the reproduction instructions to be attached to the invocation"""
 
-    # Attempt to find the last compile for the local step dependency
-    local_dependency = self.api.m.repro_instructions.get_dependency(r'compile')
-
-    remote_instruction = None
-    if include_utr_instruction:
-      remote_instruction = get_utr_instruction(
-          'compile-and-test', self.api.m.buildbucket.build.builder.project,
-          self.api.m.led.shadowed_bucket or
-          self.api.m.buildbucket.build.builder.bucket,
-          self.api.m.buildbucket.build.builder.builder.replace(
-              '-compilator', ''), [self.name])
-
-    task = self._tasks[suffix]
-    self.api.m.repro_instructions.create_step_instruction(
-        self._instructions_tag_for_suffix('step', suffix),
-        f'{self.name} instructions',
-        local_content=task.get_local_instruction(),
-        remote_content=remote_instruction,
-        local_dependency=local_dependency,
-    )
-
-    test_invocations = [
-        inv if '/' not in inv else inv.split('/')[1]
-        for inv in task.get_invocation_names()
-    ]
-
-    if test_invocations:
-      # Escaping the brackets makes the placeholder a constant string of
-      # {{test.tags.test_name}} which will be replaced in milo with the
-      # actual test name
-      filter_arg = f'{self.option_flags.filter_flag}={{{{test.tags.test_name}}}}'
+    for suffix, task in self._tasks.items():
+      remote_instruction = None
       if include_utr_instruction:
         remote_instruction = get_utr_instruction(
-            'compile-and-test',
-            self.api.m.buildbucket.build.builder.project,
+            'compile-and-test', self.api.m.buildbucket.build.builder.project,
             self.api.m.led.shadowed_bucket or
             self.api.m.buildbucket.build.builder.bucket,
             self.api.m.buildbucket.build.builder.builder.replace(
-                '-compilator', ''), [self.name],
-            extra_args=['--', filter_arg])
+                '-compilator', ''), [self.name])
+      self.api.m.repro_instructions.create_step_instruction(
+          self._instructions_tag_for_suffix('step', suffix),
+          f'{self.name} instructions',
+          task.get_local_instruction(),
+          remote_instruction,
+      )
+
+      test_invocations = [
+          inv if '/' not in inv else inv.split('/')[1]
+          for inv in task.get_invocation_names()
+      ]
+
+      if test_invocations:
+        # Escaping the brackets makes the placeholder a constant string of
+        # {{test.tags.test_name}} which will be replaced in milo with the
+        # actual test name
+        filter_arg = f'{self.option_flags.filter_flag}={{{{test.tags.test_name}}}}'
+        if include_utr_instruction:
+          remote_instruction = get_utr_instruction(
+              'compile-and-test',
+              self.api.m.buildbucket.build.builder.project,
+              self.api.m.led.shadowed_bucket or
+              self.api.m.buildbucket.build.builder.bucket,
+              self.api.m.buildbucket.build.builder.builder.replace(
+                  '-compilator', ''), [self.name],
+              extra_args=['--', filter_arg])
         self.api.m.repro_instructions.create_test_result_instruction(
             self._instructions_tag_for_suffix('test', suffix),
             f'{self.name} instructions',
-            test_invocations,
-            local_content=task.get_local_instruction(extra_args=[filter_arg]),
-            remote_content=remote_instruction,
-            local_dependency=local_dependency,
-        )
+            task.get_local_instruction(extra_args=[filter_arg]),
+            remote_instruction,
+            test_invocations=test_invocations)
 
   def did_complete(self, suffix) -> bool:
     return suffix in self._tasks and not self._tasks[
@@ -2573,7 +2567,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         self._tasks[suffix], resultdb=resultdb)
 
     # Add instructions now that we have invocations
-    self._add_instructions(suffix, include_utr_instruction)
+    self._add_instructions(include_utr_instruction)
 
   def run(
       self,

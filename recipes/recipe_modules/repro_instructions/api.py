@@ -5,7 +5,6 @@
 
 from collections.abc import Iterable
 from typing import Any
-import re
 
 from recipe_engine import recipe_api
 from recipe_engine import step_data
@@ -25,14 +24,6 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._instructions = {}
-
-  @property
-  def step_ids(self) -> Iterable[str]:
-    """Get the ids for instructions of the added steps."""
-    return [
-        key for key, value in self._instructions.items()
-        if value.type == instruction_pb.InstructionType.STEP_INSTRUCTION
-    ]
 
   def update_invocation_instructions(
       self, *, step_name: str = 'update invocation instructions') -> None:
@@ -56,10 +47,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       self,
       tag: str,
       description: str,
-      *,
-      local_content: str = None,
-      remote_content: str = None,
-      local_dependency: instruction_pb.InstructionDependency | None = None,
+      local_content: str,
+      remote_content: str,
   ) -> None:
     """Create a reproduction instruction
 
@@ -75,8 +64,6 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         "local" tab
       remote_content: The instruction itself to display to the user for the
         "remote" tab
-      local_dependency: The InstructionDependency the local instructions will
-        require be run before they themselves are invoked
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
@@ -94,8 +81,6 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
           targets=[
               instruction_pb.InstructionTarget.REMOTE,
           ])
-    if local_dependency:
-      local_instruction.dependencies.append(local_dependency)
 
     instruction = instruction_pb.Instruction(
         id=tag,
@@ -112,11 +97,9 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       self,
       tag: str,
       description: str,
+      local_content: str,
+      remote_content: str,
       test_invocations: Iterable[str],
-      *,
-      local_content: str = None,
-      remote_content: str = None,
-      local_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> instruction_pb.Instruction:
     """Create a reproduction instruction
 
@@ -129,14 +112,13 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         instruction in milo will need to have this same value attached to their
         step result
       description: Descriptive name of the instruction
-      test_invocations: Filters the test instruction to only be seen when
-        opening a test with one of the provided invocations.
       local_content: The instruction itself to display to the user for the
         "local" tab
       remote_content: The instruction itself to display to the user for the
         "remote" tab
-      local_dependency: The InstructionDependency the local instructions will
-        require be run before they themselves are invoked
+      test_invocations: If set this will also be used to identify the
+        instruction as a TEST_INSTRUCTION. Filters the test instruction to only
+        be seen when opening a test with the provided invocations
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
@@ -145,8 +127,6 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         targets=[
             instruction_pb.InstructionTarget.LOCAL,
         ])
-    if local_dependency:
-      local_instruction.dependencies.append(local_dependency)
 
     instruction = instruction_pb.Instruction(
         id=tag,
@@ -165,111 +145,4 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
             invocation_ids=instruction_pb.InstructionFilterByInvocationID(
                 invocation_ids=test_invocations)),
     )
-
     self._instructions[tag] = instruction
-
-  def _tag_for_step(self, step_name: str):
-    return f'{step_name.lower()}_repro_instructions'.replace(' ', '_').replace(
-        '(', '').replace(')', '')[:100]
-
-  def add_step_instruction(
-      self,
-      step_result: step_data.StepData,
-      *,
-      local_content: str | None = None,
-      remote_content: str | None = None,
-      local_dependency: instruction_pb.InstructionDependency | None = None,
-  ) -> None:
-    """Adds step instructions for a step using its step result
-
-    Adds any provided local and remote instructions to the invoction. Handles
-    attaching the tag and instruction id. This must be called before the step
-    has been finalized.
-
-    Args:
-      step_result: StepData of the step to add instructions for. Must not be
-        finalized
-      local_content: A string explaining how to reproduce the step locally
-      remote_instruction: A string explaining how to reproduce the step remotely
-      local_dependency: The InstructionDependency the local instructions will
-        require be run before they themselves are invoked
-    """
-    tag = self._tag_for_step(step_result.name)
-    self.create_step_instruction(
-        tag,
-        f'{step_result.name} instructions',
-        local_content=local_content,
-        remote_content=remote_content,
-        local_dependency=local_dependency,
-    )
-    step_result.presentation.tags['resultdb.instruction.id'] = tag
-
-  def process_sub_build(self, sub_build: build_pb2.Build) -> None:
-    """Adds instructions from a sub build
-
-    Adds instructions from another build to the current invocation. This is
-    necessary for instances like compilator where steps from another build are
-    displayed in Milo. These steps are already tagged but the actual
-    instructions are only on the sub build's invocation which need to be
-    retreived to resolve the instruction tag.
-
-    Args:
-      sub_build: The build containing instructions that need to be added to the
-        current build.
-    """
-    inv_name = sub_build.infra.resultdb.invocation
-
-    instructions = self.m.resultdb.get_invocation_instructions(inv_name)
-    for instruction in instructions.instructions:
-      self._instructions[instruction.id] = instruction
-
-  def trigger_properties(
-      self) -> dict[str, Iterable[instruction_pb.InstructionDependency]]:
-    """Provides the instructions on the current build as dependencies in a dict
-
-    The dict provided by this will be digested in get_dependency when provided
-    as an input. This allow instructions to depend on each other from parent
-    and child builds
-    """
-    dependencies = []
-    dep_invocation = 'build-' + str(self.m.buildbucket.build.id)
-    for instruction in self._instructions.values():
-      dependencies.append({
-          'invocation_id': dep_invocation,
-          'instruction_id': instruction.id,
-      })
-    return {'instruction_dependencies': dependencies}
-
-  def get_dependency(
-      self,
-      step_id_re: str,
-  ) -> instruction_pb.InstructionDependency:
-    """Get a dependency for a targeted step potentially from a parent build
-
-    Some instructions depend on an instruction belonging to a parent build
-    such as Tester builders. If the build has a parent id (eg a tester that was
-    triggered by a builder) the parent invocation is checked first. Traverses
-    the id's in reverse order to get the latest step that matches.
-
-    Args:
-      step_id_re: Regex to run against step ids to validate the step
-    """
-    parent_dependencies = self.m.properties.get('instruction_dependencies', [])
-
-    # If we have a parent build try for a step on that invocation
-    for dependency in reversed(parent_dependencies):
-      if ('invocation_id' in dependency and 'instruction_id' in dependency and
-          re.match(step_id_re, dependency['instruction_id'])):
-        return instruction_pb.InstructionDependency(
-            invocation_id=dependency['invocation_id'],
-            instruction_id=dependency['instruction_id'],
-        )
-
-    dep_invocation = 'build-' + str(self.m.buildbucket.build.id)
-    for step_id in reversed(self.step_ids):
-      if re.match(step_id_re, step_id):
-        return instruction_pb.InstructionDependency(
-            invocation_id=dep_invocation,
-            instruction_id=step_id,
-        )
-    return None

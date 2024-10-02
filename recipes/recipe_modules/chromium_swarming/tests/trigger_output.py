@@ -17,14 +17,12 @@ from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
     'task_to_retry': Property(default=None, kind=dict),
-    'none_trigger_output': Property(default=False, kind=bool),
     'expected_value': Property(default=None, kind=str),
     'expected_inv_names': Property(default=None, kind=list),
 }
 
 
-def RunSteps(api, task_to_retry, none_trigger_output, expected_value,
-             expected_inv_names):
+def RunSteps(api, task_to_retry, expected_value, expected_inv_names):
   kwargs = {}
   if task_to_retry:
     class FakeTask:
@@ -33,7 +31,7 @@ def RunSteps(api, task_to_retry, none_trigger_output, expected_value,
     kwargs['task_to_retry'] = FakeTask()
   task = api.chromium_swarming.task(
       name='test-task', cas_input_root='00deadbeef00/size', **kwargs)
-  task._trigger_output = None if none_trigger_output else {
+  task._trigger_output = {
       'tasks': {
           '0': {
               'shard_index': 0,
@@ -52,13 +50,9 @@ def RunSteps(api, task_to_retry, none_trigger_output, expected_value,
           },
       },
   }
-  if not none_trigger_output:
-    api.assertions.assertEqual(
-        ' '.join(t['task_id'] for t in task.trigger_output['tasks'].values()),
-        expected_value)
-  else:
-    # Ensure this property doesn't throw an exception
-    _ = task.trigger_output
+  api.assertions.assertEqual(
+      ' '.join(t['task_id'] for t in task.trigger_output['tasks'].values()),
+      expected_value)
 
   if expected_inv_names:
     api.assertions.assertEqual(task.get_invocation_names(), expected_inv_names)
@@ -99,12 +93,6 @@ def GenTests(api):
               },
           },
           expected_value='10 11 12 93 94'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'none_trigger_output',
-      api.properties(none_trigger_output=True,),
       api.post_process(post_process.DropExpectation),
   )
 

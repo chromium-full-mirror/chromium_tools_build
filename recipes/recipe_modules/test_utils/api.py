@@ -283,8 +283,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
         "retry (with patch)".
       sort_by_shard - if True, trigger tests in descending order by number of
         shards required to run the test. Performance optimization.
-      include_utr_instruction: Whether or not to include UTR reproduction
-        instructions
 
     Returns:
       rdb_results: util.RDBResults instance for test results as reported by RDB
@@ -1060,8 +1058,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
       retry_invalid_shards: If true, attempts to retry shards of swarming tests
                             without valid results.
         triggering retry shards.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
     Returns:
       A tuple of (list of test suites with invalid results,
                   list of test suites which failed including invalid results)
@@ -1162,8 +1158,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
       test_suites: iterable of objects implementing the steps.Test interface.
       retry_failed_shards: If true, attempts to retry failed shards of swarming
                            tests.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
 
     Returns: A tuple (invalid_test_suites, all_failing_test_suites).
       invalid_test_suites: Test suites that do not have valid test results.
@@ -1382,8 +1376,6 @@ class TestGroup:
     Args:
       api - The api object of this module.
       suffix - The test name suffix.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
     """
     raise NotImplementedError()
 

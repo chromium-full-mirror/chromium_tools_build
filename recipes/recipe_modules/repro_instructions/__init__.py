@@ -7,7 +7,6 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/led',
     'recipe_engine/path',
-    'recipe_engine/properties',
     'recipe_engine/resultdb',
     'recipe_engine/step',
 ]
