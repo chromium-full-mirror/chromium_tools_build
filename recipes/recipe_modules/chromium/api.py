@@ -1210,6 +1210,8 @@ class ChromiumApi(recipe_api.RecipeApi):
                  android_version_code=None,
                  android_version_name=None,
                  additional_args=None,
+                 include_instruction=False,
+                 additional_instructions=None,
                  **kwargs):
     """Run an arbitrary mb command.
 
@@ -1230,6 +1232,9 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.c will be used.
       additional_args: Any args to the mb script besides those for setting the
         group, builder and the path to the config file.
+      include_instruction: When true includes instructions to reproduce the step
+      additional_instructions: Additional string to add to the end of the
+        reproduction instruction content
       **kwargs: Additional arguments to be forwarded onto the python API.
     """
     chromium_config = chromium_config or self.c
@@ -1282,7 +1287,43 @@ class ChromiumApi(recipe_api.RecipeApi):
     env.update(self.m.context.env)
 
     with self.m.context(cwd=source_dir, env=env):
-      return self.m.step(name, cmd, **kwargs)
+      step_result = self.m.step(name, cmd, **kwargs)
+
+      instruction_cmd = 'From your Chromium checkout:<br/>'
+      if include_instruction:
+        # Remove swarming targets, luci-auth, and output json. These are all for
+        # automation/running remotely
+        if '--luci-auth' in cmd:
+          cmd.remove('--luci-auth')
+
+        def remove_arg_pair(flag):
+          if flag in cmd:
+            index = cmd.index(flag)
+            del cmd[index:index + 2]
+
+        remove_arg_pair('--json-output')
+        remove_arg_pair('--swarming-targets-file')
+
+        def sanitize_arg(arg):
+          if isinstance(arg, Path):
+            arg = str(self.m.path.relpath(arg, source_dir))
+          if len(arg.split()) > 1:
+            return f'"{arg}"'
+          return arg
+
+        cmd = ' '.join([sanitize_arg(arg) for arg in cmd])
+
+        instruction_cmd += f'```{cmd}```'
+
+        if additional_instructions:
+          instruction_cmd += '<br/>' + additional_instructions
+
+        self.m.repro_instructions.add_step_instruction(
+            step_result,
+            local_content=instruction_cmd,
+        )
+      return step_result
+
 
   @_with_chromium_layout
   def mb_analyze(self,
@@ -1508,6 +1549,12 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     mb_args.append(build_dir)
 
+    additional_instructions = None
+    if gn_args:
+      additional_instructions = (
+          '</br>*Note: The gn_args used in this gen:*<br/><li> ' +
+          '</br><li> '.join([arg for arg in gn_args.split('\n') if arg]))
+
     name = name or 'generate_build_files'
     with self.mb_failure_handler(name):
       result = self.run_mb_cmd(
@@ -1522,12 +1569,15 @@ class ChromiumApi(recipe_api.RecipeApi):
           android_version_name=android_version_name,
           additional_args=mb_args,
           step_test_data=step_test_data,
+          include_instruction=True,
+          additional_instructions=additional_instructions,
           **kwargs)
 
     if isolated_targets:
       result.presentation.logs['swarming-targets-file.txt'] = (
           sorted_isolated_targets)
 
+    self.m.repro_instructions.update_invocation_instructions()
     return gn_args
 
   @_with_chromium_layout

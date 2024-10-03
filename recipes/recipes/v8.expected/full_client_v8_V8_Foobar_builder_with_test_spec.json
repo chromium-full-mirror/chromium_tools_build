@@ -98,15 +98,15 @@
       }
     },
     "name": "build.generate_build_files",
+    "tags": {
+      "resultdb.instruction.id": "buildgenerate_build_files_repro_instructions"
+    },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
       "@@@STEP_LOG_END@json.output[failure_summary]@@@",
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@mjsunit@@@",
-      "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
-      "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
-      "@@@STEP_LOG_END@gn_args@@@"
+      "@@@STEP_LOG_END@swarming-targets-file.txt@@@"
     ]
   },
   {
