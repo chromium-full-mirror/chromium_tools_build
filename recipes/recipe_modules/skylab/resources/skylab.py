@@ -135,6 +135,9 @@ def schedule_skylab_tests(opts):
     _test_args += ' is_cft=True'
     autotest_name = f'tauto.{autotest_name}'
 
+    if opts.strip:
+      _test_args += ' chrome_deploy_strip=True'
+
     if opts.secondary_boards:
       assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
           opts.secondary_lacros_gcs_path), (
@@ -314,6 +317,8 @@ def main(args):
       help='The test arguments to pass to the autotest wrapper.')
   subparser.add_argument(
       '--run-cft', action='store_true', help='Run the test on CFT.')
+  subparser.add_argument(
+      '--strip', action='store_true', help='Strip Chrome before deploy.')
   subparser.set_defaults(func=schedule_skylab_tests)
 
   # Subcommand: read build results.

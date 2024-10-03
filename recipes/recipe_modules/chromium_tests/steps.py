@@ -3129,6 +3129,19 @@ class SkylabTestSpec(TestSpec):
   # For GPU specific args.
   extra_browser_args = attrib(str, default='')
 
+  # TODO(crbug.com/307657497): Remove this spec once all skylab tests are
+  # migrated to CrOS CFT.
+  # This flag turns on CFT for Chromium tests in CrOS lab. See go/cros-cft-site
+  # for more details.
+  run_cft = attrib(bool, default=False)
+
+  # Strip ELF binary symbol before deploying Chrome to ChromeOS devices.
+  # This option make deployed binary have similar size to the real release
+  # build of ChromeOS. It won't impact any test results in theory.
+  # Currently only enabling for disk_usage_tests (b/40671387) to track metrics
+  # of more accurate disk usage of a ChromeOS with target Chrome browser.
+  strip_chrome = attrib(bool, default=False)
+
   @property
   def test_class(self):
     return SkylabTest

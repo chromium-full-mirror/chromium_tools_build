@@ -300,6 +300,9 @@ class SkylabApi(recipe_api.RecipeApi):
 
       cmd.append('--run-cft')
 
+      if test.spec.strip_chrome:
+        cmd.append('--strip')
+
       for retry_shard in retry_shards or []:
         cmd.extend(['--shard-indexes', retry_shard])
 
