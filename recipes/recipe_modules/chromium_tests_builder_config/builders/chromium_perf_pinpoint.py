@@ -235,6 +235,7 @@ _AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
 
 _AddIsolatedTestSpec('mac-laptop_low_end-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec('mac-laptop_high_end-perf', 'mac', 'mac-builder-perf')
+_AddIsolatedTestSpec('mac-intel-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
