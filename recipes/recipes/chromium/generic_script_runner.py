@@ -23,6 +23,7 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/tryserver',
     'recipe_engine/context',
+    'recipe_engine/led',
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/swarming',
@@ -32,8 +33,9 @@ VALIDATORS = proto_validation.Registry()
 
 
 def RunSteps(api, properties):
-  assert not api.tryserver.is_tryserver
-  assert api.swarming.current_server == "https://chromium-swarm.appspot.com"
+  assert api.led.launched_by_led or not api.tryserver.is_tryserver
+  assert api.swarming.current_server in ('https://chromium-swarm.appspot.com',
+                                         'https://chrome-swarming.appspot.com')
   errors = VALIDATORS.validate(properties)
   if errors:
     summary = ['The following errors were found with the input properties:', '']
