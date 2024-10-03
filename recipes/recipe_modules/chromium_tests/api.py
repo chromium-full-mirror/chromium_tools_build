@@ -569,7 +569,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                mb_recursive_lookup=True,
                                mb_write_ide_json=False,
                                override_execution_mode=None,
-                               isolate_output_files_for_coverage=False):
+                               isolate_output_files_for_coverage=False,
+                               include_utr_instruction=False):
     """Runs compile and related steps for given builder.
 
     Allows finer-grained control about exact compile targets used.
@@ -605,6 +606,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         mode.
       isolate_output_files_for_coverage: Whether to also upload all test
         binaries and other required code coverage output files to one hash.
+      include_utr_instruction: Whether or not to include UTR reproduction
+        instructions
 
     Returns:
       A tuple of
@@ -670,7 +673,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         mb_recursive_lookup=mb_recursive_lookup,
         mb_write_ide_json=mb_write_ide_json,
         android_version_code=android_version_code,
-        android_version_name=android_version_name)
+        android_version_name=android_version_name,
+        include_utr_instruction=include_utr_instruction)
 
     if raw_result.status != common_pb.SUCCESS:
       self.m.tryserver.set_compile_failure_tryjob_result()
@@ -1223,6 +1227,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         for path in update_result.fixed_revisions
     }
 
+    properties.update(self.m.repro_instructions.trigger_properties())
+
     properties.update(additional_properties or {})
 
     self.m.chromium_bootstrap.update_trigger_properties(properties)
@@ -1242,7 +1248,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          mb_recursive_lookup=False,
                          mb_write_ide_json=False,
                          android_version_code=None,
-                         android_version_name=None):
+                         android_version_name=None,
+                         include_utr_instruction=False):
     with self.m.chromium.guard_compile(build_dir, suffix=name_suffix):
       _mb_gen = None
       if self.m.chromium.c.project_generator.tool == 'mb':
@@ -1291,12 +1298,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           clean_step_presentation.step_text = 'reason: cleandead unsuccessful'
 
 
-      return self.m.chromium.compile(
+      ret = self.m.chromium.compile(
           source_dir,
           build_dir,
           targets=compile_targets,
           name='compile%s' % name_suffix,
-          use_reclient=use_reclient)
+          use_reclient=use_reclient,
+          include_utr_instruction=include_utr_instruction)
+      if include_utr_instruction:
+        self.m.repro_instructions.update_invocation_instructions()
+      return ret
 
   def download_and_unzip_build(self,
                                build_dir: Path,
@@ -1398,7 +1409,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       update_result: bot_update.Result,
                                       suffix,
                                       *,
-                                      additional_compile_targets=None):
+                                      additional_compile_targets=None,
+                                      include_utr_instruction=False):
     """Builds and isolates test suites in |failing_tests|.
 
     Args:
@@ -1413,6 +1425,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
+      include_utr_instruction: Whether or not to include UTR reproduction
+                               instructions
     Returns:
       A tuple of:
         A RawResult object with the failure message and status or None if
@@ -1438,9 +1452,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     source_dir = update_result.source_root.path
     raw_result = self.run_mb_and_compile(
-        source_dir, build_dir, builder_id, compile_targets,
+        source_dir,
+        build_dir,
+        builder_id,
+        compile_targets,
         [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
-        ' (%s)' % suffix)
+        ' (%s)' % suffix,
+        include_utr_instruction=include_utr_instruction)
     if raw_result:
       # Clobber the bot upon compile failure without patch.
       # See crbug.com/724533 for more detail.
@@ -1545,7 +1563,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     self.m.test_utils.record_suite_statuses(test_suites, 'with patch')
     return culpable_failures
 
-  def _run_tests_with_retries(self, builder_id, task, deapply_changes):
+  def _run_tests_with_retries(self,
+                              builder_id,
+                              task,
+                              deapply_changes,
+                              *,
+                              include_utr_instruction=False):
     """This function runs tests with the CL patched in. On failure, this will
     deapply the patch, rebuild/isolate binaries, and run the failing tests.
 
@@ -1605,8 +1628,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       deapply_changes(task.update_result, task.build_dir)
       raw_result, _ = self.build_and_isolate_failing_tests(
-          task.build_dir, builder_id, task.builder_config, failing_test_suites,
-          task.update_result, 'without patch')
+          task.build_dir,
+          builder_id,
+          task.builder_config,
+          failing_test_suites,
+          task.update_result,
+          'without patch',
+          include_utr_instruction=True)
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result, []
 
@@ -2594,7 +2622,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           compile_targets,
           tests,
           override_execution_mode=ctbc.COMPILE_AND_TEST,
-          isolate_output_files_for_coverage=isolate_output_files_for_coverage)
+          isolate_output_files_for_coverage=isolate_output_files_for_coverage,
+          include_utr_instruction=True)
     else:
 
       def is_source_file(filepath):

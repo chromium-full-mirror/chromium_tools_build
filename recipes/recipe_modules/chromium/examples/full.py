@@ -68,7 +68,8 @@ def RunSteps(api):
         build_dir,
         targets=['All'],
         use_reclient=use_reclient,
-        resource_usage_output_file=resource_usage_output_file)
+        resource_usage_output_file=resource_usage_output_file,
+        include_utr_instruction=True)
 
 
 def GenTests(api):

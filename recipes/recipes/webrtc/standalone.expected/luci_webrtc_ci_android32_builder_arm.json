@@ -1914,7 +1914,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Android32 (R Pixel5)\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"Android32 Builder arm\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:Android32 Builder arm\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Android32 Builder arm/0\"}}], \"timestamp\": 1337000006000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Android32 (R Pixel5)\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"Android32 Builder arm\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:Android32 Builder arm\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Android32 Builder arm/0\"}}], \"timestamp\": 1337000006000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -1931,6 +1931,7 @@
       "@@@STEP_LOG_LINE@input@                        \"deps_revision_overrides\": {@@@",
       "@@@STEP_LOG_LINE@input@                            \"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"@@@",
       "@@@STEP_LOG_LINE@input@                        },@@@",
+      "@@@STEP_LOG_LINE@input@                        \"instruction_dependencies\": [],@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_build_id\": \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_builder_group\": \"client.webrtc\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_buildername\": \"Android32 Builder arm\",@@@",
