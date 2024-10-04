@@ -2384,9 +2384,12 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       #   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#id4
       llvm_profile_file = '${ISOLATED_OUTDIR}/profraw/'
 
+      # Enable the continuous mode for coverage builds only, not PGO. Coverage
+      # builds have isolate_profile_data set and using_pgo *not* set.
+      #
       # TODO(crbug.com/41493392): reenable the continuous mode on Windows once
       # test timeout issues are resolved.
-      if self.isolate_profile_data and not self._dispatches_to_windows():
+      if not using_pgo and not self._dispatches_to_windows():
         # Enable the continuous mode, which is set by adding %c to
         # LLVM_PROFILE_FILE, for coverage builds. The continuous mode causes the
         # instrumentation to update counters in real time instead of flushing

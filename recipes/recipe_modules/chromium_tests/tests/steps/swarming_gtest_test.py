@@ -148,6 +148,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
+      api.pgo(use_pgo=False),
       api.properties(
           isolate_profile_data=True,
           swarm_hashes={
@@ -167,6 +168,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
+      api.pgo(use_pgo=False),
       api.properties(
           isolate_profile_data=True,
           swarm_hashes={
@@ -191,7 +193,7 @@ def GenTests(api):
       ),
       api.pgo(use_pgo=True),
       api.properties(
-          isolate_profile_data=False,
+          isolate_profile_data=True,
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           }),
