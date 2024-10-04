@@ -49,7 +49,7 @@ def RunSteps(api):
       step_name_suffix=' suffix')
   api.file.write_raw('write .siso_deps', build_dir / '.siso_deps', 'siso deps')
   api.chromium_build_perf.recreate_build_dir(source_dir, build_dir)
-  api.chromium_build_perf.recreate_build_dir(source_dir, 'foo')
+  api.chromium_build_perf.recreate_build_dir(source_dir, source_dir / 'foo')
   api.chromium_build_perf.recreate_build_dir(
       source_dir, build_dir, remove_deps_cache=True)
   api.chromium_build_perf.checkout(source_dir, build_dir, 'abcd')

@@ -1577,6 +1577,13 @@ class ChromiumApi(recipe_api.RecipeApi):
       result.presentation.logs['swarming-targets-file.txt'] = (
           sorted_isolated_targets)
 
+    # gn_logs.txt contains debug info for vars with smart defaults. Display
+    # its contents in the build for easy debugging.
+    gn_logs_path = build_dir / 'gn_logs.txt'
+    self.m.path.mock_add_paths(gn_logs_path)
+    if self.m.path.exists(gn_logs_path):
+      self.m.file.read_text('read gn_logs.txt', gn_logs_path)
+
     self.m.repro_instructions.update_invocation_instructions()
     return gn_args
 
