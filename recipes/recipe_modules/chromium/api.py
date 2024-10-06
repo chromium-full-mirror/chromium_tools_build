@@ -321,7 +321,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                        failure_summary,
                        step_name,
                        footer='',
-                       char_limit=700,
+                       char_limit=1000,
                        line_limit=1000):
     """Removes non-vital information from summary and adds markdown.
 
