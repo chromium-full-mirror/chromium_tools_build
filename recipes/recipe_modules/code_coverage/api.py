@@ -1255,7 +1255,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     """ Generates fuzz coverage information. """
     llvm_cov = (
         source_dir / 'third_party/llvm-build/Release+Asserts/bin/llvm-cov')
-    self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
+    self.m.file.chmod('chmod llvm file', llvm_cov, '777')
     output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
     cmd = [
         'vpython3',
