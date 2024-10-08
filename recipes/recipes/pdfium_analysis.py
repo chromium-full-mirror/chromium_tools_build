@@ -57,8 +57,6 @@ def RunSteps(api):
       if 'third_party/' not in f and api.path.exists(input_dir / f)
   ]
   analyzers = [
-      api.tricium.analyzers.INCLUSIVE_LANGUAGE_CHECK,
-      api.tricium.analyzers.HTTPS_CHECK,
       api.tricium.analyzers.OBJECTIVE_C_STYLE,
       api.tricium.analyzers.SPELLCHECKER,
   ]
