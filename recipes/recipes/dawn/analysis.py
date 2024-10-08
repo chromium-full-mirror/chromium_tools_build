@@ -58,7 +58,6 @@ def RunSteps(api):
   ]
   analyzers = [
       api.tricium.analyzers.INCLUSIVE_LANGUAGE_CHECK,
-      api.tricium.analyzers.HTTPS_CHECK,
       api.tricium.analyzers.OBJECTIVE_C_STYLE,
       api.tricium.analyzers.SPELLCHECKER,
   ]
