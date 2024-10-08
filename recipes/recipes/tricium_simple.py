@@ -46,8 +46,6 @@ def RunSteps(api):
     ]
     # TODO(qyearsley): Add Pylint analyzer after debugging.
     analyzers = [
-        api.tricium.analyzers.HTTPS_CHECK,
-        api.tricium.analyzers.INCLUSIVE_LANGUAGE_CHECK,
         api.tricium.analyzers.MOJOM_COMMENTATOR,
         api.tricium.analyzers.OBJECTIVE_C_STYLE,
         api.tricium.analyzers.SPELLCHECKER,
