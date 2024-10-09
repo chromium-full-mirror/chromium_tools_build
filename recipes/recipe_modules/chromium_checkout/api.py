@@ -182,8 +182,28 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       self._report_gclient_config(gclient_config)
 
       with self.m.context(cwd=self.m.context.cwd or self.default_checkout_dir):
+        # The step_name could be duplicated in a build. This is very unlikely
+        # and in this worst case scenario the last step would simply overwrite
+        # earlier ones.
+        step_name = self.m.bot_update.step_name(
+            kwargs.get('patch', True), kwargs.get('suffix', None))
+
+        step_tag = self.m.repro_instructions.tag_for_step(step_name)
         update_result = self.m.bot_update.ensure_checkout(
-            gclient_config=gclient_config, timeout=timeout, **kwargs)
+            gclient_config=gclient_config,
+            timeout=timeout,
+            step_tags={'resultdb.instruction.id': step_tag},
+            **kwargs)
+        instruction = self._get_repro_instruction(
+            gclient_config,
+            update_result.manifest.get('src', {}).get('revision', ''))
+        self.m.repro_instructions.create_step_instruction(
+            step_tag,
+            f'{step_name} instructions',
+            remote_content=instruction,
+            local_content=instruction,
+        )
+        self.m.repro_instructions.update_invocation_instructions()
 
       # HACK(dnj): Remove after 'crbug.com/398105' has landed
       self.m.chromium.set_build_properties(update_result.properties)
@@ -208,6 +228,57 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         gitiles_commit=self.m.buildbucket.build.output.gitiles_commit)
 
     return update_result
+
+  def _get_repro_instruction(self, gclient_config, src_revision) -> str:
+    gclient_config = copy.deepcopy(gclient_config)
+    # The instance is based on the builder bucket users should not match
+    # the builder
+    for solution in gclient_config.solutions:
+      if 'rbe_instance' in solution.custom_vars:
+        solution.custom_vars.pop('rbe_instance')
+
+    # .gclient is python not json, this leads to problems like booleans becoming
+    # true rather than True so it cannot be directly copy/pasted with as_jsonish
+    json_python_replacements = {
+        'true': 'True',
+        'false': 'False',
+        'null': 'None'
+    }
+
+    def replace_json(line):
+      if ':' not in line:
+        return line
+      key, _, value = line.partition(':')
+      stripped = value.strip(' ,')
+      if stripped in json_python_replacements:
+        value = value.replace(stripped, json_python_replacements[stripped])
+
+      return f'{key}:{value}'
+
+    filtered_config = {}
+    jsonish_config = gclient_config.as_jsonish(include_hidden=True)
+    for key in ('solutions', 'target_cpu', 'target_os'):
+      filtered_config[key] = '\n'.join(
+          replace_json(line) for line in self.m.json.dumps(
+              jsonish_config[key], indent=2).split('\n'))
+
+    filtered_config = '\n'.join(
+        [f'{key} = {value}' for key, value in filtered_config.items()])
+
+    lines = []
+    lines.append('To update your local checkout ensure the following '
+                 'solution(s) are in your .gclient file:')
+
+    lines.append(f'\n```\n{filtered_config}\n```\n')
+
+    lines.append('To test at the same revision as this builder run:')
+    lines.append(
+        f'```git fetch | git checkout {src_revision} | gclient sync```')
+    lines.append('')
+
+    lines.append('To test at the latest revision run:')
+    lines.append('```git pull | gclient sync```')
+    return '<br/>'.join(lines)
 
   def _report_gclient_config(self, gclient_config):
     # We may need to update revision values to replace revision resolvers with

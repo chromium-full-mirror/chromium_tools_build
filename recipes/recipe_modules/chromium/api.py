@@ -705,10 +705,13 @@ class ChromiumApi(recipe_api.RecipeApi):
     local_instructions = (
         utr_instructions + '<br/>*To force non-remote services '
         'append --no-rbe and --no-siso, this will dramatically slow the build*')
+    dependency = self.m.repro_instructions.get_dependency(r'bot_update')
     self.m.repro_instructions.add_step_instruction(
         step_result,
         remote_content=utr_instructions,
+        remote_dependency=dependency,
         local_content=local_instructions,
+        local_dependency=dependency,
     )
 
   @contextlib.contextmanager

@@ -2194,7 +2194,10 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     local_dependency = self.api.m.repro_instructions.get_dependency(r'compile')
 
     remote_instruction = None
+    remote_dependency = None
     if include_utr_instruction:
+      remote_dependency = self.api.m.repro_instructions.get_dependency(
+          r'bot_update')
       remote_instruction = get_utr_instruction(
           'compile-and-test', self.api.m.buildbucket.build.builder.project,
           self.api.m.led.shadowed_bucket or
@@ -2209,6 +2212,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         local_content=task.get_local_instruction(),
         remote_content=remote_instruction,
         local_dependency=local_dependency,
+        remote_dependency=remote_dependency,
     )
 
     test_invocations = [
@@ -2237,6 +2241,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
             local_content=task.get_local_instruction(extra_args=[filter_arg]),
             remote_content=remote_instruction,
             local_dependency=local_dependency,
+            remote_dependency=remote_dependency,
         )
 
   def did_complete(self, suffix) -> bool:

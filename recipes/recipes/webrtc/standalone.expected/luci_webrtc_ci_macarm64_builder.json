@@ -108,6 +108,9 @@
       }
     },
     "name": "bot_update",
+    "tags": {
+      "resultdb.instruction.id": "bot_update_repro_instructions"
+    },
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -143,6 +146,65 @@
       "@@@STEP_LOG_END@json.output@@@",
       "@@@SET_BUILD_PROPERTY@got_revision@\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"@@@",
       "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#170242}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]/builder",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"LOCAL\"]}, {\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -434,8 +496,8 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"MacArm64 Builder\\\" --config-file tools_webrtc/mb/mb_config.pyl out/MacArm64_Builder```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "name": "update invocation instructions (2)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"LOCAL\"]}, {\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"MacArm64 Builder\\\" --config-file tools_webrtc/mb/mb_config.pyl out/MacArm64_Builder```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -443,6 +505,25 @@
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
       "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
       "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"download_remoteexec_cfg\\\": \\\"True\\\"\\n    },\\n    \\\"deps_file\\\": \\\"DEPS\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://webrtc.googlesource.com/src\\\"\\n  }\\n]\\ntarget_cpu = [\\n  \\\"arm64\\\"\\n]\\ntarget_os = [\\n  \\\"mac\\\"\\n]\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
       "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
@@ -1957,7 +2038,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Mac M1 Arm64 12\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"MacArm64 Builder\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:MacArm64 Builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"MacArm64 Builder/0\"}}], \"timestamp\": 1337000006000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Mac M1 Arm64 12\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"MacArm64 Builder\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:MacArm64 Builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"MacArm64 Builder/0\"}}], \"timestamp\": 1337000006000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -1975,6 +2056,10 @@
       "@@@STEP_LOG_LINE@input@                            \"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"@@@",
       "@@@STEP_LOG_LINE@input@                        },@@@",
       "@@@STEP_LOG_LINE@input@                        \"instruction_dependencies\": [@@@",
+      "@@@STEP_LOG_LINE@input@                            {@@@",
+      "@@@STEP_LOG_LINE@input@                                \"instruction_id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@input@                                \"invocation_id\": \"build-8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@input@                            },@@@",
       "@@@STEP_LOG_LINE@input@                            {@@@",
       "@@@STEP_LOG_LINE@input@                                \"instruction_id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@input@                                \"invocation_id\": \"build-8945511751514863184\"@@@",

@@ -45,7 +45,9 @@ def RunSteps(api, ignore_input_commit, set_output_commit):
 
   api.chromium_checkout.ensure_checkout(
       ignore_input_commit=ignore_input_commit,
-      set_output_commit=set_output_commit)
+      set_output_commit=set_output_commit,
+      patch=False,
+      suffix='foo')
 
   api.step('details', [])
   api.step.active_result.presentation.logs['details'] = [

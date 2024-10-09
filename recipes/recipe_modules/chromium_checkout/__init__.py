@@ -1,3 +1,7 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 from PB.recipe_modules.build.chromium_checkout import properties
 
 DEPS = [
@@ -17,6 +21,7 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
     'reclient',
+    'repro_instructions',
 ]
 
 PROPERTIES = properties.InputProperties

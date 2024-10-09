@@ -150,6 +150,9 @@
     },
     "infra_step": true,
     "name": "bot_update",
+    "tags": {
+      "resultdb.instruction.id": "bot_update_repro_instructions"
+    },
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",

@@ -228,6 +228,9 @@
       }
     },
     "name": "bot_update",
+    "tags": {
+      "resultdb.instruction.id": "bot_update_repro_instructions"
+    },
     "timeout": 3600,
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
@@ -376,6 +379,68 @@
     "name": "set_output_gitiles_commit",
     "~followup_annotations": [
       "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/main\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"LOCAL\"]}, {\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -601,14 +666,36 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "name": "update invocation instructions (2)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"LOCAL\"]}, {\"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {},@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"To update your local checkout ensure the following solution(s) are in your .gclient file:<br/>\\n```\\nsolutions = [\\n  {\\n    \\\"custom_deps\\\": {},\\n    \\\"custom_vars\\\": {\\n      \\\"checkout_telemetry_dependencies\\\": \\\"False\\\"\\n    },\\n    \\\"deps_file\\\": \\\".DEPS.git\\\",\\n    \\\"managed\\\": True,\\n    \\\"name\\\": \\\"src\\\",\\n    \\\"revision\\\": None,\\n    \\\"safesync_url\\\": None,\\n    \\\"url\\\": \\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n  }\\n]\\ntarget_cpu = []\\ntarget_os = []\\n```\\n<br/>To test at the same revision as this builder run:<br/>```git fetch | git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789 | gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull | gclient sync```\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@json.input@  },@@@",
       "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",

@@ -61,6 +61,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       local_content: str = None,
       remote_content: str = None,
       local_dependency: instruction_pb.InstructionDependency | None = None,
+      remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> None:
     """Create a reproduction instruction
 
@@ -77,6 +78,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       remote_content: The instruction itself to display to the user for the
         "remote" tab
       local_dependency: The InstructionDependency the local instructions will
+        require be run before they themselves are invoked
+      remote_dependency: The InstructionDependency the remote instructions will
         require be run before they themselves are invoked
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
@@ -97,6 +100,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
           ])
     if local_dependency:
       local_instruction.dependencies.append(local_dependency)
+    if remote_dependency:
+      remote_instruction.dependencies.append(remote_dependency)
 
     instruction = instruction_pb.Instruction(
         id=tag,
@@ -118,6 +123,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       local_content: str = None,
       remote_content: str = None,
       local_dependency: instruction_pb.InstructionDependency | None = None,
+      remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> instruction_pb.Instruction:
     """Create a reproduction instruction
 
@@ -138,6 +144,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         "remote" tab
       local_dependency: The InstructionDependency the local instructions will
         require be run before they themselves are invoked
+      remote_dependency: The InstructionDependency the remote instructions will
+        require be run before they themselves are invoked
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
@@ -149,19 +157,19 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     if local_dependency:
       local_instruction.dependencies.append(local_dependency)
 
+    remote_instruction = instruction_pb.TargetedInstruction(
+        content=remote_content,
+        targets=[
+            instruction_pb.InstructionTarget.REMOTE,
+        ])
+    if remote_dependency:
+      remote_instruction.dependencies.append(remote_dependency)
+
     instruction = instruction_pb.Instruction(
         id=tag,
         descriptive_name=description[:100],
         type=instruction_pb.InstructionType.TEST_RESULT_INSTRUCTION,
-        targeted_instructions=[
-            instruction_pb.TargetedInstruction(
-                content=remote_content,
-                targets=[
-                    instruction_pb.InstructionTarget.REMOTE,
-                ],
-            ),
-            local_instruction,
-        ],
+        targeted_instructions=[remote_instruction, local_instruction],
         instruction_filter=instruction_pb.InstructionFilter(
             invocation_ids=instruction_pb.InstructionFilterByInvocationID(
                 invocation_ids=test_invocations)),
@@ -169,7 +177,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
 
     self._instructions[tag] = instruction
 
-  def _tag_for_step(self, step_name: str):
+  def tag_for_step(self, step_name: str):
     return f'{step_name.lower()}_repro_instructions'.replace(' ', '_').replace(
         '(', '').replace(')', '').replace('|', '')[:100]
 
@@ -180,6 +188,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       local_content: str | None = None,
       remote_content: str | None = None,
       local_dependency: instruction_pb.InstructionDependency | None = None,
+      remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> None:
     """Adds step instructions for a step using its step result
 
@@ -194,14 +203,17 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       remote_instruction: A string explaining how to reproduce the step remotely
       local_dependency: The InstructionDependency the local instructions will
         require be run before they themselves are invoked
+      remote_dependency: The InstructionDependency the remote instructions will
+        require be run before they themselves are invoked
     """
-    tag = self._tag_for_step(step_result.name)
+    tag = self.tag_for_step(step_result.name)
     self.create_step_instruction(
         tag,
         f'{step_result.name} instructions',
         local_content=local_content,
         remote_content=remote_content,
         local_dependency=local_dependency,
+        remote_dependency=remote_dependency,
     )
     step_result.presentation.tags['resultdb.instruction.id'] = tag
 

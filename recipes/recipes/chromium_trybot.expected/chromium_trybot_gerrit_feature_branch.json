@@ -116,6 +116,9 @@
       }
     },
     "name": "bot_update",
+    "tags": {
+      "resultdb.instruction.id": "bot_update_repro_instructions"
+    },
     "timeout": 3600,
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
