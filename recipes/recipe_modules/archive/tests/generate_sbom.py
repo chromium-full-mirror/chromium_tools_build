@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DropExpectation, StepCommandContains, StepEnvContains, StepEnvDoesNotContain, MustRun
+from recipe_engine.post_process import DropExpectation, StepCommandContains, MustRun
 from PB.recipe_modules.build.archive.properties import ArchiveData, SBOMConfig
 
 DEPS = [
@@ -20,9 +20,6 @@ DEPS = [
 def RunSteps(api):
 
   api.gclient.set_config('chromium')
-  api.chromium.set_config(
-      'chromium',
-      TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
 
   update_result = api.bot_update.ensure_checkout()
   source_dir = update_result.source_root.path
@@ -67,9 +64,6 @@ def RunSteps(api):
       report_artifacts=True,
       archived_files={source_dir / 'Release/out/myfile.zip': 'myfile.zip'},
   )
-
-  api.chromium.set_config(
-      'chromium', TARGET_PLATFORM=api.properties.get('target_platform', 'mac'))
 
   api.archive.generate_and_upload_sbom(
       source_dir=source_dir,
@@ -207,8 +201,6 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   },
               })),
-      api.post_process(StepEnvDoesNotContain, "SSCI collection (2).run depbot",
-                       {'FORCE_MAC_TOOLCHAIN': '1'}),
       api.override_step_data(
           "SSCI collection (3).run depbot",
           api.json.output(
@@ -232,8 +224,6 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   },
               })),
-      api.post_process(StepEnvContains, "SSCI collection (3).run depbot",
-                       {'FORCE_MAC_TOOLCHAIN': '1'}),
       api.override_step_data(
           "SSCI collection (4).run depbot",
           api.json.output(
