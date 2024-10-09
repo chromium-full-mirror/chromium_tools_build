@@ -130,6 +130,19 @@ def RunSteps(api, properties):
   with api.context(cwd=checkout_root):
     api.bot_update.deapply_patch(update_result)
 
+  # We need to check the existence of files with and without the patch, but the
+  # path test API doesn't actually support that, so we need to get icky. File
+  # states without the patch will be passed via the *without-patch-mock-paths*
+  # property. To ensure that this can't be used in production, we check if we're
+  # in a test.
+  if api._test_data.enabled:
+    mock_paths = api.properties.get('*without-patch-mock-paths*', {})
+    for file_rel_path, exists in mock_paths.items():
+      if exists:
+        api.path.mock_add_paths(repo_path / file_rel_path)
+      else:
+        api.path.mock_remove_paths(repo_path / file_rel_path)
+
   failures = []
   for builder_dir, starlark_config in starlark_config_by_builder_dir.items():
     precommit_details = precommit_details_by_builder_dir[builder_dir]
@@ -147,11 +160,9 @@ def _get_builder_config(
     api,
     builder_dir: str,
     repo_path: Path,
-    *,
-    require_properties_file: bool,
 ) -> ctbc.BuilderConfig | None:
   properties_json_path = repo_path.joinpath(builder_dir, 'properties.json')
-  if not require_properties_file and not api.path.exists(properties_json_path):
+  if not api.path.exists(properties_json_path):
     return None
 
   properties = api.file.read_json(
@@ -197,10 +208,10 @@ def _get_starlark_config(
     precommit_details: generators.PrecommitDetails | None,
 ) -> targets_config_module.TargetsConfig | None:
   with api.step.nest(builder_dir) as presentation:
-    builder_config = _get_builder_config(
-        api, builder_dir, repo_path, require_properties_file=True)
+    builder_config = _get_builder_config(api, builder_dir, repo_path)
     if not builder_config:
-      skip_reason = f'{_CTBC_PROPERTY} is not set, nothing to verify'
+      skip_reason = (
+          "builder doesn't have bootstrapped builder config, can't verify")
     elif not builder_config.targets_spec_directory:
       skip_reason = (f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
                      ' nothing to verify')
@@ -231,8 +242,7 @@ def _verify_target_configs(
       presentation.step_text = '\n' + message
       return True
 
-    builder_config = _get_builder_config(
-        api, builder_dir, repo_path, require_properties_file=False)
+    builder_config = _get_builder_config(api, builder_dir, repo_path)
     if not builder_config:
       return success(
           "builder didn't have bootstrapped builder config without patch,"
@@ -387,10 +397,11 @@ def GenTests(api):
       non_existent_tester_group: str | None = None,
       try_bucket: str | None = None,
       try_builder: str | None = None,
+      with_properties_file: bool = True,
       with_ctbc_property: bool = True,
       with_targets_spec_directory: bool = True,
       with_properties_file_without_patch: bool = True,
-      with_targets_spec_directory_without_patch=False,
+      with_targets_spec_directory_without_patch: bool = False,
       starlark_targets_spec: dict | None = None,
       testing_buildbot_targets_spec: dict | None = None,
   ) -> recipe_test_api.StepTestData:
@@ -462,57 +473,66 @@ def GenTests(api):
 
     existing_paths = []
 
-    if with_ctbc_property:
-      if try_bucket:
-        ctbc_prop = ctbc_api.properties_assembler_for_try_builder(
-        ).with_mirrored_builder(
-            bucket=bucket,
-            builder=builder,
-            builder_group=builder_group,
-            builder_spec=ctbc.BuilderSpec.create(
-                gclient_config='chromium',
-                chromium_config='chromium',
-                chromium_apply_config=['mb'],
-            ),
-        )
-      else:
-        ctbc_prop = ctbc_api.properties_assembler_for_ci_builder(
-            bucket=bucket,
-            builder=builder,
-            builder_group=builder_group,
-            builder_spec=ctbc.BuilderSpec.create(
-                gclient_config='chromium',
-                chromium_config='chromium',
-                chromium_apply_config=['mb'],
-            ),
-        )
-        if non_existent_tester_group:
-          ctbc_prop.with_tester(
+    if with_properties_file:
+      existing_paths.append(api.path.cache_dir /
+                            f'builder/src/{builder_dir}/properties.json')
+      if with_ctbc_property:
+        if try_bucket:
+          ctbc_prop = ctbc_api.properties_assembler_for_try_builder(
+          ).with_mirrored_builder(
               bucket=bucket,
-              builder=non_existent_tester,
-              builder_group=non_existent_tester_group,
+              builder=builder,
+              builder_group=builder_group,
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_apply_config=['mb'],
+              ),
           )
-      if with_targets_spec_directory:
-        if with_properties_file_without_patch:
-          existing_paths.append(api.path.cache_dir /
-                                f'builder/src/{builder_dir}/properties.json')
-          if with_targets_spec_directory_without_patch:
-            ctbc_prop = ctbc_prop.with_targets_spec_directory(
-                f'{builder_dir}/targets')
-          t += api.step_data(
-              f'{verify_step}.read properties file',
-              api.file.read_json({
-                  '$build/chromium_tests_builder_config':
-                      json_format.MessageToDict(ctbc_prop.assemble()),
-              }))
-        ctbc_prop = ctbc_prop.with_targets_spec_directory(
-            f'{builder_dir}/targets')
-      t += api.step_data(
-          f'{get_targets_config_step}.read properties file',
-          api.file.read_json({
-              '$build/chromium_tests_builder_config':
-                  json_format.MessageToDict(ctbc_prop.assemble()),
-          }))
+        else:
+          ctbc_prop = ctbc_api.properties_assembler_for_ci_builder(
+              bucket=bucket,
+              builder=builder,
+              builder_group=builder_group,
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_apply_config=['mb'],
+              ),
+          )
+          if non_existent_tester_group:
+            ctbc_prop.with_tester(
+                bucket=bucket,
+                builder=non_existent_tester,
+                builder_group=non_existent_tester_group,
+            )
+        if with_targets_spec_directory:
+          # See note in RunSteps about property
+          t += api.properties(
+              **{
+                  '*without-patch-mock-paths*': {
+                      f'{builder_dir}/properties.json':
+                          with_properties_file_without_patch
+                  }
+              })
+          if with_properties_file_without_patch:
+            if with_targets_spec_directory_without_patch:
+              ctbc_prop = ctbc_prop.with_targets_spec_directory(
+                  f'{builder_dir}/targets')
+            t += api.step_data(
+                f'{verify_step}.read properties file',
+                api.file.read_json({
+                    '$build/chromium_tests_builder_config':
+                        json_format.MessageToDict(ctbc_prop.assemble()),
+                }))
+          ctbc_prop = ctbc_prop.with_targets_spec_directory(
+              f'{builder_dir}/targets')
+        t += api.step_data(
+            f'{get_targets_config_step}.read properties file',
+            api.file.read_json({
+                '$build/chromium_tests_builder_config':
+                    json_format.MessageToDict(ctbc_prop.assemble()),
+            }))
 
     def read_targets_spec(targets_spec, step_prefix):
       return api.chromium_tests.read_targets_spec(
@@ -702,6 +722,22 @@ def GenTests(api):
   )
 
   yield api.test(
+      'not-bootstrapped',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          with_properties_file=False,
+      ),
+      api.post_check(
+          post_process.StepTextContains,
+          ('get patched targets configs.'
+           'builder-config-dir/fake-bucket/fake-builder'),
+          ["builder doesn't have bootstrapped builder config, can't verify"]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'no-ctbc-property',
       test_data(
           bucket='fake-bucket',
@@ -709,6 +745,11 @@ def GenTests(api):
           builder_group='fake-group',
           with_ctbc_property=False,
       ),
+      api.post_check(
+          post_process.StepTextContains,
+          ('get patched targets configs.'
+           'builder-config-dir/fake-bucket/fake-builder'),
+          ["builder doesn't have bootstrapped builder config, can't verify"]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -720,6 +761,11 @@ def GenTests(api):
           builder_group='fake-group',
           with_targets_spec_directory=False,
       ),
+      api.post_check(post_process.StepTextContains,
+                     ('get patched targets configs.'
+                      'builder-config-dir/fake-bucket/fake-builder'),
+                     [(f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
+                       ' nothing to verify')]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -731,6 +777,11 @@ def GenTests(api):
           builder_group='fake-group',
           with_properties_file_without_patch=False,
       ),
+      api.post_check(
+          post_process.StepTextContains,
+          'verify builder-config-dir/fake-bucket/fake-builder',
+          [("builder didn't have bootstrapped builder config without patch,"
+            " can't verify")]),
       api.post_process(post_process.DropExpectation),
   )
 
