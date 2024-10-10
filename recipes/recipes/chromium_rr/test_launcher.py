@@ -57,6 +57,8 @@ TRACE_FILE = 'trace.tar'
 
 
 def find_traces(api, target_path, invocation):
+  """Find the first pass run trace and failed run trace from the input result.
+  """
   pass_run_dir = ''
   failed_run_dir = ''
   if not api.path.exists(target_path):
@@ -68,7 +70,7 @@ def find_traces(api, target_path, invocation):
     if api.path.exists(test_trace_file):
       if test_result.status == test_result_pb2.PASS and not pass_run_dir:
         pass_run_dir = f'{dir_path}'
-      if test_result.status == test_result_pb2.FAIL and not failed_run_dir:
+      if test_result.status != test_result_pb2.PASS and not failed_run_dir:
         failed_run_dir = f'{dir_path}'
   return pass_run_dir, failed_run_dir
 
