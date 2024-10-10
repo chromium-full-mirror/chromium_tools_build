@@ -1611,15 +1611,16 @@ class ArchiveApi(recipe_api.RecipeApi):
       sbom_bucket, *sbom_folder = path.split("/", 1)
       sbom_folder = sbom_folder[0] if sbom_folder else '/'
 
-    return self.m.ssci.run(
-        src_dir=source_dir,
-        build_dir=build_dir,
-        chrome_version=chrome_version,
-        sbom_bucket=sbom_bucket,
-        sbom_folder=sbom_folder,
-        targets=gn_targets,
-        archive_name=artifact_name,
-        platform=platform)
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
+      return self.m.ssci.run(
+          src_dir=source_dir,
+          build_dir=build_dir,
+          chrome_version=chrome_version,
+          sbom_bucket=sbom_bucket,
+          sbom_folder=sbom_folder,
+          targets=gn_targets,
+          archive_name=artifact_name,
+          platform=platform)
 
   def _archive_sbom(self,
                     artifact_path: Path,
