@@ -189,21 +189,24 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
             kwargs.get('patch', True), kwargs.get('suffix', None))
 
         step_tag = self.m.repro_instructions.tag_for_step(step_name)
-        update_result = self.m.bot_update.ensure_checkout(
-            gclient_config=gclient_config,
-            timeout=timeout,
-            step_tags={'resultdb.instruction.id': step_tag},
-            **kwargs)
-        instruction = self._get_repro_instruction(
-            gclient_config,
-            update_result.manifest.get('src', {}).get('revision', ''))
-        self.m.repro_instructions.create_step_instruction(
-            step_tag,
-            f'{step_name} instructions',
-            remote_content=instruction,
-            local_content=instruction,
-        )
-        self.m.repro_instructions.update_invocation_instructions()
+        update_result = None
+        try:
+          update_result = self.m.bot_update.ensure_checkout(
+              gclient_config=gclient_config,
+              timeout=timeout,
+              step_tags={'resultdb.instruction.id': step_tag},
+              **kwargs)
+        finally:
+          revision = update_result.manifest.get('src', {}).get(
+              'revision', '') if update_result else ''
+          instruction = self._get_repro_instruction(gclient_config, revision)
+          self.m.repro_instructions.create_step_instruction(
+              step_tag,
+              f'{step_name} instructions',
+              remote_content=instruction,
+              local_content=instruction,
+          )
+          self.m.repro_instructions.update_invocation_instructions()
 
       # HACK(dnj): Remove after 'crbug.com/398105' has landed
       self.m.chromium.set_build_properties(update_result.properties)
@@ -271,10 +274,11 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
     lines.append(f'\n```\n{filtered_config}\n```\n')
 
-    lines.append('To test at the same revision as this builder run:')
-    lines.append(
-        f'```git fetch | git checkout {src_revision} | gclient sync```')
-    lines.append('')
+    if src_revision:
+      lines.append('To test at the same revision as this builder run:')
+      lines.append(
+          f'```git fetch | git checkout {src_revision} | gclient sync```')
+      lines.append('')
 
     lines.append('To test at the latest revision run:')
     lines.append('```git pull | gclient sync```')
