@@ -430,6 +430,11 @@ def checkout_lacros_sdk(c):
 
 
 @CONFIG_CTX()
+def checkout_copybara(c):
+  c.solutions[0].custom_vars['checkout_copybara'] = 'True'
+
+
+@CONFIG_CTX()
 def checkout_bazel(c):
   c.solutions[0].custom_vars['checkout_bazel'] = 'True'
 
