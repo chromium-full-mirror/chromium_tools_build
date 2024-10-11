@@ -1297,7 +1297,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           targets=compile_targets,
           name='compile%s' % name_suffix,
           use_reclient=use_reclient,
-          include_utr_instruction=include_utr_instruction)
+          include_utr_instruction=include_utr_instruction,
+          builder_id=builder_id)
       if include_utr_instruction:
         self.m.repro_instructions.update_invocation_instructions()
       return ret

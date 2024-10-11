@@ -19,6 +19,7 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/time',
     'recipe_engine/uuid',
+    'repro_instructions',
 ]
 
 PROPERTIES = properties.InputProperties

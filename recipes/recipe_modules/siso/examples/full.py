@@ -4,6 +4,8 @@
 
 from recipe_engine import post_process
 
+from RECIPE_MODULES.build import chromium
+
 DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/path',
@@ -31,7 +33,9 @@ def RunSteps(api):
             'resource_usage_output_file', None),
         post_step_func=lambda s: s,
         ninja_invocation_id='some_random_id',
-    )
+        include_utr_instruction=True,
+        builder_id=chromium.BuilderId.create_for_group('builder group',
+                                                       'builder name'))
   with api.siso.disable():
     assert not api.siso.enabled
   if api.siso.without_bytes:

@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Creates the instruction to run UTR."""
+
+from recipe_engine import recipe_api
+from recipe_engine import step_data
 from collections.abc import Iterable
+
+from RECIPE_MODULES.build import chromium
 
 
 def get_utr_instruction(command: str,
@@ -59,3 +64,42 @@ def get_utr_instruction(command: str,
   lines.append('```' + utr_cmd + '```')
   lines.append('')
   return '<br/>'.join(lines)
+
+
+def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
+                                step_result: step_data.StepData,
+                                builder_id: chromium.BuilderId) -> None:
+  """Apply the compile instruction for the provided step_result
+
+  Creates and adds the instruction for compiling using the UTR for the provided
+  step. This does not update the invocation which needs to be called still to
+  display the instruction.
+
+  Args:
+    chromium_api: Chromium api that has the required modules as dependencies
+    step_result: The compile step's returned stepData
+    builder_id: ID of the builder to use for the instruction
+  """
+  # Include instructions with no targets to compile all. This can cause
+  # the instruction to reproduce failures in compile targets that are being
+  # filtered on the builder. This is preferable to plumbing the test names
+  # through compile functions for now
+  utr_instructions = get_utr_instruction(
+      'compile',
+      chromium_api.m.buildbucket.build.builder.project,
+      (chromium_api.m.led.shadowed_bucket or
+       chromium_api.m.buildbucket.build.builder.bucket),
+      builder_id.builder,
+      [],
+  )
+  local_instructions = (
+      utr_instructions + '<br/>*To force non-remote services '
+      'append --no-rbe and --no-siso, this will dramatically slow the build*')
+  dependency = chromium_api.m.repro_instructions.get_dependency(r'bot_update')
+  chromium_api.m.repro_instructions.add_step_instruction(
+      step_result,
+      remote_content=utr_instructions,
+      remote_dependency=dependency,
+      local_content=local_instructions,
+      local_dependency=dependency,
+  )

@@ -10,6 +10,8 @@ from recipe_engine import recipe_api
 from recipe_engine import step_data
 from recipe_engine.config_types import Path
 
+from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_compile_instruction
+
 # GCS bucket for Siso reports.
 _GS_BUCKET = 'chrome-build-logs'
 
@@ -47,6 +49,8 @@ class SisoApi(recipe_api.RecipeApi):
                 skip_log_upload=False,
                 resource_usage_output_file=None,
                 ninja_invocation_id=None,
+                include_utr_instruction=False,
+                builder_id=None,
                 **kwargs):
     """Run the ninja command with siso.
 
@@ -61,6 +65,9 @@ class SisoApi(recipe_api.RecipeApi):
           resource_usage_output_file: File which if provided will
             record the resource usage stats related to build step.
           ninja_invocation_id: ID of the build invocation.
+          include_utr_instruction: Whether or not to include UTR reproduction
+            instructions
+          builder_id: ID for the builder compiling the targets.
 
         Returns:
           step_data.StepData of the build step.
@@ -115,13 +122,16 @@ class SisoApi(recipe_api.RecipeApi):
         if self._props.metrics_project:
           cmd.extend(['--metrics_project', self._props.metrics_project])
         labels = ''
-        builder_id = self.m.buildbucket.build.builder
-        if builder_id.project:
-          labels += 'project=' + re.sub(r'[=,]', '_', builder_id.project) + ','
-        if builder_id.bucket:
-          labels += 'bucket=' + re.sub(r'[=,]', '_', builder_id.bucket) + ','
-        if builder_id.builder:
-          labels += 'builder=' + re.sub(r'[=,]', '_', builder_id.builder) + ','
+        buildbucket_builder_id = self.m.buildbucket.build.builder
+        if buildbucket_builder_id.project:
+          labels += 'project=' + re.sub(r'[=,]', '_',
+                                        buildbucket_builder_id.project) + ','
+        if buildbucket_builder_id.bucket:
+          labels += 'bucket=' + re.sub(r'[=,]', '_',
+                                       buildbucket_builder_id.bucket) + ','
+        if buildbucket_builder_id.builder:
+          labels += 'builder=' + re.sub(r'[=,]', '_',
+                                        buildbucket_builder_id.builder) + ','
         labels += 'source=' + ('led'
                                if self.m.led.launched_by_led else 'prod') + ','
         labels += 'tool=siso'
@@ -161,12 +171,17 @@ class SisoApi(recipe_api.RecipeApi):
         if ninja_invocation_id:
           step_result.presentation.tags[
               'ninja_invocation_id'] = ninja_invocation_id
+        if include_utr_instruction and builder_id:
+          get_utr_compile_instruction(self, step_result, builder_id)
         if post_step_func:
           post_step_func(step_result)
         return step_result
     except self.m.step.StepFailure as ex:
       if ninja_invocation_id:
         ex.result.presentation.tags['ninja_invocation_id'] = ninja_invocation_id
+      # Ensure the repro instructions are attached for failing compiles
+      if include_utr_instruction and builder_id:
+        get_utr_compile_instruction(self, ex.result, builder_id)
       raise ex
     finally:
       if not self.m.runtime.in_global_shutdown and not skip_log_upload:
