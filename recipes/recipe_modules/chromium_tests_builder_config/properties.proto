@@ -213,7 +213,7 @@ message BuilderDatabase {
 
 // The combined details of 1 or more builders
 //
-// Next ID: 12
+// Next ID: 13
 message BuilderConfig {
   // Required, the database of builders that can be accessed via the builder
   // config
@@ -268,6 +268,17 @@ message BuilderConfig {
 
   reserved 9;
   reserved "rts_config";
+
+  // Optional, Test Selection Method
+  enum TestSelectionMode {
+    // Default. Disabled and will skip smart test selection.
+    NEVER = 0;
+    // Will select only applicable tests based on ML selection.
+    ALWAYS = 1;
+    // Determines appropriate tests based on ML, but still runs all tests.
+    DRY_RUN = 2;
+  }
+  optional TestSelectionMode test_selection = 12;
 }
 
 // Module properties
