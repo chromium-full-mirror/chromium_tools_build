@@ -902,7 +902,7 @@ _TRYSERVER_WEBRTC_SPEC = {
     'linux_more_configs':
         WebRTCBuilderSpec.create(
             phases=('dummy_audio_file_devices_no_protobuf', 'rtti_no_sctp',
-                    'disable_trace_events', 'openssl', 'libstdcpp'),
+                    'disable_trace_events', 'openssl'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             chromium_config_kwargs={
