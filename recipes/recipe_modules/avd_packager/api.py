@@ -16,6 +16,8 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     self._avd_configs = properties.avd_configs
 
     self._checkout_path = None
+    self._chromium_src = None
+    self._avd_script_path = None
 
   def prepare(self):
     """Sets up an avd packager run.
@@ -29,6 +31,9 @@ class AvdPackagerApi(recipe_api.RecipeApi):
       self.m.gclient.apply_config(c)
     self.m.chromium_checkout.ensure_checkout()
     self._checkout_path = self.m.chromium_checkout.checkout_dir
+    self._chromium_src = self._checkout_path.joinpath('src')
+    self._avd_script_path = self._chromium_src.joinpath('tools', 'android',
+                                                        'avd', 'avd.py')
 
   def execute(self):
     """Run the avd packager steps.
@@ -36,38 +41,73 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     The script //tools/android/avd/avd.py will read each avd config, create an
     avd with snapshot, and update to CIPD.
     """
-    chromium_src = self._checkout_path / 'src'
-    avd_script_path = chromium_src / 'tools' / 'android' / 'avd' / 'avd.py'
+    with self.m.context(cwd=self._chromium_src):
+      deferred = []
+      for avd_config in self._avd_configs:
+        with self.m.step.nest('Process %s' % avd_config):
+          metadata = self._list_avd(avd_config, deferred)
+          if metadata is None:
+            continue
+          variants = metadata.get('avd_variants') or [None]
+          for variant in variants:
+            self._create_avd(avd_config, deferred, avd_variant=variant)
+            self._uninstall_avd(avd_config, deferred)
 
-    with self.m.context(cwd=chromium_src):
-      with self.m.defer.context() as defer:
-        for avd_config in self._avd_configs:
-          with self.m.step.nest('Process %s' % avd_config):
-            avd_config_path = chromium_src / avd_config
+      self.m.defer.collect(deferred)
 
-            # Call "create" to create and upload AVD.
-            create_commands = [
-                avd_script_path, 'create', '-v', '--avd-config',
-                avd_config_path, '--snapshot', '--cipd-json-output',
-                self.m.json.output()
-            ]
-            create_result = defer(self.m.step, 'avd create %s' % avd_config,
-                                  ['vpython3', '-u'] + create_commands)
-            if create_result.is_ok():
-              create_result = create_result.result()
-              if create_result.json.output:
-                cipd_result = create_result.json.output.get('result', {})
-                if 'package' in cipd_result and 'instance_id' in cipd_result:
-                  self.m.cipd.add_instance_link(create_result)
-                  # Add buildbucket id to the CIPD instance.
-                  tags = {'buildbucket_id': str(self.m.buildbucket.build.id)}
-                  defer(self.m.cipd.set_tag, cipd_result['package'],
-                        cipd_result['instance_id'], tags)
+  def _list_avd(self, avd_config, deferred):
+    step_name = 'List AVD'
+    step_cmds = [
+        self._avd_script_path, 'list', '-v', '--avd-config', avd_config,
+        '--json-output',
+        self.m.json.output()
+    ]
+    deferred_result = self.m.defer(
+        self.m.step,
+        step_name,
+        ['vpython3', '-u'] + step_cmds,
+        step_test_data=lambda: self.m.json.test_api.output([{
+            'avd_proto_path': 'some/proto/foo.textpb',
+            'is_available': False,
+        }]),
+    )
+    deferred.append(deferred_result)
 
-            # Call "uninstall" to free disk space.
-            uninstall_commands = [
-                avd_script_path, 'uninstall', '-v', '--avd-config',
-                avd_config_path
-            ]
-            defer(self.m.step, 'avd uninstall %s' % avd_config,
-                  ['vpython3', '-u'] + uninstall_commands)
+    if deferred_result.is_ok():
+      list_result = deferred_result.result()
+      return list_result.json.output[0]
+    return None
+
+  def _create_avd(self, avd_config, deferred, avd_variant=None):
+    step_name = 'Create AVD'
+    step_cmds = [
+        self._avd_script_path, 'create', '-v', '--avd-config', avd_config,
+        '--force', '--snapshot', '--cipd-json-output',
+        self.m.json.output()
+    ]
+    if avd_variant is not None:
+      step_name += ' with variant %r' % avd_variant
+      step_cmds += ['--avd-variant', avd_variant]
+
+    deferred_result = self.m.defer(self.m.step, step_name,
+                                   ['vpython3', '-u'] + step_cmds)
+    deferred.append(deferred_result)
+    if deferred_result.is_ok():
+      create_result = deferred_result.result()
+      if create_result.json.output:
+        cipd_result = create_result.json.output.get('result', {})
+        if 'package' in cipd_result and 'instance_id' in cipd_result:
+          self.m.cipd.add_instance_link(create_result)
+          # Add buildbucket id to the CIPD instance.
+          tags = {'buildbucket_id': str(self.m.buildbucket.build.id)}
+          self.m.defer(self.m.cipd.set_tag, cipd_result['package'],
+                       cipd_result['instance_id'], tags)
+
+  def _uninstall_avd(self, avd_config, deferred):
+    step_name = 'Uninstall AVD'
+    step_cmds = [
+        self._avd_script_path, 'uninstall', '-v', '--avd-config', avd_config
+    ]
+    deferred_result = self.m.defer(self.m.step, step_name,
+                                   ['vpython3', '-u'] + step_cmds)
+    deferred.append(deferred_result)

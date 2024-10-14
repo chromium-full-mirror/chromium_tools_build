@@ -24,32 +24,16 @@ def GenTests(api):
       api.properties(
           **{
               '$build/avd_packager': {
-                  'avd_configs':
-                      ['tools/android/avd/proto/generic_android28.textpb',],
+                  'avd_configs': ['some/proto/foo.textpb',],
                   'gclient_config': 'chromium',
                   'gclient_apply_config': ['android'],
               },
           }),
-      api.post_process(
-          post_process.MustRun,
-          'Process tools/android/avd/proto/generic_android28.textpb.'
-          'avd create tools/android/avd/proto/generic_android28.textpb'),
-      api.override_step_data(
-          'Process tools/android/avd/proto/generic_android28.textpb.'
-          'avd create tools/android/avd/proto/generic_android28.textpb',
-          api.json.output({
-              'result': {
-                  'instance_id': 'instance-id-generic-android-28',
-                  'package': 'sample/avd/package/name',
-              }
-          })),
-      api.post_process(
-          post_process.MustRun,
-          'Process tools/android/avd/proto/generic_android28.textpb.'
-          'cipd set-tag sample/avd/package/name'),
-      api.post_process(
-          post_process.MustRun,
-          'Process tools/android/avd/proto/generic_android28.textpb.'
-          'avd uninstall tools/android/avd/proto/generic_android28.textpb'),
+      api.post_process(post_process.MustRun,
+                       'Process some/proto/foo.textpb.List AVD'),
+      api.post_process(post_process.MustRun,
+                       'Process some/proto/foo.textpb.Create AVD'),
+      api.post_process(post_process.MustRun,
+                       'Process some/proto/foo.textpb.Uninstall AVD'),
       api.post_process(post_process.DropExpectation),
   )
