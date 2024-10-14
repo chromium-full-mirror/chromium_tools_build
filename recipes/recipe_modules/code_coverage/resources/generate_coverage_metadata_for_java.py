@@ -537,8 +537,10 @@ def main():
   sources_json_files = get_files_with_suffix(params.sources_json_dir,
                                              SOURCES_JSON_FILES_SUFFIX)
   for f in sources_json_files:
+    logging.info("json file = %s", f)
     with open(f) as json_file:
       json_file_data = json.load(json_file)
+      logging.info(json_file_data)
       input_paths = json_file_data['input_path']
       output_dir = json_file_data['output_dir']
       # The orchestrator downloads affected src-side files into a cleanup/ dir
