@@ -100,8 +100,8 @@ class AndroidEmulator:
           'Start Android emulator: %s' % count_attempt,
           [
               'xvfb-run', 'vpython3', self.avd_script, 'start',
-              '--no-read-only', '--wipe-data', '--debug-tags', 'all',
-              '--avd-config', self.avd_config
+              '--require-fast-start', '--debug-tags', 'all', '--gpu-mode',
+              'off', '--avd-config', self.avd_config
           ],
           stdout=self.api.raw_io.output_text(add_output_log=True),
           infra_step=True,
