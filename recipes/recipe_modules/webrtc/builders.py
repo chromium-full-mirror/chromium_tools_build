@@ -170,7 +170,7 @@ _CLIENT_WEBRTC_SPEC = {
     'Linux (more configs)':
         WebRTCBuilderSpec.create(
             phases=('dummy_audio_file_devices_no_protobuf', 'rtti_no_sctp',
-                    'openssl', 'libstdcpp'),
+                    'openssl'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             chromium_config_kwargs={
