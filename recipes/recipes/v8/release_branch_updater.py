@@ -30,70 +30,77 @@ V8_REPO = 'https://chromium.googlesource.com/v8/v8/'
 
 
 def RunSteps(api, channels):
-  init(api)
+  updater = ReleaseBranchUpdater(api)
 
-  channels = channels or []
-  updates = []
-  for channel in channels:
-    with api.step.nest(f'Verify {channel}') as presentation:
-      head = get_ref_head(api, channel)
-      release = get_release(api, channel)
-
-      if release == head:
-        presentation.step_text = f'{release} is the current head.'
-        continue
-
-      presentation.step_text = f'Update head to {release}.'
-      updates.append((channel, release))
-
-  with api.step.nest(f'Update {len(updates)} channel(s)'):
-    for channel, release in updates:
-      update_ref_head(api, channel, release)
+  updater.init()
+  updates = updater.retrieve_updates(channels)
+  updater.update_channels(updates)
 
 
-def init(api):
-  with api.step.nest('Init'):
-    path = api.v8.checkout_root / 'v8'
-    api.file.ensure_directory('ensure v8 checkout dir', path)
+class ReleaseBranchUpdater:
 
+  def __init__(self, api):
+    self.api = api
 
-def get_release(api, channel):
-  milestones = api.chromiumdash.milestones(
-      100, 'chromiumdash: Fetch recent milestones', only_active=True)
-  milestones = [ms for ms in milestones if ms['schedule_phase'] == channel]
-  milestone = sorted(milestones, key=lambda ms: -ms['milestone'])[0]
+  def init(self):
+    with self.api.step.nest('Initialize'):
+      path = self.api.v8.checkout_root / 'v8'
+      self.api.file.ensure_directory('ensure v8 checkout dir', path)
 
-  chromium_branch = milestone['chromium_branch']
-  stdout = _git(
-      api,
-      'ls-remote',
-      V8_REPO,
-      f'refs/heads/chromium/{chromium_branch}',
-      name='git: Fetch recent revision')
-  return stdout.split('\t')[0]
+  def retrieve_updates(self, channels):
+    channels = channels or []
+    updates = []
+    for channel in channels:
+      with self.api.step.nest(f'Verify {channel}') as presentation:
+        head = self._get_ref_head(channel)
+        release = self._get_release(channel)
 
+        if release == head:
+          presentation.step_text = f'{release} is the current head.'
+          continue
 
-def get_ref_head(api, channel):
-  stdout = _git(
-      api,
-      'ls-remote',
-      V8_REPO,
-      f'refs/heads/{channel}',
-      name='git: Fetch current revision')
-  return stdout.split('\t')[0]
+        presentation.step_text = f'Update head to {release}.'
+        updates.append((channel, release))
 
+    return updates
 
-def update_ref_head(api, channel, revision):
-  with api.step.nest(f'Update channel {channel}'):
-    api.gclient.set_config('v8')
-    api.v8.checkout(revision)
-    _git(api, 'push', 'origin', f'{revision}:refs/heads/{channel}', '-f')
+  def _get_release(self, channel):
+    milestones = self.api.chromiumdash.milestones(
+        100, 'chromiumdash: Fetch recent milestones', only_active=True)
+    milestones = [ms for ms in milestones if ms['schedule_phase'] == channel]
+    milestone = sorted(milestones, key=lambda ms: -ms['milestone'])[0]
 
+    chromium_branch = milestone['chromium_branch']
+    stdout = self._git(
+        'ls-remote',
+        V8_REPO,
+        f'refs/heads/chromium/{chromium_branch}',
+        name='git: Fetch recent revision')
+    return stdout.split('\t')[0]
 
-def _git(api, *cmd, **kwargs):
-  cwd = api.v8.checkout_root / 'v8'
-  with api.context(cwd=cwd):
-    return api.v8.git_output(*cmd, **kwargs)
+  def _git(self, *cmd, **kwargs):
+    cwd = self.api.v8.checkout_root / 'v8'
+    with self.api.context(cwd=cwd):
+      return self.api.v8.git_output(*cmd, **kwargs)
+
+  def _get_ref_head(self, channel):
+    stdout = self._git(
+        'ls-remote',
+        V8_REPO,
+        f'refs/heads/{channel}',
+        name='git: Fetch current revision')
+    return stdout.split('\t')[0]
+
+  def update_channels(self, updates):
+    with self.api.step.nest(f'Update {len(updates)} channel(s)'):
+      for channel, release in updates:
+        self._update_ref_head(channel, release)
+
+  def _update_ref_head(self, channel, revision):
+    with self.api.step.nest(f'Update channel {channel}'):
+      self.api.gclient.set_config('v8')
+      self.api.v8.checkout(revision)
+      self._git('push', 'origin', f'{revision}:refs/heads/{channel}', '-f')
 
 
 def GenTests(api):
