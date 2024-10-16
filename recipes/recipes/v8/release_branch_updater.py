@@ -41,20 +41,27 @@ class ReleaseBranchUpdater:
 
   def __init__(self, api):
     self.api = api
+    self.milestones = []
 
   def init(self):
     with self.api.step.nest('Initialize'):
       path = self.api.v8.checkout_root / 'v8'
       self.api.file.ensure_directory('ensure v8 checkout dir', path)
+      self.milestones = self.api.chromiumdash.milestones(
+          100, 'chromiumdash: Fetch recent milestones', only_active=True)
 
   def retrieve_updates(self, channels):
     channels = channels or []
     updates = []
     for channel in channels:
       with self.api.step.nest(f'Verify {channel}') as presentation:
-        head = self._get_ref_head(channel)
         release = self._get_release(channel)
 
+        if release is None:
+          presentation.step_text = 'Channel is unavailable at chromiumdash.'
+          continue
+
+        head = self._get_ref_head(channel)
         if release == head:
           presentation.step_text = f'{release} is the current head.'
           continue
@@ -65,9 +72,10 @@ class ReleaseBranchUpdater:
     return updates
 
   def _get_release(self, channel):
-    milestones = self.api.chromiumdash.milestones(
-        100, 'chromiumdash: Fetch recent milestones', only_active=True)
-    milestones = [ms for ms in milestones if ms['schedule_phase'] == channel]
+    milestones = [m for m in self.milestones if m['schedule_phase'] == channel]
+    if not milestones:
+      return None
+
     milestone = sorted(milestones, key=lambda ms: -ms['milestone'])[0]
 
     chromium_branch = milestone['chromium_branch']
@@ -118,17 +126,17 @@ def GenTests(api):
         api.raw_io.stream_output_text(
             f'{revision}\t{branch}\n', stream='stdout'))
 
-  def test(name, current_revision, stable_revision, *args):
+  def test(name, stable_revision, channels, *args):
     return api.test(
         name,
-        api.properties(channels=['stable']),
-        ls_remote('Verify stable.git: Fetch current revision',
-                  'refs/heads/stable', current_revision),
-        api.url.json('Verify stable.chromiumdash: Fetch recent milestones', [
+        api.properties(channels=channels),
+        api.url.json('Initialize.chromiumdash: Fetch recent milestones', [
             milestone(129, '6668'),
             milestone(128, '6613'),
             milestone(130, '6723', channel='beta'),
         ]),
+        ls_remote('Verify stable.git: Fetch current revision',
+                  'refs/heads/stable', 'c0ffee'),
         ls_remote('Verify stable.git: Fetch recent revision',
                   'refs/heads/chromium/129', stable_revision),
         *args,
@@ -137,8 +145,8 @@ def GenTests(api):
 
   yield test(
       'new-revision',
-      'c0ffee',
       '7ea',
+      ['stable'],
       api.post_process(post.StepTextEquals, 'Verify stable',
                        'Update head to 7ea.'),
       api.post_process(post.MustRun,
@@ -148,8 +156,18 @@ def GenTests(api):
   yield test(
       'no-updates',
       'c0ffee',
-      'c0ffee',
+      ['stable'],
       api.post_process(post.StepTextEquals, 'Verify stable',
                        'c0ffee is the current head.'),
       api.post_process(post.MustRun, 'Update 0 channel(s)'),
+  )
+
+  yield test(
+      'missing-chromiumdash-channel',
+      '7ea',
+      ['stable', 'dev'],
+      api.post_process(post.MustRun,
+                       'Update 1 channel(s).Update channel stable'),
+      api.post_process(post.StepTextEquals, 'Verify dev',
+                       'Channel is unavailable at chromiumdash.'),
   )
