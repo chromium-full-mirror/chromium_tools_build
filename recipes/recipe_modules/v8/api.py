@@ -1469,6 +1469,7 @@ class V8Api(recipe_api.RecipeApi):
                         latest_version,
                         push_account,
                         bot_commit=False,
+                        force_land=False,
                         extra_edits=None):
     """Update the version on branch 'ref'.
 
@@ -1479,8 +1480,8 @@ class V8Api(recipe_api.RecipeApi):
         latest_version: The currently latest version to be updated in the
         version file.
         push_account: Account to be used for uploading the CL
-        bot_commit: Use True to allow a bot commit. This also force lands
-            the CL
+        bot_commit: Use True to allow a bot commit.
+        force_land: Use True to force land the CL.
         extra_edits: Callback used to edit extra files before generating the CL
       """
     self.m.git('branch', '-D', 'work', ok_ret='any')
@@ -1516,17 +1517,29 @@ class V8Api(recipe_api.RecipeApi):
       extra_edits(self.m)
 
     # Commit and push changes.
-    self.m.git('commit', '-am', f'Version {latest_version}')
+    commit_cmd = ['commit', '-a']
+    message_lines = [
+        f'Version {latest_version}',
+        '',
+        f'Version incremented at {self.m.buildbucket.build_url()}',
+    ]
+    for line in message_lines:
+      commit_cmd += ['-m', line]
+    self.m.git(*commit_cmd)
 
     if self.dry_run:
       self.m.step('Dry-run commit', cmd=None)
     else:
       upload_cmd = [
           'cl', 'upload', '-f', '--bypass-hooks', '--send-mail', '--no-autocc']
-      if bot_commit:
-        upload_cmd.append('--set-bot-commit')
+
+      bot_commit_flag = '--set-bot-commit'
+      if bot_commit and bot_commit_flag not in upload_cmd:
+        upload_cmd.append(bot_commit_flag)
+
       self.m.git(*upload_cmd)
-      if bot_commit:
+
+      if force_land:
         self.m.git('cl', 'land', '-f', '--bypass-hooks')
 
 

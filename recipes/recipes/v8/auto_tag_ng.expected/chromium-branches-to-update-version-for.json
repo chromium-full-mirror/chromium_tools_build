@@ -430,8 +430,13 @@
     "cmd": [
       "git",
       "commit",
-      "-am",
-      "Version 11.4.511403.1"
+      "-a",
+      "-m",
+      "Version 11.4.511403.1",
+      "-m",
+      "",
+      "-m",
+      "Version incremented at https://cr-buildbucket.appspot.com/build/0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -737,8 +742,13 @@
     "cmd": [
       "git",
       "commit",
-      "-am",
-      "Version 11.4.511303"
+      "-a",
+      "-m",
+      "Version 11.4.511303",
+      "-m",
+      "",
+      "-m",
+      "Version incremented at https://cr-buildbucket.appspot.com/build/0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -1044,8 +1054,13 @@
     "cmd": [
       "git",
       "commit",
-      "-am",
-      "Version 11.4.4203"
+      "-a",
+      "-m",
+      "Version 11.4.4203",
+      "-m",
+      "",
+      "-m",
+      "Version incremented at https://cr-buildbucket.appspot.com/build/0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -1351,8 +1366,13 @@
     "cmd": [
       "git",
       "commit",
-      "-am",
-      "Version 11.4.3.3"
+      "-a",
+      "-m",
+      "Version 11.4.3.3",
+      "-m",
+      "",
+      "-m",
+      "Version incremented at https://cr-buildbucket.appspot.com/build/0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {

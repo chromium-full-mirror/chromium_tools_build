@@ -118,7 +118,9 @@ def update_branch_version(api, source_dir, latest_version):
         branch_ref,
         version_at_branch_head,
         push_account=PUSH_ACCOUNT,
-        extra_edits=lambda api: update_gn(api, source_dir))
+        extra_edits=lambda api: update_gn(api, source_dir),
+        bot_commit=True,
+    )
     issue = get_issue(api)
     parent_step.links[issue] = issue
 
@@ -134,7 +136,9 @@ def update_main_version(api, source_dir):
         source_dir,
         branch_ref,
         version_at_branch_head,
-        push_account=PUSH_ACCOUNT)
+        push_account=PUSH_ACCOUNT,
+        bot_commit=True,
+    )
     issue = get_issue(api)
     parent_step.links[issue] = issue
 

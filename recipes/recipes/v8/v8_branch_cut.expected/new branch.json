@@ -458,8 +458,13 @@
     "cmd": [
       "git",
       "commit",
-      "-am",
-      "Version 9.9.3.5"
+      "-a",
+      "-m",
+      "Version 9.9.3.5",
+      "-m",
+      "",
+      "-m",
+      "Version incremented at https://cr-buildbucket.appspot.com/build/0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -484,7 +489,8 @@
       "-f",
       "--bypass-hooks",
       "--send-mail",
-      "--no-autocc"
+      "--no-autocc",
+      "--set-bot-commit"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -737,8 +743,13 @@
     "cmd": [
       "git",
       "commit",
-      "-am",
-      "Version 10.0.0"
+      "-a",
+      "-m",
+      "Version 10.0.0",
+      "-m",
+      "",
+      "-m",
+      "Version incremented at https://cr-buildbucket.appspot.com/build/0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -763,7 +774,8 @@
       "-f",
       "--bypass-hooks",
       "--send-mail",
-      "--no-autocc"
+      "--no-autocc",
+      "--set-bot-commit"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
