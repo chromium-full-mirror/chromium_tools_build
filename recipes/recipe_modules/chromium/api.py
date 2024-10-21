@@ -847,7 +847,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.c.compile_py.build_args:
       command.extend(self.c.compile_py.build_args)
 
-    if use_reclient:
+    if use_reclient and not self.m.siso.enabled:
       command += ['-j', self.m.reclient.jobs]
 
     if targets is not None and 'all' not in targets:
