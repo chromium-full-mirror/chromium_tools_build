@@ -1567,7 +1567,6 @@ class ArchiveApi(recipe_api.RecipeApi):
                 chrome_version=version_string,
                 gn_targets=sbom_config.gn_targets,
                 artifact_name=artifact_name,
-                platform=self.m.platform.name,
                 sbom_gcs_folder=sbom_config.gcs_folder,
             )
 
@@ -1594,7 +1593,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       chrome_version,
       gn_targets,
       artifact_name,
-      platform,
+      platform=None,
       sbom_gcs_folder=None,
   ):
     sbom_bucket = None
