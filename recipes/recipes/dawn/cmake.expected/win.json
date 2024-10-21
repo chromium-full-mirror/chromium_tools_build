@@ -567,7 +567,7 @@
       "cmake-build/tint.exe",
       "--verbose",
       "--format",
-      "wgsl,spvasm,msl,hlsl,glsl,msl-ir,hlsl-ir,glsl-ir"
+      "wgsl,spvasm,msl,hlsl,glsl,msl-ir,hlsl-ir"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
