@@ -348,7 +348,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           'additional_compile_targets', [])
       targets_by_builder_id[builder_id] = targets_config_module.Targets(
           tests=tests,
-          additional_compile_targets=additional_compile_targets,
+          additional_compile_targets=sorted(additional_compile_targets),
       )
 
     return targets_config_module.TargetsConfig.create(
