@@ -543,15 +543,16 @@ def main():
       logging.info(json_file_data)
       input_paths = json_file_data['input_path']
       output_dir = json_file_data['output_dir']
-      # The orchestrator downloads affected src-side files into a cleanup/ dir
-      # instead of the usual cache/builder/src chromium checkout dir. This
+      # The orchestrator downloads affected src-side files into a directory
+      # which may be different from output dir on the compilator side. This
       # extracts the relpath out of the input_path and joins it with
-      # params.src_path.
+      # source_json_dir of orchestrator.
+      # Note: `source_json_dir` is the build output dir
       corrected_input_paths = []
       for input_path in input_paths:
         rel_input_path = os.path.relpath(input_path, output_dir)
         corrected_input_paths.append(
-            os.path.join(params.src_path, rel_input_path))
+            os.path.join(params.sources_json_dir, rel_input_path))
       class_files.extend(corrected_input_paths)
       source_dirs.extend(json_file_data['source_dirs'])
 
