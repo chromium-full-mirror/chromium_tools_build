@@ -199,6 +199,14 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks(source_dir, default_build_dir)
 
+  # Temp directories to store the two builds.
+  first_dir = default_build_dir
+  if not check_different_build_dirs:
+    first_dir = default_build_dir.parent / (
+        str(default_build_dir.name).rstrip('\\/') + '.1')
+  second_dir = default_build_dir.parent / (
+      str(default_build_dir.name).rstrip('\\/') + '.2')
+
   # Whether do first build in local or use reclient.
   compare_local = recipe_config.get('compare_local', False)
 
@@ -228,13 +236,12 @@ def RunSteps(api):
     return raw_result
 
   if not check_different_build_dirs:
-    MoveBuildDirectory(api, str(default_build_dir),
-                       str(default_build_dir).rstrip('\\/') + '.1')
+    MoveBuildDirectory(api, str(default_build_dir), str(first_dir))
 
   # Do the second build and move the build artifact to the temp directory.
   build_dir = default_build_dir
   if check_different_build_dirs:
-    build_dir = source_dir / f'out/{api.chromium.c.build_config_fs}.2'
+    build_dir = second_dir
 
   api.chromium.mb_gen(
       source_dir,
@@ -257,18 +264,14 @@ def RunSteps(api):
     return raw_result
 
   if not check_different_build_dirs:
-    MoveBuildDirectory(api, str(default_build_dir),
-                       str(default_build_dir).rstrip('\\/') + '.2')
+    MoveBuildDirectory(api, str(default_build_dir), str(second_dir))
 
   # Compare the artifacts from the 2 builds, raise an exception if they're
   # not equals.
   # TODO(sebmarchand): Do a smarter comparison.
-  first_dir = str(default_build_dir)
-  if not check_different_build_dirs:
-    first_dir = first_dir.rstrip('\\/') + '.1'
-  second_dir = str(default_build_dir).rstrip('\\/') + '.2'
   try:
-    api.isolate.compare_build_artifacts(source_dir, first_dir, second_dir)
+    api.isolate.compare_build_artifacts(source_dir, str(first_dir),
+                                        str(second_dir))
   finally:
     # remove Debug* to free up disk space in builder cache.
     api.file.rmtree('rmtree %s' % first_dir, first_dir)
