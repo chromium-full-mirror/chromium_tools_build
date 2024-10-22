@@ -213,7 +213,7 @@ message BuilderDatabase {
 
 // The combined details of 1 or more builders
 //
-// Next ID: 13
+// Next ID: 12
 message BuilderConfig {
   // Required, the database of builders that can be accessed via the builder
   // config
@@ -266,19 +266,26 @@ message BuilderConfig {
   // Whether or not failed test suites should be retried without patch
   optional bool retry_without_patch = 8;
 
-  reserved 9;
-  reserved "rts_config";
+  // Configuration for Regression Test Selection (RTS) execution.
+  //
+  // Next ID: 3
+  message RtsConfig {
+    // When RTS should be used
+    enum Condition {
+      CONDITION_UNSPECIFIED = 0;
+      // RTS will never be used for the builder.
+      NEVER = 1;
+      // RTS will always be used for the builder.
+      ALWAYS = 2;
+    }
+    Condition condition = 1;
 
-  // Optional, Test Selection Method
-  enum TestSelectionMode {
-    // Default. Disabled and will skip smart test selection.
-    NEVER = 0;
-    // Will select only applicable tests based on ML selection.
-    ALWAYS = 1;
-    // Determines appropriate tests based on ML, but still runs all tests.
-    DRY_RUN = 2;
+    // A value indicating how likely the RTS run's success result should match a
+    // non-RTS run
+    float recall = 2;
   }
-  optional TestSelectionMode test_selection = 12;
+
+  RtsConfig rts_config = 9;
 }
 
 // Module properties
