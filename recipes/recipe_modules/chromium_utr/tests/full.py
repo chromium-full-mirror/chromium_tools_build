@@ -34,8 +34,8 @@ PROPERTIES = Request
 
 
 def RunSteps(api, request):
-  checkout_dir = api.path.cache_dir
-  source_dir = api.path.abs_to_path(request.checkout_path)
+  source_dir = api.path.cast_to_path(request.checkout_path)
+  checkout_dir = source_dir.parent
   api.chromium_checkout.set_paths(checkout_dir, source_dir)
 
   builder = api.buildbucket.build.builder.builder
@@ -767,5 +767,14 @@ target_os=['os']
               ),),),
       api.post_process(post_process.StepCommandContains, 'lookup GN args',
                        ['some-mb-phase']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cog',
+      boilerplate(
+          checkout_path='/google/cog/cloud/src',
+          preserve_gn_args=True,
+      ),
       api.post_process(post_process.DropExpectation),
   )

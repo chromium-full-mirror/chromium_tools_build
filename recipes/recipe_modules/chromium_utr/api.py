@@ -82,12 +82,21 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     self.m.code_coverage.source_dir = source_dir
     self.m.code_coverage.build_dir = build_path
 
-    result = self.prerun_checks(properties, source_dir, build_path,
-                                compiling_builder_id, compiling_builder_config)
+    is_cog = self._is_cog(source_dir)
+    result = self.prerun_checks(
+        properties,
+        source_dir,
+        build_path,
+        compiling_builder_id,
+        compiling_builder_config,
+        is_cog,
+    )
     if result != None:
       return result
 
-    got_revisions = self.generate_got_revisions_map(source_dir)
+    # TODO(https://crbug.com/374367787): Support getting the revision with cog
+    got_revisions = {} if is_cog else self.generate_got_revisions_map(
+        source_dir)
 
     raw_result, tests = self.create_tests(
         properties,
@@ -98,6 +107,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         compiling_builder_id,
         compiling_builder_config,
         should_build,
+        is_cog,
     )
     if raw_result and raw_result.status != common_pb2.SUCCESS:
       return raw_result
@@ -158,6 +168,17 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         ])
 
       return ret
+
+  def _is_cog(self, source_dir: Path) -> bool:
+    is_cog = str(source_dir).startswith('/google/cog/cloud')
+    # TODO(https://crbug.com/374367787): Remove this when cog is fully supported
+    if is_cog:
+      self.m.step('cog warning', [
+          'python3',
+          '-c',
+          'print("Caution: cog is not fully supported in UTR")',
+      ])
+    return is_cog
 
   def get_compiling_builder_config(
       self, builder_id: chromium.BuilderId, builder_config: ctbc.BuilderConfig
@@ -385,6 +406,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       build_path: Path,
       compiling_builder_id: chromium.BuilderId,
       compiling_builder_config: ctbc.BuilderConfig,
+      is_cog: bool,
   ) -> result_pb2.RawResult:
     """Checks that local conditions are right to continue with the build.
 
@@ -394,6 +416,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       build_path: Path to the build dir being used
       compiling_builder_id: BuilderId for the compiling builder
       compiling_builder_config: BuilderId for the compiling builder
+      is_cog: The run is currently in cog
 
     Returns:
       None if everything is OK. Otherwise a RawResult that will trigger a rerun
@@ -433,7 +456,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
                                         properties.output_properties_file)
     if (not properties.rerun_options.bypass_branch_check and
         self.m.code_coverage.using_coverage and properties.builder_recipe
-        in ('chromium/orchestrator', 'chromium_trybot')):
+        in ('chromium/orchestrator', 'chromium_trybot') and not is_cog):
       error_message = self.check_upstream_branch(source_dir)
       if error_message:
         rerun_options = [
@@ -589,6 +612,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       source_dir: Path,
       build_dir: Path,
       builder_recipe: str,
+      is_cog: bool,
   ) -> result_pb2.RawResult:
     """Builds the test targets
 
@@ -601,6 +625,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           with the builder_id's gn args
         build_dir: Path to the directory to use for building
         builder_recipe: The recipe normally run by the requested builder
+        is_cog: The run is currently in cog
     Returns tuple of (a RawResult object for the compile or None if it was
         skipped, a boolean indicating if the *.isolate files were generated)
     """
@@ -612,7 +637,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     gn_args_to_remove = []
     # Only recipes that support try should handle changed files
     if (self.m.code_coverage.using_coverage and
-        builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
+        builder_recipe in ('chromium/orchestrator', 'chromium_trybot') and
+        not is_cog):
       gn_args_to_remove = self.handle_code_coverage(source_dir, build_dir,
                                                     properties, builder_id)
 
@@ -704,6 +730,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       builder_id: chromium.BuilderId,
       builder_config: ctbc.BuilderConfig,
       should_build: bool,
+      is_cog: bool,
   ) -> tuple[result_pb2.RawResult, Iterable[Test]]:
     """Creates the test objects for the provided builder/test names
 
@@ -716,6 +743,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         builder_config: A BuilderConfig with the configuration for the builder
           being reproduced
         should_build: Bool controlling whether the tests should be compiled
+        is_cog: The run is currently in cog
     """
     test_names = properties.test_names
     preserve_gn_args = properties.rerun_options.preserve_gn_args
@@ -756,8 +784,16 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     if should_build:
       raw_result, generated_isolates = self.compile_targets(
-          properties, tests, builder_id, builder_config, preserve_gn_args,
-          source_dir, build_dir, builder_recipe)
+          properties,
+          tests,
+          builder_id,
+          builder_config,
+          preserve_gn_args,
+          source_dir,
+          build_dir,
+          builder_recipe,
+          is_cog,
+      )
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
     skylab_tests = [test for test in tests if test.runs_on_skylab]
