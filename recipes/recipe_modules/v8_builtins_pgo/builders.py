@@ -15,7 +15,11 @@ from RECIPE_MODULES.build.v8_tests import testing as v8testing
 from RECIPE_MODULES.build.v8.v8version import VersionTuple, normalize_version
 
 from .platforms import UnixPlatform, WindowsPlatform
-from .profile_track import ChangeProfileTrack, RevisionProfileTrack, VersionProfileTrack
+from .profile_track import (
+    ChangeProfileTrack,
+    RevisionProfileTrack,
+    VersionProfileTrack,
+)
 
 JET_STREAM_PATH = 'benchmarks/JetStream2'
 BUCKET_NAME = 'chromium-v8-builtins-pgo'
@@ -264,23 +268,23 @@ class BaseProfileBuilder(ABC):
           f'Profile from tracker {tracker.name} does not match expected pattern.'
       )
 
+  @with_wrapper_step
   def download_benchmark_code(self):
-    with self.api.step.nest('download benchmark code'):
+    self.api.v8.git_output(
+        'clone',
+        '--depth=1',
+        '--filter=blob:none',
+        '--sparse',
+        V8_PERF_REPO_URL,
+    )
+    checkout_path = self.work_dir / 'v8-perf'
+    with self.api.context(cwd=checkout_path):
       self.api.v8.git_output(
-          'clone',
-          '--depth=1',
-          '--filter=blob:none',
-          '--sparse',
-          V8_PERF_REPO_URL,
+          'sparse-checkout',
+          'set',
+          JET_STREAM_PATH,
       )
-      checkout_path = self.work_dir / 'v8-perf'
-      with self.api.context(cwd=checkout_path):
-        self.api.v8.git_output(
-            'sparse-checkout',
-            'set',
-            JET_STREAM_PATH,
-        )
-        self.perf_code_path = checkout_path / JET_STREAM_PATH
+      self.perf_code_path = checkout_path / JET_STREAM_PATH
 
   @contextlib.contextmanager
   def exception_capture(self, tracker):
@@ -318,7 +322,7 @@ class BaseProfileBuilder(ABC):
     return result_pb2.RawResult(status=common_pb.FAILURE, summary_markdown=msg)
 
 
-class CiBuilder(BaseProfileBuilder):
+class V8CiBuilder(BaseProfileBuilder):
 
   def __init__(self, api, compilators, revision):
     super().__init__(api, compilators)
@@ -333,7 +337,7 @@ class CiBuilder(BaseProfileBuilder):
     ]
 
 
-class TryBuilder(BaseProfileBuilder):
+class V8TryBuilder(BaseProfileBuilder):
 
   def __init__(self, api, compilators, change):
     super().__init__(api, compilators)
@@ -348,7 +352,41 @@ class TryBuilder(BaseProfileBuilder):
     ]
 
 
-class VersionTagBuilder(BaseProfileBuilder):
+class V8PerfTryBuilder(BaseProfileBuilder):
+
+  def __init__(self, api, compilators, change):
+    super().__init__(api, compilators)
+    self.change = change
+
+  @cached_property
+  def work_dir(self):
+    return self.api.path.cache_dir / 'builder'
+
+  @with_wrapper_step
+  def init_trackers_for_candidate_versions(self):
+    with self.api.context(cwd=self.work_dir):
+      resp = self.api.v8.git_output('ls-remote', V8_REPO_URL, 'refs/heads/lkgr')
+    commit = resp.split('\t')[0]
+
+    self.profile_trackers = [
+        RevisionProfileTrack(self.api, track, config['profiling_pool'], commit)
+        for track, config in self.compilators.items()
+    ]
+
+  @with_wrapper_step
+  def download_benchmark_code(self):
+    config = self.api.gclient.make_config()
+    solution = config.solutions.add()
+    solution.name = 'v8-perf'
+    solution.url = V8_PERF_REPO_URL
+
+    with self.api.context(cwd=self.work_dir):
+      self.api.bot_update.ensure_checkout(gclient_config=config)
+
+    self.perf_code_path = self.work_dir / 'v8-perf' / JET_STREAM_PATH
+
+
+class V8VersionTagBuilder(BaseProfileBuilder):
 
   def __init__(self, api, compilators, max_parallel_versions,
                version_number_cutoff):

@@ -4,6 +4,8 @@
 
 DEPS = [
     'chromium_swarming',
+    'depot_tools/bot_update',
+    'depot_tools/gclient',
     'depot_tools/gerrit',
     'depot_tools/gsutil',
     'recipe_engine/buildbucket',

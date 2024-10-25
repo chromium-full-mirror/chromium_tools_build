@@ -30,15 +30,15 @@
     "name": "init trackers for candidate versions.git ls-remote",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@stdout@1234 refs/tags/0.1.10.1@@@",
-      "@@@STEP_LOG_LINE@stdout@2234 refs/tags/1.1.1@@@",
-      "@@@STEP_LOG_LINE@stdout@2234 refs/tags/1.1.1-pgo@@@",
-      "@@@STEP_LOG_LINE@stdout@ab34 refs/tags/1.1.1.1@@@",
-      "@@@STEP_LOG_LINE@stdout@ab34 refs/tags/1.1.1.1-pgo@@@",
-      "@@@STEP_LOG_LINE@stdout@abde refs/tags/1.1.1.2@@@",
-      "@@@STEP_LOG_LINE@stdout@f034 refs/tags/1.1.1.3@@@",
-      "@@@STEP_LOG_LINE@stdout@cd12 refs/tags/1.1.1.4@@@",
-      "@@@STEP_LOG_LINE@stdout@43ff refs/tags/1.1.2@@@",
+      "@@@STEP_LOG_LINE@stdout@1234\trefs/tags/0.1.10.1@@@",
+      "@@@STEP_LOG_LINE@stdout@2234\trefs/tags/1.1.1@@@",
+      "@@@STEP_LOG_LINE@stdout@2234\trefs/tags/1.1.1-pgo@@@",
+      "@@@STEP_LOG_LINE@stdout@ab34\trefs/tags/1.1.1.1@@@",
+      "@@@STEP_LOG_LINE@stdout@ab34\trefs/tags/1.1.1.1-pgo@@@",
+      "@@@STEP_LOG_LINE@stdout@abde\trefs/tags/1.1.1.2@@@",
+      "@@@STEP_LOG_LINE@stdout@f034\trefs/tags/1.1.1.3@@@",
+      "@@@STEP_LOG_LINE@stdout@cd12\trefs/tags/1.1.1.4@@@",
+      "@@@STEP_LOG_LINE@stdout@43ff\trefs/tags/1.1.2@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },
@@ -862,7 +862,18 @@
   },
   {
     "cmd": [],
-    "name": "download benchmark code"
+    "name": "download benchmark code",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 x86@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 x64@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 x86-rl@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 x64-rl@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 x86@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 x64@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 x86-rl@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 x64-rl@@@",
+      "@@@STEP_LOG_END@profile trackers@@@"
+    ]
   },
   {
     "cmd": [

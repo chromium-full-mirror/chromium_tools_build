@@ -52,7 +52,7 @@ class V8BuiltinsPgoTestApi(recipe_test_api.RecipeTestApi):
   def mock_git_tags(self, tags):
     response = ''
     for revision, tag in tags:
-      response += f'{revision} {tag}\n'
+      response += f'{revision}\t{tag}\n'
 
     return self.override_step_data(
         'init trackers for candidate versions.git ls-remote',

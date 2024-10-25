@@ -102,7 +102,7 @@ class VersionProfileTrack(BaseProfileTrack):
 
   @cached_property
   def compilator_kwargs(self):
-    return {'revision': self.revision}
+    return {'revision': self.revision, 'gerrit_changes': []}
 
 
 class RevisionProfileTrack(BaseProfileTrack):
@@ -121,7 +121,7 @@ class RevisionProfileTrack(BaseProfileTrack):
 
   @cached_property
   def compilator_kwargs(self):
-    return {'revision': self.revision}
+    return {'revision': self.revision, 'gerrit_changes': []}
 
 
 class ChangeProfileTrack(BaseProfileTrack):

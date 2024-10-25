@@ -17,8 +17,13 @@ def RunSteps(api):
 def GenTests(api):
   pgo_api = api.v8_builtins_pgo
 
-  def test(name, build, compilator_label, must_run_builders,
-           do_not_run_builders, profiling_pool):
+  def test(name,
+           build,
+           compilator_label,
+           must_run_builders,
+           do_not_run_builders,
+           profiling_pool,
+           additional=None):
     return api.test(
         name,
         build,
@@ -68,6 +73,7 @@ def GenTests(api):
                 '/path/to/tmp/json',
             ],
         ),
+        *(additional or []),
         api.post_process(post.DropExpectation),
     )
 
@@ -88,4 +94,17 @@ def GenTests(api):
       must_run_builders=['v8_linux64_pgo_compile_rel'],
       do_not_run_builders=['V8 Linux64 PGO instrumentation - builder'],
       profiling_pool='chrome.tests',
+  )
+
+  yield test(
+      'v8perf_try',
+      api.buildbucket.try_build(
+          bucket='try', project='v8/v8-perf', change_number=42, patch_set=3),
+      compilator_label='8c8afc65',
+      must_run_builders=['v8_linux64_pgo_compile_rel'],
+      do_not_run_builders=['V8 Linux64 PGO instrumentation - builder'],
+      profiling_pool='chrome.tests',
+      additional=[
+          pgo_api.mock_git_tags([('8c8afc650f556e3e', 'refs/heads/lkgr')]),
+      ],
   )

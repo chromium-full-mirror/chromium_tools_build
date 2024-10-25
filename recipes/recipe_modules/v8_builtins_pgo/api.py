@@ -4,7 +4,13 @@
 
 from recipe_engine import recipe_api
 
-from .builders import CiBuilder, TryBuilder, VersionTagBuilder
+from .builders import (
+    V8CiBuilder,
+    V8PerfTryBuilder,
+    V8TryBuilder,
+    V8VersionTagBuilder,
+)
+
 
 
 class V8BuiltinsPgoApi(recipe_api.RecipeApi):
@@ -24,16 +30,18 @@ class V8BuiltinsPgoApi(recipe_api.RecipeApi):
                   compilators):
     commit_id = self.m.buildbucket.gitiles_commit.id
     if commit_id:
-      commit_id = self.m.buildbucket.gitiles_commit.id
-      return CiBuilder(self.m, compilators, commit_id)
+      return V8CiBuilder(self.m, compilators, commit_id)
 
     changes = self.m.buildbucket.build.input.gerrit_changes
-    if changes:
-      return TryBuilder(self.m, compilators, changes[0])
+    if changes and changes[0].project == 'v8/v8':
+      return V8TryBuilder(self.m, compilators, changes[0])
+
+    if changes and changes[0].project == 'v8/v8-perf':
+      return V8PerfTryBuilder(self.m, compilators, changes[0])
 
     bucket = self.m.buildbucket.build.builder.bucket
     if bucket == 'ci-hp':
-      return VersionTagBuilder(self.m, compilators, max_parallel_versions,
-                               version_number_cutoff)
+      return V8VersionTagBuilder(self.m, compilators, max_parallel_versions,
+                                 version_number_cutoff)
 
     assert False, f'Invalid builder config for bucket {bucket}'
