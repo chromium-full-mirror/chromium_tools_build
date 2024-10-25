@@ -102,11 +102,11 @@ def RunSteps(api):
       gs_bucket='chromium',
       gs_acl=api.properties.get('gs_acl', ''),
       archive_prefix='chrome-asan',
+      build_config=api.properties.get('build_config', 'Release'),
       archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
       revision_dir=api.properties.get('revision_dir'),
       primary_project=api.properties.get('primary_project'),
       bitness=api.properties.get('bitness'),
-      build_config=api.properties.get('build_config'),
       use_legacy=api.properties.get('use_legacy', True),
       sortkey_datetime=api.properties.get('sortkey_datetime', None),
   )

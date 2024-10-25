@@ -318,6 +318,7 @@ def RunSteps(api, properties):
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
           archive_prefix=properties.archive_prefix or 'libfuzzer',
+          build_config=api.chromium.c.build_config_fs,
           archive_subdir_suffix=properties.upload_directory,
           gs_acl='public-read',
           **kwargs)

@@ -1012,6 +1012,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           gs_bucket=builder_spec.cf_gs_bucket,
           gs_acl=builder_spec.cf_gs_acl,
           archive_prefix=builder_spec.cf_archive_name,
+          build_config=self.m.chromium.c.build_config_fs,
           archive_subdir_suffix=builder_spec.cf_archive_subdir_suffix,
       )
 

@@ -174,13 +174,13 @@ class ArchiveApi(recipe_api.RecipeApi):
                           update_properties,
                           gs_bucket,
                           archive_prefix,
+                          build_config,
                           *,
                           archive_subdir_suffix='',
                           gs_acl=None,
                           revision_dir=None,
                           primary_project=None,
                           bitness=None,
-                          build_config=None,
                           use_legacy=True,
                           sortkey_datetime=None,
                           **kwargs):
@@ -213,6 +213,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                          commit information)
       gs_bucket: Name of the google storage bucket to upload to
       archive_prefix: Prefix of the archive zip file
+      build_config: Name of build config, e.g. release or debug. This is used
+                    to qualify archive file names.
       archive_subdir_suffix: Optional suffix to the google storage subdirectory
                              name that contains the archive files
       gs_acl: ACL used for the file on google storage
@@ -222,9 +224,6 @@ class ArchiveApi(recipe_api.RecipeApi):
                        checkout
       bitness: The bitness of the build (32 or 64) to distinguish archive
                names.
-      build_config: Name of build config, e.g. release or debug. This is used
-                    to qualify archive file names. If not given, it is inferred
-                    from the build output directory.
       use_legacy: Specify if legacy paths and archive names should be used. Set
                   to false for new builders.
       sortkey_datetime: If set, the api will use this datetime as the sortable
@@ -236,7 +235,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     # 32 and 64 bit bots can coexist. We don't change old bots to not confuse
     # clusterfuzz bisect jobs.
     assert use_legacy or bitness, 'Must specify bitness for new builders.'
-    build_config = (build_config or self.m.path.split(build_dir)[-1]).lower()
+    build_config = build_config.lower()
     gs_metadata = {}
     if sortkey_datetime is not None:
       sortkey_path = sortkey_datetime.strftime('%Y%m%d%H%M')
