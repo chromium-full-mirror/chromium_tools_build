@@ -23,18 +23,17 @@ from recipe_engine.post_process import DropExpectation, SummaryMarkdown
 from recipe_engine.recipe_api import Property
 
 DEPS = [
-  'builder_group',
-  'chromium',
-  'depot_tools/tryserver',
-  'recipe_engine/buildbucket',
-  'recipe_engine/file',
-  'recipe_engine/json',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/runtime',
-  'recipe_engine/step',
-  'v8',
-  'v8_tests',
+    'builder_group',
+    'chromium',
+    'recipe_engine/buildbucket',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/runtime',
+    'recipe_engine/step',
+    'v8',
+    'v8_tests',
 ]
 
 PROPERTIES = {
@@ -64,17 +63,17 @@ def orchestrator_name(api):
   Returns the orchestrator name by naming convention. Same as compilator
       name with the "_compile" infix removed.
   """
-  builder_name = api.buildbucket.builder_name
+  name = api.buildbucket.builder_name
 
-  if api.tryserver.is_tryserver or builder_name.endswith('_try'):
+  if api.buildbucket.build.builder.bucket.startswith('try'):
     allowed_suffixes = ('_compile_rel', '_compile_dbg', '_compile_perf_try')
-    assert builder_name.endswith(allowed_suffixes), (
+    assert name.endswith(allowed_suffixes), (
         f'Compilator name doesn\'t follow the naming convention. Must end '
-        f'in {", ".join(allowed_suffixes)}, but was {builder_name}.')
-    prefix, suffix = builder_name.rsplit('_compile_', 1)
+        f'in {", ".join(allowed_suffixes)}, but was {name}.')
+    prefix, suffix = name.rsplit('_compile_', 1)
     return f'{prefix}_{suffix}'
 
-  return builder_name
+  return name
 
 
 def read_test_spec(api, source_dir):
