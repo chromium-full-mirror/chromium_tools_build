@@ -210,7 +210,7 @@ _AddBuildSpec(
     target_arch='arm',
 )
 
-_AddBuildSpec('linux-builder-perf', 'linux', bisect_archive_build=True)
+_AddBuildSpec('linux-builder-perf', 'linux', bisect_archive_build=False)
 _AddBuildSpec('linux-builder-perf-pgo', 'linux', bisect_archive_build=True)
 _AddBuildSpec('linux-builder-perf-rel', 'linux')
 
