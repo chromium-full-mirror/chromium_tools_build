@@ -285,7 +285,7 @@ def _verify_gn_args(
           ctx = (
               contextlib.nullcontext(presentation)
               if phase is None else api.step.nest(f'phase: {phase}'))
-          with ctx as presentation:
+          with ctx as phase_presentation:
             try:
               pre_patch_args = _mb_lookup(
                   api,
@@ -305,7 +305,7 @@ def _verify_gn_args(
               break
 
             if not _compare_gn_args(api, pre_patch_args, post_patch_args,
-                                    presentation):
+                                    phase_presentation):
               success = False
 
         else:
