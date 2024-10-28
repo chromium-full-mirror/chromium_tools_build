@@ -11,6 +11,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 DEPS = [
     'chromium',
     'reclient',
+    'repro_instructions',
     'siso',
     'depot_tools/bot_update',
     'depot_tools/gclient',
@@ -20,6 +21,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
+    'recipe_engine/step',
 ]
 
 
@@ -27,6 +29,11 @@ def RunSteps(api):
   use_reclient = api.properties.get('use_reclient', False)
   resource_usage_output_file = api.properties.get('resource_usage_output_file',
                                                   None)
+
+  include_bot_update_instruction = api.properties.get(
+      'include_bot_update_instruction', False)
+  if include_bot_update_instruction:
+    api.repro_instructions.add_step_instruction(api.step.empty('bot_update'))
 
   api.gclient.set_config('chromium')
   for c in api.properties.get('gclient_configs', []):
@@ -260,5 +267,17 @@ def GenTests(api):
       # The arg after '-C' on the cmd line should be the path to the build-dir.
       api.post_check(post_process.StepCommandContains, 'compile',
                      ['-C', re.compile('.+fake-builder')]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'runhooks_instruction_tag',
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          bot_id='build1-a1',
+          build_number=77457,
+      ),
+      api.properties(include_bot_update_instruction=True),
       api.post_process(post_process.DropExpectation),
   )

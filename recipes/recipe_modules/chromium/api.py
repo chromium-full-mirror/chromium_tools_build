@@ -1118,10 +1118,18 @@ class ChromiumApi(recipe_api.RecipeApi):
       # accordingly.
       runhooks_env.update(self.c.gyp_env.as_jsonish())
 
+    # If there was a bot_update step, reuse it's instruction for the hooks
+    tag = self.m.repro_instructions.get_step_instruction_tag(r'.*bot_update')
     with self.m.gsutil.configure_gsutil():
       with self.m.context(
           cwd=self.m.context.cwd or source_dir, env=runhooks_env):
-        self.m.gclient.runhooks(**kwargs)
+        step_result = None
+        try:
+          step_result = self.m.gclient.runhooks(**kwargs)
+        finally:
+          if step_result and tag:
+            step_result.presentation.tags['resultdb.instruction.id'] = tag
+            self.m.repro_instructions.update_invocation_instructions()
 
   @_with_chromium_layout
   def run_gn(

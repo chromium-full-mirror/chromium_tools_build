@@ -253,6 +253,17 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       })
     return {'instruction_dependencies': dependencies}
 
+  def get_step_instruction_tag(self, step_id_re: str) -> str:
+    """Returns the last step id that matches the provided regex
+
+    Args:
+      step_id_re: Regex to run against step ids to validate the step
+    """
+    for step_id in reversed(self.step_ids):
+      if re.match(step_id_re, step_id):
+        return step_id
+    return None
+
   def get_dependency(
       self,
       step_id_re: str,

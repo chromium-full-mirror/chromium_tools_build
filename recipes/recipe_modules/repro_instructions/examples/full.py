@@ -69,6 +69,9 @@ def RunSteps(api):
 
   api.repro_instructions.trigger_properties()
 
+  api.repro_instructions.get_step_instruction_tag(r'.*')
+  api.repro_instructions.get_step_instruction_tag(r'asdfasdf')
+
 
 def GenTests(api):
   instructions = instruction_pb.Instructions(

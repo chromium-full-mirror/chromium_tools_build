@@ -95,7 +95,7 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
   local_instructions = (
       utr_instructions + '<br/>*To force non-remote services '
       'append --no-rbe and --no-siso, this will dramatically slow the build*')
-  dependency = chromium_api.m.repro_instructions.get_dependency(r'bot_update')
+  dependency = chromium_api.m.repro_instructions.get_dependency(r'.*bot_update')
   chromium_api.m.repro_instructions.add_step_instruction(
       step_result,
       remote_content=utr_instructions,

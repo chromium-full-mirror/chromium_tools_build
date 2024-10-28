@@ -277,11 +277,16 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     if src_revision:
       lines.append('To test at the same revision as this builder run:')
       lines.append(
-          f'```git fetch | git checkout {src_revision} | gclient sync```')
+          f'```git fetch; git checkout {src_revision}; gclient sync```')
       lines.append('')
 
     lines.append('To test at the latest revision run:')
-    lines.append('```git pull | gclient sync```')
+    lines.append('```git pull; gclient sync```')
+
+    lines.append('')
+    lines.append('*This will run both bot update and runhook steps. To '
+                 'separate these instead run `gclient sync --nohooks` and '
+                 '`gclient runhooks` separately*')
     return '<br/>'.join(lines)
 
   def _report_gclient_config(self, gclient_config):
