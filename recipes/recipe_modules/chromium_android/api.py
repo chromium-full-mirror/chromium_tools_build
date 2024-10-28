@@ -61,6 +61,7 @@ class AndroidApi(recipe_api.RecipeApi):
   def make_zip_archive(self,
                        step_name,
                        archive_name,
+                       build_dir,
                        files=None,
                        preserve_paths=True,
                        include_filters=None,
@@ -71,7 +72,8 @@ class AndroidApi(recipe_api.RecipeApi):
     Args:
       step_name: Name of the step.
       archive_name: Name of the archive file.
-      files: If specified, only include files here instead of out/<target>.
+      files: If specified, only include files here instead of in build_dir.
+      build_dir: Path to the build dir.
       preserve_paths: If True, files will be stored using the subdirectories
         in the archive.
       include_filters: List of globs to be included in the archive.
@@ -80,8 +82,8 @@ class AndroidApi(recipe_api.RecipeApi):
     cmd = [
         'vpython3',
         self.resource('archive_build.py'),
-        '--target',
-        self.m.chromium.c.BUILD_CONFIG,
+        '--build-dir',
+        build_dir,
         '--name',
         archive_name,
     ]
@@ -148,7 +150,15 @@ class AndroidApi(recipe_api.RecipeApi):
     self.m.step('tree truth steps',
                 [source_dir / 'build/tree_truth.sh', source_dir] + repos)
 
-  def upload_build(self, source_dir: Path, bucket, path):
+  def upload_build(self, source_dir: Path, build_dir: Path, bucket, path):
+    """Uploads a build zip to GS.
+
+    Args:
+      source_dir: Path to source checkout.
+      build_dir: Path to build dir.
+      bucket: GS bucket to upload to.
+      path: Path inside GS bucket to upload to.
+    """
     archive_name = 'build_product.zip'
 
     zipfile = source_dir / f'out/{archive_name}'
@@ -157,6 +167,7 @@ class AndroidApi(recipe_api.RecipeApi):
       self.make_zip_archive(
           'zip_build_product',
           archive_name,
+          build_dir,
           preserve_paths=True,
           exclude_filters=[
               "obj/*",

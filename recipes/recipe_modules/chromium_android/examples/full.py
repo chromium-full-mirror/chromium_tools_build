@@ -99,7 +99,10 @@ def RunSteps(api):
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
     api.chromium_android.make_zip_archive(
-        'zip_build_product', 'archive.zip', include_filters=['*.apk'],
+        'zip_build_product',
+        'archive.zip',
+        build_dir,
+        include_filters=['*.apk'],
         exclude_filters=['*.so', '*.a'])
   else:
     api.chromium_android.download_build(source_dir, 'build-bucket',

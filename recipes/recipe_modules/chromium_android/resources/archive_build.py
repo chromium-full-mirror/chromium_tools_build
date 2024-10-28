@@ -26,7 +26,7 @@ sys.path.extend([
 from common import chromium_utils
 
 
-def archive_build(target='Debug',
+def archive_build(build_dir,
                   name='archive.zip',
                   location='out',
                   files=None,
@@ -34,14 +34,13 @@ def archive_build(target='Debug',
                   include_filters=None,
                   exclude_filters=None):
   out_dir = 'out'
-  target_dir = os.path.join(out_dir, target)
   zip_file = os.path.join(location, name)
   expanded_files = []
   if files:
     for f in files:
-      expanded_files.append(os.path.join(target_dir, f))
+      expanded_files.append(os.path.join(build_dir, f))
   else:
-    expanded_files = [target_dir]
+    expanded_files = [build_dir]
 
   saved_dir = os.getcwd()
   os.chdir(os.path.dirname(os.path.join(saved_dir, out_dir)))
@@ -67,9 +66,7 @@ def main(argv):
   option_parser = optparse.OptionParser()
 
   option_parser.add_option(
-      '--target',
-      default='Debug',
-      help='build target to archive (Debug or Release)')
+      '--build-dir', help='Path to the build dir', required=True)
   option_parser.add_option(
       '--name', default='archive.zip', help='name of archive')
   option_parser.add_option(
@@ -102,7 +99,7 @@ def main(argv):
     options.files = options.files.split(',')
 
   return archive_build(
-      target=options.target,
+      build_dir=options.target,
       name=options.name,
       location=options.location,
       files=options.files,

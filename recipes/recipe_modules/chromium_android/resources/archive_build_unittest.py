@@ -45,20 +45,19 @@ class ArchiveTest(unittest.TestCase):
   def setUp(self):
     self.temp_dir = tempfile.mkdtemp()
     self.zip_file = 'archive.zip'
-    self.target = 'Debug'
-    self.build_dir = os.path.join(self.temp_dir, 'build')
-    os.makedirs(self.build_dir)
-    self.src_dir = os.path.join(self.build_dir, 'src')
+    self.root_build_dir = os.path.join(self.temp_dir, 'build')
+    os.makedirs(self.root_build_dir)
+    self.src_dir = os.path.join(self.root_build_dir, 'src')
     os.makedirs(self.src_dir)
     self.out_dir = os.path.join(self.src_dir, 'out')
     os.makedirs(self.out_dir)
-    self.target_dir = os.path.join(self.out_dir, self.target)
-    os.makedirs(self.target_dir)
+    self.build_dir = os.path.join(self.out_dir, 'Debug')
+    os.makedirs(self.build_dir)
 
     # Create test files
     CreateFileSetInDir(self.src_dir, SOURCE_FILES)
-    CreateFileSetInDir(self.target_dir, BINARY_FILES)
-    CreateFileSetInDir(self.target_dir, INTERMEDIATE_FILES)
+    CreateFileSetInDir(self.build_dir, BINARY_FILES)
+    CreateFileSetInDir(self.build_dir, INTERMEDIATE_FILES)
     os.chdir(self.src_dir)
 
   def tearDown(self):
@@ -75,7 +74,7 @@ class ArchiveTest(unittest.TestCase):
       # List of extract_dir-relative files.
       extracted_files = []
       for dirpath, _, filenames in os.walk(extract_dir):
-        subdir = dirpath[len(extract_dir):].strip(os.path.sep)
+        subdir = dirpath[len(extract_dir):]
         extracted_files.extend([os.path.join(subdir, f) for f in filenames])
       self.assertCountEqual(expected_files, extracted_files)
     else:
@@ -84,19 +83,20 @@ class ArchiveTest(unittest.TestCase):
     zip_file.close()
 
   def testArchiveBuild(self):
-    archive_build.archive_build(self.target, name=self.zip_file, location='out')
+    archive_build.archive_build(
+        self.build_dir, name=self.zip_file, location='out')
     zip_file_path = os.path.join(self.out_dir, self.zip_file)
 
     self.assertTrue(os.path.exists(zip_file_path))
     files_list = [
-        os.path.join('out', self.target, x)
+        os.path.join(self.build_dir, x)
         for x in (BINARY_FILES + INTERMEDIATE_FILES)
     ]
     self.verifyZipFile(self.out_dir, zip_file_path, files_list)
 
   def testArchiveBuildIgnoreSubfolderNames(self):
     archive_build.archive_build(
-        self.target,
+        self.build_dir,
         name=self.zip_file,
         location='out',
         ignore_subfolder_names=True)
@@ -111,20 +111,20 @@ class ArchiveTest(unittest.TestCase):
   def testArchiveBuildWithFiles(self):
     files = ['*dir1/test3.o', '../../a.cpp']
     archive_build.archive_build(
-        self.target, name=self.zip_file, location='out', files=files)
+        self.build_dir, name=self.zip_file, location='out', files=files)
     zip_file_path = os.path.join(self.out_dir, self.zip_file)
 
     self.assertTrue(os.path.exists(zip_file_path))
     files_list = [
-        os.path.join('out', self.target, 'dir1', 'test3.o'),
-        os.path.join('out', self.target, 'a.cpp')
+        os.path.join(self.build_dir, 'dir1', 'test3.o'),
+        os.path.join(self.build_dir, 'a.cpp')
     ]
     self.verifyZipFile(self.out_dir, zip_file_path, files_list)
 
   def testArchiveBuildWithIncludeFilters(self):
     include_filters = ['*.so']
     archive_build.archive_build(
-        self.target,
+        self.build_dir,
         name=self.zip_file,
         location='out',
         include_filters=include_filters)
@@ -133,16 +133,14 @@ class ArchiveTest(unittest.TestCase):
     self.assertTrue(os.path.exists(zip_file_path))
     out_files = BINARY_FILES + INTERMEDIATE_FILES
     files_list = [
-        os.path.join('out', self.target, x)
-        for x in out_files
-        if x.endswith('.so')
+        os.path.join(self.build_dir, x) for x in out_files if x.endswith('.so')
     ]
     self.verifyZipFile(self.out_dir, zip_file_path, files_list)
 
   def testArchiveBuildWithExcludeFilters(self):
     exclude_filters = ['*.so']
     archive_build.archive_build(
-        self.target,
+        self.build_dir,
         name=self.zip_file,
         location='out',
         exclude_filters=exclude_filters)
@@ -151,7 +149,7 @@ class ArchiveTest(unittest.TestCase):
     self.assertTrue(os.path.exists(zip_file_path))
     out_files = BINARY_FILES + INTERMEDIATE_FILES
     files_list = [
-        os.path.join('out', self.target, x)
+        os.path.join(self.build_dir, x)
         for x in out_files
         if not x.endswith('.so')
     ]

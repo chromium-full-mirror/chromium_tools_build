@@ -614,8 +614,8 @@
     "cmd": [
       "vpython3",
       "RECIPE_MODULE[build::chromium_android]/resources/archive_build.py",
-      "--target",
-      "Release",
+      "--build-dir",
+      "[START_DIR]/src/out/Release",
       "--name",
       "archive.zip",
       "--include-filter",
