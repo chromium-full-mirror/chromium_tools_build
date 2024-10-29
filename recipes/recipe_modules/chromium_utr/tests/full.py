@@ -512,9 +512,9 @@ target_os=['os']
                                  'c=false\n'
                                  'd=true')),
       api.post_process(
-          post_process.SummaryMarkdown,
-          'Caution: your build\'s gn args and the builder\'s mismatches in the '
-          'following way(s):\n'
+          post_process.SummaryMarkdown, 'Caution: your build\'s gn args set in '
+          '[CACHE]/src/out/Release/args.gn and the builder\'s mismatches in '
+          'the following way(s):\n'
           '- `b` in current build dir is not set by the builder\n'
           '- `c` in current build (`false`) does not match builder value '
           '(`true`)\n'

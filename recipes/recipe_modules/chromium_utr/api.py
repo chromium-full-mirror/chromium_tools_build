@@ -363,8 +363,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     error_info = ''
     if mismatch_messages:
-      error_info = ('Caution: your build\'s gn args and the builder\'s '
-                    'mismatches in the following way(s):\n' +
+      args_filename = str(build_dir / 'args.gn')
+      error_info = (f'Caution: your build\'s gn args set in {args_filename} '
+                    'and the builder\'s mismatches in the following way(s):\n' +
                     '\n'.join(mismatch_messages))
     return error_info
 
