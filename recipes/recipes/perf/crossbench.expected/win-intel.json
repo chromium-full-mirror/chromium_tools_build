@@ -93,43 +93,113 @@
   },
   {
     "cmd": [],
-    "name": "Download Chrome Binaries",
+    "name": "Download Chrome Binaries"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "----",
+      "cp",
+      "gs://chromium-browser-snapshots/Win_x64/LAST_CHANGE",
+      "[CLEANUP]\\chrome_tmp_1"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.gsutil download",
     "~followup_annotations": [
-      "@@@STEP_EXCEPTION@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
-    "cmd": [],
-    "name": "RECIPE CRASH (Uncaught exception)",
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]\\chrome_tmp_1\\LAST_CHANGE",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.read latest chrome version",
     "~followup_annotations": [
-      "@@@STEP_EXCEPTION@@@",
-      "The recipe has crashed at point 'Uncaught exception'!",
-      "",
-      "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/engine.py\", in run_steps",
-      "    raw_result = recipe_obj.run_steps(api, engine)",
-      "                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/recipe_deps.py\", in run_steps",
-      "    recipe_result = invoke_with_properties(",
-      "                    ^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in invoke_with_properties",
-      "    return _invoke_with_properties(callable_obj, all_props, environ, prop_defs,",
-      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
-      "    return callable_obj(*props, **additional_args)",
-      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 24, in RunSteps",
-      "    chrome_app_path, chrome_driver_path = download_chrome(api)",
-      "                                          ^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 98, in download_chrome",
-      "    raise NotImplementedError('Unsupported platform: %s' % (key,))",
-      "NotImplementedError: Unsupported platform: ('win', 'intel', 64)"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@LAST_CHANGE@@@"
     ]
   },
   {
-    "failure": {
-      "humanReason": "Uncaught Exception: NotImplementedError('Unsupported platform: ('win', 'intel', 64)')"
-    },
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "----",
+      "cp",
+      "gs://chromium-browser-snapshots/Win_x64//chrome-win.zip",
+      "[CLEANUP]\\chrome_tmp_1"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.gsutil download (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[infra::zip]\\resources\\unzip.py"
+    ],
+    "name": "Download Chrome Binaries.Extract archive",
+    "stdin": "{\"output\": \"[CLEANUP]\\\\chrome_tmp_1\\\\zip\\\\chrome\", \"quiet\": false, \"zip_file\": \"[CLEANUP]\\\\chrome_tmp_1\\\\chrome-win.zip\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "----",
+      "cp",
+      "gs://chromium-browser-snapshots/Win_x64//chromedriver_win32.zip",
+      "[CLEANUP]\\chrome_tmp_1"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.gsutil download (3)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[infra::zip]\\resources\\unzip.py"
+    ],
+    "name": "Download Chrome Binaries.Extract archive (2)",
+    "stdin": "{\"output\": \"[CLEANUP]\\\\chrome_tmp_1\\\\zip\\\\chromedriver\", \"quiet\": false, \"zip_file\": \"[CLEANUP]\\\\chrome_tmp_1\\\\chromedriver_win32.zip\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "crossbench/tests/end2end/runner.py",
+      "--test-browser-path=[CLEANUP]\\chrome_tmp_1\\zip\\chrome\\chrome-win\\chrome.exe",
+      "--test-driver-path=[CLEANUP]\\chrome_tmp_1\\zip\\chromedriver\\chromedriver_win32\\chromedriver",
+      "--ignore-tests=android"
+    ],
+    "name": "Run End2End Tests"
+  },
+  {
     "name": "$result"
   }
 ]

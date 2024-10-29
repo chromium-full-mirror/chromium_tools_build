@@ -151,24 +151,11 @@
   },
   {
     "cmd": [
-      "unzip",
-      "[CLEANUP]/chrome_tmp_1/chrome-linux.zip",
-      "-d",
-      "[CLEANUP]/chrome_tmp_1/zip"
+      "python3",
+      "RECIPE_MODULE[infra::zip]/resources/unzip.py"
     ],
     "name": "Download Chrome Binaries.Extract archive",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "chmod",
-      "-R",
-      "+x",
-      "[CLEANUP]/chrome_tmp_1/zip"
-    ],
-    "name": "Download Chrome Binaries.Update permissions for [CLEANUP]/chrome_tmp_1/zip",
+    "stdin": "{\"output\": \"[CLEANUP]/chrome_tmp_1/zip/chrome\", \"quiet\": false, \"zip_file\": \"[CLEANUP]/chrome_tmp_1/chrome-linux.zip\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -193,12 +180,11 @@
   },
   {
     "cmd": [
-      "unzip",
-      "[CLEANUP]/chrome_tmp_1/chromedriver_linux64.zip",
-      "-d",
-      "[CLEANUP]/chrome_tmp_1/zip"
+      "python3",
+      "RECIPE_MODULE[infra::zip]/resources/unzip.py"
     ],
     "name": "Download Chrome Binaries.Extract archive (2)",
+    "stdin": "{\"output\": \"[CLEANUP]/chrome_tmp_1/zip/chromedriver\", \"quiet\": false, \"zip_file\": \"[CLEANUP]/chrome_tmp_1/chromedriver_linux64.zip\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -207,8 +193,8 @@
     "cmd": [
       "vpython3",
       "crossbench/tests/end2end/runner.py",
-      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome-linux/chrome",
-      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_linux64/chromedriver",
+      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome/chrome-linux/chrome",
+      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver/chromedriver_linux64/chromedriver",
       "--ignore-tests=android"
     ],
     "name": "Run End2End Tests"

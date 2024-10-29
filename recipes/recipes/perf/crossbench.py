@@ -9,6 +9,7 @@ DEPS = [
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/gsutil',
+    'infra/zip',
     'recipe_engine/file',
     'recipe_engine/platform',
     'recipe_engine/path',
@@ -37,7 +38,6 @@ def GenTests(api):
       'win-intel',
       api.platform('win', 64),
       api.platform.arch('intel'),
-      api.expect_exception('NotImplementedError'),
   )
   yield api.test(
       'linux-intel-64',
@@ -81,6 +81,12 @@ CHROME_CONFIG = {
         'driver_archive_stem': 'chromedriver_linux64',
         'app_name': 'chrome'
     },
+    ('win', 'intel', 64): {
+        'gs_path': 'Win_x64',
+        'chrome_archive_stem': 'chrome-win',
+        'driver_archive_stem': 'chromedriver_win32',
+        'app_name': 'chrome.exe'
+    },
 }
 
 
@@ -93,10 +99,10 @@ def download_chrome(api):
     gs_bucket = 'chromium-browser-snapshots'
     version_file = 'LAST_CHANGE'
 
-    key = (api.platform.name, api.platform.arch, api.platform.bits)
-    if key not in CHROME_CONFIG:
-      raise NotImplementedError('Unsupported platform: %s' % (key,))
-    config = CHROME_CONFIG[key]
+    config_key = (api.platform.name, api.platform.arch, api.platform.bits)
+    if config_key not in CHROME_CONFIG:
+      raise NotImplementedError('Unsupported platform: %s' % (config_key,))
+    config = CHROME_CONFIG[config_key]
     gs_path = config['gs_path']
     app_name = config['app_name']
     chrome_archive_stem = config['chrome_archive_stem']
@@ -107,17 +113,15 @@ def download_chrome(api):
     api.gsutil.download(gs_bucket, '%s/%s' % (gs_path, version_file), chrome)
     version = api.file.read_text('read latest chrome version',
                                  chrome / version_file)
-    chrome_output_path = download(api, gs_bucket,
-                                  '%s/%s/%s' % (gs_path, version, chrome_zip),
-                                  chrome)
+    chrome_output_path = download(api, gs_bucket, '%s/%s/%s' %
+                                  (gs_path, version, chrome_zip),
+                                  chrome) / 'chrome'
     unzip_archive(api, chrome / chrome_zip, chrome_output_path)
-    # TODO(cbruni): check if this is needed
-    make_executable(api, chrome_output_path)
     chrome_app_path = chrome_output_path / chrome_archive_stem / app_name
 
     chromedriver_output_path = download(
-        api, gs_bucket, '%s/%s/%s' % (gs_path, version, chrome_driver_zip),
-        chrome)
+        api, gs_bucket, '%s/%s/%s' %
+        (gs_path, version, chrome_driver_zip), chrome) / 'chromedriver'
     unzip_archive(api, chrome / chrome_driver_zip, chromedriver_output_path)
     chrome_driver_path = (
         chromedriver_output_path / chrome_driver_archive_stem / 'chromedriver')
@@ -131,9 +135,4 @@ def download(api, gs_bucket, file_path, download_dir):
 
 
 def unzip_archive(api, archive_path, output):
-  api.step('Extract archive', ['unzip', archive_path, '-d', output])
-
-
-def make_executable(api, directory):
-  api.step('Update permissions for %s' % directory,
-           ['chmod', '-R', '+x', directory])
+  api.zip.unzip('Extract archive', archive_path, output)
