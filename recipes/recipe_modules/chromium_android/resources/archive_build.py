@@ -65,8 +65,7 @@ def archive_build(build_dir,
 def main(argv):
   option_parser = optparse.OptionParser()
 
-  option_parser.add_option(
-      '--build-dir', help='Path to the build dir', required=True)
+  option_parser.add_option('--build-dir', help='Path to the build dir')
   option_parser.add_option(
       '--name', default='archive.zip', help='name of archive')
   option_parser.add_option(
@@ -94,12 +93,14 @@ def main(argv):
   options, args = option_parser.parse_args()
   if args:
     raise Exception('Unknown arguments: %s' % args)
+  if not options.build_dir:
+    raise optparse.OptionValueError("Need to pass --build-dir")
 
   if options.files:
     options.files = options.files.split(',')
 
   return archive_build(
-      build_dir=options.target,
+      build_dir=options.build_dir,
       name=options.name,
       location=options.location,
       files=options.files,
