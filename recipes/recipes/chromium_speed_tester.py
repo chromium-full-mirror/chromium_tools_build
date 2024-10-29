@@ -112,7 +112,7 @@ def GenTests(api):
       'mac-tester-coverage',
       api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.perf',
-          builder='mac-laptop_low_end-perf',
+          builder='mac-intel-perf',
           parent_buildername='mac-builder-perf'),
       api.post_process(post_process.DropExpectation),
   )

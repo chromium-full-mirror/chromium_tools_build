@@ -233,8 +233,6 @@ _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
 
-_AddIsolatedTestSpec('mac-laptop_low_end-perf', 'mac', 'mac-builder-perf')
-_AddIsolatedTestSpec('mac-laptop_high_end-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec('mac-intel-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
@@ -277,10 +275,6 @@ _AddPinpointTestSpec('android-samsung-foldable-perf-pgo', 'android',
 # linux
 _AddPinpointTestSpec('linux-perf-pgo', 'linux', 'linux-builder-perf-pgo')
 # mac
-_AddPinpointTestSpec('mac-laptop_low_end-perf-pgo', 'mac',
-                     'mac-builder-perf-pgo')
-_AddPinpointTestSpec('mac-laptop_high_end-perf-pgo', 'mac',
-                     'mac-builder-perf-pgo')
 _AddPinpointTestSpec(
     'mac-m1_mini_2020-perf-pgo',
     'mac',
