@@ -584,6 +584,8 @@ class ReclientApi(recipe_api.RecipeApi):
             enable_crash_dump,
         'GOMA_DEPS_CACHE_TABLE_THRESHOLD':
             40000,
+        'RBE_experimental_goma_deps_cache':
+            'true',
     }
 
     if self._credentials_helper:
