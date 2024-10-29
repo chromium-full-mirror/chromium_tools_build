@@ -181,10 +181,9 @@ def RunSteps(api):
       '--bypass-hooks',
       '--enable-auto-submit',
       '-r',
-      'kimstephanie@google.com',
+      'sshrimp@google.com',
       '--cc',
       ','.join([
-          'sshrimp@google.com',
           'gatong@google.com',
       ]),
       '--send-email',
