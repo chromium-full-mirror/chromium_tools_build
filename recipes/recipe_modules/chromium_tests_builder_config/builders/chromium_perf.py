@@ -189,12 +189,12 @@ _AddBuildSpec(
 
 _AddBuildSpec('win64-builder-perf', 'win', bisect_archive_build=False)
 _AddBuildSpec('win64-builder-perf-pgo', 'win', bisect_archive_build=True)
-_AddBuildSpec('mac-builder-perf', 'mac', bisect_archive_build=True)
+_AddBuildSpec('mac-builder-perf', 'mac', bisect_archive_build=False)
 _AddBuildSpec('mac-builder-perf-pgo', 'mac', bisect_archive_build=True)
 _AddBuildSpec(
     'mac-arm-builder-perf',
     'mac',
-    bisect_archive_build=True,
+    bisect_archive_build=False,
     target_arch='arm',
 )
 _AddBuildSpec(
