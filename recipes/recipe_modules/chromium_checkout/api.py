@@ -269,10 +269,15 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         [f'{key} = {value}' for key, value in filtered_config.items()])
 
     lines = []
-    lines.append('To update your local checkout ensure the following '
-                 'solution(s) are in your .gclient file:')
+    lines.append(
+        'See the '
+        '[docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) '
+        'for more platform specific update instructions.')
 
-    lines.append(f'\n```\n{filtered_config}\n```\n')
+    gclient_file_details = (
+        '<details><summary>`.gclient` file for this update</summary>'
+        f'<pre><code>{filtered_config}</code></pre></details>')
+    lines.append(gclient_file_details.replace(' ', '&nbsp;'))
 
     if src_revision:
       lines.append('To test at the same revision as this builder run:')
