@@ -152,7 +152,7 @@ _AddBuildSpec(
     'android-builder-perf',
     'android',
     target_bits=32,
-    bisect_archive_build=True)
+    bisect_archive_build=False)
 
 # LUCI builder
 _AddBuildSpec(
@@ -166,7 +166,7 @@ _AddBuildSpec(
     'android_arm64-builder-perf',
     'android',
     target_bits=64,
-    bisect_archive_build=True)
+    bisect_archive_build=False)
 
 _AddBuildSpec(
     'android_arm64-builder-perf-pgo',
@@ -178,7 +178,7 @@ _AddBuildSpec(
     'android_arm64_high_end-builder-perf',
     'android',
     target_bits=64,
-    bisect_archive_build=True)
+    bisect_archive_build=False)
 
 # LUCI builder
 _AddBuildSpec(
