@@ -53,19 +53,6 @@ class InteractionsTests(ExonerableTests):
   def construct_commands(self):
     return [self.run_tests_command('test/interactions')]
 
-  def construct_env(self):
-    env = {
-        "FORCE_UPDATE_ALL_GOLDENS":
-            'True',
-        "THROW_AFTER_GOLDENS_UPDATE":
-            'True',
-        "HTML_OUTPUT_FILE":
-            self.api.path.join('${ISOLATED_OUTDIR}',
-                               'interactions_failure_screenshots.html'),
-    }
-    env.update(self.env)
-    return env
-
   @contextmanager
   def _collection_context(self):
     with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
@@ -76,10 +63,7 @@ class InteractionsTests(ExonerableTests):
 
   def copy_golden_snapshots(self):
     # TODO:(liviurau) Remove this after fast build gets fixed for the new runner
-    goldens_collector_builders = [
-        "devtools_frontend_linux_rel", "devtools_frontend_mac_rel",
-        "devtools_frontend_win_rel"
-    ]
+    goldens_collector_builders = ["dtf_linux_rel", "dtf_mac_rel", "dtf_win_rel"]
     if self.api.buildbucket.builder_name not in goldens_collector_builders:
       return
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
