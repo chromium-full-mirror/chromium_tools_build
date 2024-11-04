@@ -379,6 +379,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # Trigger and wait for the (without patch) tests!
     with self.m.chromium_tests.wrap_chromium_tests(
         checkout_dir, source_dir, build_dir, tests=failing_test_suites):
+      output_without_patch_property = self.m.step.empty(
+          'record ran_tests_without_patch')
+      output_without_patch_property.presentation.properties[
+          'ran_tests_without_patch'] = True
       self.m.test_utils.run_tests(
           checkout_dir,
           source_dir,

@@ -4046,6 +4046,13 @@
   },
   {
     "cmd": [],
+    "name": "record ran_tests_retry_shard",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@ran_tests_retry_shard@true@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "test_pre_run (retry shards with patch)"
   },
   {

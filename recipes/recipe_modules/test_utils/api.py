@@ -1116,6 +1116,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     if not swarming_test_suites:
       return invalid_test_suites, failed_and_invalid_suites
 
+    output_retry_shard_step = self.m.step.empty('record ran_tests_retry_shard')
+    output_retry_shard_step.presentation.properties[
+        'ran_tests_retry_shard'] = True
     retry_suffix = self.prepend_retry_shards(suffix)
     _, new_swarming_invalid_suites, _ = self.run_tests_once(
         checkout_dir,

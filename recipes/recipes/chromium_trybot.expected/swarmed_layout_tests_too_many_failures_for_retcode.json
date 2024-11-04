@@ -4046,6 +4046,13 @@
   },
   {
     "cmd": [],
+    "name": "record ran_tests_retry_shard",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@ran_tests_retry_shard@true@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "test_pre_run (retry shards with patch)"
   },
   {
@@ -7649,6 +7656,13 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "record ran_tests_without_patch",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@ran_tests_without_patch@true@@@"
     ]
   },
   {

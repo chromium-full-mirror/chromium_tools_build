@@ -5452,6 +5452,13 @@
   },
   {
     "cmd": [],
+    "name": "record ran_tests_without_patch",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@ran_tests_without_patch@true@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "test_pre_run (without patch)"
   },
   {
