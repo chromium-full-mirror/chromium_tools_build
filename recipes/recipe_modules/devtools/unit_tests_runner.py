@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .test_runner_base import ExonerableTests, use_legacy_test_runner
+from .test_runner_base import ExonerableTests
 
 
 class UnitTests(ExonerableTests):
@@ -11,19 +11,8 @@ class UnitTests(ExonerableTests):
   def test_type_tag(self):
     return 'unit_tests'
 
-  def construct_commands(self):
+  def commands(self):
     return [self.run_tests_command('front_end')]
-
-  def legacy_construct_commands(self):
-    command = [
-        self.api.path.join('scripts', 'test', 'run_unittests.py'),
-        '--target=' + self.builder_config,
-        '--swarming-output-file',
-        '${ISOLATED_OUTDIR}',
-    ]
-    if self.coverage:
-      command.append('--coverage')
-    return [command]
 
   def _post_collect(self):
     if self.coverage:
@@ -37,11 +26,3 @@ class UnitTests(ExonerableTests):
     self.api.file.copytree(
         'copy unit tests coverage data', coverage_data_dir,
         self.api.path.join(self.source_dir, 'karma-coverage'))
-
-  def prepare_filtered_rerun(self, test_names):
-    if use_legacy_test_runner(self.api):
-      self.env = {
-          'MOCHA_FGREP': self.test_names_to_grep_string(test_names),
-      }
-    else:
-      super().prepare_filtered_rerun(test_names)

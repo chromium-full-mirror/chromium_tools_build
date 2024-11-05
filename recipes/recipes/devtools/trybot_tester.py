@@ -16,6 +16,7 @@ from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests, E2ETestDivi
 from RECIPE_MODULES.build.devtools.interactions_tests_runner import InteractionsTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
+from RECIPE_MODULES.build.devtools.lint_check import LintCheck
 
 DEPS = [
     'builder_group',
@@ -23,10 +24,12 @@ DEPS = [
     'devtools',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/platform',
     'recipe_engine/resultdb',
     'recipe_engine/step',
     'v8_orchestrator',
@@ -92,12 +95,27 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       InteractionsTests(api, source_dir, trigger, builder_config,
                         'Interactions Tests'),
       E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests', divider),
+      LintCheck(api, source_dir, trigger, builder_config, 'Lint Check',
+                lookup_command(api, source_dir, 'lint'), target_os),
   ]
   tests = [t for t in tests if not t.skip()]
 
   FirstRunPhase(api).run_all(tests)
   results = ExonerationPhase(api).run_all(tests)
   return results.raw_result()
+
+
+def lookup_command(api, source_dir, name):
+  package_path = source_dir.joinpath('package.json')
+  package = api.file.read_json(
+      'Read all commands',
+      str(package_path),
+      test_data={
+          'scripts': {
+              'lint': 'echo 123',
+          },
+      })
+  return package['scripts'][name].split(' ')
 
 
 def GenTests(api):

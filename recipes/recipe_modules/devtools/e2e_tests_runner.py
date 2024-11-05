@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .test_runner_base import ExonerableTests, use_legacy_test_runner
+from .test_runner_base import ExonerableTests
 from functools import cached_property
 import re
 
@@ -26,10 +26,7 @@ class E2ETests(ExonerableTests):
   def skip(self):
     return self.api.devtools.is_debug(self.builder_config)
 
-  def legacy_construct_commands(self):
-    return [cmd + self.extra_args for cmd in self.divider.commands]
-
-  def construct_commands(self):
+  def commands(self):
     is_exoneration_attempt = self.extra_args and not self.divider.shuffled
     if is_exoneration_attempt:
       return [self.run_tests_command('test/e2e')]
@@ -75,19 +72,10 @@ class E2ETestDivider:
     self.shard_count = shard_count
     self.shuffled = shuffled
 
-  def legacy_commands(self):
-    return self.api.devtools.divided_e2e_commands(
-        self.source_dir,
-        builder_config=self.builder_config,
-        shards=self.shard_count,
-    )
-
   # TODO(liviurau) Rename function after legacy branch is no longer supported
   # It returns a list of lists of test paths
   @cached_property
   def commands(self):
-    if use_legacy_test_runner(self.api):
-      return self.legacy_commands()
     contents = read_test_list(self.api, self.source_dir, self.builder_config)
     all_tests = contents.splitlines()
     all_test_paths = [

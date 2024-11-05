@@ -368,28 +368,6 @@ def GenTests(api):
           Filter().include_re('Run tests.Trigger Tests.*|.*\(Shard #\d*\).*')),
       status='SUCCESS',
   )
-  yield api.test(
-      'legacy ci parallel builder performance benchmarks',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='parallel_linux'),
-      api.properties(perf_benchmarks=True, branch_number=1111),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.divide test run',
-          api.raw_io.stream_output_text(
-              'node runner config pattern', stream='stdout')),
-      api.post_process(MustRun, 'archive'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger Unit Tests'),
-      api.post_process(MustRun,
-                       'Run tests.Trigger Tests.Trigger Interactions Tests'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Interactions Tests'),
-      api.post_process(MustRun, 'Run tests.Performance Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
-      api.post_process(
-          Filter().include_re('Run tests.Trigger Tests.*|.*\(Shard #\d*\).*')),
-      status='SUCCESS',
-  )
 
   data1 = {
       'shards': [{
@@ -743,39 +721,6 @@ def GenTests(api):
           'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
           api.raw_io.stream_output_text(
               'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
-      api.step_data(
-          'Run tests.Unit Tests.Unit Tests ' +
-          'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
-      api.post_process(
-          SummaryMarkdown,
-          'Failure in Unit Tests (shard #0), Failure in Unit Tests (rerun) '
-          '(shard #0)'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Interactions Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
-      resultdb_query(
-          'Flake exonaration attempt.rdb query',
-          test_result('unit1', 'unit_tests'),
-          test_result('unit2', 'unit_tests'),
-      ),
-      api.step_data(
-          'Flake exonaration attempt.Unit Tests (rerun).Unit Tests (rerun) '
-          'shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data),
-      ),
-      api.post_process(DropExpectation),
-      status='FAILURE',
-  )
-  yield api.test(
-      'legacy ci failed parallel builder on unit tests',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      api.properties(branch_number=1111),
-      ci_build(builder='parallel_linux'),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.divide test run',
-          api.raw_io.stream_output_text(
-              'node runner config pattern', stream='stdout')),
       api.step_data(
           'Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',

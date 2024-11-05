@@ -57,9 +57,8 @@ class DevToolsTests(ABC):
     return results
 
   def prepare_filtered_rerun(self, test_names):
-    grep_arg = 'mocha-grep' if use_legacy_test_runner(self.api) else 'grep'
     self.extra_args = [
-        f'--{grep_arg}="{self.test_names_to_grep_string(test_names)}"',
+        f'--grep="{self.test_names_to_grep_string(test_names)}"',
     ]
     self.env['DEBUG'] = 'puppeteer:*'
 
@@ -142,30 +141,11 @@ class DevToolsTests(ABC):
     command.extend(test_list)
     return command
 
+  @abstractmethod
   def commands(self):
-    if use_legacy_test_runner(self.api):
-      return self.legacy_construct_commands()
-    return self.construct_commands()
-
-  @abstractmethod
-  def construct_commands(self):
     """
     Returns a list of commands to be run in the swarming tasks.
     """
-
-  @abstractmethod
-  def legacy_construct_commands(self):
-    """
-    Returns a list of commands to be run in the swarming tasks.
-    """
-
-
-# TODO(liviurau) Remove this function after last legacy branch is no longer
-# supported (https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/infra/config/definitions.star)
-def use_legacy_test_runner(api):
-  branch_number = api.properties.get('branch_number', None)
-  last_branch_with_legacy_runner = 6478
-  return branch_number and int(branch_number) <= last_branch_with_legacy_runner
 
 
 class ExonerableTests(DevToolsTests):

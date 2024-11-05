@@ -14,21 +14,9 @@ class PerformanceTests(DevToolsTests):
   def skip(self):
     return not self.api.properties.get("perf_benchmarks", False)
 
-  def construct_commands(self):
+  def commands(self):
     return [self.run_tests_command('test/perf')]
 
-  def legacy_construct_commands(self):
-    return [[
-        self.api.path.join('third_party', 'node', 'node.py'),
-        "--output",
-        self.api.path.join('scripts', 'test', 'run_test_suite.js'),
-        "--test-suite-path=gen/test/perf",
-        "--test-suite-source-dir=test/perf",
-        "--test-server-type=hosted-mode",
-        "--target=" + self.builder_config,
-        '--swarming-output-file',
-        '${ISOLATED_OUTDIR}',
-    ]]
 
   def _post_collect(self):
     self.copy_perf_benchmarks_data()

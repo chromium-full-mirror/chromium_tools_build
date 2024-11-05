@@ -162,7 +162,9 @@ class DevToolsAPI(recipe_api.RecipeApi):
     for i in range(len(commands)):
       if commands[i][0].startswith('ITERATIONS='):
         env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
-      full_command = ["vpython3", "-u"] + commands[i] + args
+      needs_vpy3 = commands[i][0] != 'vpython3'
+      full_command = (["vpython3", "-u"]
+                      if needs_vpy3 else []) + commands[i] + args
       task = self.m.chromium_swarming.task(
           name=f'{step_name} (Shard #{i})',
           raw_cmd=full_command,

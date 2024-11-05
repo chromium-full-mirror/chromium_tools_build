@@ -36,21 +36,7 @@ class InteractionsTests(ExonerableTests):
 
     return super().collect()
 
-  def legacy_construct_commands(self):
-    command = [
-        self.api.path.join('third_party', 'node', 'node.py'),
-        "--output",
-        self.api.path.join('scripts', 'test', 'run_test_suite.js'),
-        "--test-suite-path=gen/test/interactions",
-        "--test-suite-source-dir=test/interactions",
-        "--test-server-type='component-docs'",
-        "--target=" + self.builder_config,
-        '--swarming-output-file',
-        '${ISOLATED_OUTDIR}',
-    ] + self.extra_args
-    return [command]
-
-  def construct_commands(self):
+  def commands(self):
     return [self.run_tests_command('test/interactions')]
 
   @contextmanager

@@ -77,8 +77,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     e2e_tests_list = read_test_list(api, source_dir, builder_config)
 
-    run_lint_check(api, builder_config, source_dir)
-
     cas_digest = api.devtools.archive_to_cas(source_dir)
     emit_compilator_properties(api, cas_digest, e2e_tests_list)
   finally:
@@ -100,15 +98,6 @@ def emit_compilator_properties(api, cas_digest, e2e_tests_list):
       properties, indent=2)
 
 
-def run_lint_check(api, builder_config, source_dir):
-  if not api.devtools.is_debug(builder_config):
-    with api.step.nest('Linting'):
-      api.devtools.run_node_script(source_dir, 'Lint Check with ESLint',
-                                   'run_lint_check_js.mjs')
-      api.devtools.run_node_script(source_dir, 'Lint Check with Stylelint',
-                                   'run_lint_check_css.js')
-
-
 def GenTests(api):
 
   def check_steps(rule, *step_names):
@@ -120,21 +109,7 @@ def GenTests(api):
       'compile failure',
       api.step_data('compile', retcode=1),
       *check_steps(MustRun, 'compile'),
-      *check_steps(DoesNotRun, 'archive', 'compilator properties'
-                   'Linting.Lint Check with ESLint',
-                   'Linting.Lint check with Stylelint'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
-  )
-
-  yield api.test(
-      'linter failure',
-      api.step_data('Linting.Lint Check with ESLint', retcode=1),
-      *check_steps(MustRun, 'compile'),
-      *check_steps(DoesNotRun, 'Linting.Lint Check with Stylelint', 'archive',
-                   'compilator properties'),
-      api.post_process(SummaryMarkdown,
-                       "Step('Linting.Lint Check with ESLint') (retcode: 1)"),
+      *check_steps(DoesNotRun, 'archive', 'compilator properties'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
@@ -142,9 +117,7 @@ def GenTests(api):
   yield api.test(
       'cancellation',
       api.runtime.global_shutdown_on_step('compile'),
-      *check_steps(DoesNotRun, 'archive', 'compilator properties'
-                   'Linting.Lint Check with ESLint',
-                   'Linting.Lint check with Stylelint'),
+      *check_steps(DoesNotRun, 'archive', 'compilator properties'),
       api.post_process(SummaryMarkdown, CANCELLATION_MESSAGE),
       api.post_process(DropExpectation),
       status='CANCELED',
@@ -158,11 +131,6 @@ def GenTests(api):
           'compile',
           'archive',
           'compilator properties',
-      ),
-      *check_steps(
-          DoesNotRun,
-          'Linting.Lint Check with ESLint',
-          'Linting.Lint check with Stylelint',
       ),
       api.post_process(DropExpectation),
   )

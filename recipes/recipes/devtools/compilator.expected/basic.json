@@ -263,38 +263,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Linting"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "third_party/node/node.py",
-      "--output",
-      "scripts/test/run_lint_check_js.mjs"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "name": "Linting.Lint Check with ESLint",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "third_party/node/node.py",
-      "--output",
-      "scripts/test/run_lint_check_css.js"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "name": "Linting.Lint Check with Stylelint",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",
