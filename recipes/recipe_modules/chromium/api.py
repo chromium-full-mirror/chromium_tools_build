@@ -895,6 +895,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   @_with_chromium_layout
   def runtest(self,
               checkout_dir: Path,
+              build_dir: Path,
               test,
               *,
               args=None,
@@ -910,7 +911,8 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     Args:
       checkout_dir: The path to the directory where the checkout was performed.
-      source_dir: The path to the top-level repo.
+      build_dir: The path to the build dir.
+      test: Name of the test suite to run.
     """
     args = args or []
     assert isinstance(args, collections.abc.Sequence), repr(args)
@@ -919,7 +921,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if not python_mode and self.m.platform.is_win and ext == '':
       test += '.exe'
 
-    full_args = ['--target', self.c.build_config_fs]
+    full_args = ['--build-dir', build_dir]
     if self.c.TARGET_PLATFORM == 'android':
       full_args.extend(['--test-platform', 'android'])
     if self.m.platform.is_linux:

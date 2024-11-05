@@ -49,7 +49,6 @@ from common import chromium_utils
 from common import gtest_utils
 
 import bot_utils
-import build_directory
 import crash_utils
 import xvfb
 
@@ -163,11 +162,10 @@ def _RunGTestCommand(
   return result
 
 
-def _BuildTestBinaryCommand(_build_dir, test_exe_path, options):
+def _BuildTestBinaryCommand(test_exe_path, options):
   """Builds a command to run a test binary.
 
   Args:
-    build_dir: Path to the tools/build directory.
     test_exe_path: Path to test command binary.
     options: Options passed for this invocation of runtest.py.
 
@@ -222,7 +220,7 @@ def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
       '--builder_name',
       options.builder_name,
       '--checkout_dir',
-      os.path.dirname(os.path.dirname(build_dir)),
+      os.path.dirname(os.path.dirname(os.path.dirname(build_dir))),
   ]
   isolate_command += [test_exe_path, '--'] + command
 
@@ -299,13 +297,12 @@ def _MainMac(options, args, extra_env):
   if len(args) < 1:
     raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
 
+  build_dir = options.build_dir
   test_exe = args[0]
   if options.run_python_script:
-    build_dir = os.path.normpath(os.path.abspath(options.build_dir))
     test_exe_path = test_exe
   else:
-    build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-    test_exe_path = os.path.join(build_dir, options.target, test_exe)
+    test_exe_path = os.path.join(build_dir, test_exe)
 
   # Nuke anything that appears to be stale chrome items in the temporary
   # directory from previous test runs (i.e.- from crashes or unittest leaks).
@@ -314,7 +311,7 @@ def _MainMac(options, args, extra_env):
   if options.run_python_script:
     command = [sys.executable, test_exe]
   else:
-    command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
+    command = _BuildTestBinaryCommand(test_exe_path, options)
   command.extend(args[1:])
 
   log_processor = _CreateLogProcessor(options)
@@ -343,7 +340,7 @@ def _MainMac(options, args, extra_env):
     )
   finally:
     if _UsingGtestJson(options):
-      log_processor.ProcessJSONFile(options.build_dir)
+      log_processor.ProcessJSONFile(os.path.dirname(options.build_dir))
 
   if options.parse_gtest_output:
     _report_outcome(options.test_type, result, log_processor)
@@ -393,13 +390,9 @@ def _MainIOS(options, args, extra_env):
   # Build the args for invoking iossim, which will install the app on the
   # simulator and launch it, then dump the test results to stdout.
 
-  build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-  app_exe_path = os.path.join(
-      build_dir, options.target + '-iphonesimulator', test_name + '.app'
-  )
-  test_exe_path = os.path.join(
-      build_dir, 'ninja-iossim', options.target, 'iossim'
-  )
+  build_dir = options.build_dir
+  app_exe_path = os.path.join(build_dir, test_name + '.app')
+  test_exe_path = os.path.join(build_dir, 'iossim')
   tmpdir = tempfile.mkdtemp()
   command = [
       test_exe_path, '-d', device, '-s', ios_version, '-t', '120', '-u', tmpdir,
@@ -455,14 +448,12 @@ def _MainLinux(options, args, extra_env):
   if len(args) < 1:
     raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
 
-  build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-  bin_dir = os.path.join(build_dir, options.target)
-
+  build_dir = options.build_dir
   test_exe = args[0]
   if options.run_python_script:
     test_exe_path = test_exe
   else:
-    test_exe_path = os.path.join(bin_dir, test_exe)
+    test_exe_path = os.path.join(build_dir, test_exe)
   if not os.path.exists(test_exe_path):
     msg = 'Unable to find %s' % test_exe_path
     raise chromium_utils.PathNotFound(msg)
@@ -491,12 +482,12 @@ def _MainLinux(options, args, extra_env):
     extra_env['LD_LIBRARY_PATH'] += '/usr/lib/x86_64-linux-gnu/debug:'
 
   extra_env['LD_LIBRARY_PATH'
-           ] += '%s:%s/lib:%s/lib.target' % (bin_dir, bin_dir, bin_dir)
+           ] += '%s:%s/lib:%s/lib.target' % (build_dir, build_dir, build_dir)
 
   if options.run_python_script:
     command = [sys.executable, test_exe]
   else:
-    command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
+    command = _BuildTestBinaryCommand(test_exe_path, options)
   command.extend(args[1:])
 
   log_processor = _CreateLogProcessor(options)
@@ -514,7 +505,7 @@ def _MainLinux(options, args, extra_env):
         'devtools_perf_test_wrapper' in test_exe
     )
     if start_xvfb:
-      xvfb.StartVirtualX(bin_dir)
+      xvfb.StartVirtualX(build_dir)
 
     if _UsingGtestJson(options):
       json_file_name = log_processor.PrepareJSONFile(
@@ -545,7 +536,7 @@ def _MainLinux(options, args, extra_env):
     if start_xvfb:
       xvfb.StopVirtualX()
     if _UsingGtestJson(options):
-      log_processor.ProcessJSONFile(options.build_dir)
+      log_processor.ProcessJSONFile(os.path.dirname(options.build_dir))
 
   if options.parse_gtest_output:
     _report_outcome(options.test_type, result, log_processor)
@@ -576,11 +567,11 @@ def _MainWin(options, args, extra_env):
   bot_utils.RemoveChromeTemporaryFiles()
 
   test_exe = args[0]
-  build_dir = os.path.abspath(options.build_dir)
+  build_dir = options.build_dir
   if options.run_python_script:
     test_exe_path = test_exe
   else:
-    test_exe_path = os.path.join(build_dir, options.target, test_exe)
+    test_exe_path = os.path.join(build_dir, test_exe)
 
   if not os.path.exists(test_exe_path):
     raise chromium_utils.PathNotFound('Unable to find %s' % test_exe_path)
@@ -588,7 +579,7 @@ def _MainWin(options, args, extra_env):
   if options.run_python_script:
     command = [sys.executable, test_exe]
   else:
-    command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
+    command = _BuildTestBinaryCommand(test_exe_path, options)
 
   command.extend(args[1:])
 
@@ -612,7 +603,7 @@ def _MainWin(options, args, extra_env):
     result = _RunGTestCommand(options, command, extra_env, log_processor)
   finally:
     if _UsingGtestJson(options):
-      log_processor.ProcessJSONFile(options.build_dir)
+      log_processor.ProcessJSONFile(os.path.dirname(options.build_dir))
 
   if options.parse_gtest_output:
     _report_outcome(options.test_type, result, log_processor)
@@ -635,10 +626,8 @@ def _MainAndroid(options, args, extra_env):
   Returns:
     Exit status code.
   """
-  if not os.environ.get('CHROMIUM_OUTPUT_DIR') and options.target:
-    extra_env['CHROMIUM_OUTPUT_DIR'] = (
-        os.path.abspath(os.path.join(options.build_dir, options.target))
-    )
+  if not os.environ.get('CHROMIUM_OUTPUT_DIR'):
+    extra_env['CHROMIUM_OUTPUT_DIR'] = options.build_dir
   if options.run_python_script:
     return _MainLinux(options, args, extra_env)
 
@@ -743,10 +732,7 @@ def main():
   # own, we need to stop parsing when we reach the first positional argument.
   option_parser.disable_interspersed_args()
 
-  option_parser.add_option(
-      '--target', default='Release', help='build target (Debug or Release)'
-  )
-  option_parser.add_option('--build-dir', help='ignored')
+  option_parser.add_option('--build-dir', help='Path to the build dir.')
   option_parser.add_option(
       '--test-platform', help='Platform to test on, e.g. ios-simulator'
   )
@@ -839,6 +825,8 @@ def main():
   )
 
   options, args = option_parser.parse_args()
+  if not options.build_dir:
+    raise optparse.OptionValueError('Need to pass --build-dir')
 
   # Initialize logging.
   log_level = logging.INFO
@@ -856,7 +844,7 @@ def main():
   did_launch_dbus = _LaunchDBus()
 
   try:
-    options.build_dir = build_directory.GetBuildOutputDirectory()
+    options.build_dir = os.path.normpath(os.path.abspath(options.build_dir))
 
     # We will use this to accumulate overrides for the command under test,
     # That we may not need or want for other support commands.

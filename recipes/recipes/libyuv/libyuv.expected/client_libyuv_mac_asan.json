@@ -1588,8 +1588,8 @@
     "cmd": [
       "python3",
       "RECIPE_REPO[build]/recipes/runtest.py",
-      "--target",
-      "Release",
+      "--build-dir",
+      "[CACHE]/builder/src/out/Release",
       "--builder-name=Mac Asan",
       "--build-number=1337",
       "--enable-asan",

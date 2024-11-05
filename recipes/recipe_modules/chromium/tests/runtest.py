@@ -25,6 +25,7 @@ def RunSteps(api):
     api.chromium.apply_config(config)
 
   checkout_dir = api.path.cache_dir / 'builder'
+  build_dir = api.chromium.default_build_dir(checkout_dir)
 
   kwargs = {}
   if api.properties.get('parse_gtest_output'):
@@ -38,6 +39,7 @@ def RunSteps(api):
 
   api.chromium.runtest(
       checkout_dir,
+      build_dir,
       'base_unittests',
       builder_group=api.properties.get('builder_group'),
       python_mode=api.properties.get('python_mode', False),
@@ -54,8 +56,8 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           'python3',
           'RECIPE_REPO[build]/recipes/runtest.py',
-          '--target',
-          'Release',
+          '--build-dir',
+          '[CACHE]/builder/out/Release',
           '--no-xvfb',
           '--test-type=base_unittests',
           '--builder-name=test_buildername',

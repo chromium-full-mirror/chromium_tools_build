@@ -1846,7 +1846,6 @@ class LocalGTestTest(LocalTest):
       suffix: str,
       info_messages: Iterable[str] = (),
   ) -> None:
-    del build_dir
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -1879,6 +1878,7 @@ class LocalGTestTest(LocalTest):
 
     step_result = self.api.m.chromium.runtest(
         checkout_dir,
+        build_dir,
         self.target_name,
         builder_group=self.spec.waterfall_builder_group,
         stderr=self.api.m.raw_io.output_text(

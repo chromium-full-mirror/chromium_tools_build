@@ -1640,8 +1640,8 @@
     "cmd": [
       "python3",
       "RECIPE_REPO[build]\\recipes\\runtest.py",
-      "--target",
-      "Release_x64",
+      "--build-dir",
+      "[CACHE]\\builder\\src\\out\\Release_x64",
       "--builder-name=win_x64_clang_rel",
       "--build-number=1337",
       "libyuv_unittest.exe",

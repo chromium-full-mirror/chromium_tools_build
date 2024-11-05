@@ -186,6 +186,7 @@ class LibyuvApi(recipe_api.RecipeApi):
           defer(
               self.m.chromium.runtest,
               self.m.chromium_checkout.checkout_dir,
+              build_dir,
               'libyuv_unittest',
               args=['--undefok=no-sandbox'],
           )

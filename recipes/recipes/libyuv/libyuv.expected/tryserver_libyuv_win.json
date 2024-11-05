@@ -369,8 +369,8 @@
     "cmd": [
       "python3",
       "RECIPE_REPO[build]\\recipes\\runtest.py",
-      "--target",
-      "Debug",
+      "--build-dir",
+      "[CACHE]\\builder\\src\\out\\Debug",
       "--builder-name=win",
       "--build-number=1337",
       "libyuv_unittest.exe",

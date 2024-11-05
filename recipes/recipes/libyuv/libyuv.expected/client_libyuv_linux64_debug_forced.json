@@ -1505,8 +1505,8 @@
     "cmd": [
       "python3",
       "RECIPE_REPO[build]/recipes/runtest.py",
-      "--target",
-      "Debug",
+      "--build-dir",
+      "[CACHE]/builder/src/out/Debug",
       "--no-xvfb",
       "--builder-name=Linux64 Debug",
       "--build-number=1337",
