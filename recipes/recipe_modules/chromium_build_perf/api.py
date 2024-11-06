@@ -66,7 +66,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       siso_args += ['-re_cache_enable_read=false']
     if step_name_suffix:
       step_name += step_name_suffix
-    timeout = 60 * 60 * 1.5  # 1.5h
+    timeout = 60 * 60 * 2  # 2h
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
