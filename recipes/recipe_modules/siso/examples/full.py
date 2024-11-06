@@ -131,6 +131,14 @@ def GenTests(api):
                        ['--remote_jobs', '100']),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'limits',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(limits='fastlocal=0'),
+      api.post_process(post_process.StepEnvContains, 'compile',
+                       {'SISO_LIMITS': 'fastlocal=0'}),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'compile_failure',

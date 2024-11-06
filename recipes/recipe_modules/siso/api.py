@@ -164,6 +164,8 @@ class SisoApi(recipe_api.RecipeApi):
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     if ninja_invocation_id:
       env['SISO_BUILD_ID'] = ninja_invocation_id
+    if self._props.limits:
+      env['SISO_LIMITS'] = self._props.limits
     step_result = None
     try:
       with self.m.context(env=env, cwd=source_dir):

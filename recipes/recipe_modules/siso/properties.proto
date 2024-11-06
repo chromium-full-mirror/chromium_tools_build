@@ -50,6 +50,11 @@ message InputProperties {
   // The default is calculated by Siso internally.
   int32 remote_jobs = 10;
 
+  // Siso limits overrides.
+  // https://chromium.googlesource.com/infra/infra/+/ae10b30365d4cb300fefa1e8696dee68b164b8e7/go/src/infra/build/siso/build/limits.go#58
+  // e.g. limits: "fastlocal=0"
+  string limits = 15;
+
   // Boolean flag to enable REAPI usage check after build step.
   // This is useful to make sure REAPI is not used in the build.
   bool fail_if_reapi_used = 11;

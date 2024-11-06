@@ -19,6 +19,7 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                  metrics_project=None,
                  configs=None,
                  remote_jobs=None,
+                 limits=None,
                  fail_if_reapi_used=None,
                  output_local_strategy=None):
     return self.m.properties(
@@ -35,6 +36,7 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                 'metrics_project': metrics_project,
                 'configs': configs,
                 'remote_jobs': remote_jobs,
+                'limits': limits,
                 'fail_if_reapi_used': fail_if_reapi_used,
                 'output_local_strategy': output_local_strategy,
             },
