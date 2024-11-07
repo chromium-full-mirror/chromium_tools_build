@@ -1558,6 +1558,8 @@ class SkylabGroup(TestGroup):
         if not build_id in self.ctp_build_ids:
           self.ctp_build_ids.add(build_id)
 
+    self.include_rdb_invocation(suffix, step_name='include skylab invocations')
+
   def run(self, api, checkout_dir: Path, source_dir: Path, build_dir: Path,
           suffix):
     """Render test results for each Skylab Test."""
@@ -1584,6 +1586,3 @@ class SkylabGroup(TestGroup):
       api.test_utils.fetch_rdb_results(t, suffix, force_fetch_all_results=True)
       with self._handle_test_errors(api):
         t.run(checkout_dir, source_dir, build_dir, suffix)
-
-    self.include_rdb_invocation(
-        suffix, step_name='include skylab_test_runner invocations')
