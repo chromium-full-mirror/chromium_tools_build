@@ -134,7 +134,7 @@
   },
   {
     "cmd": [],
-    "name": "Install android_33_google_apis_x64.textpb",
+    "name": "Install android_35_google_apis_x64.textpb",
     "~followup_annotations": [
       "@@@STEP_FAILURE@@@"
     ]
@@ -145,10 +145,10 @@
       "[CACHE]/avd/src/tools/android/avd/avd.py",
       "install",
       "--avd-config",
-      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Install Android emulator",
+    "name": "Install android_35_google_apis_x64.textpb.Install Android emulator",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -166,11 +166,11 @@
       "--gpu-mode",
       "off",
       "--avd-config",
-      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
     ],
     "cwd": "[CACHE]/avd",
     "infra_step": true,
-    "name": "Install android_33_google_apis_x64.textpb.Start Android emulator: 0",
+    "name": "Install android_35_google_apis_x64.textpb.Start Android emulator: 0",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@",
@@ -179,7 +179,7 @@
   },
   {
     "cmd": [],
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -190,7 +190,7 @@
       "aux"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd.List processes before cleaning up",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd.List processes before cleaning up",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -204,7 +204,7 @@
       "emulator"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd.Kill emulator cleanup",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd.Kill emulator cleanup",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -215,7 +215,7 @@
       "aux"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd.List processes after cleaning up",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd.List processes after cleaning up",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -232,11 +232,11 @@
       "--gpu-mode",
       "off",
       "--avd-config",
-      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
     ],
     "cwd": "[CACHE]/avd",
     "infra_step": true,
-    "name": "Install android_33_google_apis_x64.textpb.Start Android emulator: 1",
+    "name": "Install android_35_google_apis_x64.textpb.Start Android emulator: 1",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@",
@@ -245,7 +245,7 @@
   },
   {
     "cmd": [],
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd (2)",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -256,7 +256,7 @@
       "aux"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd (2).List processes before cleaning up",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd (2).List processes before cleaning up",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -270,7 +270,7 @@
       "emulator"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd (2).Kill emulator cleanup",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd (2).Kill emulator cleanup",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -281,7 +281,7 @@
       "aux"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.Kill and cleanup avd (2).List processes after cleaning up",
+    "name": "Install android_35_google_apis_x64.textpb.Kill and cleanup avd (2).List processes after cleaning up",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -298,11 +298,11 @@
       "--gpu-mode",
       "off",
       "--avd-config",
-      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
     ],
     "cwd": "[CACHE]/avd",
     "infra_step": true,
-    "name": "Install android_33_google_apis_x64.textpb.Start Android emulator: 2",
+    "name": "Install android_35_google_apis_x64.textpb.Start Android emulator: 2",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -316,7 +316,7 @@
       "/path/to/tmp/json"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Install android_33_google_apis_x64.textpb.List adb devices",
+    "name": "Install android_35_google_apis_x64.textpb.List adb devices",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
@@ -327,7 +327,7 @@
   },
   {
     "cmd": [],
-    "name": "Install android_33_google_apis_x64.textpb.Set up the emulator",
+    "name": "Install android_35_google_apis_x64.textpb.Set up the emulator",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_EXCEPTION@@@"
@@ -341,7 +341,7 @@
     ],
     "cwd": "[CACHE]/avd",
     "infra_step": true,
-    "name": "Install android_33_google_apis_x64.textpb.Set up the emulator.Set execute permission",
+    "name": "Install android_35_google_apis_x64.textpb.Set up the emulator.Set execute permission",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -353,7 +353,7 @@
     ],
     "cwd": "[CACHE]/avd",
     "infra_step": true,
-    "name": "Install android_33_google_apis_x64.textpb.Set up the emulator.avd_setup.sh",
+    "name": "Install android_35_google_apis_x64.textpb.Set up the emulator.avd_setup.sh",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_EXCEPTION@@@"
@@ -398,7 +398,7 @@
   },
   {
     "cmd": [],
-    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
   },
   {
     "cmd": [
@@ -406,10 +406,10 @@
       "[CACHE]/avd/src/tools/android/avd/avd.py",
       "uninstall",
       "--avd-config",
-      "[CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb"
+      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
     ],
     "cwd": "[CACHE]/avd",
-    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_33_google_apis_x64.textpb.Uninstall Android emulator",
+    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb.Uninstall Android emulator",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
