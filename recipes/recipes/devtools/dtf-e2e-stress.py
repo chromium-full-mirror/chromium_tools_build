@@ -1,7 +1,7 @@
 # Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+from shlex import split
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
@@ -69,8 +69,7 @@ def RunSteps(api, clobber, runner_args):
     trigger = SwarmingTrigger(api, cas_digest)
     e2e_stressor = E2ETests(api, source_dir, trigger, builder_config,
                             'E2E Tests', divider)
-    e2e_stressor.extra_args.extend(
-        runner_args.split(' ') if runner_args else [])
+    e2e_stressor.extra_args.extend(split(runner_args) if runner_args else [])
 
     results = FirstRunPhase(api).run_all([e2e_stressor])
 

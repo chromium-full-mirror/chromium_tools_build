@@ -18,6 +18,8 @@ from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, Exoneration
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
 
+from shlex import split
+
 DEPS = [
     'builder_group',
     'chromium_swarming',
@@ -115,7 +117,7 @@ def lookup_command(api, source_dir, name):
               'lint': 'echo 123',
           },
       })
-  return package['scripts'][name].split(' ')
+  return split(package['scripts'][name])
 
 
 def GenTests(api):
