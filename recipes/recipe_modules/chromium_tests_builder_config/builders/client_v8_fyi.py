@@ -218,7 +218,7 @@ SPEC = {
             simulation_platform='linux',
             serialize_tests=True,
         ),
-    'Android V8 FYI Release (Nexus 5X)':
+    'Android V8 FYI Release':
         _client_v8_fyi_spec(
             chromium_config='android',
             chromium_apply_config=[],
