@@ -105,7 +105,7 @@ def _install_android_deps(api):
   gradle_ensure_path = api.cipd.EnsureFile()
   gradle_install_path = api.path.cache_dir / 'gradle'
   #TODO(b/347893657): Replace flutter/gradle with a custom gradle package for dawn
-  gradle_ensure_path.add_package("flutter/gradle", "version:8.2.1")
+  gradle_ensure_path.add_package("flutter/gradle", "version:8.9")
   api.cipd.ensure(gradle_install_path, gradle_ensure_path, "Install Gradle 8")
   env_paths.append(gradle_install_path / 'bin')
 
