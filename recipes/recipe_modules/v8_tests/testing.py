@@ -60,8 +60,6 @@ REPRO_TOTAL_TIMEOUT_DEFAULT = 120
 EXONERATED_CRASH_TYPES = [
     # We keep this dummy to ease recipe testing.
     '_Magically_exonerated_crash_type_for_testing_',
-    # TODO(https://crbug.com/329074431): Remove when bug is resolved.
-    'Unexpectedly found incompatible memory layout.',
 ]
 
 # pylint: disable=abstract-method
