@@ -18,8 +18,6 @@ from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, Exoneration
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
 
-from shlex import split
-
 DEPS = [
     'builder_group',
     'chromium_swarming',
@@ -98,26 +96,13 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
                         'Interactions Tests'),
       E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests', divider),
       LintCheck(api, source_dir, trigger, builder_config, 'Lint Check',
-                lookup_command(api, source_dir, 'lint'), target_os),
+                api.devtools.lookup_command(source_dir, 'lint'), target_os),
   ]
   tests = [t for t in tests if not t.skip()]
 
   FirstRunPhase(api).run_all(tests)
   results = ExonerationPhase(api).run_all(tests)
   return results.raw_result()
-
-
-def lookup_command(api, source_dir, name):
-  package_path = source_dir.joinpath('package.json')
-  package = api.file.read_json(
-      'Read all commands',
-      str(package_path),
-      test_data={
-          'scripts': {
-              'lint': 'echo 123',
-          },
-      })
-  return split(package['scripts'][name])
 
 
 def GenTests(api):

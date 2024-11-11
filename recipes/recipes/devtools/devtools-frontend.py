@@ -123,22 +123,14 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     return results.raw_result()
 
 
-
-def lint_script_exists(api, source_dir, name):
-  script_file = source_dir / 'scripts/test' / name
-  return api.path.exists(script_file)
-
-
 def run_lint_check(api, builder_config, source_dir):
-  if not api.devtools.is_debug(builder_config):
-    with api.step.nest('Linting'):
-      lint_script = 'run_lint_check_js.mjs'
-      if not lint_script_exists(api, source_dir, lint_script):
-        lint_script = 'run_lint_check_js.js'
-      api.devtools.run_node_script(source_dir, 'Lint Check with ESLint',
-                                   lint_script)
-      api.devtools.run_node_script(source_dir, 'Lint check with Stylelint',
-                                   'run_lint_check_css.js')
+  is_debug_build = api.devtools.is_debug(builder_config)
+  if is_debug_build or not api.platform.is_linux:
+    return
+  with api.step.nest('Linting'), api.context(cwd=source_dir):
+    lint_command = api.devtools.lookup_command(source_dir, 'lint')
+    api.step('Run lint check', lint_command)
+
 
 
 def publish_performance_benchmarks(api, source_dir, skip):

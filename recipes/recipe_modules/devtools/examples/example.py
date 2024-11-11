@@ -40,6 +40,9 @@ def RunSteps(api, builder_config, clobber, parallel):
       with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
         api.step('Nothing', [])
     else:
+      # No function; called for complete coverage.
+      command = api.devtools.lookup_command(source_dir, 'lint')
+      assert command == ['echo', '123']
       with api.step.nest('E2E Tests'):
         commands = api.devtools.divided_e2e_commands(
             source_dir,
