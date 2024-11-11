@@ -106,6 +106,8 @@ def schedule_skylab_tests(opts):
     req.params.scheduling.CopyFrom(_scheduling_for_pool(opts.pool))
     req.params.scheduling.qs_account = opts.qs_account
     req.params.decorations.tags.append(f'label-board:{opts.board}')
+    req.params.decorations.tags.append(f'label-pool:{opts.pool}')
+    req.params.decorations.tags.append('label-flow:ash_builder')
     if opts.cbx:
       req.params.decorations.tags.append('label-cbx:True')
     # TODO(b/242007010): Known issues in CTP that mixes build_target and DUT board.
