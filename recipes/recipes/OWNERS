@@ -11,7 +11,7 @@ per-file boringssl_bazel.py=file:boringssl.expected/OWNERS
 per-file boringssl_docs.py=file:boringssl.expected/OWNERS
 per-file catapult.py=file:catapult.expected/OWNERS
 per-file celab.py=file:celab.expected/OWNERS
-per-file chromium.py=gbeaty@chromium.org
+per-file chromium.py=gbeaty@google.com
 per-file chromium.py=iannucci@chromium.org
 per-file chromium_3pp.py=hypan@google.com
 per-file chromium_clang_coverage_tot.py=file:chromium_clang_coverage_tot.expected/OWNERS
@@ -20,7 +20,7 @@ per-file chromium_codesearch.py=file:chromium_codesearch.expected/OWNERS
 per-file chromium_codesearch_initiator.proto=file:chromium_codesearch_initiator.expected/OWNERS
 per-file chromium_codesearch_initiator.py=file:chromium_codesearch_initiator.expected/OWNERS
 per-file chromium_speed_*=file://recipes/recipe_modules/perf_dashboard/OWNERS
-per-file chromium_trybot.py=gbeaty@chromium.org
+per-file chromium_trybot.py=gbeaty@google.com
 per-file chromium_trybot.py=iannucci@chromium.org
 per-file cronet.py=file:cronet.expected/OWNERS
 per-file emscripten_releases.py=file:emscripten_releases.expected/OWNERS
@@ -36,4 +36,4 @@ per-file tint.py=file:tint.expected/OWNERS
 per-file v8.py=file:v8.expected/OWNERS
 
 # Generic owners, if the file isn't listed above.
-gbeaty@chromium.org
+gbeaty@google.com

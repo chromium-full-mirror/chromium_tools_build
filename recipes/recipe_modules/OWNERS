@@ -2,8 +2,7 @@
 # and treat these folks as a fallback in case it's unclear, or if you're making
 # a sweeping change across many modules.
 
-gbeaty@chromium.org
-kimstephanie@google.com
+gbeaty@google.com
 linxinan@chromium.org
 sshrimp@google.com
 
