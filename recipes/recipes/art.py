@@ -5,17 +5,19 @@
 from PB.recipes.build.art import InputProperties
 
 DEPS = [
-  'recipe_engine/buildbucket',
-  'recipe_engine/context',
-  'recipe_engine/cipd',
-  'recipe_engine/defer',
-  'recipe_engine/file',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/runtime',
-  'recipe_engine/step',
-  'recipe_engine/url',
-  'repo',
+    'depot_tools/git',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/context',
+    'recipe_engine/defer',
+    'recipe_engine/file',
+    'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/runtime',
+    'recipe_engine/step',
+    'recipe_engine/url',
+    'repo',
 ]
 
 
@@ -51,13 +53,64 @@ def RunSteps(api, props):
           api,
           debug=props.debug,
           bitness=props.bitness,
+          build_only=props.build_only,
           concurrent_collector=props.concurrent_collector,
           generational_cc=props.generational_cc,
           heap_poisoning=props.heap_poisoning,
           gcstress=props.gcstress,
           manifest_branch=manifest_branch or 'master-art')
 
-def checkout(api, manifest_branch):
+
+def checkout(api, branch):
+  if 'art.superproject' in api.buildbucket.build.input.experiments:
+    if api.path.exists(api.context.cwd.joinpath(".repo")):
+      api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
+    checkout_git(api, branch)
+  else:
+    if api.path.exists(api.context.cwd.joinpath(".git")):
+      api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
+    checkout_repo(api, branch)
+
+
+def checkout_git(api, branch):
+  with api.step.nest('checkout'):
+    if api.path.exists(api.context.cwd.joinpath(".git")):
+      api.git("fetch")
+    else:
+      url = "https://android.googlesource.com/platform/superproject"
+      api.git("clone", url, ".")
+
+    ref = 'origin/' + branch
+    if api.buildbucket.gitiles_commit.id:
+      ref = api.buildbucket.gitiles_commit.id
+      cmd = api.git(
+          "log",
+          '--pretty=format:%H',
+          f"--find-object={ref}",
+          f"origin/{branch}",
+          "--",
+          "art",
+          stdout=api.raw_io.output_text())
+      ref = (cmd.stdout or "").strip().split("\n")[-1]
+
+    api.git("checkout", "--force", ref)
+    api.git("clean", "-ffxd")
+    api.git("show")
+    api.step("patch .gitmodules",
+             ["sed", "-i", "/submodule/ s:/:-:g", ".gitmodules"])
+    api.git("submodule", "update", "--init", "--force", "--recursive",
+            "--depth", "1", "--jobs", "32", "--checkout")
+    api.git("status", "--ignore-submodules=none")
+
+    for cl in api.buildbucket.build.input.gerrit_changes:
+      with api.context(cwd=api.context.cwd.joinpath("art")):
+        with api.step.nest(f'cherry-pick cl/{cl.change}/{cl.patchset}'):
+          ref = f"refs/changes/{str(cl.change)[-2:]}/{cl.change}/{cl.patchset}"
+          api.git("fetch", f"https://{cl.host}/{cl.project}", ref)
+          api.git("cherry-pick", "FETCH_HEAD")
+
+
+def checkout_repo(api, manifest_branch):
   # (https://crbug.com/1153114): do not attempt to update repo when
   # 'repo sync' runs.
   env = {'DEPOT_TOOLS_UPDATE': '0'}
@@ -73,9 +126,6 @@ def checkout(api, manifest_branch):
           ['download', change.project, f"{change.change}/{change.patchset}"],
           f"checkout change ref: {change.change}/{change.patchset}",
         )
-
-    # TODO(b/283282132): Add codepath for checking out revision with
-    # build_input.gitiles_commit
 
     api.repo.manifest()
 
@@ -97,6 +147,7 @@ def ensure_tool(api, package, version, subdir=""):
 def setup_host_x86(api,
                    debug,
                    bitness,
+                   build_only,
                    concurrent_collector=True,
                    generational_cc=True,
                    heap_poisoning=False,
@@ -174,6 +225,9 @@ def setup_host_x86(api,
   with api.context(env=env):
     api.step('build',
              [art_tools / 'buildbot-build.sh', '--host', '--installclean'])
+
+    if build_only:
+      return
 
     with api.defer.context() as defer:
       defer(api.step, 'test gtest', [
@@ -620,3 +674,36 @@ def GenTests(api):
           bitness=32,
           product="arm_krait",
       ))
+
+  yield api.test(
+      'art.superproject-ci',  # tests gitiles_commit path.
+      api.buildbucket.ci_build(experiments=['art.superproject']),
+      api.properties(build_only=True),
+  )
+
+  yield api.test(
+      'art.superproject-try',  # tests gerrit_changes path.
+      api.buildbucket.try_build(experiments=['art.superproject']),
+      api.properties(build_only=True),
+  )
+
+  yield api.test(
+      'art.superproject-git2repo',  # repo checkout after git checkout.
+      api.buildbucket.ci_build(experiments=[]),
+      api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+      api.properties(build_only=True),
+  )
+
+  yield api.test(
+      'art.superproject-repo2git',  # git checkout after repo checkout.
+      api.buildbucket.ci_build(experiments=['art.superproject']),
+      api.path.exists(api.path.cache_dir.joinpath("art/.repo")),
+      api.properties(build_only=True),
+  )
+
+  yield api.test(
+      'art.superproject-incremental',  # repeated git checkout.
+      api.buildbucket.ci_build(experiments=['art.superproject']),
+      api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+      api.properties(build_only=True),
+  )

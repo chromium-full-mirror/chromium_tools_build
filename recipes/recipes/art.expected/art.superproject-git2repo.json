@@ -1,0 +1,151 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmcontents",
+      "[CACHE]/art"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "clean"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "init",
+      "-u",
+      "https://android.googlesource.com/platform/manifest",
+      "-b",
+      "master-art"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "repo init"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "sync",
+      "-c",
+      "-j16",
+      "--no-tags"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "repo sync"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "manifest",
+      "-r",
+      "-o",
+      "-"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "repo manifest"
+  },
+  {
+    "cmd": [
+      "[CACHE]/art/art/tools/buildbot-build.sh",
+      "--host",
+      "--installclean"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ART_HEAP_POISONING": "false",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build"
+  },
+  {
+    "name": "$result"
+  }
+]
