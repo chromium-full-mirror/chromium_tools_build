@@ -361,6 +361,7 @@ class Generator:
         return None
       return local_delegate(raw_test_spec, **kwargs)
 
+    kwargs['server'] = swarming_spec.get('server')
     kwargs['dimensions'] = swarming_spec.get('dimensions', {})
     kwargs['optional_dimensions'] = self._normalize_optional_dimensions(
         swarming_spec.get('optional_dimensions'))

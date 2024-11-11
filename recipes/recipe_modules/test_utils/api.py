@@ -1458,6 +1458,7 @@ class SwarmingGroup(TestGroup):
   def __init__(self, test_suites, resultdb):
     super().__init__(test_suites, resultdb)
     self._task_ids_to_test = {}
+    self._server = None
 
   def pre_run(self, api, suffix, include_utr_instruction=False):
     """Executes the |pre_run| method of each test."""
@@ -1479,6 +1480,12 @@ class SwarmingGroup(TestGroup):
       if not t.is_enabled:
         continue
       task = t.get_task(suffix)
+
+      if self._server is None:
+        self._server = task.server
+      elif self._server != task.server:
+        raise NotImplementedError(
+            'SwarmingGroups across multiple servers not supported.')
 
       task_ids = tuple(task.get_task_ids())
       self._task_ids_to_test[task_ids] = t
@@ -1504,7 +1511,8 @@ class SwarmingGroup(TestGroup):
             api.chromium_swarming.wait_for_finished_task_set(
                 list(self._task_ids_to_test),
                 suffix=((' (%s)' % suffix) if suffix else ''),
-                attempts=attempts))
+                attempts=attempts,
+                server=self._server))
         for task_set in finished_sets:
           test = self._task_ids_to_test[tuple(task_set)]
           api.test_utils.fetch_rdb_results(test, suffix)

@@ -48,6 +48,7 @@ def RunSteps(api):
 
   test_spec = steps.SwarmingGTestTestSpec.create(
       'base_unittests',
+      server=api.properties.get('server'),
       isolate_profile_data=api.properties.get('isolate_profile_data', False),
       dimensions=api.properties.get('dimensions', {'os': 'Linux'}))
   test = test_spec.get_test(api.chromium_tests)
@@ -202,5 +203,22 @@ def GenTests(api):
           'test_pre_run.[trigger] base_unittests', lambda check, req: check(
               req[0].env_vars['LLVM_PROFILE_FILE'] ==
               '${ISOLATED_OUTDIR}/profraw/default-%2m.profraw')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'other_server',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
+          },
+          server='other-swarming.appspot.com'),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.[trigger] base_unittests',
+                       ['-server', 'other-swarming.appspot.com']),
       api.post_process(post_process.DropExpectation),
   )

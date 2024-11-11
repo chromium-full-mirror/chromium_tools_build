@@ -401,6 +401,26 @@ def GenTests(api):
   )
 
   yield api.test(
+      'swarming_with_server',
+      ci_build(
+          test_spec={
+              'test': 'base_unittests',
+              'swarming': {
+                  'dimensions': {
+                      'os': 'Linux',
+                  },
+                  'server': 'other-swarming.appspot.com',
+              },
+          }),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.[trigger] base_unittests', [
+                           '-server',
+                           'other-swarming.appspot.com',
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'merge',
       ci_build(
           test_spec={

@@ -1113,7 +1113,11 @@ class SwarmingApi(recipe_api.RecipeApi):
     req = req.with_tags(tags_dict)
     req = self._maybe_enable_resultdb_for_task(req, resultdb)
     return self.m.swarming.trigger(
-        self.get_step_name('trigger', task), [req], self.verbose)
+        self.get_step_name('trigger', task),
+        [req],
+        self.verbose,
+        server=task.server,
+    )
 
   def collect_task(self, task, **kwargs):
     """Waits for a single triggered task to finish.
@@ -1434,7 +1438,11 @@ class SwarmingApi(recipe_api.RecipeApi):
             **kwargs)
     return step_result
 
-  def wait_for_finished_task_set(self, task_sets, suffix=None, attempts=0):
+  def wait_for_finished_task_set(self,
+                                 task_sets,
+                                 suffix=None,
+                                 attempts=0,
+                                 server=None):
     """Waits for a finished set of tasks.
 
     Args:
@@ -1455,7 +1463,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         'python3',
         self.resource('wait_for_finished_task_set.py'),
         '--swarming-server',
-        self.m.swarming.current_server,
+        server or self.m.swarming.current_server,
         '--swarming-py-path',
         self.m.swarming_client.path.joinpath('swarming.py'),
         '--output-json',
@@ -1841,7 +1849,7 @@ class SwarmingTask:
       * include_utr_instruction: Whether or not to include UTR reproduction
           instructions
     """
-    self._server = server
+    self.server = server
     self._trigger_output = None
     self.base_command = request[0].command
     self.build_properties = build_properties
@@ -2018,7 +2026,7 @@ class SwarmingTask:
     if trigger_output and trigger_output.get('tasks'):
       for shard_dict in trigger_output['tasks'].values():
         if shard_dict['shard_index'] == index:
-          return "%s/task?id=%s" % (self._server, shard_dict['task_id'])
+          return "%s/task?id=%s" % (self.server, shard_dict['task_id'])
 
   def get_task_ids(self):
     """Returns task id of all shards.

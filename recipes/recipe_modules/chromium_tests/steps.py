@@ -2005,6 +2005,8 @@ class SwarmingTestSpec(TestSpec):
       path relative to the swarming task's root directory where the
       cache should be mounted.
     * shards - The number of shards to trigger.
+    * server - The Swarming server to run the test on. If not provided, the
+      server the current task is running on will be used.
     * service_account - The service account to run the test's swarming
       tasks as.
     * idempotent - Whether to mark the test's swarming tasks as
@@ -2027,6 +2029,7 @@ class SwarmingTestSpec(TestSpec):
   isolate_profile_data = attrib(bool, False)
   named_caches = attrib(mapping[str, str], default={})
   shards = attrib(int, default=1)
+  server = attrib(str, default=None)
   service_account = attrib(str, default=None)
   idempotent = attrib(bool, default=None)
 
@@ -2536,6 +2539,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
           'normally_assigned_shard_count': [str(shards - 1)],
       })
 
+    if self.spec.server:
+      task.server = self.spec.server
+
     task.request = (
         task_request.with_slice(0, task_slice).with_name(
             self.step_name(suffix)).with_service_account(
@@ -2931,6 +2937,7 @@ class MockTask:
 
   def __init__(self, shards: int):
     self._shards = shards
+    self.server = 'mock-swarming.appspot.com'
 
   def get_task_ids(self) -> Iterable[str]:
     return [f'fake-task-id-{id(self)}-{i}' for i in range(self._shards)]
