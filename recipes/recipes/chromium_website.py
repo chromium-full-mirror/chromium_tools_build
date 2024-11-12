@@ -14,6 +14,7 @@ from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 DEPS = [
     'depot_tools/bot_update',
     'depot_tools/gclient',
+    'depot_tools/gerrit',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -22,7 +23,6 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/runtime',
     'recipe_engine/step',
-    'recipe_engine/tricium',
 ]
 
 
@@ -66,8 +66,11 @@ def RunSteps(api):
           msg = 'Deployed to %s' % line.split()[-1]
 
   if api.m.tryserver.is_tryserver:
-    api.m.tricium.add_comment('FirebaseHosting/Preview', msg, path='')
-    api.m.tricium.write_comments()
+    api.m.gerrit.add_message(
+        host=api.m.tryserver.gerrit_change.host,
+        change=api.m.tryserver.gerrit_change.change,
+        revision=api.m.tryserver.gerrit_change.patchset,
+        message=msg)
 
   return result_pb2.RawResult(
       status=common_pb.SUCCESS,
