@@ -67,7 +67,7 @@ def RunSteps(api):
 
   if api.m.tryserver.is_tryserver:
     api.m.gerrit.add_message(
-        host=api.m.tryserver.gerrit_change.host,
+        host=f'https://{api.m.tryserver.gerrit_change.host}',
         change=api.m.tryserver.gerrit_change.change,
         revision=api.m.tryserver.gerrit_change.patchset,
         message=msg)
