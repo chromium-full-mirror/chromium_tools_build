@@ -737,7 +737,7 @@ class AndroidApi(recipe_api.RecipeApi):
     self.m.step('symbolized breakpad crashes', cmd)
 
   def stack_tool_steps(self, source_dir: Path, *, force_latest_version=False):
-    build_dir = source_dir / f'out/{self.m.chromium.c.BUILD_CONFIG}'
+    build_dir = self.m.chromium.default_build_dir(source_dir)
     log_file = build_dir / 'full_log'
 
     target_arch = self.m.chromium.get_build_target_arch()
