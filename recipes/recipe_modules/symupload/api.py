@@ -75,7 +75,7 @@ class SymuploadApi(recipe_api.RecipeApi):
     else:
       cmd.extend([artifact, server_url])
 
-    self.m.step('symupload %s' % artifact, cmd)
+    self.m.step('symupload %s' % artifact, cmd, infra_step=True)
 
   def symupload_v2(self,
                    artifacts,
@@ -125,7 +125,7 @@ class SymuploadApi(recipe_api.RecipeApi):
     if artifact_type:
       cmd.extend(['--artifact_type', artifact_type])
 
-    return self.m.step(name or 'symupload_v2', cmd)
+    return self.m.step(name or 'symupload_v2', cmd, infra_step=True)
 
   def _replace_placeholders(self, custom_vars, input_str):
     for placeholder, key in re.findall('({%(.*?)%})', input_str):
@@ -134,7 +134,7 @@ class SymuploadApi(recipe_api.RecipeApi):
       else:
         self.m.step.empty(
             'Unresolved placeholder',
-            status=self.m.step.FAILURE,
+            status=self.m.step.INFRA_FAILURE,
             step_text=placeholder + ' can not be resolved')
 
     return input_str
@@ -205,10 +205,10 @@ class SymuploadApi(recipe_api.RecipeApi):
       if symupload_binary is None:
         symupload_binary = self.m.path.join(build_dir, self.symupload_binary)
       if not self.m.path.exists(symupload_binary):
-        raise self.m.step.StepFailure('The symupload binary cannot be found '
-                                      'at %s. Please ensure targets symupload '
-                                      'are being built such that the binaries '
-                                      'are generated.' % str(symupload_binary))
+        raise self.m.step.InfraFailure('The symupload binary cannot be found '
+                                       'at %s. Please ensure targets symupload '
+                                       'are being built such that the binaries '
+                                       'are generated.' % str(symupload_binary))
 
       with self.m.context(env_suffixes={'PATH': self._get_msdia_paths()}):
         for symupload_data in self._properties.symupload_datas:
@@ -240,8 +240,8 @@ class SymuploadApi(recipe_api.RecipeApi):
           # artifacts, we'll invoke it here for each symupload data config.
           if symupload_data.base64_api_key:
             if not symupload_data.kms_key_path:
-              raise self.m.step.StepFailure('api_key exists but kms_key_path '
-                                            'is missing')
+              raise self.m.step.InfraFailure('api_key exists but kms_key_path '
+                                             'is missing')
 
             custom_vars = custom_vars or {}
             url = self._replace_placeholders(custom_vars, symupload_data.url)

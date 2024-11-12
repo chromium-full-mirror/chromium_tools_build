@@ -59,6 +59,6 @@ def GenTests(api):
           project='myproject', bucket='mybucket', builder='mybuilder'),
       api.override_step_data('SSCI collection.run depbot',
                              api.json.output(name="summary", data={})),
-      api.post_process(post_process.StepFailure,
+      api.post_process(post_process.StepException,
                        "SSCI collection.SBOM's generated"),
       api.post_process(post_process.DropExpectation))

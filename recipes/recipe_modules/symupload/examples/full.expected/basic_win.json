@@ -50,6 +50,7 @@
       "[TMP_BASE]/glob1.txt",
       "https://some.url.com"
     ],
+    "infra_step": true,
     "name": "symupload.symupload [TMP_BASE]/glob1.txt",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -63,6 +64,7 @@
       "[TMP_BASE]/glob2.txt",
       "https://some.url.com"
     ],
+    "infra_step": true,
     "name": "symupload.symupload [TMP_BASE]/glob2.txt",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -76,6 +78,7 @@
       "[TMP_BASE]/some_artifact.txt",
       "https://some.url.com"
     ],
+    "infra_step": true,
     "name": "symupload.symupload [TMP_BASE]/some_artifact.txt",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"

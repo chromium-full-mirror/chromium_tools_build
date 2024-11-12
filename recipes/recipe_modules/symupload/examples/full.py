@@ -76,8 +76,8 @@ def GenTests(api):
       'no symupload binary',
       api.properties(target_platform='win', host_platform='win'),
       api.symupload(input_properties),
-      api.post_process(post_process.StepFailure, 'symupload'),
-      api.expect_status('FAILURE'),
+      api.post_process(post_process.StepException, 'symupload'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -176,9 +176,9 @@ def GenTests(api):
                        'symupload.symupload_v2 (2)', []),
       api.step_data('symupload.symupload_v2 (2)', retcode=1),
       api.step_data('symupload.symupload_v2 (3)', retcode=1),
-      api.post_process(post_process.StepFailure, 'symupload'),
+      api.post_process(post_process.StepException, 'symupload'),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -204,8 +204,8 @@ def GenTests(api):
       api.properties(target_platform='linux', host_platform='linux'),
       api.path.exists(api.path.tmp_base_dir / 'symupload'),
       api.symupload(input_properties_v2),
-      api.post_process(post_process.StepFailure, 'symupload'),
-      api.expect_status('FAILURE'),
+      api.post_process(post_process.StepException, 'symupload'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -297,6 +297,6 @@ def GenTests(api):
       api.symupload(input_properties_v2),
       api.post_process(post_process.MustRun,
                        'symupload.Unresolved placeholder'),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

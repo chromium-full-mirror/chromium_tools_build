@@ -125,6 +125,7 @@
       "--server-urls",
       "https://some.url.com"
     ],
+    "infra_step": true,
     "name": "symupload.symupload_v2",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"

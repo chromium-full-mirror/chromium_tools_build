@@ -107,6 +107,7 @@ class SsciAPI(recipe_api.RecipeApi):
       self.m.step(
           step_name,
           bq_tool + bq_args + [file_to_upload],
+          infra_step=True,
           timeout=bq_step_timeout)
     except self.m.step.StepFailure:
       pass
@@ -251,6 +252,7 @@ class SsciAPI(recipe_api.RecipeApi):
                 "-chromium-src", src_dir, "-product", product,
                 "-product-version", p_version, "-platform", self.build_platform
             ],
+            infra_step=True,
             step_test_data=(lambda: self.m.json.test_api.output(
                 data=[{
                     "spdx": "yes"
@@ -338,6 +340,7 @@ class SsciAPI(recipe_api.RecipeApi):
               '--json-output-dir', depbot_json_output_dir,
               '--json-summary-file', depbot_json_summary_file
           ] + targetFlags + extra_flags,
+          infra_step=True,
           cost=self.m.step.ResourceCost(
               cpu=2 * self.m.step.CPU_CORE, memory=4000),
           step_test_data=(lambda: self.m.json.test_api.output(
@@ -357,11 +360,13 @@ class SsciAPI(recipe_api.RecipeApi):
       with self.m.depot_tools.on_path():
         # The vPython metadata files are found in the parent directory.
         with self.m.context(cwd=self.m.path.dirname(self.partybot.tool_path)):
-          self.m.step("run partybot to collect 3P deps", [
-              "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
-              self.m.path.dirname(src_dir), "--file", third_party_out, "--os",
-              self.m.buildbucket.build.builder.builder
-          ])
+          self.m.step(
+              "run partybot to collect 3P deps", [
+                  "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
+                  self.m.path.dirname(src_dir), "--file", third_party_out,
+                  "--os", self.m.buildbucket.build.builder.builder
+              ],
+              infra_step=True)
 
       filename = self._make_filename_from_target("ThirdPartyData",
                                                  sbom_filename_postfix)
@@ -407,7 +412,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
       info_step = self.m.step.empty("SBOM's generated")
       if depbot_execution_summary.get("targets") is None:
-        info_step.presentation.status = self.m.step.FAILURE
+        info_step.presentation.status = self.m.step.INFRA_FAILURE
         info_step.presentation.step_text = 'no targets found'
         return generated_sbom_artifacts_json
 
@@ -459,6 +464,7 @@ class SsciAPI(recipe_api.RecipeApi):
               platform,
               "-document-paths",
           ] + sbom_paths,
+          infra_step=True,
           step_test_data=(lambda: self.m.json.test_api.output(
               data=[{
                   "spdx": "yes"

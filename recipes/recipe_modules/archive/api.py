@@ -1041,17 +1041,19 @@ class ArchiveApi(recipe_api.RecipeApi):
         input_file_list,
         (os.linesep).join(sorted(file_list)),
     )
-    self.m.step('Copy files to a temp folder', [
-        'vpython3',
-        self.resource('batch.py'),
-        'copy',
-        '--des-dir',
-        dst,
-        '--base-dir',
-        src,
-        '--input-file-list',
-        input_file_list,
-    ])
+    self.m.step(
+        'Copy files to a temp folder', [
+            'vpython3',
+            self.resource('batch.py'),
+            'copy',
+            '--des-dir',
+            dst,
+            '--base-dir',
+            src,
+            '--input-file-list',
+            input_file_list,
+        ],
+        infra_step=True)
 
   def gcs_archive(self,
                   checkout_dir: Path,
@@ -1118,11 +1120,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     # This directory will be used for archiving.
     temp_dir = self.m.path.mkdtemp()
     if archive_data.root_permission_override:
-      self.m.step('Update temporary folder permissions', [
-          'chmod',
-          archive_data.root_permission_override,
-          str(temp_dir),
-      ])
+      self.m.step(
+          'Update temporary folder permissions', [
+              'chmod',
+              archive_data.root_permission_override,
+              str(temp_dir),
+          ],
+          infra_step=True)
 
     if should_batch:
       self.batch_copy(base_path, temp_dir, expanded_files)
