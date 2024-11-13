@@ -661,3 +661,28 @@ def GenTests(api):
       api.post_process(CheckTestTargetStatus, 'base_unittests_2', 'Failure'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'tests_with_different_servers',
+      api.chromium.generic_build(builder='test_builder'),
+      api.properties(
+          test_name='base_unittests',
+          test_swarming=True,
+          swarm_hashes={
+              'base_unittests': '[dummy hash for base_unittests/size]',
+              'base_unittests_2': '[dummy hash for base_unittests_2/size]',
+          },
+          src_spec={
+              'base_unittests': {
+                  'server': 'swarming1.com'
+              },
+              'base_unittests_2': {
+                  'server': 'swarming2.com'
+              },
+          }),
+      api.expect_exception('NotImplementedError'),
+      api.post_process(post_process.StatusException),
+      api.post_process(post_process.SummaryMarkdownRE,
+                       'SwarmingGroups across multiple servers not supported.'),
+      api.post_process(post_process.DropExpectation),
+  )
