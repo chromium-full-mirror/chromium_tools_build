@@ -59,7 +59,11 @@
     "cmd": [
       "git",
       "clean",
-      "-ffxd"
+      "-ffxd",
+      "-e",
+      "out",
+      "-e",
+      "vm"
     ],
     "cwd": "[CACHE]/art",
     "infra_step": true,

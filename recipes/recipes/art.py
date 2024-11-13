@@ -94,7 +94,7 @@ def checkout_git(api, branch):
       ref = (cmd.stdout or "").strip().split("\n")[-1]
 
     api.git("checkout", "--force", ref)
-    api.git("clean", "-ffxd")
+    api.git("clean", "-ffxd", "-e", "out", "-e", "vm")
     api.git("show")
     api.step("patch .gitmodules",
              ["sed", "-i", "/submodule/ s:/:-:g", ".gitmodules"])
