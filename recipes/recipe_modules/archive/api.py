@@ -1581,7 +1581,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
             # If there is no folder just use the sbom_name.
             gcs_dest = "/".join([gcs_folder, sbom.sbom_name
-                                ]) if gcs_folder != '' else sbom.sbom_name
+                                ]) if gcs_folder else sbom.sbom_name
 
             sboms.update(
                 self._archive_sbom(
@@ -1638,7 +1638,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     sbom_name = self.m.path.basename(gcs_dest)
 
     with self.m.step.nest(f'Archive SBOM {sbom_name}'):
-      gcs_path = 'gs://' + self.m.path.join(gcs_bucket, gcs_dest)
+      gcs_path = 'gs://' + ("/".join([gcs_bucket, gcs_dest])
+                            if gcs_dest else gcs_bucket)
 
       self.m.gsutil.upload(
           sbom_path,
