@@ -55,6 +55,8 @@ _AddBuildSpec(
         'fuchsia_sd_images',
     ])
 
+_AddBuildSpec('win-arm64-builder-perf', 'win', target_arch='arm')
+
 _AddIsolatedTestSpec(
     'fuchsia-perf-nsn',
     'fuchsia',
@@ -94,6 +96,20 @@ _AddIsolatedTestSpec(
     'win',
     parent_buildername='win64-builder-perf',
     parent_builder_group='chromium.perf')
+
+_AddIsolatedTestSpec(
+    'win-arm64-snapdragon-plus-perf',
+    'win',
+    target_arch='arm',
+    parent_buildername='win-arm64-builder-perf',
+    parent_builder_group='chromium.perf.fyi')
+
+_AddIsolatedTestSpec(
+    'win-arm64-snapdragon-elite-perf',
+    'win',
+    target_arch='arm',
+    parent_buildername='win-arm64-builder-perf',
+    parent_builder_group='chromium.perf.fyi')
 
 _AddIsolatedTestSpec(
     'chromeos-kevin-perf-fyi',
