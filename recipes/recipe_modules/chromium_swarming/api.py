@@ -1452,6 +1452,8 @@ class SwarmingApi(recipe_api.RecipeApi):
       attempts: How many times have we polled swarming for this data. Used
                 to retry at a slower rate, so we don't overload the server
                 with requests.
+      server: The Swarming server to wait for the tasks on. If not provided, the
+              server the current task is running on will be used.
 
     Returns:
       A tuple of two items:
