@@ -1579,12 +1579,16 @@ class ArchiveApi(recipe_api.RecipeApi):
                 GeneratedSBOM(),
                 ignore_unknown_fields=True)
 
+            # If there is no folder just use the sbom_name.
+            gcs_dest = "/".join([gcs_folder, sbom.sbom_name
+                                ]) if gcs_folder != '' else sbom.sbom_name
+
             sboms.update(
                 self._archive_sbom(
                     artifact_path=file,
                     sbom_path=sbom.sbom_path,
                     gcs_bucket=gcs_bucket,
-                    gcs_dest=self.m.path.join(gcs_folder, sbom.sbom_name),
+                    gcs_dest=gcs_dest,
                     report_sbom_for_artifact=(
                         report_artifacts and archive_data.requires_provenance)))
     return sboms
