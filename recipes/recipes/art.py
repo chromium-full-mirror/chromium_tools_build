@@ -88,8 +88,6 @@ def checkout_git(api, branch):
           '--pretty=format:%H',
           f"--find-object={ref}",
           f"origin/{branch}",
-          "--",
-          "art",
           stdout=api.raw_io.output_text())
       ref = (cmd.stdout or "").strip().split("\n")[-1]
 
