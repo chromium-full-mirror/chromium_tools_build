@@ -125,24 +125,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # yield api.test(
-  #     'invalid_test_result',
-  #     api.chromium.ci_build(
-  #         builder_group='test_group',
-  #         builder='test_buildername',
-  #     ),
-  #     api.properties(
-  #         swarm_hashes={
-  #             'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-  #         },
-  #     ),
-  #     api.override_step_data(
-  #         'base_unittests',
-  #         api.chromium_swarming.canned_summary_output(
-  #             api.test_utils.gtest_results(None, 255))),
-  #     api.post_process(post_process.DropExpectation),
-  # )
-
   yield api.test(
       'isolate_profile_data',
       api.chromium.ci_build(
