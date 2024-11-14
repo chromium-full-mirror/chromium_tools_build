@@ -858,10 +858,7 @@
     },
     "name": "SSCI collection.target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output[run_args.luci-8945511751514863184.Example.apk] (read error)@JSON file was missing or unreadable:@@@",
-      "@@@STEP_LOG_LINE@json.output[run_args.luci-8945511751514863184.Example.apk] (read error)@  [CLEANUP]/tmp_tmp_3/spdx-out.json@@@",
-      "@@@STEP_LOG_END@json.output[run_args.luci-8945511751514863184.Example.apk] (read error)@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {

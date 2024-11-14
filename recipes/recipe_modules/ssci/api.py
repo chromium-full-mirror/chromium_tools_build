@@ -237,7 +237,6 @@ class SsciAPI(recipe_api.RecipeApi):
       p_version = self._get_product_version(chrome_version)
 
       spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
-      spdx_out = self.m.json.output(name=product, leak_to=spdx_file)
 
       # The vPython metadata files are found in the parent directory.
       with self.m.context(cwd=self.m.path.dirname(self.ssci_tool.tool_path)):
@@ -248,7 +247,7 @@ class SsciAPI(recipe_api.RecipeApi):
                 "-thirdparty", third_party_out, "-depbot-version",
                 self.depbot.resolved_version, "-partybot-version",
                 self.partybot.resolved_version, "-ssci-version",
-                self.ssci_tool.resolved_version, "-output-file", spdx_out,
+                self.ssci_tool.resolved_version, "-output-file", spdx_file,
                 "-chromium-src", src_dir, "-product", product,
                 "-product-version", p_version, "-platform", self.build_platform
             ],
@@ -441,7 +440,6 @@ class SsciAPI(recipe_api.RecipeApi):
     p_version = self._get_product_version(chrome_version)
 
     spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
-    spdx_out = self.m.json.output(name=product, leak_to=spdx_file)
 
     with self.m.context(cwd=self.m.path.dirname(self.ssci_tool.tool_path)):
       self.m.step(
@@ -455,7 +453,7 @@ class SsciAPI(recipe_api.RecipeApi):
               "-ssci-version",
               self.ssci_tool.resolved_version,
               "-output-file",
-              spdx_out,
+              spdx_file,
               "-product",
               product,
               "-product-version",

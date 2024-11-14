@@ -172,12 +172,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "run ssci tool to merge SBOMs",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output[merge..merged] (read error)@JSON file was missing or unreadable:@@@",
-      "@@@STEP_LOG_LINE@json.output[merge..merged] (read error)@  [CLEANUP]/tmp_tmp_1/spdx-out.json@@@",
-      "@@@STEP_LOG_END@json.output[merge..merged] (read error)@@@"
-    ]
+    "name": "run ssci tool to merge SBOMs"
   },
   {
     "cmd": [
