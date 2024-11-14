@@ -279,22 +279,6 @@ def _present_info_messages(presentation, test, messages):
   presentation.step_text = '\n'.join(messages)
 
 
-@attrs()
-class ReleaseBlocker:
-  """Configuration for release blocker.
-
-  Release blocker is the spec for tests that could block release.
-
-  Attributes:
-    * bug_component - The bug component to reach out to the test owner team.
-  """
-  bug_component = attrib(str)
-
-  @classmethod
-  def create(cls, **kwargs):
-    return cls(**kwargs)
-
-
 class AbstractTestSpec(abc.ABC):
   """Abstract base class for specs for tests and wrapped tests."""
 
@@ -764,9 +748,6 @@ class TestSpec(AbstractTestSpec):
       test failures than this threshold, it will not fail the build.
     * retry_only_failed_tests: Whether to retry only the failed tests, with
       patch. The alternative is the status quo of retrying the entire shard.
-    * release_blocker: ReleaseBlocker config containing the owner contact
-      for release blocker tests. Shown in the failed test step, this could
-      help gardeners recognize release blocker tests that can not be disabled.
   """
 
   _name = attrib(str)
@@ -782,7 +763,6 @@ class TestSpec(AbstractTestSpec):
   results_handler_name = attrib(str, default=None)
   allowed_failure_percentage = attrib(int, default=0)
   retry_only_failed_tests = attrib(bool, default=False)
-  release_blocker = attrib(ReleaseBlocker, default=None)
 
   @property
   def name(self):
@@ -984,12 +964,6 @@ class Test(AbstractTest):
     if rdb_results:
       self._rdb_results[suffix] = rdb_results.with_failure_on_exit(
           failure_on_exit)
-    if failure_on_exit and self.spec.release_blocker:
-      step_result.presentation.step_text += (
-          self.api.m.presentation_utils.format_step_text([[
-              'Release Blocker Failure',
-              [f'Owner: {self.spec.release_blocker.bug_component}']
-          ]]))
 
   def failure_on_exit(self, suffix: str) -> bool:
     return self._failure_on_exit_suffix_map.get(suffix, True)
