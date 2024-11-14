@@ -166,7 +166,7 @@ def RunSteps(api, properties):
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
-  test_driver = 'crossbench/tests/end2end/runner.py'
+  test_driver = 'crossbench/tests/end2end/android/runner.py'
   android_emulator = AndroidEmulator(api, properties.android_sdk)
   with android_emulator.start():
     env = {}

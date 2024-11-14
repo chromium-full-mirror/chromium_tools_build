@@ -225,7 +225,7 @@
   {
     "cmd": [
       "vpython3",
-      "crossbench/tests/end2end/runner.py",
+      "crossbench/tests/end2end/android/runner.py",
       "--adb-device-id=014E1F310401C009",
       "--adb-path=[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb",
       "--ignore-tests=desktop"
