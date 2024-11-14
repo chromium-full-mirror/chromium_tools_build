@@ -83,8 +83,10 @@ def RunSteps(api):
       ),
       report_artifacts=True,
       archived_files={
-          source_dir / 'Release/out/myfile0.deb': 'myfile0.deb',
-          source_dir / 'Release/out/somedir/myfile1.deb': 'somedir/myfile1.deb'
+          source_dir / 'Release/out/myfile0.deb.spdx.json':
+              'myfile0.deb',
+          source_dir / 'Release/out/somedir/myfile1.deb.spdx.json':
+              'somedir/myfile1.deb'
       },
   )
 
@@ -116,7 +118,7 @@ def GenTests(api):
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
-              "[START_DIR]/src/Release/out/sbom.spdx.json",
+              "[START_DIR]/src/Release/out/artifact.deb.spdx.json",
               "gs://my-bucket/my/folder/artifact.deb.spdx.json"
           ]),
       api.post_process(
@@ -126,7 +128,7 @@ def GenTests(api):
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
-              "[START_DIR]/src/Release/out/sbom.spdx.json",
+              "[START_DIR]/src/Release/out/artifact2.deb.spdx.json",
               "gs://my-bucket/my/folder2/artifact2.deb.spdx.json"
           ]),
       api.post_process(
@@ -136,7 +138,7 @@ def GenTests(api):
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
-              "[CLEANUP]/tmp_tmp_10/spdx-out.json",
+              "[START_DIR]/src/Release/out/myfile.zip.spdx.json",
               "gs://my-custom-var-bucket/myfile.zip.spdx.json"
           ]),
       api.post_process(
@@ -146,7 +148,7 @@ def GenTests(api):
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
-              "[CLEANUP]/tmp_tmp_15/spdx-out.json",
+              "[START_DIR]/src/Release/out/myfile0.deb.spdx.json",
               "gs://my-bucket/myfile0.deb.spdx.json"
           ]),
       api.post_process(
@@ -156,7 +158,7 @@ def GenTests(api):
               "python3", "-u",
               "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
-              "[CLEANUP]/tmp_tmp_20/spdx-out.json",
+              "[START_DIR]/src/Release/out/somedir/myfile1.deb.spdx.json",
               "gs://my-bucket/somedir/myfile1.deb.spdx.json"
           ]),
       api.post_process(MustRun, 'Report SBOM myfile0.deb.spdx.json'),

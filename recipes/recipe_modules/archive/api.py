@@ -1641,8 +1641,12 @@ class ArchiveApi(recipe_api.RecipeApi):
       gcs_path = 'gs://' + ("/".join([gcs_bucket, gcs_dest])
                             if gcs_dest else gcs_bucket)
 
+      renamed_sbom_path = self.m.path.join(
+          self.m.path.dirname(artifact_path), sbom_name)
+      self.m.file.move("Rename SBOM", sbom_path, renamed_sbom_path)
+
       self.m.gsutil.upload(
-          sbom_path,
+          renamed_sbom_path,
           bucket=gcs_bucket,
           dest=gcs_dest,
           name=f'upload {gcs_dest}')
@@ -1666,4 +1670,4 @@ class ArchiveApi(recipe_api.RecipeApi):
 
         _retry_report_sbom()
 
-    return {artifact_path: gcs_path}
+    return {renamed_sbom_path: gcs_path}
