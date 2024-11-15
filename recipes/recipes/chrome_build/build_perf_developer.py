@@ -413,6 +413,8 @@ def RunSteps(api):
 
     _incremental_builds_with_patch(api, source_dir, build_dir, target)
 
+  # Remove the out dir to reduce the builder cache size.
+  api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config

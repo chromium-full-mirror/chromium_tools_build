@@ -85,6 +85,9 @@ def RunSteps(api):
   # Build target: all
   _compile_with_and_without_remote_cache(api, source_dir, build_dir, 'all')
 
+  # Remove the out dir to reduce the builder cache size.
+  api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
+
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
