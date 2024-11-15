@@ -79,7 +79,7 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
 
   def trigger_and_collect_bots(self, trybots):
 
-    def _run_bot(b):
+    def _run_bot(b, led_build):
       with self.m.step.nest('trigger ' + b):
         # Increase the default priority + timeout + expiration since we expect
         # mega CQ builds to take longer.
@@ -108,20 +108,30 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
           return req
 
         for i in range(1, 4):  # At most 2 retries per builder.
-          # Buildbucket de-dupes when using the exact same request object. So need
-          # to create a new one each time.
-          req = _make_req()
-          build = self.m.buildbucket.schedule(
-              [req],
-              step_name='trigger (attempt %d)' % i,
-              # Merging all sub-builds' test results into a single invocation is
-              # too much for RDB. So don't bother. Gerrit should still show all
-              # results in the checks tab.
-              include_sub_invs=False)[0]
-          self.m.cv.record_triggered_builds(build)
+          if led_build:
+            builder = b.split('/')[-1]
+            led_result = self.m.chromium_orchestrator.trigger_led_recipe_bundled_build(
+                priority=self.m.buildbucket.swarming_priority + 10,
+                builder=builder,
+            )
+            build_id = led_result.launch_result.build_id
+
+          else:
+            # Buildbucket de-dupes when using the exact same request object. So need
+            # to create a new one each time.
+            req = _make_req()
+            build = self.m.buildbucket.schedule(
+                [req],
+                step_name='trigger (attempt %d)' % i,
+                # Merging all sub-builds' test results into a single invocation is
+                # too much for RDB. So don't bother. Gerrit should still show all
+                # results in the checks tab.
+                include_sub_invs=False)[0]
+            self.m.cv.record_triggered_builds(build)
+            build_id = build.id
           result = self.m.buildbucket.collect_build(
-              build.id,
-              step_name='collect (attempt %d)' % i,
+              build_id,
+              step_name=f'collect (attempt {i})',
               # Mark the step as resource-free so it uncaps the amount of parallel
               # collects that can run. The step has minimal machine impact, so this
               # should be fine.
@@ -133,7 +143,8 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
 
     workers = []
     for b in trybots:
-      workers.append(self.m.futures.spawn_immediate(_run_bot, b))
+      workers.append(
+          self.m.futures.spawn_immediate(_run_bot, b, self.m.led.led_build))
     self.m.futures.wait(workers)
     final_build_results = []
     for w in workers:

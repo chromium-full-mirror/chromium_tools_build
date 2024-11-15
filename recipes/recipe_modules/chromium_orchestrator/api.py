@@ -477,6 +477,75 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     return build
 
+  def trigger_led_recipe_bundled_build(self,
+                                       priority,
+                                       builder,
+                                       experiments=None,
+                                       properties=None):
+    """Launches the provided builder from the same project using led
+
+    Args:
+      priority: The swarming priority to use for the task
+      builder: The name of the builder to launch
+      experiments: A dictionary of experiments and their values
+      properties: A dictionary of properties and their values to apply to the
+        build
+    Returns:
+      The LedResult from launching the build
+    """
+    builder_name = 'luci.{project}.{bucket}:{builder}'.format(
+        project=self.m.buildbucket.build.builder.project,
+        bucket=self.m.led.shadowed_bucket,
+        builder=builder)
+    get_cmd = ['get-builder', '-adjust-priority', priority]
+    if experiments:
+      for e, val in experiments.items():
+        get_cmd.extend(['-experiment', f'{e}={"true" if val else "false"}'])
+    get_cmd.append(builder_name)
+    led_result = self.m.led(*get_cmd)
+
+    gerrit_change = self.m.tryserver.gerrit_change
+    gerrit_cl_url = (
+        'https://{gerrit_host}/c/{project}/+/{change}/{patchset}'.format(
+            gerrit_host=gerrit_change.host,
+            project=gerrit_change.project,
+            change=gerrit_change.change,
+            patchset=gerrit_change.patchset,
+        ))
+
+    led_result = led_result.then('edit-cr-cl', gerrit_cl_url)
+    # We used to set `is_experimental` to true, but the chromium recipe
+    # currently uses that to deprioritize swarming tasks, which results in
+    # very slow runtimes for the led task. Because this recipe blocks the
+    # build.git CQ, we decided the tradeoff to run these edited recipes in
+    # production mode instead would be better.
+    led_result = led_result.then('edit', '-exp', 'false')
+
+    if properties:
+      properties_edit_args = []
+      for prop, value in properties.items():
+        properties_edit_args.extend(
+            ['-p', prop + '=' + self.m.json.dumps(value)])
+      led_result = led_result.then('edit', *properties_edit_args)
+
+    if self.m.chromium_bootstrap.exe.HasField(
+        'cas') or self.m.led.rbe_cas_input:
+      digest_hash = (
+          self.m.chromium_bootstrap.exe.cas.digest.hash
+          if self.m.chromium_bootstrap.exe.HasField('cas') else
+          self.m.led.rbe_cas_input.digest.hash)
+      size_bytes = (
+          self.m.chromium_bootstrap.exe.cas.digest.size_bytes
+          if self.m.chromium_bootstrap.exe.HasField('cas') else
+          self.m.led.rbe_cas_input.digest.size_bytes)
+      led_result = led_result.then(
+          'edit-payload', '-cas-ref', '{digest_hash}/{size_bytes}'.format(
+              digest_hash=digest_hash,
+              size_bytes=size_bytes,
+          ))
+
+    return led_result.then('launch', '-resultdb', 'on', '-bound-to-parent')
+
   def _trigger_compilator_led_build(
       self,
       step_name,
@@ -484,51 +553,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       experiments,
   ):
     with self.m.step.nest(step_name):
-      builder_name = 'luci.{project}.{bucket}:{builder}'.format(
-          project=self.m.buildbucket.build.builder.project,
-          bucket=self.m.led.shadowed_bucket,
-          builder=self.compilator)
-      # By default, the priority of the tasks will be increased by 10, but
-      # since this builder runs as part of CQ for the recipe repos, we want
-      # the builds to run at regular priority
-      get_cmd = ['get-builder', '-adjust-priority', '0']
-      for e, val in experiments.items():
-        get_cmd.extend(['-experiment', f'{e}={"true" if val else "false"}'])
-      get_cmd.append(builder_name)
-      led_result = self.m.led(*get_cmd)
-
-      gerrit_change = self.m.tryserver.gerrit_change
-      gerrit_cl_url = (
-          'https://{gerrit_host}/c/{project}/+/{change}/{patchset}'.format(
-              gerrit_host=gerrit_change.host,
-              project=gerrit_change.project,
-              change=gerrit_change.change,
-              patchset=gerrit_change.patchset,
-          ))
-
-      led_result = led_result.then('edit-cr-cl', gerrit_cl_url)
-      # We used to set `is_experimental` to true, but the chromium recipe
-      # currently uses that to deprioritize swarming tasks, which results in
-      # very slow runtimes for the led task. Because this recipe blocks the
-      # build.git CQ, we decided the tradeoff to run these edited recipes in
-      # production mode instead would be better.
-      led_result = led_result.then('edit', '-exp', 'false')
-
-      properties_edit_args = []
-      for prop, value in compilator_properties.items():
-        properties_edit_args.extend(
-            ['-p', prop + '=' + self.m.json.dumps(value)])
-      led_result = led_result.then('edit', *properties_edit_args)
-
-      if self.m.chromium_bootstrap.exe.HasField('cas'):
-        led_result = led_result.then(
-            'edit-payload', '-cas-ref', '{digest_hash}/{size_bytes}'.format(
-                digest_hash=self.m.chromium_bootstrap.exe.cas.digest.hash,
-                size_bytes=self.m.chromium_bootstrap.exe.cas.digest.size_bytes,
-            ))
-
-      led_result = led_result.then('launch', '-resultdb', 'on',
-                                   '-bound-to-parent')
+      led_result = self.trigger_led_recipe_bundled_build(
+          priority=0,
+          builder=self.compilator,
+          experiments=experiments,
+          properties=compilator_properties)
 
       return self.m.buildbucket.get(led_result.launch_result.build_id)
 

@@ -10,10 +10,12 @@ from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
 
 DEPS = [
     'chromium',
+    'chromium_orchestrator',
     'chromium_mega_cq',
     'depot_tools/gitiles',
     'recipe_engine/buildbucket',
     'recipe_engine/json',
+    'recipe_engine/properties',
     'recipe_engine/raw_io',
 ]
 
@@ -127,6 +129,56 @@ def GenTests(api):
           ],
           step_name='trigger flaky_bot.collect (attempt 2)'),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'failed_build_with_led',
+      api.properties(
+          **{
+              '$recipe_engine/led': {
+                  'shadowed_bucket':
+                      'bucket',
+                  'led_run_id':
+                      'chromium/led/kimstephanie_google.com/88a27cab21a8ad2',
+                  'rbe_cas_input': {
+                      'cas_instance':
+                          'projects/chromium-swarm/instances/default_instance',
+                      'digest': {
+                          'hash':
+                              'd103ae94b838a760cbe22514bc43cb98fb2888226a37500bcbd661ab2fd2c502',
+                          'size_bytes':
+                              752
+                      }
+                  },
+              }
+          }),
+      api.chromium.try_build(),
+      api.step_data(
+          'get mega_cq_bots.txt.read mega_cq_bots.txt',
+          api.gitiles.make_encoded_file('\n'.join([
+              'chromium/try/green_bot',
+              'chromium/try/red_bot',
+          ]))),
+      api.buildbucket.simulated_collect_output(
+          [
+              api.buildbucket.ci_build_message(
+                  build_id=87654321, status='FAILURE'),
+          ],
+          step_name='trigger red_bot.collect (attempt 1)'),
+      api.buildbucket.simulated_collect_output(
+          [
+              api.buildbucket.ci_build_message(
+                  build_id=87654321, status='FAILURE'),
+          ],
+          step_name='trigger red_bot.collect (attempt 2)'),
+      api.buildbucket.simulated_collect_output(
+          [
+              api.buildbucket.ci_build_message(
+                  build_id=87654321, status='FAILURE'),
+          ],
+          step_name='trigger red_bot.collect (attempt 3)'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
