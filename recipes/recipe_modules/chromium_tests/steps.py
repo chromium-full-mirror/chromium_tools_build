@@ -1986,6 +1986,7 @@ class SwarmingTestSpec(TestSpec):
     * idempotent - Whether to mark the test's swarming tasks as
       idempotent. If not provided, the default logic used by the
       `chromium_swarming` recipe module will be used.
+    * realm - The realm to run the Swarming task in.
   """
   # pylint: disable=abstract-method
 
@@ -2006,6 +2007,7 @@ class SwarmingTestSpec(TestSpec):
   server = attrib(str, default=None)
   service_account = attrib(str, default=None)
   idempotent = attrib(bool, default=None)
+  realm = attrib(str, default=None)
 
   @classmethod
   def create(cls, name, **kwargs):
@@ -2515,6 +2517,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     if self.spec.server:
       task.server = self.spec.server
+
+    if self.spec.realm:
+      task_request = task_request.with_realm(self.spec.realm)
 
     task.request = (
         task_request.with_slice(0, task_slice).with_name(

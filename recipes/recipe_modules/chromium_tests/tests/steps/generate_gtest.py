@@ -393,6 +393,26 @@ def GenTests(api):
   )
 
   yield api.test(
+      'swarming_with_realm',
+      ci_build(
+          test_spec={
+              'test': 'base_unittests',
+              'swarming': {
+                  'dimensions': {
+                      'os': 'Linux',
+                  },
+                  'realm': 'project:customrealm'
+              },
+          }),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check(req.realm == 'project:customrealm'),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'merge',
       ci_build(
           test_spec={

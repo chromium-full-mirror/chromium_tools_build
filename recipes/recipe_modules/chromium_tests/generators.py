@@ -388,6 +388,10 @@ class Generator:
     if service_account:
       kwargs['service_account'] = service_account
 
+    realm = swarming_spec.get('realm')
+    if realm:
+      kwargs['realm'] = realm
+
     merge = dict(raw_test_spec.get('merge', {}))
     if merge:
       merge_script = merge.get('script')
