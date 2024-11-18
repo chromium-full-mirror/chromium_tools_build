@@ -7,9 +7,14 @@ import os
 import pathlib
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 from google.protobuf import json_format as jsonpb
 
 from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
+
+# SBOM file extension.
+SBOM_EXTENSION = '.spdx.json'
+
 
 @dataclasses.dataclass
 class CIPDPkg:
@@ -474,7 +479,7 @@ class SsciAPI(recipe_api.RecipeApi):
         GeneratedSBOM(
             digest=spdx_digest,
             filename=name,
-            sbom_name=f"{name}.spdx.json",
+            sbom_name=f"{name}{SBOM_EXTENSION}",
             sbom_path=f'{spdx_file}',
         ),
         preserving_proto_field_name=True)
@@ -483,3 +488,54 @@ class SsciAPI(recipe_api.RecipeApi):
     info_step.presentation.logs[name] = self.m.json.dumps(generated_sbom_json)
 
     return generated_sbom_json
+
+  def generate_sbom_for_artifact(
+      self,
+      artifact_name,
+      artifact_path: Path,
+      source_dir: Path,
+      build_dir: Path,
+      gn_targets,
+      platform=None,
+  ):
+    """Generates an SBOM for the given artifact based on the supplied GN targets.
+
+    The generated SBOM file is written to the same directory as the artifact.
+
+    Args:
+      artifact_name: The name of the artifact.
+      artifact_path: The on disk path to the artifact.
+      source_dir: The path to the source directory.
+      build_dir: The path to the build directory.
+      gn_targets: A list of GN targets to build the SBOM with.
+      platform: The platform the artifact was built for.
+
+    Returns:
+      A GeneratedSBOM protobuf message.
+    """
+
+    version = self.m.chromium.get_version(source_dir)
+    chrome_version = f"{version['MAJOR']}.{version['MINOR']}.{version['BUILD']}.{version['PATCH']}"
+
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
+      results = self.run(
+          src_dir=source_dir,
+          build_dir=build_dir,
+          chrome_version=chrome_version,
+          targets=gn_targets,
+          archive_name=artifact_name,
+          platform=platform)
+
+      sbom_expected = artifact_name + SBOM_EXTENSION
+
+      for v in results.values():
+        sbom = jsonpb.ParseDict(v, GeneratedSBOM(), ignore_unknown_fields=True)
+        if sbom.sbom_name == sbom_expected:
+          renamed_sbom_path = self.m.path.join(
+              self.m.path.dirname(artifact_path), sbom.sbom_name)
+          self.m.file.move("move and rename SBOM to match artifact",
+                           sbom.sbom_path, renamed_sbom_path)
+          sbom.sbom_path = renamed_sbom_path
+          return sbom
+      raise recipe_api.StepFailure(
+          f'SBOM {sbom_expected} not found in generated SBOMs dict: {results}')

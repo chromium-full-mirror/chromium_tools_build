@@ -5,6 +5,7 @@
 from PB.recipe_modules.build.ssci import properties
 
 DEPS = [
+    'chromium',
     'depot_tools/depot_tools',
     'depot_tools/gsutil',
     'recipe_engine/buildbucket',
