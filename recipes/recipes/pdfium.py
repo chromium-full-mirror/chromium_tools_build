@@ -258,6 +258,7 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
       args.append('is_clang=true')
     elif msvc:
       args.append('is_clang=false')
+      args.append('use_custom_libcxx=false')
     else:
       # Default to Clang.
       args.append('is_clang=true')
