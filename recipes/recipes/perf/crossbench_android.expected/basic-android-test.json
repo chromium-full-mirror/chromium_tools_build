@@ -157,7 +157,6 @@
       "vpython3",
       "[CACHE]/avd/src/tools/android/avd/avd.py",
       "start",
-      "--require-fast-start",
       "--debug-tags",
       "all",
       "--gpu-mode",

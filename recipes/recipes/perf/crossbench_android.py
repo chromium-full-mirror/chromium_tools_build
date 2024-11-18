@@ -99,9 +99,8 @@ class AndroidEmulator:
       result = self.api.step(
           'Start Android emulator: %s' % count_attempt,
           [
-              'xvfb-run', 'vpython3', self.avd_script, 'start',
-              '--require-fast-start', '--debug-tags', 'all', '--gpu-mode',
-              'off', '--avd-config', self.avd_config
+              'xvfb-run', 'vpython3', self.avd_script, 'start', '--debug-tags',
+              'all', '--gpu-mode', 'off', '--avd-config', self.avd_config
           ],
           stdout=self.api.raw_io.output_text(add_output_log=True),
           infra_step=True,
