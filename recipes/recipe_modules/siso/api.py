@@ -300,6 +300,23 @@ class SisoApi(recipe_api.RecipeApi):
                for test in tests}),
           **kwargs)
 
+  def fs_flush(self, step_name: str, source_dir: Path, files: list[str]):
+    """Fetches contents for the files from RBE.
+
+    Args:
+      step_name: Name of the step.
+      source_dir: Path to the src root.
+      files: List of files to fetch from RBE. Relative to the cwd.
+    """
+    cmd = [
+        self.siso_path(source_dir),
+        'fs',
+        'flush',
+        '--project',
+        self._props.project,
+    ] + files
+    return self.m.step(step_name, cmd)
+
   @property
   def without_bytes(self) -> bool:
     """Return True if Siso build does not downlaod remote execution outptus

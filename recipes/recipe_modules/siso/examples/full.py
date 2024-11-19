@@ -46,6 +46,12 @@ def RunSteps(api):
   if api.siso.without_bytes:
     api.siso.isolate_tests('isolate tests', source_dir, build_dir,
                            api.properties.get('tests'))
+    for t in api.properties.get('tests', []):
+      api.siso.fs_flush(
+          f'fs flush {t}',
+          source_dir,
+          [f'{t}.exe'],
+      )
 
 
 def GenTests(api):
@@ -206,5 +212,6 @@ def GenTests(api):
       ]),
       api.post_process(post_process.StepCommandContains, 'isolate tests',
                        ['base_unittests']),
+      api.post_process(post_process.StepSuccess, 'fs flush base_unittests'),
       api.post_process(post_process.DropExpectation),
   )

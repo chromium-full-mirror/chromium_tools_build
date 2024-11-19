@@ -20,6 +20,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'chromium_utr',
     'code_coverage',
+    'siso',
     'test_utils',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
@@ -776,5 +777,20 @@ target_os=['os']
           checkout_path='/google/cog/cloud/src',
           preserve_gn_args=True,
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'compile_remote_linking',
+      boilerplate(run_type=Request.RunType.RUN_TYPE_COMPILE),
+      api.siso.properties(output_local_strategy='minimum'),
+      api.path.exists(api.path.cache_dir /
+                      'src/out/Release/browser_tests.runtime_deps'),
+      api.step_data(
+          'download compilation outputs.read browser_tests.runtime_deps',
+          api.file.read_text('output_file1\noutput_file2')),
+      api.post_process(post_process.StepCommandContains,
+                       'download compilation outputs.fetch browser_tests',
+                       ['output_file1', 'output_file2']),
       api.post_process(post_process.DropExpectation),
   )

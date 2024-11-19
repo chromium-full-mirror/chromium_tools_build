@@ -112,6 +112,28 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if raw_result and raw_result.status != common_pb2.SUCCESS:
       return raw_result
     if not should_test:
+      # If remote linking is enabled for the given builder, then the resulting
+      # compile outputs won't ever be fetched back to the host. The user is
+      # likely expecting them, though. So we need to fetch them ourselves. We
+      # use Siso to do so since it's more graceful than cas when a file is
+      # already present.
+      if self.m.siso.without_bytes:
+        with self.m.step.nest('download compilation outputs'):
+          total_tests_fetched = 0
+          for test_name in self.m.isolate.isolated_tests:
+            runtime_deps_path = build_path / f'{test_name}.runtime_deps'
+            if self.m.path.exists(runtime_deps_path):
+              full_deps = self.m.file.read_text(
+                  f'read {test_name}.runtime_deps', runtime_deps_path)
+              with self.m.context(cwd=build_path):
+                self.m.siso.fs_flush(
+                    f'fetch {test_name}',
+                    source_dir,
+                    full_deps.splitlines(),
+                )
+                total_tests_fetched += 1
+          self.m.step.empty(
+              f'fetched outputs for {total_tests_fetched} total tests')
       return result_pb2.RawResult(status=common_pb2.SUCCESS)
 
     # Explicitly disable resultdb for any test we're running locally. We don't
