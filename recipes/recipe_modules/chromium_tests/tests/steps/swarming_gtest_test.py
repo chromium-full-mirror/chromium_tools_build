@@ -117,11 +117,8 @@ def GenTests(api):
           'base_unittests',
           api.chromium_swarming.canned_summary_output(
               dispatched_task_step_test_data=None, failure=True, retcode=1)),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.StepFailure, 'base_unittests'),
-      api.post_process(
-          post_process.LogContains, '$debug - all results',
-          'serialized results',
-          ['"unexpected_failing_suites": [\n    "base_unittests"']),
       api.post_process(post_process.DropExpectation),
   )
 

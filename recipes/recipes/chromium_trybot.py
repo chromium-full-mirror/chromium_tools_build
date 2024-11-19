@@ -302,6 +302,7 @@ def GenTests(api):
           'telemetry_gpu_unittests (with patch)',
           api.chromium_swarming.canned_summary_output(
               api.json.output({}), failure=True, retcode=1)),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

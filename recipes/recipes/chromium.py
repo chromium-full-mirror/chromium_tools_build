@@ -898,7 +898,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data('telemetry_gpu_unittests', retcode=255),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

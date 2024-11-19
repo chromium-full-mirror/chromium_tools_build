@@ -1498,11 +1498,7 @@
       }
     },
     "name": "telemetry_gpu_unittests",
-    "tags": {
-      "resultdb.instruction.id": "tag_407f45b3944c008c4f9fa8f9d649b3b800336b05"
-    },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Missing or invalid summary@@@",
       "@@@STEP_LOG_END@json.output (invalid)@@@",
       "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
       "@@@STEP_LOG_END@json.output (exception)@@@",
@@ -1510,12 +1506,13 @@
       "@@@STEP_LOG_END@chromium_swarming.summary (invalid)@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary (exception)@No JSON object could be decoded@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary (exception)@@@",
-      "@@@STEP_EXCEPTION@@@"
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {
     "failure": {
-      "humanReason": "Infra Failure: Step('telemetry_gpu_unittests') (retcode: 255)"
+      "failure": {},
+      "humanReason": "Step('telemetry_gpu_unittests') (retcode: 255)"
     },
     "name": "$result"
   }

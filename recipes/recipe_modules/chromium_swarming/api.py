@@ -1421,10 +1421,6 @@ class SwarmingApi(recipe_api.RecipeApi):
     return step_result, has_valid_results
 
   def run_collect_task_script(self, name, task_args, **kwargs):
-    # TODO(crbug.com/1346781): Enable unconditionally.
-    if ('chromium_swarming.expose_merge_script_failures' not in
-        self.m.buildbucket.build.input.experiments):
-      kwargs.setdefault('ok_ret', 'any')
     with self.m.swarming.on_path():
       with self.m.context(cwd=self.m.path.start_dir):
         cmd = [
