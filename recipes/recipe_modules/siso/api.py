@@ -312,7 +312,7 @@ class SisoApi(recipe_api.RecipeApi):
     self.m.step('check siso version', [self.siso_path(source_dir), 'version'])
 
   def siso_path(self, source_dir: Path):
-    """"Retrieve siso path without exections."""
+    """Retrieve siso path without exections."""
     # There are two possible paths :
     # * third_party/siso/cipd/siso{.exe}
     # * third_party/siso/siso{.exe}
@@ -321,3 +321,11 @@ class SisoApi(recipe_api.RecipeApi):
     return source_dir / 'third_party/siso/cipd/siso' if \
         self.m.path.exists(source_dir / 'third_party/siso/cipd') else \
       source_dir / 'third_party/siso/siso'
+
+  def enable_download_remoteexec_cfg_hook(self):
+    """Enable download_remoteexec_cfg gclient hook by setting gclient variables."""
+    rbe_instance = "projects/%s/instances/%s" % (
+        self._props.project, self._props.reapi_instance or "default_instance")
+    gclient_solution = self.m.gclient.c.solutions[0]
+    gclient_solution.custom_vars['rbe_instance'] = rbe_instance
+    gclient_solution.custom_vars['download_remoteexec_cfg'] = 'True'

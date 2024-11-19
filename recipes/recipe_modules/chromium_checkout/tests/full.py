@@ -20,6 +20,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/step',
     'reclient',
+    'siso',
 ]
 
 PROPERTIES = {
@@ -83,6 +84,19 @@ def GenTests(api):
       api.reclient.properties(instance='someinstance'),
       api.post_check(verify_rbe_instance,
                      'projects/someinstance/instances/default_instance'),
+      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'siso_enabled',
+      api.platform('linux', 64),
+      api.buildbucket.generic_build(),
+      api.siso.properties(project='someproj'),
+      api.post_check(verify_rbe_instance,
+                     'projects/someproj/instances/default_instance'),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),

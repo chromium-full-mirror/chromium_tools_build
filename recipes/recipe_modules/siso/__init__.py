@@ -5,6 +5,7 @@
 from PB.recipe_modules.build.siso import properties
 
 DEPS = [
+    'depot_tools/gclient',
     'depot_tools/gsutil',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',

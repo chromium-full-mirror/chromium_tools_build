@@ -7,6 +7,7 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium
 
 DEPS = [
+    'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -18,8 +19,12 @@ DEPS = [
 def RunSteps(api):
   source_dir = api.path.cache_dir / 'builder' / 'src'
   build_dir = api.path.join('out', 'Default')
+  src_cfg = api.gclient.make_config(CACHE_DIR=api.path.cache_dir / 'git')
+  src_cfg.solutions.add()
+  api.gclient.c = src_cfg
   env = {}
   if api.siso.enabled:
+    api.siso.enable_download_remoteexec_cfg_hook()
     api.path.mock_add_paths(
         api.path.join('out', 'Release', 'siso_metrics.json'))
     api.siso.check_version(source_dir)

@@ -22,6 +22,7 @@ DEPS = [
     'recipe_engine/step',
     'reclient',
     'repro_instructions',
+    'siso',
 ]
 
 PROPERTIES = properties.InputProperties
