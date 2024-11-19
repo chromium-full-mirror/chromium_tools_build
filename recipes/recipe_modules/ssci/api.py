@@ -15,6 +15,9 @@ from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 # SBOM file extension.
 SBOM_EXTENSION = '.spdx.json'
 
+# Generic Archive name
+GENERIC_ARCHIVE = 'generic_archive'
+
 
 @dataclasses.dataclass
 class CIPDPkg:
@@ -299,7 +302,7 @@ class SsciAPI(recipe_api.RecipeApi):
       chrome_version=None,
       platform=None,
       to_rename=None,
-      archive_name=None,
+      archive_names=None,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -332,8 +335,8 @@ class SsciAPI(recipe_api.RecipeApi):
         targetFlags.extend(["--target", target])
 
       extra_flags = []
-      if archive_name:
-        extra_flags.extend(["--archive-name", archive_name])
+      if archive_names:
+        extra_flags.extend(["--archive-name", GENERIC_ARCHIVE])
 
       depbot_result = self.m.step(
           'run depbot',
@@ -391,23 +394,27 @@ class SsciAPI(recipe_api.RecipeApi):
         for fut in self.m.futures.iwait(futures):
           fut.result()
 
-      # If an archive summary is present build an SBOM for that archive.
+      # If an archive summary is present build an SBOM for each of the
+      # given artifacts.
       archive_summary = depbot_execution_summary.get("archive")
-      if archive_summary is not None:
-        target = {
-            "entry_point": archive_summary.get("name"),
-            "target": ",".join(archive_summary.get("targets")),
-            "artifacts_file_path": archive_summary.get("artifacts_file_path"),
-            "libraries_file_path": archive_summary.get("libraries_file_path")
-        }
-        final = self._target_specific_steps(target, src_dir, sbom_bucket,
-                                            sbom_folder, sbom_filename_postfix,
-                                            chrome_version, third_party_out,
-                                            to_rename)
+      if archive_summary is not None and archive_summary.get(
+          "name") == GENERIC_ARCHIVE:
+        for a in archive_names:
+          target = {
+              "entry_point": a,
+              "target": ",".join(archive_summary.get("targets")),
+              "artifacts_file_path": archive_summary.get("artifacts_file_path"),
+              "libraries_file_path": archive_summary.get("libraries_file_path")
+          }
+          final = self._target_specific_steps(target, src_dir, sbom_bucket,
+                                              sbom_folder,
+                                              sbom_filename_postfix,
+                                              chrome_version, third_party_out,
+                                              to_rename)
 
-        self.generated_sbom_artifacts[final].ClearField("target")
-        self.generated_sbom_artifacts[final].targets.extend(
-            archive_summary.get("targets"))
+          self.generated_sbom_artifacts[final].ClearField("target")
+          self.generated_sbom_artifacts[final].targets.extend(
+              archive_summary.get("targets"))
 
       generated_sbom_artifacts_json = {
           k: jsonpb.MessageToDict(a, preserving_proto_field_name=True)
@@ -489,10 +496,9 @@ class SsciAPI(recipe_api.RecipeApi):
 
     return generated_sbom_json
 
-  def generate_sbom_for_artifact(
+  def generate_sbom_for_artifacts(
       self,
-      artifact_name,
-      artifact_path: Path,
+      artifacts,
       source_dir: Path,
       build_dir: Path,
       gn_targets,
@@ -503,15 +509,14 @@ class SsciAPI(recipe_api.RecipeApi):
     The generated SBOM file is written to the same directory as the artifact.
 
     Args:
-      artifact_name: The name of the artifact.
-      artifact_path: The on disk path to the artifact.
+      artifacts: A dict {name of the artifact: on disk path to the artifact}
       source_dir: The path to the source directory.
       build_dir: The path to the build directory.
       gn_targets: A list of GN targets to build the SBOM with.
       platform: The platform the artifact was built for.
 
     Returns:
-      A GeneratedSBOM protobuf message.
+      A dict of GeneratedSBOM protobuf message, where the sbom name is the key.
     """
 
     version = self.m.chromium.get_version(source_dir)
@@ -523,19 +528,28 @@ class SsciAPI(recipe_api.RecipeApi):
           build_dir=build_dir,
           chrome_version=chrome_version,
           targets=gn_targets,
-          archive_name=artifact_name,
+          archive_names=artifacts.keys(),
           platform=platform)
 
-      sbom_expected = artifact_name + SBOM_EXTENSION
+      sboms = {}
 
-      for v in results.values():
-        sbom = jsonpb.ParseDict(v, GeneratedSBOM(), ignore_unknown_fields=True)
-        if sbom.sbom_name == sbom_expected:
-          renamed_sbom_path = self.m.path.join(
-              self.m.path.dirname(artifact_path), sbom.sbom_name)
-          self.m.file.move("move and rename SBOM to match artifact",
-                           sbom.sbom_path, renamed_sbom_path)
-          sbom.sbom_path = renamed_sbom_path
-          return sbom
-      raise recipe_api.StepFailure(
-          f'SBOM {sbom_expected} not found in generated SBOMs dict: {results}')
+      for artifact_name, artifact_path in artifacts.items():
+        sbom_expected = artifact_name + SBOM_EXTENSION
+
+        for v in results.values():
+          sbom = jsonpb.ParseDict(
+              v, GeneratedSBOM(), ignore_unknown_fields=True)
+          if sbom.sbom_name == sbom_expected:
+            renamed_sbom_path = self.m.path.join(
+                self.m.path.dirname(artifact_path), sbom.sbom_name)
+            self.m.file.move("move and rename SBOM to match artifact",
+                             sbom.sbom_path, renamed_sbom_path)
+            sbom.sbom_path = renamed_sbom_path
+            sboms[sbom.sbom_name] = sbom
+            break
+        if sbom_expected not in sboms:
+          raise recipe_api.StepFailure(
+              f'SBOM {sbom_expected} not found in generated SBOMs dict: {results}'
+          )
+
+      return sboms

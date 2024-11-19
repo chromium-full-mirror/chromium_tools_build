@@ -4,10 +4,15 @@
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
+from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
+
+from google.protobuf import json_format as jsonpb
+
 DEPS = [
     'chromium',
     'depot_tools/bot_update',
     'depot_tools/gclient',
+    'recipe_engine/assertions',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -26,14 +31,46 @@ def RunSteps(api):
   update_result = api.bot_update.ensure_checkout()
   source_dir = update_result.source_root.path
 
-  api.ssci.generate_sbom_for_artifact(
-      artifact_name='chromium.zip',
-      artifact_path=source_dir / 'Release/out' / 'chromium.zip',
+  res = api.ssci.generate_sbom_for_artifacts(
+      artifacts={
+          'chromium.zip': source_dir / 'Release/out' / 'chromium.zip',
+          'remoting.zip': source_dir / 'Release/out/special' / 'remoting.zip'
+      },
       source_dir=source_dir,
       build_dir=source_dir / 'Release/out',
       gn_targets=['chromium', 'chromium_installer'],
       platform='linux',
   )
+
+  api.assertions.assertEqual(
+      res, {
+          'chromium.zip.spdx.json':
+              jsonpb.ParseDict(
+                  {
+                      'digest':
+                          'testhash',
+                      'filename':
+                          'chromium.zip',
+                      'sbom_name':
+                          'chromium.zip.spdx.json',
+                      'sbom_path':
+                          '[START_DIR]/src/Release/out/chromium.zip.spdx.json',
+                      'targets': ['example', 'another'],
+                  }, GeneratedSBOM()),
+          'remoting.zip.spdx.json':
+              jsonpb.ParseDict(
+                  {
+                      'digest':
+                          'testhash',
+                      'filename':
+                          'remoting.zip',
+                      'sbom_name':
+                          'remoting.zip.spdx.json',
+                      'sbom_path':
+                          '[START_DIR]/src/Release/out/special/remoting.zip.spdx.json',
+                      'targets': ['example', 'another'],
+                  }, GeneratedSBOM())
+      })
 
 
 def GenTests(api):
@@ -61,7 +98,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "chromium.zip",
+                      "name": "generic_archive",
                       "targets": ["example", "another"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
@@ -76,6 +113,17 @@ def GenTests(api):
               "--json-output", "/path/to/tmp/json", "move",
               "[CLEANUP]/tmp_tmp_5/spdx-out.json",
               "[START_DIR]/src/Release/out/chromium.zip.spdx.json"
+          ],
+      ),
+      api.post_process(
+          StepCommandContains,
+          'move and rename SBOM to match artifact (2)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "move",
+              "[CLEANUP]/tmp_tmp_6/spdx-out.json",
+              "[START_DIR]/src/Release/out/special/remoting.zip.spdx.json"
           ],
       ),
       api.post_process(DropExpectation),
@@ -107,7 +155,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "not-exist.zip",
+                      "name": "not-exists.zip",
                       "targets": ["example", "example_2"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"

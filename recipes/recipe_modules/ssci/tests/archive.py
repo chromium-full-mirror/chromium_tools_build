@@ -24,7 +24,7 @@ def RunSteps(api):
       sbom_folder='os/version',
       sbom_filename_postfix='Canary',
       targets=["Example.apk", "Another.apk"],
-      archive_name="example.zip",
+      archive_names=["example.zip", "example2.zip"],
   )
 
   api.assertions.assertEqual(
@@ -72,6 +72,22 @@ def RunSteps(api):
                   '//example:example',
                   '//another:another',
               ],
+          },
+          'example2Canary.zip': {
+              'digest':
+                  'testhash',
+              'file':
+                  'gs://my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json',
+              'filename':
+                  'example2Canary.zip',
+              'sbom_name':
+                  'example2Canary.zip.spdx.json',
+              'sbom_path':
+                  '[CLEANUP]/tmp_tmp_6/spdx-out.json',
+              'targets': [
+                  '//example:example',
+                  '//another:another',
+              ],
           }
       })
 
@@ -98,7 +114,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "example.zip",
+                      "name": "generic_archive",
                       "targets": ["//example:example", "//another:another"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"

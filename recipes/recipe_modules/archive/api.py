@@ -1625,7 +1625,7 @@ class ArchiveApi(recipe_api.RecipeApi):
           sbom_bucket=sbom_bucket,
           sbom_folder=sbom_folder,
           targets=gn_targets,
-          archive_name=artifact_name,
+          archive_names=[artifact_name],
           platform=platform)
 
   def _archive_sbom(self,

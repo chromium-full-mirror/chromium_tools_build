@@ -180,7 +180,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "myfile.zip",
+                      "name": "generic_archive",
                       "targets": ["example", "example_2"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
@@ -203,7 +203,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "myfile.zip",
+                      "name": "generic_archive",
                       "targets": ["example", "example_2"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
@@ -228,7 +228,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "myfile0.deb",
+                      "name": "generic_archive",
                       "targets": ["example", "example_2"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
@@ -253,7 +253,7 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   }],
                   "archive": {
-                      "name": "myfile1.deb",
+                      "name": "generic_archive",
                       "targets": ["example", "example_2"],
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
