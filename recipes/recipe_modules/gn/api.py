@@ -231,19 +231,24 @@ class GnApi(recipe_api.RecipeApi):
     output = step_result.stdout
     return set(output.splitlines())
 
-  def gen(self, build_dir, step_name='gn gen'):
-    """Runs gn gen to generate build files with existing gn args
+  def gen(self, build_dir, step_name='gn gen', args=None):
+    """Runs gn gen to generate build files with existing or new gn args
 
     See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_gen for
-    more documentation of the command. The build_dir must exist and contain
-    gn args
+    more documentation of the command. If `args` is None, the build_dir must
+    exist and contain gn args
 
     Args:
       build_dir: Path to build output directory.
       step_name: Optional recipe step name to give to the "gn gen" command.
+      args: Optional args to pass `gn gen`.
     """
     with self.m.context(cwd=build_dir):
-      self._gn_cmd(step_name, ['gen', build_dir])
+      cmd = ['gen']
+      if args is not None:
+        cmd += ['--args', args]
+      cmd.append(build_dir)
+      self._gn_cmd(step_name, cmd)
 
   def clean(self, build_dir, step_name='clean outdir'):
     """Cleans the output directory except for args.gn and needed ninja files.
