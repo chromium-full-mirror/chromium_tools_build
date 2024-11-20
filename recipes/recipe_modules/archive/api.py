@@ -27,6 +27,8 @@ GS_COMMIT_POSITION_KEY = 'Cr-Commit-Position'
 GS_COMMIT_POSITION_NUMBER_KEY = 'Cr-Commit-Position-Number'
 # The Google Storage metadata key for the Git commit hash.
 GS_GIT_COMMIT_KEY = 'Cr-Git-Commit'
+# SBOM file extension.
+SBOM_EXTENSION = '.spdx.json'
 
 
 class ArchiveApi(recipe_api.RecipeApi):
@@ -952,24 +954,10 @@ class ArchiveApi(recipe_api.RecipeApi):
               update_properties,
               archive_data,
               custom_vars=custom_vars,
+              generate_sboms=generate_sboms,
               report_artifacts=report_artifacts,
               should_batch=should_batch)
           upload_results['gcs'].append(gcs_uploads)
-          if generate_sboms:
-            # TODO(b/356745797): Remove try/except once SBOM generation
-            # is stable.
-            try:
-              upload_results['sbom'].update(
-                  self.generate_and_upload_sbom(
-                      source_dir,
-                      build_dir,
-                      archive_data,
-                      update_properties,
-                      gcs_uploads,
-                      custom_vars=custom_vars,
-                      report_artifacts=report_artifacts))
-            except self.m.step.StepFailure:
-              pass
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
             self.cipd_archive(
@@ -1063,6 +1051,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                   archive_data,
                   *,
                   custom_vars=None,
+                  generate_sboms=False,
                   report_artifacts=False,
                   should_batch=False):
     """Archives a single package to google cloud storage.
@@ -1083,6 +1072,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                    E.g. custom_vars={'chrome_version':'1.2.3.4'}, then
                    gcs_path='gcs/{%chrome_version%}/path' will be replaced to
                    'gcs/1.2.3.4/path'.
+      generate_sboms: A Boolean for enabling SBOM generation and reporting, set
+                      by the recipe using this module.
       report_artifacts: A boolean flag to enable artifact reporting.
       should_batch: See generic_archive().
     """
@@ -1296,14 +1287,74 @@ class ArchiveApi(recipe_api.RecipeApi):
       if archive_file:
         uploads = {archive_file: gcs_path}
 
+    # Build SBOMs for artifacts that require them.
+    generated_sboms = {}
+    if generate_sboms and archive_data.HasField(
+        'requires_sbom') and archive_data.archive_type in (
+            ArchiveData.ARCHIVE_TYPE_ZIP, ArchiveData.ARCHIVE_TYPE_FILES):
+      # TODO(b/356745797): Remove try/except once SBOM generation
+      # is stable.
+      try:
+        sbom_config = archive_data.requires_sbom
+        if len(sbom_config.gn_targets) > 0:
+
+          sbom_artifact_dict = {}
+          for f, d in uploads.items():
+            sbom_artifact_dict[self.m.path.basename(d)] = f
+
+          sboms = self.m.ssci.generate_sbom_for_artifacts(
+              artifacts=sbom_artifact_dict,
+              source_dir=source_dir,
+              build_dir=build_dir,
+              gn_targets=sbom_config.gn_targets,
+          )
+
+          for f, sbom in sboms.items():
+            sbom_gcs_path = _sanitize_gcs_path(gcs_path,
+                                               self.m.path.basename(f))
+            if archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_ZIP:
+              sbom_gcs_path = gcs_path + SBOM_EXTENSION
+            generated_sboms[sbom.sbom_path] = sbom_gcs_path
+      except Exception as e:
+        skip_sbom = self.m.step.empty(
+            'skip SBOM generation because of an exception')
+        skip_sbom.presentation.step_text = f'exception raised: {e}'
+
     # Report artifacts that require provenance.
     if (archive_data.requires_provenance and
         not archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE):
 
+      for f in generated_sboms:
+        # TODO(b/356745797): Remove try/except once SBOM generation
+        # is stable.
+        try:
+          # Report SBOM artifacts for provenance generation.
+          # SBOM's must be reported before their artifact counterpart.
+          spdx_hash = self.m.file.file_hash(f, test_data='spdxbeef')
+          # Need to report full destination path of the artifact.
+          if report_artifacts:
+            artifact_path = str(f).removesuffix(SBOM_EXTENSION)
+            artifact_hash = self.m.file.file_hash(
+                artifact_path, test_data='deadbeef')
+
+            @self.m.time.exponential_retry(
+                retries=3,
+                delay=datetime.timedelta(seconds=60),
+            )
+            def _retry_report_sbom():
+              self.m.bcid_reporter.report_sbom(
+                  spdx_hash, 'gs://%s/%s' % (gcs_bucket, generated_sboms[f]),
+                  artifact_hash)
+
+            _retry_report_sbom()
+        except Exception as e:
+          skip_sbom = self.m.step.empty(
+              'skip SBOM reporting because of an exception')
+          skip_sbom.presentation.step_text = f'exception raised: {e}'
+
       for f in uploads.keys():
-        # Report artifacts for provenance generation.
+        # Report all other artifacts for provenance generation.
         file_hash = self.m.file.file_hash(f, test_data='deadbeef')
-        # TODO(akashmukherjee): Add support for custom backend url.
         # Need to report full destination path of the artifact.
         if report_artifacts:
 
@@ -1316,6 +1367,10 @@ class ArchiveApi(recipe_api.RecipeApi):
                 file_hash, 'gs://%s/%s' % (gcs_bucket, uploads[f]))
 
           _retry_report_gcs()
+
+    # Upload the generated SBOMs the same way the rest of the
+    # artifacts are uploaded.
+    uploads.update(generated_sboms)
 
     if archive_data.prevent_overwrites:
       gcs_args.append('-n')
@@ -1509,165 +1564,3 @@ class ArchiveApi(recipe_api.RecipeApi):
             'instance': create_results[1]
         }
     return upload_results
-
-  def generate_and_upload_sbom(self,
-                               source_dir: Path,
-                               build_dir: Path,
-                               archive_data,
-                               update_properties,
-                               archived_files,
-                               custom_vars=None,
-                               report_artifacts=False):
-    """Generates, uploads and reports SBOMs for already archived files.
-
-    If multiple files are included, each file will have its own SBOM
-    referencing the same dependencies. However, the title within
-    each SBOM document will specifically detail the individual file
-    it was created for.
-
-    Args:
-      source_dir: The path to the top-level repo.
-      build_dir: The absolute path to the build output directory, e.g.
-                 [cache]/builder/src/out/Release
-      update_properties: The properties from the bot_update step (containing
-                         commit information).
-      archive_data: An instance of
-                    archive/properties.proto:InputProperties.archive_datas.
-      archived_files: Dict of archived_file and the gcs upload path. eg:
-        {archive_file: gcs_path}.
-      custom_vars: Dict of custom string substitution for gcs paths.
-                   E.g. custom_vars={'chrome_version':'1.2.3.4'}, then
-                   gcs_path='gcs/{%chrome_version%}/path' will be replaced to
-                   'gcs/1.2.3.4/path'.
-      report_artifacts: A boolean flag to enable artifact reporting. This is
-                        set by recipe that uses this module.
-    Returns:
-      A dict of {archive_file: gcs_path}, the gcs_path is the path to the
-      new SBOM.
-    """
-    version = self.m.chromium.get_version(source_dir)
-    version_string = "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
-                                      version['BUILD'], version['PATCH'])
-    sboms = {}
-    if archive_data.HasField('requires_sbom'):
-      sbom_config = archive_data.requires_sbom
-
-      gcs_bucket = self._replace_placeholders(source_dir, update_properties,
-                                              custom_vars,
-                                              archive_data.gcs_bucket)
-
-      if len(sbom_config.gn_targets) > 0:
-        if archive_data.archive_type in (ArchiveData.ARCHIVE_TYPE_ZIP,
-                                         ArchiveData.ARCHIVE_TYPE_FILES):
-          for file, gcs_path in archived_files.items():
-            artifact_name = self.m.path.basename(gcs_path)
-            gcs_folder, _ = self.m.path.split(gcs_path)
-            gcs_folder = '' if gcs_folder == gcs_path else gcs_folder
-
-            generated_sboms = self._generate_sbom(
-                source_dir=source_dir,
-                build_dir=build_dir,
-                chrome_version=version_string,
-                gn_targets=sbom_config.gn_targets,
-                artifact_name=artifact_name,
-                sbom_gcs_folder=sbom_config.gcs_folder,
-            )
-
-            # Convert to proto
-            sbom = json_format.ParseDict(
-                generated_sboms[artifact_name],
-                GeneratedSBOM(),
-                ignore_unknown_fields=True)
-
-            # If there is no folder just use the sbom_name.
-            gcs_dest = "/".join([gcs_folder, sbom.sbom_name
-                                ]) if gcs_folder else sbom.sbom_name
-
-            sboms.update(
-                self._archive_sbom(
-                    artifact_path=file,
-                    sbom_path=sbom.sbom_path,
-                    gcs_bucket=gcs_bucket,
-                    gcs_dest=gcs_dest,
-                    report_sbom_for_artifact=(
-                        report_artifacts and archive_data.requires_provenance)))
-    return sboms
-
-  def _generate_sbom(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      chrome_version,
-      gn_targets,
-      artifact_name,
-      platform=None,
-      sbom_gcs_folder=None,
-  ):
-    sbom_bucket = None
-    sbom_folder = None
-
-    # Parse sbom_gcs_folder if provided.
-    if sbom_gcs_folder:
-      if not sbom_gcs_folder.startswith('gs://'):
-        raise recipe_api.StepFailure(
-            'sbom_gcs_folder must be a GCS path (gs://bucket/folder): %s' %
-            sbom_gcs_folder)
-
-      path = sbom_gcs_folder.removeprefix("gs://")
-      sbom_bucket, *sbom_folder = path.split("/", 1)
-      sbom_folder = sbom_folder[0] if sbom_folder else '/'
-
-    with self.m.context(env=self.m.chromium.get_env(source_dir)):
-      return self.m.ssci.run(
-          src_dir=source_dir,
-          build_dir=build_dir,
-          chrome_version=chrome_version,
-          sbom_bucket=sbom_bucket,
-          sbom_folder=sbom_folder,
-          targets=gn_targets,
-          archive_names=[artifact_name],
-          platform=platform)
-
-  def _archive_sbom(self,
-                    artifact_path: Path,
-                    sbom_path: Path,
-                    gcs_bucket,
-                    gcs_dest,
-                    report_sbom_for_artifact=False):
-
-    sbom_name = self.m.path.basename(gcs_dest)
-
-    with self.m.step.nest(f'Archive SBOM {sbom_name}'):
-      gcs_path = 'gs://' + ("/".join([gcs_bucket, gcs_dest])
-                            if gcs_dest else gcs_bucket)
-
-      renamed_sbom_path = self.m.path.join(
-          self.m.path.dirname(artifact_path), sbom_name)
-      self.m.file.move("Rename SBOM", sbom_path, renamed_sbom_path)
-
-      self.m.gsutil.upload(
-          renamed_sbom_path,
-          bucket=gcs_bucket,
-          dest=gcs_dest,
-          name=f'upload {gcs_dest}')
-
-    if report_sbom_for_artifact:
-      with self.m.step.nest(f'Report SBOM {sbom_name}') as presentation:
-
-        artifact_digest = self.m.file.file_hash(
-            artifact_path, test_data='artifact_testhash')
-        sbom_digest = self.m.file.file_hash(
-            sbom_path, test_data='sbom_testhash')
-
-        @self.m.time.exponential_retry(
-            retries=3,
-            delay=datetime.timedelta(seconds=60),
-        )
-        def _retry_report_sbom():
-          self.m.bcid_reporter.report_sbom(sbom_digest, gcs_path,
-                                           artifact_digest)
-          presentation.status = self.m.step.active_result.presentation.status
-
-        _retry_report_sbom()
-
-    return {renamed_sbom_path: gcs_path}
