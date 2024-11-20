@@ -30,8 +30,8 @@ PROPERTIES = Request
 
 
 def RunSteps(api: RecipeApi, properties: Request):
-  checkout_dir = api.path.cache_dir
-  source_dir = api.path.abs_to_path(properties.checkout_path)
+  source_dir = api.path.cast_to_path(properties.checkout_path)
+  checkout_dir = source_dir.parent
   api.chromium_checkout.set_paths(checkout_dir, source_dir)
   try:
     builder_id, builder_config = configure_build(
@@ -92,6 +92,28 @@ def GenTests(api: RecipeTestApi):
       'basic',
       api.properties(
           checkout_path='[CACHE]/src',
+          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          rerun_options=Request.RerunOptions(bypass_gclient=True),
+      ),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'checkout_to_anypath',
+      api.properties(
+          checkout_path='/not/known/to/recipe/engine/src',
           run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
           rerun_options=Request.RerunOptions(bypass_gclient=True),
       ),

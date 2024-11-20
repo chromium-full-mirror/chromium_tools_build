@@ -28,26 +28,6 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (
 from RECIPE_MODULES.build.chromium_tests.steps import (
     Test, SwarmingIsolatedScriptTest)
 
-try:  # pragma: no cover
-  # BUG(329113288) - old-style path types
-  #
-  # Note that the old and new paths are not covered simultaneously, so both have
-  # to be nocover in order to allow a non-trivial roll rather than a manual one.
-  # Once the upstream change which deletes the BasePath type and adds
-  # api.path.cast_to_path land, this whole block and the OLD_PATH_TYPE==True
-  # block in the body of configure_build can be deleted.
-  from recipe_engine.config_types import BasePath
-
-  class RootBasePath(BasePath):
-    """A base path for the root of the filesystem."""
-
-    def resolve(self, test_enabled: bool) -> str:
-      return ''
-
-  OLD_PATH_TYPE = True
-except ImportError:  # pragma: no cover
-  OLD_PATH_TYPE = False
-
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
 
@@ -236,16 +216,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           'this.')
     return compiling_builder_id, compiling_builder_config
 
-  def configure_build_dir(self, source_dir: Path, build_dir):
-    if OLD_PATH_TYPE:  # pragma: no cover
-      # see comment in import block at top of this file.
-      build_dir = build_dir or self.m.chromium.default_build_dir(source_dir)
-      build_path = Path(RootBasePath(), build_dir)
-    else:  # pragma: no cover
-      if build_dir:
-        build_path = self.m.path.cast_to_path(build_dir)
-      else:
-        build_path = self.m.chromium.default_build_dir(source_dir)
+  def configure_build_dir(self, source_dir: Path, build_dir: str):
+    if build_dir:
+      build_path = self.m.path.cast_to_path(build_dir)
+    else:
+      build_path = self.m.chromium.default_build_dir(source_dir)
 
     self.m.file.ensure_directory('ensure_build_dir', build_path)
     self.m.chromium.build_dir = build_path

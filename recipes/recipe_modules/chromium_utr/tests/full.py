@@ -85,6 +85,7 @@ def GenTests(api):
     if not test_names:
       test_names = ['browser_tests']
     return api.properties(
+        build_dir=build_dir,
         run_type=run_type,
         test_names=test_names,
         checkout_path=checkout_path,
@@ -211,6 +212,19 @@ solutions = [
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'build_path_not_set_in_recipe_engine',
+      boilerplate(
+          build_dir='/foo/bar/path', run_type=Request.RunType.RUN_TYPE_COMPILE),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'default_build_path',
+      boilerplate(build_dir='', run_type=Request.RunType.RUN_TYPE_COMPILE),
       api.post_process(post_process.DropExpectation),
   )
 
