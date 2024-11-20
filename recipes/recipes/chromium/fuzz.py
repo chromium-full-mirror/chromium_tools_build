@@ -131,6 +131,12 @@ def batched(iterable):
     yield batch
 
 
+def use_reclient(api, gn_args):
+  args = api.gn.parse_gn_args(gn_args)
+  return args.get('use_remoteexec') == 'true' and args.get(
+      'use_reclient') != 'false'
+
+
 def RunSteps(api, properties):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -147,7 +153,7 @@ def RunSteps(api, properties):
 
   api.chromium.ensure_toolchains(checkout_dir)
   api.chromium.runhooks(source_dir, build_dir, clobber=should_clobber)
-  api.chromium.mb_gen(source_dir, build_dir, builder_id)
+  gn_args = api.chromium.mb_gen(source_dir, build_dir, builder_id)
 
   with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
     all_fuzzers = gn_refs(api, build_dir, 'calculate all_fuzzers',
@@ -223,7 +229,10 @@ def RunSteps(api, properties):
     raw_result = None
     for target_batch in batched(targets):
       raw_result = api.chromium.compile(
-          source_dir, build_dir, targets=target_batch, use_reclient=True)
+          source_dir,
+          build_dir,
+          targets=target_batch,
+          use_reclient=use_reclient(api, gn_args))
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
