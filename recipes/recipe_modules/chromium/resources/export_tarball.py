@@ -89,11 +89,15 @@ class MyTarFile(tarfile.TarFile):
   # pylint: disable=redefined-builtin
   def add(self, name, arcname=None, recursive=True, *, filter=None):
     rel_name = os.path.relpath(name, self.__src_dir)
-    _, file_name = os.path.split(name)
+    file_path, file_name = os.path.split(name)
 
     if file_name in ('.svn', 'out'):
-      self.__report_skipped(name)
-      return
+      # Since m132 devtools-frontend requires files in node_modules/<module>/out
+      # to prevent this happening again we can exclude based on the path
+      # rather than explicitly allowlisting
+      if 'node_modules' not in file_path:
+        self.__report_skipped(name)
+        return
 
     if file_name == '.git':
       if not any(
@@ -183,10 +187,9 @@ def main(argv):
 
   if options.progress:
     sys.stdout.flush()
-    pv = subprocess.Popen(
-        ['pv', '--force', output_fullname],
-        stdout=subprocess.PIPE,
-        stderr=sys.stdout)
+    pv = subprocess.Popen(['pv', '--force', output_fullname],
+                          stdout=subprocess.PIPE,
+                          stderr=sys.stdout)
     with open(output_fullname + '.xz', 'w') as f:
       rc = subprocess.call(['xz', '-T', '0', '-9', '-'],
                            stdin=pv.stdout,
