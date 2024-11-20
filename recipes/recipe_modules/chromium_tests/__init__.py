@@ -24,6 +24,7 @@ DEPS = [
     'gn',
     'infra/zip',
     'isolate',
+    'orderfile',
     'perf_dashboard',
     'pgo',
     'presentation_utils',

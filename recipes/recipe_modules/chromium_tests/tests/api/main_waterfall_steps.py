@@ -17,6 +17,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'code_coverage',
+    'orderfile',
     'pgo',
     'profiles',
     'recipe_engine/buildbucket',
@@ -574,6 +575,43 @@ def GenTests(api):
           NotIdempotent,
           'test_pre_run (retry shards).[trigger] base_unittests (retry shards)'
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'orderfile_ci_bots',
+      api.chromium.generic_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(
+          swarm_hashes={
+              'performance_test_suite':
+                  '[dummy hash for performance_test_suite/size]'
+          },),
+      api.orderfile(use_orderfile=True, upload_orderfile=True),
+      api.platform('linux', 64),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      'name': 'performance_test_suite',
+                      'isolate_profile_data': True,
+                      'test': 'performance_test_suite',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      }
+                  }],
+              },
+          }),
+      api.post_process(post_process.MustRun, 'Processing generated orderfile'),
+      api.post_process(post_process.MustRunRE,
+                       '.*Uploading generated orderfile to CIPD.'),
       api.post_process(post_process.DropExpectation),
   )
 

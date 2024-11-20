@@ -1607,6 +1607,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if self.m.pgo.using_pgo and self.m.pgo.skip_profile_upload:
         self.m.pgo.process_pgo_data(task.source_dir, task.test_suites)
 
+      # We explicitly do not want trybots to upload orderfiles to CIPD. We
+      # prevent this by ensuring all trybots wanting to run the orderfile
+      # workflow do not have upload_orderfile set.
+      if (self.m.orderfile.using_orderfile and
+          not self.m.orderfile.upload_orderfile):
+        self.m.orderfile.process_orderfile_data(task.source_dir)
+
       # Exit without retries if there were invalid tests or if all tests passed
       if invalid_test_suites or not failing_test_suites:
         self.summarize_test_failures(task.test_suites)
@@ -3006,6 +3013,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if self.m.pgo.using_pgo:
         self.m.pgo.process_pgo_data(source_dir, tests)
+
+      if self.m.orderfile.using_orderfile and self.m.orderfile.upload_orderfile:
+        self.m.orderfile.process_orderfile_data(source_dir)
 
       test_success = True
       if test_failure_summary:

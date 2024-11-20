@@ -28,6 +28,7 @@ DEPS = [
     'depot_tools/tryserver',
     'filter',
     'flakiness',
+    'orderfile',
     'pgo',
     'profiles',
     'recipe_engine/buildbucket',
@@ -773,6 +774,61 @@ def GenTests(api):
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in 2 tests'),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'orderfile_trybot',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='orderfile-try-group',
+          builder='orderfile-try-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'orderfile-group': {
+                  'orderfile-builder':
+                      ctbc.BuilderSpec.create(
+                          android_config='main_builder',
+                          chromium_config='android',
+                          chromium_config_kwargs={
+                              'BUILD_CONFIG': 'Release',
+                              'TARGET_BITS': 64,
+                              'TARGET_PLATFORM': 'android',
+                          },
+                          gclient_config='chromium',
+                          gclient_apply_config=['android'],
+                          simulation_platform='linux',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'orderfile-try-group': {
+                  'orderfile-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'orderfile-group', 'orderfile-builder'),
+              },
+          }),
+      ),
+      api.properties(
+          swarm_hashes={
+              'performance_test_suite':
+                  '[dummy hash for performance_test_suite/size]'
+          },),
+      api.orderfile(use_orderfile=True),
+      api.platform('linux', 64),
+      api.chromium_tests.read_targets_spec(
+          'orderfile-group', {
+              'orderfile-builder': {
+                  'isolated_scripts': [{
+                      'name': 'performance_test_suite',
+                      'isolate_profile_data': True,
+                      'test': 'performance_test_suite',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.post_process(post_process.MustRun, 'Processing generated orderfile'),
+      api.post_process(post_process.MustRunRE, '.*Skipping upload to CIPD.*'),
+      api.post_process(post_process.DoesNotRunRE,
+                       '.*Uploading generated orderfile to CIPD.'),
       api.post_process(post_process.DropExpectation),
   )
 
