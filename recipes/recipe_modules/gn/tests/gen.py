@@ -39,8 +39,7 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'foobar', [
           'RECIPE_REPO[depot_tools]/gn.py',
           'gen',
-          '--args',
-          'is_debug=false is_component_build=false',
+          '--args=is_debug=false is_component_build=false',
           '[CACHE]/builder/src/out/Release',
       ]),
       api.post_process(DropExpectation),

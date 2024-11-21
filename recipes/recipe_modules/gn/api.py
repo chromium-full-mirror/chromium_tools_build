@@ -246,7 +246,7 @@ class GnApi(recipe_api.RecipeApi):
     with self.m.context(cwd=build_dir):
       cmd = ['gen']
       if args is not None:
-        cmd += ['--args', args]
+        cmd.append('--args=' + args)
       cmd.append(build_dir)
       self._gn_cmd(step_name, cmd)
 
