@@ -386,6 +386,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # and the same branch needs to be checked out for the root solution
     root_solution_revision = (root_solution_revision or
                               self.m.properties.get('root_solution_revision'))
+    # Display tag on Buildbucket UI instead of branch and position
+    # when building tags, e.g.
+    # refs/tags/132.0.6824.0 instead of refs/branch-heads/6824@{#1}.
+    kwargs.setdefault('parse_commit_position_for_tags', False)
     update_result = self.m.chromium_checkout.ensure_checkout(
         clobber=builder_config.clobber,
         set_output_commit=set_output_commit,
