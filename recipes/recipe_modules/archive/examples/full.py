@@ -1233,6 +1233,16 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash (2)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_3/artifact.zip"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
           'Generic Archiving Steps.snoop: report_sbom',
           [
               "[START_DIR]/reporter/snoopy_broker", "-report-gcs", "-digest",
@@ -1250,6 +1260,138 @@ def GenTests(api):
               "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
               "[CLEANUP]/tmp_tmp_3/chrome.zip.spdx.json",
               "gs://any-bucket/x86/123456_5e3250aadda2b170692f8e762d43b7e8deadbeef_20120514125321/chrome.zip.spdx.json"
+          ],
+      ),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.files.extend(['path/to/file.txt', 'path/to/file2.txt'])
+  archive_data.gcs_bucket = 'any-bucket'
+  archive_data.gcs_path = 'somedir/{%builder_name%}/'
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES
+  archive_data.latest_upload.gcs_path = "x86/latest/latest.txt"
+  archive_data.latest_upload.gcs_file_content = \
+      '{%position%}_{%commit%}_{%timestamp%}'
+  archive_data.requires_provenance = True
+  archive_data.requires_sbom.gn_targets.append("//my-target")
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_flatten_files_type_with_generate_sbom',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          gcs_archive=True,
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          **{'$build/archive': input_properties}),
+      api.override_step_data(
+          "Generic Archiving Steps.SSCI collection.run depbot",
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "//my-target",
+                      "target": "//my-target",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+                  "archive": {
+                      "name": "generic_archive",
+                      "targets": ["//my-target"],
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  },
+              })),
+      api.post_process(post_process.MustRun,
+                       'Generic Archiving Steps.SSCI collection'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_2/path/to/file.txt.spdx.json"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash (2)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_2/path/to/file.txt"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash (4)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_2/path/to/file2.txt"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.snoop: report_sbom',
+          [
+              "[START_DIR]/reporter/snoopy_broker", "-report-gcs", "-digest",
+              "spdxbeef", "-gcs-uri",
+              "gs://any-bucket/somedir/test_buildername/file.txt.spdx.json",
+              "-sbom-subject", "deadbeef"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.gsutil upload somedir/test_buildername/file.txt.spdx.json',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[CLEANUP]/tmp_tmp_2/path/to/file.txt.spdx.json",
+              "gs://any-bucket/somedir/test_buildername/file.txt.spdx.json"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash (3)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_2/path/to/file2.txt.spdx.json"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.snoop: report_sbom (2)',
+          [
+              "[START_DIR]/reporter/snoopy_broker", "-report-gcs", "-digest",
+              "spdxbeef", "-gcs-uri",
+              "gs://any-bucket/somedir/test_buildername/file2.txt.spdx.json",
+              "-sbom-subject", "deadbeef"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.gsutil upload somedir/test_buildername/file2.txt.spdx.json',
+          [
+              "python3", "-u",
+              "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+              "--", "RECIPE_REPO[depot_tools]/gsutil.py", "----", "cp",
+              "[CLEANUP]/tmp_tmp_2/path/to/file2.txt.spdx.json",
+              "gs://any-bucket/somedir/test_buildername/file2.txt.spdx.json"
           ],
       ),
       api.expect_status('SUCCESS'),
@@ -1310,6 +1452,26 @@ def GenTests(api):
               "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
               "--json-output", "/path/to/tmp/json", "file_hash",
               "[CLEANUP]/tmp_tmp_2/file.txt.spdx.json"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash (2)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_2/file.txt"
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.Compute file hash (4)',
+          [
+              "vpython3", "-u",
+              "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+              "--json-output", "/path/to/tmp/json", "file_hash",
+              "[CLEANUP]/tmp_tmp_2/file2.txt"
           ],
       ),
       api.post_process(

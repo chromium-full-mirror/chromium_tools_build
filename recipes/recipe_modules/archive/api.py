@@ -1291,7 +1291,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     generated_sboms = {}
     if generate_sboms and archive_data.HasField(
         'requires_sbom') and archive_data.archive_type in (
-            ArchiveData.ARCHIVE_TYPE_ZIP, ArchiveData.ARCHIVE_TYPE_FILES):
+            ArchiveData.ARCHIVE_TYPE_ZIP, ArchiveData.ARCHIVE_TYPE_FILES,
+            ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES):
       # TODO(b/356745797): Remove try/except once SBOM generation
       # is stable.
       try:
@@ -1335,7 +1336,8 @@ class ArchiveApi(recipe_api.RecipeApi):
           if report_artifacts:
             artifact_path = str(f).removesuffix(SBOM_EXTENSION)
             artifact_hash = self.m.file.file_hash(
-                artifact_path, test_data='deadbeef')
+                sbom_artifact_dict[self.m.path.basename(artifact_path)],
+                test_data='deadbeef')
 
             @self.m.time.exponential_retry(
                 retries=3,
