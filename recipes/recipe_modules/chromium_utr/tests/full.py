@@ -427,7 +427,7 @@ solutions = [
       'no_tests',
       boilerplate(test_names=['non_existant_test']),
       api.post_process(
-          post_process.SummaryMarkdown,
+          post_process.SummaryMarkdownRE,
           'No suites on the bot matched the request for non_existant_test',
       ),
       api.expect_status('FAILURE'),
@@ -806,5 +806,14 @@ target_os=['os']
       api.post_process(post_process.StepCommandContains,
                        'download compilation outputs.fetch browser_tests',
                        ['output_file1', 'output_file2']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'autotest_failure',
+      boilerplate(test_names=['path/to/a/test.cc']),
+      api.path.exists(api.path.cache_dir / 'src/path/to/a/test.cc'),
+      api.override_step_data('invoke autotest.py', retcode=1),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

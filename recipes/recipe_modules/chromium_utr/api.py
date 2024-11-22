@@ -600,10 +600,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     return use_reclient
 
-  def compile_targets(
+  def gn_gen(
       self,
       properties: Request,
-      tests: Iterable[Test],
       builder_id: chromium.BuilderId,
       builder_config: ctbc.BuilderConfig,
       preserve_gn_args: bool,
@@ -611,12 +610,12 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       build_dir: Path,
       builder_recipe: str,
       is_cog: bool,
+      isolate_targets: Iterable[str] = None,
   ) -> result_pb2.RawResult:
-    """Builds the test targets
+    """Generates a build dir that matches the given builder.
 
     Args:
         properties: Request given to the recipe
-        tests: Iterable of test objects to be compiled
         builder_id: The ID of the builder to compile for
         builder_config: BuilderConfig of the given builder
         preserve_gn_args: Bool whether to have the recipe overwrite the gn args
@@ -624,14 +623,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         build_dir: Path to the directory to use for building
         builder_recipe: The recipe normally run by the requested builder
         is_cog: The run is currently in cog
-    Returns tuple of (a RawResult object for the compile or None if it was
-        skipped, a boolean indicating if the *.isolate files were generated)
+        isolate_targets: Name of test targets to isolate
+    Returns a bool indicating if isolates for the tests were generated.
     """
-    targets = list(itertools.chain(*[t.compile_targets() for t in tests]))
-
-    # Remove duplicate targets.
-    targets = sorted(set(targets))
-
+    isolate_targets = isolate_targets or []
     gn_args_to_remove = []
     # Only recipes that support try should handle changed files
     if (self.m.code_coverage.using_coverage and
@@ -679,7 +674,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
                                '\n'.join(gn_args))
       self.m.gn.gen(build_dir, 'gn_gen')
     else:
-      tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
       self.m.chromium.mb_gen(
           source_dir,
           build_dir,
@@ -687,11 +681,50 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           name='generate_build_files',
           recursive_lookup=True,
           phase=builder_config.mb_phase_for_tests,
-          isolated_targets=tests_to_isolate)
+          isolated_targets=isolate_targets)
+
+    return not missing_isolates
+
+  def gn_gen_and_compile_targets(
+      self,
+      properties: Request,
+      tests: Iterable[Test],
+      builder_id: chromium.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      preserve_gn_args: bool,
+      source_dir: Path,
+      build_dir: Path,
+      builder_recipe: str,
+      is_cog: bool,
+  ) -> result_pb2.RawResult:
+    """Builds the test targets
+
+    Args:
+        properties: Request given to the recipe
+        tests: Iterable of test objects to be compiled
+        builder_id: The ID of the builder to compile for
+        builder_config: BuilderConfig of the given builder
+        preserve_gn_args: Bool whether to have the recipe overwrite the gn args
+          with the builder_id's gn args
+        build_dir: Path to the directory to use for building
+        builder_recipe: The recipe normally run by the requested builder
+        is_cog: The run is currently in cog
+    Returns tuple of (a RawResult object for the compile or None if it was
+        skipped, a boolean indicating if the *.isolate files were generated)
+    """
+    targets = list(itertools.chain(*[t.compile_targets() for t in tests]))
+
+    # Remove duplicate targets.
+    targets = sorted(set(targets))
+
+    isolate_targets = [t.isolate_target for t in tests if t.isolate_target]
+    generated_isolates = self.gn_gen(properties, builder_id, builder_config,
+                                     preserve_gn_args, source_dir, build_dir,
+                                     builder_recipe, is_cog, isolate_targets)
 
     # Some tests don't require anything to be compiled.
     if not targets:
-      return None, not missing_isolates
+      return None, generated_isolates
 
     use_reclient = self.get_remote_compile_options(build_dir, properties)
 
@@ -711,7 +744,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           build_dir,
           targets=targets,
           skip_log_upload=True,
-          use_reclient=use_reclient), not missing_isolates
+          use_reclient=use_reclient), generated_isolates
 
     if properties.no_siso:
       with self.m.siso.disable():
@@ -758,11 +791,26 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         if requested_test_name in (t.name, t.canonical_name):
           return t
       raise self.m.step.StepFailure(
-          f'No suites on the bot matched the request for {requested_test_name}')
+          f'No suites on the bot matched the request for {requested_test_name}.'
+          'Passed-in tests must either all be test suite names, or all be '
+          'paths to test files.')
 
     # An empty list of tests implies we should use all
     tests = targets_config.all_tests
     if test_names:
+      # If all passed-in tests are paths, assume they're test files. In which
+      # case, hand this off to autotest.py so it can do its thing. We need to
+      # test both abspath and relpaths here for the test since expectation tests
+      # only accept abspaths, but the user may have passed a relpath.
+      if all(
+          self.m.path.exists(source_dir / t) or self.m.path.exists(t)
+          for t in test_names):
+        # autotest.py will take care of everything (ninja invocation, test
+        # invocation) except preparing a build dir. So we still need to run
+        # GN gen prior to handing off to autotest.py.
+        self.gn_gen(properties, builder_id, builder_config, preserve_gn_args,
+                    source_dir, build_dir, builder_recipe, is_cog)
+        return self.run_autotest(source_dir, build_dir, list(test_names)), []
       tests = [_get_matching_test(n) for n in test_names]
 
     # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
@@ -781,7 +829,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return None, tests
 
     if should_build:
-      raw_result, generated_isolates = self.compile_targets(
+      raw_result, generated_isolates = self.gn_gen_and_compile_targets(
           properties,
           tests,
           builder_id,
@@ -857,3 +905,28 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     test.spec = attr.evolve(test.spec, idempotent=False)
 
     self.m.isolate.set_isolated_tests(swarm_hashes)
+
+  def run_autotest(self, source_dir, build_dir, test_files):
+    """Invokes autotest.py for the given test files.
+
+    Args:
+        source_dir: The path to the top-level repo.
+        build_dir: Path to the directory to use for building
+        test_files: Test files to pass to autotest.py
+    Returns a RawResult for autotest.py invocation.
+    """
+    cmd = [
+        'python3',
+        source_dir.joinpath('tools', 'autotest.py'),
+        '-C',
+        build_dir,
+    ] + test_files
+    with self.m.context(cwd=source_dir):
+      result = self.m.step(
+          'invoke autotest.py',
+          cmd,
+          raise_on_failure=False,
+      )
+    return result_pb2.RawResult(
+        status=common_pb2.FAILURE if result.retcode else common_pb2.SUCCESS,
+        summary_markdown='autotest.py failure')
