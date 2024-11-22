@@ -189,6 +189,10 @@ def RunSteps(api, properties):
   elif platform == 'ios':
     target_os = 'ios'
     host_os = 'mac'
+  elif platform in ('win', 'windows'):
+    target_os = 'win'
+    host_os = 'win'
+
   gclient_config.target_os = [target_os]
   api.gclient.c = gclient_config
 
