@@ -31,6 +31,9 @@ from RECIPE_MODULES.build.chromium_tests.steps import (
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
 
+  # Special sub-log names added by the UTR recipe to surface to users.
+  UTR_LOG_NAME = 'utr_log'
+
   def run(
       self,
       properties: Request,
@@ -143,11 +146,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
       ret = test_runner()
       if any(not t.has_valid_results('') and t.runs_on_swarming for t in tests):
-        self.m.step('print swarming tasks link', [
-            'python3',
-            '-c',
-            f'print("https://chromium-swarm.appspot.com/tasklist?f=utr_invocation_uuid-tag%3A{invocation_uuid}")',
-        ])
+        step_result = self.m.step.empty('print swarming tasks link')
+        step_result.presentation.logs[self.UTR_LOG_NAME] = [
+            f'https://chromium-swarm.appspot.com/tasklist?f=utr_invocation_uuid-tag%3A{invocation_uuid}',
+        ]
 
       failed_local_tests = [
           t for t in tests if t.runs_locally and t.failure_on_exit('')
@@ -162,12 +164,21 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         some_or_all_text = 'all of'
         if failed_local_tests:
           some_or_all_text = 'some of'
-        self.m.step('print results URL', [
-            'python3', '-c',
-            f'print("For futher information, {some_or_all_text} the test '
-            'results have been uploaded to:")\n'
-            f'print("{self.m.milo.current_results_url}")\n'
-        ])
+        step_result = self.m.step.empty('print results URL')
+        step_result.presentation.logs[self.UTR_LOG_NAME] = [
+            f'For futher information, {some_or_all_text} the test results have '
+            'been uploaded to:',
+            self.m.milo.current_results_url,
+        ]
+
+      if any(not t.has_valid_results('') and not t.deterministic_failures('')
+             for t in tests):
+        step_result = self.m.step.empty('unknown failures')
+        step_result.presentation.logs[self.UTR_LOG_NAME] = [
+            'One or more suites had zero tests fail but exited non-zero.',
+            'Try resolving any gclient config warnings and re-running.',
+            'Otherwise, can re-run with "-vv" for additional logging.',
+        ]
 
       return ret
 
