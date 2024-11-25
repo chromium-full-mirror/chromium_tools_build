@@ -958,7 +958,7 @@ class Test(AbstractTest):
   def add_weak_luci_analysis_flaky_failure(self, test_name: str) -> None:
     self._weak_luci_analysis_flaky_failures.add(test_name)
 
-  def _update_failure_on_exit(self, suffix, failure_on_exit, step_result):
+  def _update_failure_on_exit(self, suffix, failure_on_exit):
     self._failure_on_exit_suffix_map[suffix] = failure_on_exit
     rdb_results = self._rdb_results.get(suffix)
     if rdb_results:
@@ -1758,7 +1758,7 @@ class ScriptTest(LocalTest):
               ' Contents are:\n%s' %
               self.api.m.json.dumps(result.json.output, indent=2)))
 
-    self._update_failure_on_exit(suffix, result.retcode != 0, result)
+    self._update_failure_on_exit(suffix, result.retcode != 0)
 
     _, failures = self.api.m.test_utils.limit_failures(failures)
     result.presentation.step_text += (
@@ -1865,7 +1865,7 @@ class LocalGTestTest(LocalTest):
     # TODO(kbr): add functionality to generate_gtest to be able to force running
     # these local gtests via isolate from the src-side JSON files.
     # crbug.com/584469
-    self._update_failure_on_exit(suffix, step_result.retcode != 0, step_result)
+    self._update_failure_on_exit(suffix, step_result.retcode != 0)
 
     self._update_inv_name_from_stderr(step_result.stderr, suffix)
 
@@ -2582,16 +2582,17 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     del checkout_dir, source_dir, build_dir
 
     step_result, _ = (
-        self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
+        self.api.m.chromium_swarming.collect_task(
+            self._tasks[suffix], raise_on_failure=False))
 
     metadata = self._step_metadata(suffix)
     metadata['full_step_name'] = '.'.join(step_result.name_tokens)
     step_result.presentation.logs['step_metadata'] = (self.api.m.json.dumps(
         metadata, indent=2, sort_keys=True)).splitlines()
 
-    self._update_failure_on_exit(suffix,
-                                 bool(self._tasks[suffix].failed_shards),
-                                 step_result)
+    self._update_failure_on_exit(
+        suffix,
+        (bool(self._tasks[suffix].failed_shards) or step_result.retcode != 0))
 
     info_message_list = list(info_messages)
     if suffix == 'retry shards with patch' and self.retry_only_failed_tests:
@@ -2799,7 +2800,7 @@ class LocalIsolatedScriptTest(LocalTest):
     status = step_result.presentation.status
 
     self._update_inv_name_from_stderr(step_result.stderr, suffix)
-    self._update_failure_on_exit(suffix, step_result.retcode != 0, step_result)
+    self._update_failure_on_exit(suffix, step_result.retcode != 0)
 
     _present_info_messages(step_result.presentation, self, info_messages)
 
@@ -3229,7 +3230,7 @@ class SkylabTest(AbstractSkylabTest, Test):
   def _raise_failed_nested_step(self, suffix, step, status, failure_msg):
     step.status = status
     step.step_text += failure_msg
-    self._update_failure_on_exit(suffix, True, step)
+    self._update_failure_on_exit(suffix, True)
     raise self.api.m.step.StepFailure(status)
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
@@ -3268,7 +3269,7 @@ class SkylabTest(AbstractSkylabTest, Test):
       if rdb_results.total_tests_ran:
         # If any test result was reported by RDB, the test run completed
         # its lifecycle as expected.
-        self._update_failure_on_exit(suffix, False, step)
+        self._update_failure_on_exit(suffix, False)
       else:
         if ctp_id := self.ctp_build_ids.get(suffix):
           step.links['CTP Build'] = bb_url % ctp_id

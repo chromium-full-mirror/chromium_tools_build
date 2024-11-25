@@ -897,7 +897,10 @@ def GenTests(api):
                   },],
               },
           }),
-      api.override_step_data('telemetry_gpu_unittests', retcode=255),
+      api.override_step_data(
+          'telemetry_gpu_unittests',
+          api.chromium_swarming.canned_summary_output(
+              api.json.output({}), failure=True, retcode=255)),
       api.expect_status('FAILURE'),
   )
 

@@ -58,8 +58,8 @@ def RunSteps(api):
 
   try:
     assert len(test.get_invocation_names('')) == 0
-    api.test_utils.run_tests_once(checkout_dir, source_dir, build_dir, [test],
-                                  '')
+    _, invalid_tests, failed_tests = api.test_utils.run_tests_once(
+        checkout_dir, source_dir, build_dir, [test], '')
     assert len(test.get_invocation_names('')) > 0
     assert test.runs_on_swarming
   finally:
@@ -69,6 +69,9 @@ def RunSteps(api):
         'uses_local_devices: %r' % test.uses_local_devices,
         'uses_isolate: %r' % test.uses_isolate,
     ]
+  if invalid_tests or failed_tests:
+    raise api.step.StepFailure(
+        'failed: %s' % ' '.join(t.name for t in failed_tests + invalid_tests))
 
 
 def GenTests(api):

@@ -302,6 +302,10 @@ def GenTests(api):
           'telemetry_gpu_unittests (with patch)',
           api.chromium_swarming.canned_summary_output(
               api.json.output({}), failure=True, retcode=1)),
+      api.override_step_data(
+          'telemetry_gpu_unittests (retry shards with patch)',
+          api.chromium_swarming.canned_summary_output(
+              api.json.output({}), failure=True, retcode=1)),
       api.expect_status('FAILURE'),
   )
 
