@@ -69,12 +69,14 @@ class SwarmingTrigger:
     self.cas_digest = cas_digest
     self.target_dimensions = target_dimensions
 
-  def trigger(self, step_name, output_dir, test_type_tag, commands, env):
+  def trigger(self, step_name, output_dir, test_type_tag, run_phase, commands,
+              env):
     return self.api.devtools.trigger_test_swarming_tasks(
         step_name=step_name,
         cas_digest=self.cas_digest,
         task_output_dir=output_dir,
         rdb_test_type=test_type_tag,
+        run_phase=run_phase,
         commands=commands,
         env=env,
         target_dimensions=self.target_dimensions,

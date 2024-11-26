@@ -55,6 +55,7 @@ def RunSteps(api, builder_config, clobber, parallel):
             cas_digest=cas_digest,
             commands=commands,
             rdb_test_type='e2e',
+            run_phase='normal',
         )
         with api.step.nest('E2E Tests result collection'):
           with api.step.nest('E2E Tests shards results'):

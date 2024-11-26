@@ -75,12 +75,13 @@ class DevToolsTests(ABC):
     # their name.
     return escaped.replace('/', '.')
 
-  def trigger(self):
+  def trigger(self, run_phase='default'):
     with self.api.step.nest(f'Trigger {self.step_name}'):
       self.tasks = self.sw_trigger.trigger(
           step_name=self.step_name,
           output_dir=self.output_dir,
           test_type_tag=self.test_type_tag,
+          run_phase=run_phase,
           commands=self.commands(),
           env=self.construct_env(),
       )
@@ -171,7 +172,7 @@ class ExonerableTests(DevToolsTests):
       return
     self.step_name += ' (rerun)'
     self.prepare_filtered_rerun(owned_tests)
-    self.trigger()
+    self.trigger('exoneration')
 
   def process_exoneration_results(self, test_names):
     if self.skip_result:

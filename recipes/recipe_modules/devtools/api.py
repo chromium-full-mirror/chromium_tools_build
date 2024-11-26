@@ -152,6 +152,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
                                   env=None,
                                   args=None,
                                   rdb_test_type=None,
+                                  run_phase=None,
                                   target_dimensions=None):
     args = list(args or [])
     tasks = []
@@ -186,7 +187,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
         wrapped_cmd = self.m.v8_tests.resultdb.wrap(
             self.m,
             full_command,
-            base_tags=[('test_type', rdb_test_type)],
+            base_tags=[('test_type', rdb_test_type), ('run_phase', run_phase)],
         )
         request_slice = request[0].with_command(wrapped_cmd)
         task.request = request.with_slice(0, request_slice)
