@@ -107,6 +107,7 @@
     "env": {
       "CHROME_HEADLESS": "1"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "libyuv:ci"

@@ -177,6 +177,7 @@
       "JAVA_HOME": "[CACHE]/java",
       "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -222,6 +223,7 @@
       "JAVA_HOME": "[CACHE]/java",
       "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -304,6 +306,7 @@
       "JAVA_HOME": "[CACHE]/java",
       "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"

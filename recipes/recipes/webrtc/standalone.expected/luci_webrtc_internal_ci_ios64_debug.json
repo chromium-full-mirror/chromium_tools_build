@@ -286,6 +286,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "webrtc-internal:ci"
@@ -432,6 +433,7 @@
     "env": {
       "CHROME_HEADLESS": "1"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "webrtc-internal:ci"

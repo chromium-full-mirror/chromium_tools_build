@@ -447,6 +447,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Find updated deps.cipd instances mock/package-latest",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -488,6 +489,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Find updated deps.cipd instances mock/package-without-latest-ref",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -2091,6 +2093,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
+    "infra_step": true,
     "name": "Update test262 import deps.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",

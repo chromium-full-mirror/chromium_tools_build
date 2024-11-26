@@ -116,6 +116,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
+    "infra_step": true,
     "name": "Download avd package.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",

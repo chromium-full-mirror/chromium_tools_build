@@ -62,6 +62,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "symupload.Prepare API key.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",

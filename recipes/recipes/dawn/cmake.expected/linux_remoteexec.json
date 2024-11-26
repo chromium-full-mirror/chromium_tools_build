@@ -173,6 +173,7 @@
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "JAVA_HOME": "[CACHE]/java"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -217,6 +218,7 @@
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "JAVA_HOME": "[CACHE]/java"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -261,6 +263,7 @@
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "JAVA_HOME": "[CACHE]/java"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -341,6 +344,7 @@
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "JAVA_HOME": "[CACHE]/java"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"

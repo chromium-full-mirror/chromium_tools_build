@@ -169,6 +169,7 @@
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"

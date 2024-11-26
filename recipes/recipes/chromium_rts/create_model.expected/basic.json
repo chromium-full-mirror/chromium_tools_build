@@ -298,6 +298,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "cipd describe chromium/rts/rts-chromium/mac-amd64",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -341,6 +342,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "install RTS executables",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -508,6 +510,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Create CIPD packages.Upload CIPD package - linux-amd64.create chromium/rts/model/linux-amd64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -533,6 +536,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Create CIPD packages.Upload CIPD package - linux-amd64.cipd set-ref chromium/rts/model/linux-amd64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -606,6 +610,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Create CIPD packages.Upload CIPD package - mac-amd64.create chromium/rts/model/mac-amd64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -631,6 +636,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Create CIPD packages.Upload CIPD package - mac-amd64.cipd set-ref chromium/rts/model/mac-amd64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -704,6 +710,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Create CIPD packages.Upload CIPD package - windows-amd64.create chromium/rts/model/windows-amd64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -729,6 +736,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "name": "Create CIPD packages.Upload CIPD package - windows-amd64.cipd set-ref chromium/rts/model/windows-amd64",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",

@@ -2296,6 +2296,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "chrome:luci.chrome.try"
@@ -2400,6 +2401,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "chrome:luci.chrome.try"
