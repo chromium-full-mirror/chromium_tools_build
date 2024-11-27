@@ -48,7 +48,7 @@ class CronetApi(recipe_api.RecipeApi):
     return 'chromium-cronet/android'
 
   def _cronet_dir(self, source_dir: Path) -> Path:
-    return source_dir / f'out/{self.m.chromium_android.c.BUILD_CONFIG}/cronet'
+    return self.m.chromium.default_build_dir(source_dir) / 'cronet'
 
   def generate_changelist(self, source_dir: Path):
     cronet_dir = self._cronet_dir(source_dir)
