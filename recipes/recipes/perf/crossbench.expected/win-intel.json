@@ -193,6 +193,7 @@
     "cmd": [
       "vpython3",
       "crossbench/tests/end2end/runner.py",
+      "--test-gsutil-path=RECIPE_REPO[depot_tools]\\gsutil.py",
       "--test-browser-path=[CLEANUP]\\chrome_tmp_1\\zip\\chrome\\chrome-win\\chrome.exe",
       "--test-driver-path=[CLEANUP]\\chrome_tmp_1\\zip\\chromedriver\\chromedriver_win32\\chromedriver",
       "--ignore-tests=android"

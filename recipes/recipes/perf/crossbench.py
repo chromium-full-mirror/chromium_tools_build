@@ -27,6 +27,7 @@ def RunSteps(api):
   test_driver = 'crossbench/tests/end2end/runner.py'
   api.step('Run End2End Tests', [
       'vpython3', test_driver,
+      '--test-gsutil-path=%s' % api.gsutil.gsutil_py_path,
       '--test-browser-path=%s' % chrome_app_path,
       '--test-driver-path=%s' % chrome_driver_path, '--ignore-tests=android'
   ])
