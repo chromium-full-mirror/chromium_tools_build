@@ -163,7 +163,8 @@
       "--gpu-mode",
       "off",
       "--avd-config",
-      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb"
+      "[CACHE]/avd/src/tools/android/avd/proto/android_35_google_apis_x64.textpb",
+      "--enable-network"
     ],
     "cwd": "[CACHE]/avd",
     "infra_step": true,
