@@ -32,11 +32,10 @@ def RunSteps(api):
   libyuv = api.libyuv
   libyuv.apply_bot_config(libyuv.BUILDERS, libyuv.RECIPE_CONFIGS)
 
+  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   update_result = libyuv.checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
-  with api.context(cwd=source_dir):
-    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   api.chromium.runhooks(source_dir, build_dir)
 
   if libyuv.should_build:
