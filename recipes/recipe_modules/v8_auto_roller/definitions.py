@@ -17,6 +17,7 @@ TRUSTED_ORIGIN_CIPD_DEPS = {
 }
 
 TRUSTED_ORIGIN_GIT_DEPS = {
+    "https://chromium.googlesource.com/deps/inspector_protocol",
     "https://chromium.googlesource.com/devtools/devtools-frontend",
     "https://chromium.googlesource.com/infra/luci/luci-py/client/libs/logdog",
 }
