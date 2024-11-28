@@ -157,7 +157,6 @@ class ReclientApi(recipe_api.RecipeApi):
     self._bootstrap_env = None
     self._scandeps_server = props.scandeps_server
     self._disable_bq_upload = props.disable_bq_upload
-    self._download_remoteexec_cfg_hook_vars_used = None
     self._credentials_helper = None
     self._credentials_helper_args = None
 
@@ -399,7 +398,6 @@ class ReclientApi(recipe_api.RecipeApi):
     if (deps_cache_by_step):
       deps_cache_path = deps_cache_path / ninja_step_name
     with self.m.step.nest('preprocess for reclient'):
-      self._install_reclient_cfgs(source_dir, buildtools_dir)
       self.m.file.listdir(
           'list reclient_cfgs dir',
           buildtools_dir / 'reclient_cfgs',
@@ -471,42 +469,9 @@ class ReclientApi(recipe_api.RecipeApi):
             self.m.step.empty(
                 'verification', status=status, step_text=self._mismatch)
 
-  def _gclient_var_exists(self, source_dir, var):
-    with self.m.context(cwd=source_dir):
-      return self.m.gclient(
-          'check if %s var exists' % var, ['getdep', '--var', var],
-          ok_ret='any').retcode == 0
-
   def use_download_remoteexec_cfg_hook(self, gclient_solution):
     gclient_solution.custom_vars['rbe_instance'] = self.m.reclient.instance
     gclient_solution.custom_vars['download_remoteexec_cfg'] = 'True'
-    self._download_remoteexec_cfg_hook_vars_used = ('download_remoteexec_cfg',
-                                                    'rbe_instance')
-
-  # TODO: b/292501270 - Remove this once all users use use_download_remoteexec_cfg_hook
-  def _install_reclient_cfgs(self, source_dir: Path, buildtools_dir: Path):
-    """Install reclient cfgs."""
-    if self._download_remoteexec_cfg_hook_vars_used is not None:
-      all_vars_exist = True
-      # Check each variable without short circuiting so that it is clear in the
-      # logs why the install step was run or skipped
-      for var in self._download_remoteexec_cfg_hook_vars_used:
-        all_vars_exist = self._gclient_var_exists(source_dir,
-                                                  var) and all_vars_exist
-      if all_vars_exist:
-        self.m.step.empty('install reclient_cfgs (already run by DEPS hook)')
-        return
-    env = {
-        'RBE_instance': self.instance,
-    }
-    with self.m.context(env=env):
-      self.m.step(
-          name='install reclient_cfgs',
-          cmd=[
-              'vpython3',
-              buildtools_dir / 'reclient_cfgs/fetch_reclient_cfgs.py',
-          ],
-          infra_step=True)
 
   def _make_reclient_cache_dir(self, reclient_cache_dir):
     """Ensure that reclient_cache_exists, create it if it doesn't."""

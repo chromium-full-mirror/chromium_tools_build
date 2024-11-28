@@ -492,34 +492,6 @@
   {
     "cmd": [
       "vpython3",
-      "[CACHE]/builder/angle/buildtools/reclient_cfgs/fetch_reclient_cfgs.py"
-    ],
-    "cwd": "[CACHE]/builder/angle",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_instance": ""
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "angle:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient.install reclient_cfgs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",

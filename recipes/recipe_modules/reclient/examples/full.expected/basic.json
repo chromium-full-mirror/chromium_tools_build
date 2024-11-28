@@ -6,20 +6,6 @@
   {
     "cmd": [
       "vpython3",
-      "[TMP_BASE]/checkout/buildtools/reclient_cfgs/fetch_reclient_cfgs.py"
-    ],
-    "env": {
-      "RBE_instance": "projects/test-rbe-project/instances/default_instance"
-    },
-    "infra_step": true,
-    "name": "preprocess for reclient.install reclient_cfgs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
