@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        StepSuccess)
+from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
+                                        PropertyEquals, StepSuccess)
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
@@ -141,7 +141,8 @@ def GenTests(api):
 
   yield api.test(
       'revision-resolver',
-      api.properties(gclient_config='revision_resolver'),
+      api.properties(
+          gclient_config='revision_resolver', set_output_commit=False),
       api.post_check(verify_revision_resolver_in_log,
                      "*RevisionFallbackChain*"),
       api.post_process(DropExpectation),
@@ -159,5 +160,57 @@ def GenTests(api):
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),
       api.post_process(StepSuccess, 'git diff to analyze patch'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'output_commit_tag',
+      api.buildbucket.try_build(
+          git_repo='https://chromium.googlesource.com/chromium/src.git',
+          git_ref='refs/tags/100.0.0000.0',
+          revision='1234567890'),
+      api.platform('linux', 64),
+      api.properties(set_output_commit=True),
+      api.post_process(
+          PropertyEquals,
+          '$recipe_engine/buildbucket/output_gitiles_commit',
+          {
+              'host': 'chromium.googlesource.com',
+              'id': '1234567890',
+              'project': 'chromium/src',
+              'ref': 'refs/tags/100.0.0000.0'
+          },
+      ),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'rdb_missing_commit_info',
+      api.buildbucket.try_build(),
+      api.step_data(
+          'bot_update (without patch) - foo',
+          api.json.output({
+              'did_run': True,
+              "manifest": {
+                  'src': {
+                      'repository':
+                          'https://chromium.googlesource.com/chromium/src.git',
+                      'revision':
+                          ''
+                  }
+              },
+              'patch_root': None,
+              'properties': {
+                  'got_revision': '',
+                  'got_revision_cp': 'refs/heads/main@{#1234567890}',
+              },
+              'root': 'src',
+              'step_text': 'text'
+          })),
+      api.platform('linux', 64),
+      api.post_process(
+          MustRun,
+          'set rdb sources.missing gitiles commit info',
+      ),
       api.post_process(DropExpectation),
   )

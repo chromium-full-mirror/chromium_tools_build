@@ -513,13 +513,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "set_output_gitiles_commit",
-    "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"position\": 43426, \"project\": \"src/v8\", \"ref\": \"refs/heads/main\"}@@@"
-    ]
-  },
-  {
     "cmd": [
       "rdb",
       "rpc",
@@ -579,6 +572,13 @@
       "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "set_output_gitiles_commit",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"position\": 43426, \"project\": \"src/v8\", \"ref\": \"refs/heads/main\"}@@@"
     ]
   },
   {

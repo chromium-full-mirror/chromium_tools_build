@@ -595,19 +595,60 @@
     "name": "set rdb sources"
   },
   {
-    "cmd": [],
-    "name": "set rdb sources.missing gitiles commit info",
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "set rdb sources.update invocation",
+    "stdin": "{\"invocation\": {\"baselineId\": \"try:linux\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"123456\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"7\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@gitiles_commit@@@@",
-      "@@@STEP_LOG_END@gitiles_commit@@@",
-      "@@@STEP_LOG_LINE@gerrit_changes@[host: \"chromium-review.googlesource.com\"@@@",
-      "@@@STEP_LOG_LINE@gerrit_changes@project: \"chromium/src\"@@@",
-      "@@@STEP_LOG_LINE@gerrit_changes@change: 123456@@@",
-      "@@@STEP_LOG_LINE@gerrit_changes@patchset: 7@@@",
-      "@@@STEP_LOG_LINE@gerrit_changes@]@@@",
-      "@@@STEP_LOG_END@gerrit_changes@@@",
-      "@@@SET_BUILD_PROPERTY@failed_rdb_invocation_update@true@@@"
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"changelists\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@          {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"change\": \"123456\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"host\": \"chromium-review.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"patchset\": \"7\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"project\": \"chromium/src\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          }@@@",
+      "@@@STEP_LOG_LINE@json.input@        ],@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"host\": \"fake.org\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"position\": \"170242\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"project\": \"src\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      }@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {

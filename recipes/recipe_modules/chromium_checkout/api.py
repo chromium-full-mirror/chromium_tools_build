@@ -11,6 +11,7 @@ from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.depot_tools import bot_update
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb
 
@@ -170,6 +171,10 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     """
     kwargs.setdefault('no_fetch_tags', True)
 
+    # Pass set_output_commit=False to bot_update to override default behavior.
+    set_output_commit = kwargs.get('set_output_commit', False)
+    kwargs['set_output_commit'] = False
+
     timeout = int(self.timeout) if self.timeout else timeout
 
     # TODO: b/292501270 - Remove the Recilent part if all bots use DEPS hook
@@ -212,6 +217,10 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           )
           self.m.repro_instructions.update_invocation_instructions()
 
+      if set_output_commit and (out_commit :=
+                                self._get_out_commit(update_result)):
+        self.m.buildbucket.set_output_gitiles_commit(out_commit)
+
       # HACK(dnj): Remove after 'crbug.com/398105' has landed
       self.m.chromium.set_build_properties(update_result.properties)
 
@@ -232,7 +241,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           f' checkout_dir={checkout_dir}, source_dir={source_dir}')
 
     self.update_rdb_source_spec_invocation(
-        gitiles_commit=self.m.buildbucket.build.output.gitiles_commit)
+        gitiles_commit=update_result.out_commit)
 
     return update_result
 
@@ -319,6 +328,14 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     step = self.m.step('gclient config', [])
     step.presentation.logs['config'] = self.m.json.dumps(
         gclient_config.as_jsonish(include_hidden=True), indent=2).split('\n')
+
+  def _get_out_commit(
+      self, update_result: bot_update.Result) -> common_pb.GitilesCommit | None:
+    # If input commit ref is a tag, use it as output to display more
+    # user-friendly information on Buildbucket UI.
+    in_commit = self.m.buildbucket.gitiles_commit
+    return in_commit if in_commit and in_commit.ref.startswith(
+        'refs/tags/') else update_result.out_commit
 
   def update_rdb_source_spec_invocation(self, gitiles_commit):
     """Update the rdb invocation to include the SourceSpec being used.
