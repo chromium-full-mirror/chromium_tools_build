@@ -23,6 +23,7 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'siso',
 ]
 
 
@@ -772,5 +773,26 @@ def GenTests(api):
                   'basic_EVE_TOT', passing_tests=['Test.One']))),
       api.post_process(post_process.StepException, 'collect skylab results'),
       api.post_process(post_process.MustRun, 'basic_EVE_TOT.read_ctp_response'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'prepare skylab tests with siso fs flush',
+      boilerplate(
+          'chrome-test-builds',
+          test_args='--test-launcher-filter-file=../../testing/buildbot/filter',
+          target_name=GTEST_TARGET),
+      api.siso.properties(
+          configs=["remote-link"], output_local_strategy="minimum"),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
+      api.post_process(
+          post_process.MustRun,
+          f'prepare skylab tests.collect runtime deps for {GTEST_TARGET}.fetch RBE artifcats from CAS'
+      ),
       api.post_process(post_process.DropExpectation),
   )
