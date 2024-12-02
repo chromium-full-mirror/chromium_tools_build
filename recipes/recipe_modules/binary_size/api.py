@@ -15,16 +15,34 @@ from . import constants
 
 
 def _linkify_filenames(url, filename_map):
+  """Replaces placeholders in |url| with values from |filename_map|.
+
+  Args:
+    url: String URL with placeholders like '{{foo.bar}}'.
+    filename_map: Dict mapping placeholder names to desired values.
+
+  Returns:
+    String url with any placeholders present in |filename_map| populated.
+  """
   for filename, archived_url in filename_map.items():
     url = url.replace('{{' + filename + '}}', archived_url)
   return url
 
 
 def _normalize_name(v):
-  # The real normalization function is in the infra/infra repo in
-  # //luci/client/libs/logdog/streamname.py. This is a not so close
-  # approximation that only works if you don't look too hard (eg: does not
-  # handle case where first character is illegal).
+  """Normalizes a string to a logdog stream name.
+
+  The real normalization function is in the infra/infra repo in
+  //luci/client/libs/logdog/streamname.py. This is a not so close
+  approximation that only works if you don't look too hard (eg: does not
+  handle case where first character is illegal).
+
+  Args:
+    v: An arbitrary string.
+
+  Returns:
+    A string suitable for use as a logdog stream name.
+  """
   return re.sub(r'[^0-9A-Za-z:\-\./]', '_', v)
 
 
@@ -63,6 +81,17 @@ class BinarySizeApi(recipe_api.RecipeApi):
                                             revision,
                                             step_name_suffix=None,
                                             ancestor_index=1):
+    """Gets the commit position of a committed ancestor of a patch.
+
+    Args:
+      url: URL of the repo, e.g. https://chromium.googlesource.com/v8/v8
+      revision: The git SHA1 of the revision.
+      step_name_suffix: Suffix to use in the step name.
+      ancestor_index: The number of ancestors we've traversed.
+
+    Returns:
+      An integer representing the commit position, or None if not found.
+    """
     # Limit to 10 links up the chain, if we still haven't found a committed CL,
     # there must be something wrong.
     if ancestor_index > 10:
@@ -82,26 +111,32 @@ class BinarySizeApi(recipe_api.RecipeApi):
     return int(self.m.commit_position.parse(cp_footer[0])[1])
 
   def android_binary_size(self, **kwargs):
+    """Checks the binary size of Android targets.
+
+    Args:
+      **kwargs: Passed through to compare_size().
+    """
     gclient_apply_configs = list(kwargs.get('gclient_apply_configs', []))
     if 'checkout_pgo_profiles' not in gclient_apply_configs:
       gclient_apply_configs += ['checkout_pgo_profiles']
     kwargs['gclient_apply_configs'] = gclient_apply_configs
-    return self.binary_size(
+    return self.compare_size(
         binary_size_footer=constants.ANDROID_BINARY_SIZE_FOOTER_KEY,
         diff_func=self._create_diffs_android,
-        analysis_cmd_func=self.get_android_size_analysis_command,
+        analysis_func=self.android_size_analysis,
         analysis_warning_statuses={},
         **kwargs)
 
   def fuchsia_binary_size(self):
-    return self.binary_size(
+    """Checks the binary size of Fuchsia targets."""
+    return self.compare_size(
         chromium_config='chromium',
         chromium_apply_configs=['mb'],
         gclient_config='chromium',
         gclient_apply_configs=['fuchsia_arm64'],
         binary_size_footer=constants.FUCHSIA_BINARY_SIZE_FOOTER_KEY,
         diff_func=self._create_diffs_fuchsia,
-        analysis_cmd_func=self.get_fuchsia_size_analysis_command,
+        analysis_func=self.fuchsia_size_analysis,
         # Fuchsia ignores roller failures, but these should be indicated anyway.
         # See crbug.com/1355914
         analysis_warning_statuses={
@@ -109,18 +144,18 @@ class BinarySizeApi(recipe_api.RecipeApi):
                 'Ignore roller errors for Fuchsia.'
         })
 
-  def binary_size(self,
-                  *,
-                  chromium_config,
-                  chromium_apply_configs=(),
-                  gclient_config,
-                  gclient_apply_configs=(),
-                  binary_size_footer,
-                  diff_func,
-                  analysis_cmd_func,
-                  analysis_warning_statuses,
-                  try_gs_analysis=False):
-    """Determines the increase in binary size caused by the patch under test.
+  def compare_size(self,
+                   *,
+                   chromium_config,
+                   chromium_apply_configs=(),
+                   gclient_config,
+                   gclient_apply_configs=(),
+                   binary_size_footer,
+                   diff_func,
+                   analysis_func,
+                   analysis_warning_statuses,
+                   try_gs_analysis=False):
+    """Determines the increase in size caused by the patch under test.
 
     To do so, this function:
      - syncs with the patch
@@ -134,7 +169,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
     In general, this recipe is responsible only for driving the execution of
     these steps and failing when necessary. The analysis and measurement logic
-    is largely in //tools/binary_size in chromium/src.
+    for Android is largely in //tools/binary_size in chromium/src, for Fuchsia
+    in //build/fuchsia, and for compile size it's in //tools/clang/scripts.
 
     See http://bit.ly/2up0mcA for more information.
 
@@ -152,8 +188,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
       diff_func: Function that takes (author, review_subject, review_url,
         before_dir, after_dir, results_path, staging_dir) and generates
         diffs in results_path.
-      analysis_cmd_func: Function that takes a staging_dir and returns a
-        command to perform a size analysis.
+      analysis_func: Function that takes a staging_dir and performs a size
+        analysis.
       analysis_warning_statuses: Dict of {status_code: int -> message: string}
         items for diff analysis statuses that should only be warnings.
       try_gs_analysis: bool, whether to try to use previously computed size
@@ -262,7 +298,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       # case use_gs_analysis == False.
       expectations_without_patch_json = None
       with_results_dir, raw_result = self._build_and_measure(
-          True, source_dir, build_dir, staging_dir, analysis_cmd_func)
+          True, source_dir, build_dir, staging_dir, analysis_func)
 
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result
@@ -283,7 +319,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           self.m.chromium.runhooks(
               source_dir, build_dir, name='runhooks' + suffix)
           without_results_dir, raw_result = self._build_and_measure(
-              False, source_dir, build_dir, staging_dir, analysis_cmd_func)
+              False, source_dir, build_dir, staging_dir, analysis_func)
 
           if raw_result and raw_result.status != common_pb.SUCCESS:
             self.m.step.empty(constants.PATCH_FIXED_BUILD_STEP_NAME)
@@ -330,7 +366,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           raise self.m.step.StepFailure(
               binary_size_result.presentation.step_text)
 
-  def get_android_size_analysis_command(
+  def android_size_analysis(
       self,
       source_dir: Path,
       build_dir: Path,
@@ -348,9 +384,9 @@ class BinarySizeApi(recipe_api.RecipeApi):
     cmd += ['--size-config-json', build_dir / self._size_config_json]
     cmd += ['--staging-dir', staging_dir]
     cmd += ['--chromium-output-directory', build_dir]
-    return cmd
+    self.m.step(name='Generate commit size analysis files', cmd=cmd)
 
-  def get_fuchsia_size_analysis_command(
+  def fuchsia_size_analysis(
       self,
       source_dir: Path,
       build_dir: Path,
@@ -372,7 +408,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     output_file = build_dir / 'plugin.json'
     cmd += ['--size-plugin-json-path', output_file]
     cmd += ['--isolated-script-test-output', staging_dir / 'size_results.json']
-    return cmd
+    self.m.step(name='Generate commit size analysis files', cmd=cmd)
 
   def _get_recent_tot_analysis_path(self, patch_parent_revision):
     """Get recent size analysis results path and latest revision.
@@ -444,7 +480,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       source_dir: Path,
       build_dir: Path,
       staging_dir,
-      analysis_cmd_func,
+      analysis_func,
   ):
     suffix = ' (with patch)' if with_patch else ' (without patch)'
     results_basename = 'with_patch' if with_patch else 'without_patch'
@@ -464,9 +500,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     results_dir = staging_dir / results_basename
     self.m.file.ensure_directory('mkdir ' + results_basename, results_dir)
 
-    self.m.step(
-        name='Generate commit size analysis files',
-        cmd=analysis_cmd_func(source_dir, build_dir, results_dir))
+    analysis_func(source_dir, build_dir, results_dir)
 
     return results_dir, None
 

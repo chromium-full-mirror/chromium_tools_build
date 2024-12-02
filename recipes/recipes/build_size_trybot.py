@@ -16,16 +16,16 @@ def RunSteps(api):
   def create_diffs(*args):
     api.step(name='Generate diffs', cmd=['echo Hello World'])
 
-  def get_build_size_analysis_command(*args):
+  def compile_size_analysis(*args):
     'echo Hello World Part II'
 
-  return api.binary_size.binary_size(
+  return api.binary_size.compare_size(
       chromium_config='chromium',
       chromium_apply_configs=['mb'],
       gclient_config='chromium',
       binary_size_footer='Build-Size',
       diff_func=create_diffs,
-      analysis_cmd_func=get_build_size_analysis_command,
+      analysis_func=compile_size_analysis,
       analysis_warning_statuses={})
 
 
