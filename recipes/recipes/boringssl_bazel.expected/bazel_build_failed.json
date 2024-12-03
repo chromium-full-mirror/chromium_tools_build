@@ -143,6 +143,7 @@
       "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
       "build",
       "--verbose_failures",
+      "--lockfile_mode=error",
       "..."
     ],
     "cwd": "[CACHE]/builder/boringssl",

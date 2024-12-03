@@ -54,10 +54,13 @@ def RunSteps(api):
   src = update_result.source_root.path
   bazel = src / 'util/bot/bazel/bazel'
   with api.context(cwd=src), api.osx_sdk('ios'), _BazelShutdown(api, bazel):
-    api.step('bazel build', [bazel, 'build', '--verbose_failures', '...'])
     api.step(
-        'bazel test',
-        [bazel, 'test', '--verbose_failures', '--test_output=errors', '...'])
+        'bazel build',
+        [bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'])
+    api.step('bazel test', [
+        bazel, 'test', '--verbose_failures', '--lockfile_mode=error',
+        '--test_output=errors', '...'
+    ])
 
 
 def _CIBuild(api, builder):
