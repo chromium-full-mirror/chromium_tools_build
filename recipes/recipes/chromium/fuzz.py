@@ -258,7 +258,6 @@ def RunSteps(api, properties):
           profdata_dir = str(
               api.chromium_checkout.source_dir.joinpath('out',
                                                         'profdata-output-dir'))
-          build_dir = "out/Release"
           api.step('make corpora directory', ['mkdir', corpora_dir])
           api.file.rmtree('ensure profdata directory blank', profdata_dir)
           api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
@@ -296,6 +295,7 @@ def RunSteps(api, properties):
         except api.step.StepFailure:
           step_result.logs[
               'fuzz coverage logs'] = "Could not process fuzz coverage"
+          raise
 
     else:
       # copy data deps outside the build directory
@@ -335,7 +335,11 @@ def RunSteps(api, properties):
 
 def GenTests(api):
 
-  def generate_test(is_try=False, is_coverage=False, is_ios=False, is_v8=False):
+  def generate_test(is_try=False,
+                    is_coverage=False,
+                    is_ios=False,
+                    is_v8=False,
+                    coverage_metadata_failure=False):
     test = api.properties(
         upload_bucket='chromium-browser-libfuzzer',
         upload_directory='fuzz',
@@ -395,8 +399,11 @@ def GenTests(api):
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if is_coverage:
       test += api.post_process(post_process.MustRun, 'process fuzz coverage')
+      retcode = 0
+      if coverage_metadata_failure:
+        retcode = 1
       test += api.step_data(
-          'process fuzz coverage.generate coverage metadata', retcode=1)
+          'process fuzz coverage.generate coverage metadata', retcode=retcode)
     test += api.post_process(post_process.DropExpectation)
     if is_ios:
       return (test + api.properties(xcode_build_version='12345'))
@@ -501,6 +508,25 @@ def GenTests(api):
           })),
       api.platform.name('linux'),
       generate_test(is_coverage=True),
+  )
+
+  yield api.test(
+      'coverage_metadata_generation_failure',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      api.expect_status('FAILURE'),
+      generate_test(is_coverage=True, coverage_metadata_failure=True),
   )
 
   yield api.test(
