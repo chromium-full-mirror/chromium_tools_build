@@ -314,6 +314,8 @@ class SisoApi(recipe_api.RecipeApi):
         'flush',
         '--project',
         self._props.project,
+        # TODO: Remove after fixing http://b/381210302#comment12
+        '-f',
     ] + files
     return self.m.step(step_name, cmd)
 
