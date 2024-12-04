@@ -50,7 +50,7 @@ def RunSteps(api):
       delta_matches = DELTA_LINE_RE.match(lines[2])
       before = int(before_matches.group(1))
       delta = int(delta_matches.group(1))
-      summary_lines = lines[:4]
+      summary = '\n'.join(lines[:4])
     except (ValueError, IndexError, AttributeError) as e:
       raise api.step.InfraFailure(
           f'Failed to parse compile size delta report: {e}')
@@ -62,7 +62,7 @@ def RunSteps(api):
             'links': [],
             # TODO: crbug.com/40190002 - set status once deciding the threshold.
             'status_code': 0,
-            'summary': summary_lines,
+            'summary': summary,
             'uncompressed': delta
         })
     write_results.presentation.logs['compile_size_deltas.txt'] = lines
