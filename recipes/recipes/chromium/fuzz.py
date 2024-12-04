@@ -289,9 +289,8 @@ def RunSteps(api, properties):
           ])
 
           api.code_coverage.get_chromium_fuzz_coverage(
-              api.chromium_checkout.source_dir,
-              api.chromium_checkout.source_dir.joinpath('out', 'Release'),
-              profdata_path, profdata_dir)
+              api.chromium_checkout.source_dir, build_dir, profdata_path,
+              profdata_dir)
         except api.step.StepFailure:
           step_result.logs[
               'fuzz coverage logs'] = "Could not process fuzz coverage"
