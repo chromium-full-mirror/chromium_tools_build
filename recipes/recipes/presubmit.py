@@ -141,7 +141,6 @@ def GenTests(api):
       'angle',
       'build',
       'build_internal',
-      'build_internal_scripts_slave',
       'catapult',
       'chrome_golo',
       'chromium',

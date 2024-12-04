@@ -214,7 +214,7 @@ def _RunStepsInternal(api):
   ])
 
   env = {}
-  if repo_name in ['build', 'build_internal', 'build_internal_scripts_slave']:
+  if repo_name in ['build', 'build_internal']:
     # This should overwrite the existing pythonpath which includes references to
     # the local build checkout (but the presubmit scripts should only pick up
     # the scripts from presubmit_build checkout).
