@@ -1,0 +1,167 @@
+# Copyright 2024 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import re
+
+from recipe_engine import post_process
+from recipe_engine.config_types import Path
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine.result import RawResult
+
+DEPS = [
+    'binary_size',
+    'siso',
+    'recipe_engine/buildbucket',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
+]
+
+BEFORE_LINE_RE = re.compile('Before: .* \((.*)\)')
+DELTA_LINE_RE = re.compile('Delta: .* \((.*)\)')
+
+
+def RunSteps(api):
+
+  def create_diffs(
+      author,
+      review_subject,
+      review_url,
+      source_dir: Path,
+      before_dir,
+      after_dir,
+      results_path,
+      staging_dir,
+  ):
+    diff_script = (
+        source_dir / 'tools/clang/scripts/compiler_inputs_size_diff.py')
+    cmd = [diff_script, before_dir / 'size.txt', after_dir / 'size.txt']
+    result = api.step(
+        name='Generate diffs',
+        cmd=cmd,
+        stdout=api.raw_io.output_text(leak_to=staging_dir / 'diff.txt'))
+    lines = result.stdout.splitlines()
+    try:
+      before_matches = BEFORE_LINE_RE.match(lines[0])
+      delta_matches = DELTA_LINE_RE.match(lines[2])
+      before = int(before_matches.group(1))
+      delta = int(delta_matches.group(1))
+      summary = '\n'.join(lines[:4])
+    except (ValueError, IndexError, AttributeError) as e:
+      raise api.step.InfraFailure(
+          f'Failed to parse compile size delta report: {e}')
+    write_results = api.file.write_json(
+        'Write size results',
+        results_path,
+        {
+            'archive_filenames': [],
+            'links': [],
+            # TODO: crbug.com/40190002 - set status once deciding the threshold.
+            'status_code': 0,
+            'summary': summary,
+            'uncompressed': delta
+        })
+    write_results.presentation.logs['compile_size_deltas.txt'] = lines
+    write_results.presentation.properties['compile_size'] = {
+        'before': before,
+        'delta': delta
+    }
+
+  def analyze_compile_size(source_dir: Path, build_dir: Path,
+                           staging_dir: Path):
+    # Get all commands required to build `chrome`.
+    siso_query_commands_cmd = [
+        api.siso.siso_path(source_dir), 'query', 'commands', '-C',
+        str(build_dir), 'chrome'
+    ]
+    # Get all dependencies stored in deps logs to build `chrome`.
+    siso_query_deps_cmd = [
+        api.siso.siso_path(source_dir), 'query', 'deps', '-C',
+        str(build_dir)
+    ]
+    compiler_inputs_size_cmd = [
+        source_dir / 'tools/clang/scripts/compiler_inputs_size.py',
+        build_dir,
+        staging_dir / 'commands.txt',
+        staging_dir / 'deps.txt',
+    ]
+    with api.context(cwd=source_dir, infra_steps=True):
+      api.step('check siso version',
+               [api.siso.siso_path(source_dir), 'version'])
+      api.step(
+          'Run siso query commands chrome',
+          siso_query_commands_cmd,
+          stdout=api.raw_io.output(leak_to=staging_dir / 'commands.txt'),
+      )
+      api.step(
+          'Run siso query deps',
+          siso_query_deps_cmd,
+          stdout=api.raw_io.output(leak_to=staging_dir / 'deps.txt'),
+      )
+      api.step(
+          'Measure compiler inputs size',
+          compiler_inputs_size_cmd,
+          stdout=api.raw_io.output(leak_to=staging_dir / 'size.txt'),
+      )
+
+  return api.binary_size.compare_size(
+      chromium_config='chromium',
+      chromium_apply_configs=['mb'],
+      gclient_config='chromium',
+      binary_size_footer='Compile-Size',
+      diff_func=create_diffs,
+      analysis_func=analyze_compile_size,
+      analysis_warning_statuses={})
+
+
+def GenTests(api):
+
+  def check_sizes(check, steps, before=None, delta=None):
+    diff_output_properties = steps['Write size results'].output_properties
+    check(diff_output_properties['compile_size']['before'] == before)
+    check(diff_output_properties['compile_size']['delta'] == delta)
+
+  yield api.test(
+      'big_delta', api.binary_size.build(),
+      api.override_step_data(
+          'Generate diffs',
+          api.raw_io.stream_output_text(
+              'Before: 10 GiB (10737418240)\nX\nDelta: 1 GiB (+1073741824)\n',
+              stream='stdout')),
+      api.post_check(check_sizes, before=10737418240, delta=1073741824),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'negative_delta', api.binary_size.build(),
+      api.override_step_data(
+          'Generate diffs',
+          api.raw_io.stream_output_text(
+              'Before: 10 GiB (10737418240)\nX\nDelta: -1 GiB (-1073741824)\n',
+              stream='stdout')),
+      api.post_check(check_sizes, before=10737418240, delta=-1073741824),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test('fail_compile', api.binary_size.build(),
+                 api.override_step_data('compile (with patch)', retcode=1),
+                 api.expect_status('FAILURE'),
+                 api.post_process(post_process.DropExpectation))
+
+  yield api.test('fail_siso_query', api.binary_size.build(),
+                 api.override_step_data('Run siso query deps', retcode=1),
+                 api.expect_status('INFRA_FAILURE'),
+                 api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'fail_delta_parsing', api.binary_size.build(),
+      api.override_step_data(
+          'Generate diffs',
+          api.raw_io.stream_output_text(
+              'Some unparsable output', stream='stdout')),
+      api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation))
