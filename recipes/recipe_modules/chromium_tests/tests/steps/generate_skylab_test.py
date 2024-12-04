@@ -792,7 +792,7 @@ def GenTests(api):
                   'basic_EVE_TOT', passing_tests=['Test.One']))),
       api.post_process(
           post_process.MustRun,
-          f'prepare skylab tests.collect runtime deps for {GTEST_TARGET}.fetch RBE artifcats from CAS'
+          f'prepare skylab tests.collect runtime deps for {GTEST_TARGET}.fetch RBE artifacts from CAS'
       ),
       api.post_process(post_process.DropExpectation),
   )

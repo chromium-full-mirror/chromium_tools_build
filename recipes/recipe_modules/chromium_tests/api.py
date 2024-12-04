@@ -2868,7 +2868,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if self.m.siso.without_bytes:
         with self.m.context(cwd=build_dir):
           self.m.siso.fs_flush(
-              'fetch RBE artifcats from CAS',
+              'fetch RBE artifacts from CAS',
               source_dir,
               isolate_dict['variables']['files'],
           )
