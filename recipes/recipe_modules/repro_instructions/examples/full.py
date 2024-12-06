@@ -48,6 +48,16 @@ def RunSteps(api):
       local_dependency=dependency_step,
       remote_dependency=dependency_step)
 
+  # create_step_instruction doesn't tag the step or use the step_result
+  api.repro_instructions.create_step_instruction(
+      'custom_tag',
+      'custom description',
+      local_content='foo',
+      remote_content='bar',
+      prebuilt_content='baz',
+      local_dependency=dependency_step,
+      remote_dependency=dependency_step)
+
   # Finding a non-existent test doesn't raise an exception
   api.repro_instructions.get_dependency(r'asdfasdf')
 
@@ -63,6 +73,7 @@ def RunSteps(api):
       'description', ['invocation-id'],
       local_content='run foo.bar locally',
       remote_content='run foo.bar remotely',
+      prebuilt_content='run foo.bar with cas',
       local_dependency=dependency_step,
       remote_dependency=dependency_step)
   api.repro_instructions.update_invocation_instructions()

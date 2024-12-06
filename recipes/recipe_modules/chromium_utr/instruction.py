@@ -15,6 +15,7 @@ def get_utr_instruction(command: str,
                         bucket: str,
                         builder: str,
                         test_names: Iterable[str],
+                        utr_flags: Iterable[str] | None = None,
                         extra_args: Iterable[str] | None = None) -> str:
   """ Provides the Universal Test Runner (UTR) steps to reproduce a step
 
@@ -25,7 +26,8 @@ def get_utr_instruction(command: str,
   Args:
     command: The UTR command to run (eg 'compile', 'compile-and-run')
     test_names: Test names to invoke UTR with or none to compile all
-    extra_args: Any extra args to append to the command (eg a test filter)
+    utr_flags: Any extra UTR flags to append to the command (eg --reuse-task)
+    extra_args: Any extra args to append after the command (eg a test filter)
   Returns:
     The UTR command that can be run from chromium/src checkout
   """
@@ -46,6 +48,8 @@ def get_utr_instruction(command: str,
       '-b',
       builder,
   ]
+  if utr_flags:
+    utr_cmd.extend(utr_flags)
   if not test_names:
     test_names = []
   for test in test_names:

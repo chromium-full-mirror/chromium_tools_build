@@ -2172,8 +2172,41 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # Attempt to find the last compile for the local step dependency
     local_dependency = self.api.m.repro_instructions.get_dependency(r'compile')
 
+    task = self._tasks[suffix]
+    prebuilt_task_id = task.trigger_output.get('tasks',
+                                               []).get(0,
+                                                       {}).get('task_id', None)
+    cas_digest = self.api.m.isolate.isolated_tests.get(self.isolate_target)
     remote_instruction = None
     remote_dependency = None
+
+    def _create_prebuilt_instruction(extra_args: Iterable[str]):
+      prebuilt_instruction = []
+      if include_utr_instruction:
+        prebuilt_instruction.append('**Re-trigger in swarming:**')
+        prebuilt_instruction.append(
+            get_utr_instruction(
+                'test',
+                self.api.m.buildbucket.build.builder.project,
+                self.api.m.led.shadowed_bucket or
+                self.api.m.buildbucket.build.builder.bucket,
+                self.api.m.buildbucket.build.builder.builder.replace(
+                    '-compilator', ''), [self.name],
+                utr_flags=['--reuse-task', prebuilt_task_id],
+                extra_args=extra_args))
+        prebuilt_instruction.append(
+            '*Note: additional args can be used by extending this command*')
+        prebuilt_instruction.append('')
+      if cas_digest:
+        prebuilt_instruction.append('**Download test binary:**')
+        prebuilt_instruction.append('```./tools/luci-go/cas download '
+                                    f'-cas-instance {self.api.m.cas.instance} '
+                                    f'-digest {cas_digest} -dir tmp```')
+        prebuilt_instruction.append('Run `./tools/luci-go/cas login` if needed')
+        prebuilt_instruction.append(
+            '*See the local instructions tab and run from the tmp dir*')
+      return '<br/>'.join(prebuilt_instruction)
+
     if include_utr_instruction:
       remote_dependency = self.api.m.repro_instructions.get_dependency(
           r'bot_update')
@@ -2183,8 +2216,6 @@ class SwarmingTest(Test, AbstractSwarmingTest):
           self.api.m.buildbucket.build.builder.bucket,
           self.api.m.buildbucket.build.builder.builder.replace(
               '-compilator', ''), [self.name])
-
-    task = self._tasks[suffix]
     self.api.m.repro_instructions.create_step_instruction(
         self._instructions_tag_for_suffix('step', suffix),
         f'{self.name} instructions',
@@ -2192,6 +2223,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         remote_content=remote_instruction,
         local_dependency=local_dependency,
         remote_dependency=remote_dependency,
+        prebuilt_content=_create_prebuilt_instruction(None),
     )
 
     test_invocations = [
@@ -2219,6 +2251,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
             test_invocations,
             local_content=task.get_local_instruction(extra_args=[filter_arg]),
             remote_content=remote_instruction,
+            prebuilt_content=_create_prebuilt_instruction(['--', filter_arg]),
             local_dependency=local_dependency,
             remote_dependency=remote_dependency,
         )

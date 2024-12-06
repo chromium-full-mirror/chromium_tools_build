@@ -60,6 +60,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       *,
       local_content: str = None,
       remote_content: str = None,
+      prebuilt_content: str = None,
       local_dependency: instruction_pb.InstructionDependency | None = None,
       remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> None:
@@ -77,6 +78,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         "local" tab
       remote_content: The instruction itself to display to the user for the
         "remote" tab
+      prebuilt_content: The instruction itself to display to the user for the
+        "prebuilt" tab
       local_dependency: The InstructionDependency the local instructions will
         require be run before they themselves are invoked
       remote_dependency: The InstructionDependency the remote instructions will
@@ -98,6 +101,13 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
           targets=[
               instruction_pb.InstructionTarget.REMOTE,
           ])
+    prebuilt_instruction = None
+    if prebuilt_content:
+      prebuilt_instruction = instruction_pb.TargetedInstruction(
+          content=prebuilt_content,
+          targets=[
+              instruction_pb.InstructionTarget.PREBUILT,
+          ])
     if local_dependency:
       local_instruction.dependencies.append(local_dependency)
     if remote_dependency:
@@ -112,6 +122,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       instruction.targeted_instructions.append(local_instruction)
     if remote_content:
       instruction.targeted_instructions.append(remote_instruction)
+    if prebuilt_instruction:
+      instruction.targeted_instructions.append(prebuilt_instruction)
     self._instructions[tag] = instruction
 
   def create_test_result_instruction(
@@ -122,6 +134,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       *,
       local_content: str = None,
       remote_content: str = None,
+      prebuilt_content: str = None,
       local_dependency: instruction_pb.InstructionDependency | None = None,
       remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> instruction_pb.Instruction:
@@ -142,6 +155,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         "local" tab
       remote_content: The instruction itself to display to the user for the
         "remote" tab
+      prebuilt_content: The instruction itself to display to the user for the
+        "prebuilt" tab
       local_dependency: The InstructionDependency the local instructions will
         require be run before they themselves are invoked
       remote_dependency: The InstructionDependency the remote instructions will
@@ -165,11 +180,19 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     if remote_dependency:
       remote_instruction.dependencies.append(remote_dependency)
 
+    prebuilt_instruction = instruction_pb.TargetedInstruction(
+        content=prebuilt_content,
+        targets=[
+            instruction_pb.InstructionTarget.PREBUILT,
+        ])
+
     instruction = instruction_pb.Instruction(
         id=tag,
         descriptive_name=description[:100],
         type=instruction_pb.InstructionType.TEST_RESULT_INSTRUCTION,
-        targeted_instructions=[remote_instruction, local_instruction],
+        targeted_instructions=[
+            remote_instruction, local_instruction, prebuilt_instruction
+        ],
         instruction_filter=instruction_pb.InstructionFilter(
             invocation_ids=instruction_pb.InstructionFilterByInvocationID(
                 invocation_ids=test_invocations)),
