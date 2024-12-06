@@ -1069,6 +1069,74 @@
   {
     "cmd": [
       "find",
+      "[CLEANUP]/tmp_tmp_1/src/build/linux/debian_bullseye_amd64-sysroot",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune build/linux/debian_bullseye_amd64-sysroot"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/build/linux/debian_bullseye_i386-sysroot",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune build/linux/debian_bullseye_i386-sysroot"
+  },
+  {
+    "cmd": [
+      "find",
       "[CLEANUP]/tmp_tmp_1/src/buildtools/third_party/libc++",
       "-type",
       "f",
@@ -1409,6 +1477,40 @@
   {
     "cmd": [
       "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/instrumented_libs",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/instrumented_libs"
+  },
+  {
+    "cmd": [
+      "find",
       "[CLEANUP]/tmp_tmp_1/src/third_party/libjpeg_turbo",
       "-type",
       "f",
@@ -1473,6 +1575,142 @@
       }
     },
     "name": "prune third_party/libxml/src"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/llvm"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm-build",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/llvm-build"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm-build-tools",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/llvm-build-tools"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/rust-src",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/rust-src"
   },
   {
     "cmd": [

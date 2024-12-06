@@ -292,6 +292,8 @@ def export_lite_tarball(api, source_dir, version):
   with copytree_checkout(api, source_dir) as dest_dir:
     directories = [
         'android_webview',
+        'build/linux/debian_bullseye_amd64-sysroot',
+        'build/linux/debian_bullseye_i386-sysroot',
         'buildtools/third_party/libc++',
         'chrome/android',
         'chromecast',
@@ -302,8 +304,13 @@ def export_lite_tarball(api, source_dir, version):
         'third_party/closure_compiler',
         'third_party/freetype',
         'third_party/icu',
+        'third_party/instrumented_libs',
         'third_party/libjpeg_turbo',
         'third_party/libxml/src',
+        'third_party/llvm',
+        'third_party/llvm-build',
+        'third_party/llvm-build-tools',
+        'third_party/rust-src',
         'third_party/snappy',
         'third_party/webgl',
         'tools/win',
