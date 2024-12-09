@@ -465,7 +465,7 @@ def GenTests(api):
       suggestions=(_TriciumSuggestion(
           description='foo',
           replacements=(_TriciumReplacement(
-              path='/path/to/foo.cc',
+              path='path/to/foo.cc',
               replacement='replaced',
               start_line=0,
               end_line=0,
@@ -496,7 +496,7 @@ def GenTests(api):
       suggestions=(_TriciumSuggestion(
           description='foo',
           replacements=(_TriciumReplacement(
-              path='/path/to/foo.cc',
+              path='path/to/foo.cc',
               replacement='replaced',
               start_line=0,
               end_line=0,
@@ -530,7 +530,7 @@ def GenTests(api):
       suggestions=(_TriciumSuggestion(
           description='foo',
           replacements=(_TriciumReplacement(
-              path='/path/to/foo.cc',
+              path='path/to/foo.cc',
               replacement='',
               start_line=0,
               end_line=0,
