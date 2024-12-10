@@ -13,7 +13,7 @@ class ChromiumDashApi(recipe_api.RecipeApi):
   RELEASE_ENDPOINT = 'fetch_releases'
   COMMIT_ENDPOINT = 'fetch_commits'
   MILESTONE_ENDPOINT = 'fetch_milestones'
-  RELEASE_CHANNELS = ('Beta', 'Stable', 'Dev', 'Canary')
+  RELEASE_CHANNELS = ('Beta', 'Stable', 'Dev', 'Canary', 'Extended')
   VALID_PLATFORMS = ('Android', 'Mac', 'Linux', 'Windows', 'iOS')
 
   def _get_json(self, endpoint, url_args, step_name=None,
