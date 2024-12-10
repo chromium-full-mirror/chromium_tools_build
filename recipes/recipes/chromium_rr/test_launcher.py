@@ -76,38 +76,66 @@ def find_traces(api, target_path, invocation):
 
 
 def RunSteps(api, properties):
-
-  test_suites = []
-  for test_info in properties.target_test_infos:
-    if test_info.test_suite:
-      test_suites.append(test_info.test_suite)
-
-  if not test_suites:
-    return
+  if not any(
+      test_info.test_suite for test_info in properties.target_test_infos):
+    raise api.step.StepFailure('No test suites are being requested to run')
 
   builder_id, builder_config = api.chromium_polymorphic.lookup_builder_config(
       allow_tester=True)
+
   if builder_config.execution_mode == ctbc.TEST:
     builder_id = chromium.BuilderId.create_for_group(
         builder_config.parent_builder_group, builder_config.parent_buildername)
+
+  source_dir, targets_config = _bot_update(api, builder_config)
+  build_dir = api.chromium.default_build_dir(source_dir)
+
+  tests = _create_tests(api, properties.target_test_infos, targets_config)
+
+  raw_result = _compile(api, tests, source_dir, build_dir, builder_id)
+  if raw_result.status != common_pb.SUCCESS:
+    return raw_result
+
+  runner_dir = source_dir / RUNNER_PACKAGE_PATH
+  api.file.copytree('copy test runner', api.resource('.'), runner_dir)
+  api.chromium.mb_isolate_everything(source_dir, build_dir, None)
+
+  _isolate(api, tests, source_dir, build_dir, builder_config)
+
+  swarming_tasks_and_test_infos = _create_tasks_and_test_infos(
+      api, properties.target_test_infos, tests)
+
+  task_results_and_test_infos = _collect_task_results(
+      api, swarming_tasks_and_test_infos)
+
+  _process_task_results(api, task_results_and_test_infos)
+
+
+def _bot_update(api, builder_config):
   api.chromium_tests.configure_build(builder_config)
-  update_step, _, targets_config = api.chromium_tests.prepare_checkout(
+  update_results, _, targets_config = api.chromium_tests.prepare_checkout(
       builder_config, report_cache_state=False)
+
+  return update_results.source_root.path, targets_config
+
+
+def _create_tests(api, target_test_infos, targets_config):
+  test_suite_names = []
+  for test_info in target_test_infos:
+    if test_info.test_suite:
+      test_suite_names.append(test_info.test_suite)
 
   # Create test objects for all input tests, removed test suite will not be
   # added here.
-  tests = [t for t in targets_config.all_tests if t.name in test_suites]
+  tests = [t for t in targets_config.all_tests if t.name in test_suite_names]
   if not tests:
     raise api.step.StepFailure('No valid input test suites, please check if the'
                                ' input test suites are removed')
-  targets = list(set(itertools.chain(*[t.compile_targets() for t in tests])))
+  return tests
 
-  api.chromium.output_dir = update_step.source_root.path.joinpath(
-      'out', api.chromium.c.build_config_fs)
-  source_dir = update_step.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
+
+def _compile(api, tests, source_dir, build_dir, builder_id):
   with api.chromium.guard_compile(build_dir):
-    # Update gn args with symbol_level=2
     gn_args = api.chromium.mb_lookup(
         source_dir, builder_id, recursive=False, name='lookup_builder_gn_args')
     args = api.gn.parse_gn_args(gn_args)
@@ -115,6 +143,7 @@ def RunSteps(api, properties):
         'use_reclient') != 'false'
 
     gn_args = gn_args.splitlines()
+    # Update gn args with symbol_level=2 is required to get debug symbols for rr
     gn_args.append('symbol_level = 2')
     gn_args.append('forbid_non_component_debug_builds = false')
     gn_args.append('use_debug_fission = false')
@@ -122,15 +151,14 @@ def RunSteps(api, properties):
                         '\n'.join(gn_args))
     api.gn.gen(build_dir, 'gn_gen')
 
+    targets = list(
+        set(itertools.chain.from_iterable(t.compile_targets() for t in tests)))
     raw_result = api.chromium.compile(
         source_dir, build_dir, targets=targets, use_reclient=use_reclient)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    return raw_result
 
-  runner_dir = source_dir / RUNNER_PACKAGE_PATH
-  api.file.copytree('copy source files', api.resource('.'), runner_dir)
-  api.chromium.mb_isolate_everything(source_dir, build_dir, None)
 
+def _isolate(api, tests, source_dir, build_dir, builder_config):
   isolate_targets = [t.isolate_target for t in tests]
   for isolate_target in isolate_targets:
     file_path = build_dir.joinpath('%s.isolate' % isolate_target)
@@ -145,7 +173,8 @@ def RunSteps(api, properties):
       '',
   )
 
-  test_suite_to_tests = {t.name: t for t in tests}
+
+def _create_tasks_and_test_infos(api, target_test_infos, tests):
   cipd_packages = [
       chromium_swarming.CipdPackage.create(
           name='infra/3pp/tools/rr/${platform}',
@@ -153,8 +182,9 @@ def RunSteps(api, properties):
           root='rr_tool',
       )
   ]
+  test_suite_to_tests = {t.name: t for t in tests}
   swarming_tasks_and_test_infos = []
-  for test_info in properties.target_test_infos:
+  for test_info in target_test_infos:
     if test_info.test_suite not in test_suite_to_tests:
       continue
     test = test_suite_to_tests[test_info.test_suite]
@@ -168,7 +198,6 @@ def RunSteps(api, properties):
     command.extend(test.raw_cmd)
     command.extend(WEB_TEST_EXTRA_ARGS)
     relative_cwd = str(test.relative_cwd)
-    dimensions = {'pool': 'chromium.tests.rr', 'os': 'Linux'}
     task_input = api.isolate.isolated_tests.get(test.isolate_target)
 
     task = api.chromium_swarming.task(
@@ -181,36 +210,45 @@ def RunSteps(api, properties):
         cipd_packages=cipd_packages)
 
     task_slice = task.request[0]
+    dimensions = {'pool': 'chromium.tests.rr', 'os': 'Linux'}
     task_dimensions = task_slice.dimensions
     task_dimensions.update(dimensions)
-    tags = {'test_suite': [test.canonical_name]}
     task_slice = task_slice.with_dimensions(**task_dimensions)
+
+    tags = {'test_suite': [test.canonical_name]}
     task.request = task.request.with_slice(0, task_slice).with_tags(tags)
 
     swarming_tasks_and_test_infos.append((task, test_info))
     api.chromium_swarming.trigger_task(task, resultdb=test.spec.resultdb)
+  return swarming_tasks_and_test_infos
 
-  # Collect all task result
+
+def _collect_task_results(api, swarming_tasks_and_test_infos):
   task_results_and_test_infos = []
   for task, test_info in swarming_tasks_and_test_infos:
     task_result, _ = api.chromium_swarming.collect_task(task)
     task_results_and_test_infos.append((task_result, test_info))
+  return task_results_and_test_infos
 
+
+def _process_task_results(api, task_results_and_test_infos):
   for i, (task_result, test_info) in enumerate(task_results_and_test_infos):
-    data = task_result.chromium_swarming.summary['shards'][0]
-    # TODO(jiesheng): Update fetch_rdb_results in test_utils api to and use
+    shard_result = task_result.chromium_swarming.summary['shards'][0]
+    # TODO(jiesheng): Update fetch_rdb_results in test_utils api to use
     # here to get back test results.
-    inv_ids = api.resultdb.invocation_ids([data['resultdb_info']['invocation']])
+    inv_ids = api.resultdb.invocation_ids(
+        [shard_result['resultdb_info']['invocation']])
     inv_map = api.resultdb.query(inv_ids)
     invocation = inv_map.get(inv_ids[0], None)
-    cas_digest = data.get('cas_output_root', {}).get('digest')
+    cas_digest = shard_result.get('cas_output_root', {}).get('digest')
     if not cas_digest or not invocation:
       # TODO(jiesheng): Handle the missing output from task.
       continue
 
-    digest = '{}/{}'.format(cas_digest['hash'], cas_digest['size_bytes'])
     download_dir = api.path.cleanup_dir / f'trace_dir_{i}'
     api.file.ensure_directory('ensure traces dir exist', download_dir)
+
+    digest = '{}/{}'.format(cas_digest['hash'], cas_digest['size_bytes'])
     api.cas.download('download test traces', digest, download_dir)
     traces_out_dir = api.path.join(api.path.cleanup_dir, f'output_traces_{i}')
     found_test_traces = False
@@ -250,7 +288,6 @@ def RunSteps(api, properties):
           link_name='Test rr traces')
 
     api.file.rmtree('rmtree %s' % download_dir, download_dir)
-
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
@@ -503,7 +540,7 @@ def GenTests(api):
               builder_group='fake-group',
           ).assemble()),
       api.builder_group.for_current('chromium.fyi'),
-      api.expect_status('SUCCESS'),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
