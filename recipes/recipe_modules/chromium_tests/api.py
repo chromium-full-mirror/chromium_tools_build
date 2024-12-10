@@ -802,7 +802,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     name_suffix = ' (%s)' % suffix if suffix else ''
     # When Siso build enables `without bytes` option, `isolate tests` step
     # needs to use `siso isolate` command.
-    use_siso_isolate = self.m.siso.without_bytes
+    use_siso_isolate = self.m.siso.enabled and self.m.siso.without_bytes
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.

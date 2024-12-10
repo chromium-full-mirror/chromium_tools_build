@@ -4,6 +4,7 @@
 """Shareable implementation of the recipe side of Chromium's UTR."""
 
 import attr
+import contextlib
 import copy
 import itertools
 import uuid
@@ -35,6 +36,23 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
   UTR_LOG_NAME = 'utr_log'
 
   def run(
+      self,
+      properties: Request,
+      *args,
+      **kwargs,
+  ) -> result_pb2.RawResult:
+    """Top-level wrapper around the UTR run that will optionally disable siso.
+
+    See _run_impl() below for actual implementation.
+    """
+    if properties.no_siso:
+      cm = self.m.siso.disable()
+    else:
+      cm = contextlib.nullcontext()
+    with cm:
+      return self._run_impl(properties, *args, **kwargs)
+
+  def _run_impl(
       self,
       properties: Request,
       checkout_dir: Path,
@@ -749,18 +767,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           '-lifetime=5m',
       ])
 
-    def compile_fn():
-      return self.m.chromium.compile(
-          source_dir,
-          build_dir,
-          targets=targets,
-          skip_log_upload=True,
-          use_reclient=use_reclient), generated_isolates
+    return self.m.chromium.compile(
+        source_dir,
+        build_dir,
+        targets=targets,
+        skip_log_upload=True,
+        use_reclient=use_reclient), generated_isolates
 
-    if properties.no_siso:
-      with self.m.siso.disable():
-        return compile_fn()
-    return compile_fn()
 
   def create_tests(
       self,
