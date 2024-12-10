@@ -207,6 +207,9 @@ def checkout(api: RecipeApi):
   s.url = 'https://chromium.googlesource.com/infra/infra_superproject.git'
   s.name = 'infra'
 
+  api.chromium_tests.check_builder_cache(
+      api.chromium_checkout.default_checkout_dir)
+
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
