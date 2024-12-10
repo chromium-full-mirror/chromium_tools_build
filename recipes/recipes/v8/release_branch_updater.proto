@@ -18,6 +18,20 @@ message ChannelProperties {
   // Weeks until the branch should be updated. Otherwise, the builder fails.
   float max_age_weeks = 2;
 
+  // Set the source of the ref details.
+  ChannelSource source = 3;
+
   // Set the name of the channel at the source.
-  string source_channel = 3;
+  string channel = 4;
+
+  // This field is only relevant when source is RELEASES.
+  string platform = 5;
+}
+
+enum ChannelSource {
+  // Fetch ref details from https://chromiumdash.appspot.com/fetch_milestones?only_active=true.
+  MILESTONES = 0;
+
+  // Fetch ref details from https://chromiumdash.appspot.com/fetch_releases.
+  RELEASES = 1;
 }
