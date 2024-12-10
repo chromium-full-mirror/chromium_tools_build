@@ -60,13 +60,15 @@ def _compile_without_remote_execution(
       resource_usage_output_file=resource_usage_output_file)
   _raise_raw_result_on_failure(api, raw_result)
 
-  config = api.file.read_json(
+  rusage = api.file.read_json(
       'read resource usage log',
       resource_usage_output_file,
       test_data={'ru_utime': '0:01.00'},
   )
-  config['revision'] = api.buildbucket.build.input.gitiles_commit.id
-  config['build_timestamp'] = api.time.utcnow().isoformat()
+  rusage['build_id'] = api.buildbucket.build.id
+  rusage['builder'] = api.buildbucket.builder_full_name
+  rusage['revision'] = api.buildbucket.build.input.gitiles_commit.id
+  rusage['build_timestamp'] = api.time.utcnow().isoformat()
   bqupload_cipd_path = api.cipd.ensure_tool('infra/tools/bqupload/${platform}',
                                             'latest')
   try:
@@ -75,12 +77,12 @@ def _compile_without_remote_execution(
             bqupload_cipd_path,
             _BQ_TABLE_NAME,
         ],
-        stdin=api.raw_io.input(data=api.json.dumps(config)),
+        stdin=api.raw_io.input(data=api.json.dumps(rusage)),
         infra_step=True)
   finally:
     api.step.active_result.presentation.logs[
         'resource_usage_metrics'] = api.json.dumps(
-            config, indent=2)
+            rusage, indent=2)
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.

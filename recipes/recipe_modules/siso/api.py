@@ -17,6 +17,41 @@ _GS_BUCKET = 'chrome-build-logs'
 
 _TIME_CMD = '/usr/bin/time'
 
+# Resource usage format for time command.
+# See also the documents of time and getrusage:
+# https://www.man7.org/linux/man-pages/man1/time.1.html#:~:text=U%0A%20%20%20%20%20%20%20%20%20%20%20sys%20%25S-,The%20format%20string,-The%20format%20is
+# https://man7.org/linux/man-pages/man2/getrusage.2.html
+# Note that the following fields are defined by this recipe because they don't exist in rusage struct:
+# - ru_rtime: Elapsed real time (in seconds).
+# - ru_avgrss: Average resident set size of the process, in Kbytes.
+# - ru_itrss: Average total (data+stack+text) memory use of the process, in Kbytes.
+# - page_size: System's page size, in bytes.  This is a per-system constant, but varies between systems.
+RUSAGE_FORMAT = """
+{
+  "ru_utime": %U,
+  "ru_stime": %S,
+  "ru_rtime": %e,
+  "ru_maxrss": %M,
+  "ru_avgrss": %t,
+  "ru_ixrss": %X,
+  "ru_idrss": %D,
+  "ru_isrss": %p,
+  "ru_itrss": %K,
+  "ru_minflt": %R,
+  "ru_majflt": %F,
+  "ru_nswap": %W,
+  "ru_inblock": %I,
+  "ru_oublock": %O,
+  "ru_msgsnd": %s,
+  "ru_msgrcv": %r,
+  "ru_nsignals": %k,
+  "ru_nvcsw": %w,
+  "ru_nivcsw": %c,
+  "page_size": %Z
+}
+"""
+
+
 class SisoApi(recipe_api.RecipeApi):
   """A module for interacting with siso."""
 
@@ -83,7 +118,7 @@ class SisoApi(recipe_api.RecipeApi):
     if resource_usage_output_file:
       cmd.extend([
           _TIME_CMD,
-          '--format={"ru_utime": %U}',
+          f'--format={RUSAGE_FORMAT}',
           '-o',
           resource_usage_output_file,
       ])

@@ -5,6 +5,7 @@
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import siso
 
 DEPS = [
     'depot_tools/gclient',
@@ -182,7 +183,7 @@ def GenTests(api):
           'resource_usage.json'),
       api.siso.properties(),
       api.post_process(post_process.StepCommandContains, 'compile', [
-          '/usr/bin/time', '--format={"ru_utime": %U}', '-o',
+          '/usr/bin/time', f'--format={siso.RUSAGE_FORMAT}', '-o',
           '[CACHE]/resource_usage.json',
           '[CACHE]/builder/src/third_party/siso/siso', 'ninja'
       ]),
