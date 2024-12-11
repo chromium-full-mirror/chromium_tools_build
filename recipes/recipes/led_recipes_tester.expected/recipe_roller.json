@@ -858,7 +858,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "foobar\n",
+      "\n",
       "[CLEANUP]/tmp_tmp_1"
     ],
     "infra_step": true,
@@ -1482,7 +1482,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "foobar\n",
+      "\n",
       "[CLEANUP]/tmp_tmp_2"
     ],
     "infra_step": true,

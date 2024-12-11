@@ -17,6 +17,7 @@ from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
                                              enum, sequence)
 
 DEPS = [
+    'chromium_gerrit_utils',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
@@ -37,10 +38,6 @@ DEPS = [
     'depot_tools/tryserver',
 ]
 
-GITILES_CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
-GERRIT_HOST = 'chromium-review.googlesource.com'
-GERRIT_URL = 'https://' + GERRIT_HOST
-GERRIT_CHROMIUM_SRC_PROJECT = 'chromium/src'
 GERRIT_TOPIC = 'led-recipes-tester'
 
 # If present in a CL description, will override the existing default builders
@@ -410,78 +407,6 @@ def _get_filepath_to_change(affected_files, affected_recipes, builder, recipe,
   return None
 
 
-def _create_cl(api, file_path):
-  """Creates a chromium/src.git CL via Gerrit's REST API.
-
-  Will append whitespace to the end of the file.
-
-  Args:
-    api - The recipe API object.
-    file_path - File path in chromium/src.git to change.
-
-  Returns:
-    Full URL of the Gerrit CL.
-  """
-  old_contents = api.gitiles.download_file(GITILES_CHROMIUM_SRC_URL, file_path)
-  # Add the whitespace to the end of the file, since adding it add the top might
-  # make some copyright header detection checks fail.
-  new_contents = old_contents + '\n'
-  new_contents_by_file_path = {file_path: new_contents}
-  commit_msg_lines = [
-      'Test commit; testing a recipe CL',
-      '',
-      'This CL was uploaded for the purposes of testing a recipe CL on',
-      'Chromium trybots.',
-      '',
-      f'Created for {api.tryserver.gerrit_change_review_url}',
-      f'Created by https://ci.chromium.org/ui/b/{api.buildbucket.build.id}',
-      '',
-      'Bug: None',
-      # 'Commit: false' to prevent someone from accidentally submitting the CL.
-      'Commit: false',
-      '',
-  ]
-  change_info = api.gerrit.update_files(
-      GERRIT_URL,
-      GERRIT_CHROMIUM_SRC_PROJECT,
-      'main',
-      new_contents_by_file_path,
-      '\n'.join(commit_msg_lines),
-      params=['work_in_progress=true', 'notify=NONE', f'topic={GERRIT_TOPIC}'])
-  change_num = int(change_info['_number'])
-  return f'{GERRIT_URL}/c/{GERRIT_CHROMIUM_SRC_PROJECT}/+/{change_num}'
-
-
-def _abandon_cl(api, change_num):
-  """Abandons a chromium/src.git CL via Gerrit's REST API.
-
-  Args:
-    api - The recipe API object.
-    cl - Gerrit URL of the chromium/src.git CL to abandon.
-  """
-  api.gerrit.abandon_change(
-      GERRIT_URL, change_num, name=f'abandon {change_num}')
-
-
-def _abandon_old_cls(api):
-  with api.step.nest('abandon old CLs'):
-    query_params = [
-        ('status', 'open'),
-        ('topic', GERRIT_TOPIC),
-        ('age', '24h'),
-        ('author', api.buildbucket.swarming_task_service_account),
-    ]
-    changes = api.gerrit.get_changes(GERRIT_URL, query_params=query_params)
-    for change in changes:
-      # There might be a race condition with other concurrent builds trying to
-      # clean-up the same old CLs. So just swallow all errors to prevent that
-      # from crashing the build.
-      try:
-        _abandon_cl(api, change['_number'])
-      except api.step.StepFailure:
-        pass
-
-
 def _test_builder(api, builder, led_builder, cl):
   """Try running a builder with the patched recipe.
 
@@ -597,7 +522,11 @@ def RunSteps(api):
 
     cl = cls_by_filepath.get(file_path)
     if not cl:
-      cl = _create_cl(api, file_path)
+      cl = api.chromium_gerrit_utils.create_temp_cl(
+          file_path,
+          GERRIT_TOPIC,
+          [f'Created for {api.tryserver.gerrit_change_review_url}'],
+      )
       cls_by_filepath[file_path] = cl
 
     futures.append(
@@ -607,7 +536,7 @@ def RunSteps(api):
   # While we wait for the led builds to finish, let's clean-up any stale
   # CLs uploaded from prev runs of this builder that we were unable to close
   # in their original builds (due to a build crash, for example).
-  _abandon_old_cls(api)
+  api.chromium_gerrit_utils.abandon_old_cls(GERRIT_TOPIC, '24h')
 
   # Defer the resultant StepFailures from the led jobs until we've had a chance
   # to abandon the Gerrit CLs.
@@ -616,7 +545,7 @@ def RunSteps(api):
       defer(f.result)
     for cl in cls_by_filepath.values():
       change_num = cl.split('/')[-1]
-      _abandon_cl(api, change_num)
+      api.chromium_gerrit_utils.abandon_cl(change_num)
 
 
 def GenTests(api):
@@ -709,58 +638,11 @@ def GenTests(api):
           api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/')))
       check(path in input_files)
 
-  def gitiles_curl(skip_extensive=False, skip_short=False):
-    all_data = api.empty_test_data()
-    if not skip_extensive:
-      all_data += api.step_data(
-          f'fetch main:{FILE_TO_TRIGGER_EXTENSIVE_TESTING}',
-          api.gitiles.make_encoded_file('foobar'))
-    if not skip_short:
-      all_data += api.step_data(f'fetch main:{FILE_TO_TRIGGER_SHORT_TESTING}',
-                                api.gitiles.make_encoded_file('foobar'))
-      all_data += api.step_data(
-          f'fetch main:{FILE_TO_TRIGGER_SHORT_ANDROID_TESTING}',
-          api.gitiles.make_encoded_file('foobar'))
-    return all_data
-
   yield api.test(
       'basic',
       gerrit_change(),
-      gitiles_curl(),
       affected_recipes(RECIPE),
       default_builders(),
-      api.override_step_data(
-          'gerrit create change at (chromium/src main)',
-          api.gerrit.update_files_response_data(change_number=11235813)),
-      api.post_check(post_process.MustRun, 'gerrit abandon 11235813'),
-  )
-
-  yield api.test(
-      'abandon_old_cls_success',
-      gerrit_change(),
-      gitiles_curl(),
-      affected_recipes(RECIPE),
-      default_builders(),
-      api.step_data(
-          'abandon old CLs.gerrit changes',
-          api.gerrit.get_one_change_response_data(change_number=654321)),
-      api.post_check(post_process.MustRun,
-                     'abandon old CLs.gerrit abandon 654321'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'abandon_old_cls_failure',
-      gerrit_change(),
-      gitiles_curl(),
-      affected_recipes(RECIPE),
-      default_builders(),
-      api.step_data(
-          'abandon old CLs.gerrit changes',
-          api.gerrit.get_one_change_response_data(change_number=654321)),
-      # A failure to abandon an old CL shouldn't fail the build.
-      api.step_data('abandon old CLs.gerrit abandon 654321', retcode=1),
-      api.post_process(post_process.DropExpectation),
   )
 
   def builder_config_path(p):
@@ -769,7 +651,6 @@ def GenTests(api):
   yield api.test(
       'per_builder_config_ignored',
       gerrit_change(),
-      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -791,7 +672,6 @@ def GenTests(api):
   yield api.test(
       'recipe_test_ignored',
       gerrit_change(),
-      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -810,7 +690,6 @@ def GenTests(api):
   yield api.test(
       'owners_files_ignored',
       gerrit_change(),
-      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -829,7 +708,6 @@ def GenTests(api):
   yield api.test(
       'src_side_migration_files_ignored',
       gerrit_change(),
-      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -846,7 +724,6 @@ def GenTests(api):
   yield api.test(
       'presubmit_scripts_ignored',
       gerrit_change(),
-      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -879,7 +756,6 @@ def GenTests(api):
   yield api.test(
       'recipe_roller',
       gerrit_change(),
-      gitiles_curl(skip_extensive=True),
       affected_files(
           'random/file.py',
           'infra/config/recipes.cfg',
@@ -890,7 +766,6 @@ def GenTests(api):
   yield api.test(
       'manual_roll_with_changes',
       gerrit_change(),
-      gitiles_curl(skip_extensive=True),
       affected_files(
           'random/file.py',
           'infra/config/recipes.cfg',
@@ -959,7 +834,6 @@ def GenTests(api):
   yield api.test(
       'footer_builder',
       gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
-      gitiles_curl(skip_short=True),
       affected_recipes(RECIPE),
       default_builders(),
       api.post_check(post_process.DoesNotRun,
@@ -970,7 +844,6 @@ def GenTests(api):
   yield api.test(
       'per_builder_config_not_ignored_for_footer_builders',
       gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
-      gitiles_curl(skip_short=True),
       affected_recipes(RECIPE),
       affected_files(
           builder_config_path('builders/chromium.py'),
