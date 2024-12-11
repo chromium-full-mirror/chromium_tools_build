@@ -335,6 +335,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       build_dir: Path,
       compiling_builder_id: chromium.BuilderId,
       compiling_builder_config: ctbc.BuilderConfig,
+      no_siso: bool,
   ) -> str:
     """Check if the args.gn file is acceptable to use for the selected builder
 
@@ -343,6 +344,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         builder_id: The BuilderId for the builder being run
         compiling_builder_id: BuilderId for the compiling builder
         compiling_builder_config: BuilderId for the given builder
+        no_siso: Disables siso if True.
     Returns:
         A string that represents the error or an empty string when there is no
         warning
@@ -370,6 +372,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         mismatch_messages.append(
             f'- `{arg}` in current build dir is not set by the builder')
       elif builder_gn_args[arg] != current_gn_args[arg]:
+        if arg == 'use_siso' and current_gn_args[arg] == 'false' and no_siso:
+          # Don't need to print a warning if siso is expected to not match.
+          continue
         mismatch_messages.append(
             f'- `{arg}` in current build (`{current_gn_args[arg]}`) does not match '
             f'builder value (`{builder_gn_args[arg]}`)')
@@ -464,7 +469,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         not properties.rerun_options.bypass_gn_args):
       error_message = self.check_gn_args(source_dir, build_path,
                                          compiling_builder_id,
-                                         compiling_builder_config)
+                                         compiling_builder_config,
+                                         properties.no_siso)
       if error_message:
         rerun_options = [
             self.create_prompt_option(

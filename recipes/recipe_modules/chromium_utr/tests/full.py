@@ -512,20 +512,24 @@ target_os=['os']
 
   yield api.test(
       'bad_gn_args',
-      boilerplate(bypass_gn_args=False, target_spec=False),
+      boilerplate(bypass_gn_args=False, target_spec=False, no_siso=True),
       api.path.exists(api.path.cache_dir / 'src/out/Release/args.gn'),
       api.step_data(
           'lookup_builder_gn_args',
           stdout=api.raw_io.output_text('import("//builder.args")\n'
+                                        'use_siso = true\n'
                                         'a = "1"\n'
                                         'c = true\n'
                                         'd = true')),
       api.step_data(
           'read GN args',
           api.raw_io.output_text('import("//local.args")\n'
+                                 'use_siso=false\n'
                                  'b="2"\n'
                                  'c=false\n'
                                  'd=true')),
+      # Note that there should be no "use_siso" warning present in the summary
+      # since the user passed in "--no-siso".
       api.post_process(
           post_process.SummaryMarkdown, 'Caution: your build\'s gn args set in '
           '[CACHE]/src/out/Release/args.gn and the builder\'s mismatches in '
