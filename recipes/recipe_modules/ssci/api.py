@@ -192,6 +192,11 @@ class SsciAPI(recipe_api.RecipeApi):
       # flag.
       cipd_tool.resolved_version = f"v{desc.pin.instance_id}"
 
+  def _batch_targets(self, targets, batch_size=15):
+    """Some recipes have many targets, and processing them all at once can cause builders to run out of memory and crash."""
+    for i in range(0, len(targets), batch_size):
+      yield targets[i:i + batch_size]
+
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
                              filename_postfix, chrome_version, third_party_out,
                              to_rename):
@@ -383,16 +388,20 @@ class SsciAPI(recipe_api.RecipeApi):
       ], third_party_out, filename, sbom_folder)
 
       futures = []
-      if depbot_execution_summary.get("targets") is not None:
-        # Handle target specific steps.
-        for target in depbot_execution_summary.get("targets"):
-          futures.append(
-              self.m.futures.spawn(self._target_specific_steps, target, src_dir,
-                                   sbom_bucket, sbom_folder,
-                                   sbom_filename_postfix, chrome_version,
-                                   third_party_out, to_rename))
-        for fut in self.m.futures.iwait(futures):
-          fut.result()
+      targets_from_depbot = depbot_execution_summary.get("targets")
+      if targets_from_depbot is not None:
+        # Be sure to batch targets to prevent overloading the
+        # builder.
+        for batch in self._batch_targets(targets_from_depbot):
+          # Handle target specific steps.
+          for target in batch:
+            futures.append(
+                self.m.futures.spawn(self._target_specific_steps, target,
+                                     src_dir, sbom_bucket, sbom_folder,
+                                     sbom_filename_postfix, chrome_version,
+                                     third_party_out, to_rename))
+          for fut in self.m.futures.iwait(futures):
+            fut.result()
 
       # If an archive summary is present build an SBOM for each of the
       # given artifacts.
