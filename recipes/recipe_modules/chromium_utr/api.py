@@ -117,7 +117,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     # likely expecting them, though. So we need to fetch them ourselves. We
     # use Siso to do so since it's more graceful than cas when a file is
     # already present.
-    if should_build and self.m.siso.without_bytes:
+    if should_build and self.m.siso.enabled and self.m.siso.without_bytes:
       with self.m.step.nest('download compilation outputs'):
         total_tests_fetched = 0
         for test_name in self.m.isolate.isolated_tests:
