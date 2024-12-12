@@ -1114,16 +1114,16 @@ class Failure:
     # fuzzer, we have to ignore the arguments passed to the fuzzer and instead
     # pass the flags the fuzzer used for that particular test. Also variants
     # are not used on the fuzzer, which is the same as using 'default'.
+    extra_args = [f'--framework={self.framework_name or "default"}']
     if self.framework_name == 'num_fuzzer':
-      extra_args = []
       for flag in self.results[0]['variant_flags']:
         extra_args += ['--extra-flags', flag]
       variant = 'default'
     else:  # Standard test runner.
       # TODO(machenbach): The api should hide the details how to get the args.
-      extra_args = (list(test_config.get('test_args', [])) +
-                    list(self.api.v8_tests.c.testing.test_args) +
-                    list(self.test_step_config.test_args))
+      extra_args += list(test_config.get('test_args', []))
+      extra_args += list(self.api.v8_tests.c.testing.test_args)
+      extra_args += list(self.test_step_config.test_args)
       variant = self.failure_dict['variant']
 
     properties = {

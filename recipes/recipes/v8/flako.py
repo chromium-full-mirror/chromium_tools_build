@@ -28,6 +28,7 @@ which has offset 0.
 See PROPERTIES for documentation on the recipe's interface.
 """
 
+import json
 import re
 
 from recipe_engine.config import Single
@@ -76,6 +77,10 @@ PROPERTIES = {
     'num_shards': Property(default=2, kind=Single((int, float))),
     # Optional build directory for backwards-compatibility, e.g. 'out/Release'.
     'outdir': Property(default='out/build', kind=str),
+    # List of tuples (commit position, old flag, new flag regexp).
+    # Can be used to override the recipe-configured list of flags that got
+    # renamed or are new from some commit position onwards.
+    'override_flag_history': Property(default=None, kind=list),
     # Initial number of test repetitions (passed to --random-seed-stress-count
     # option).
     'repetitions': Property(default=5000, kind=Single((int, float))),
@@ -145,15 +150,36 @@ TEST_FAILED_TEMPLATE = """
 === %d tests failed
 """.strip()
 
+# Configuration of the flag history.
+# Tuples of (commit position of change, old flag, new flag regexp).
+# For older revisions prior to commit position, flags that match the new-flag
+# regexp will either be replaced with the old flag or be removed if the old
+# flag is None.
+#
+# Example:
+# [
+#    (100, '--foo', '--bar'),
+#    (110, None, '--baz'),
+#    (120, None, '--bar=-*'),
+# ]
+# For revisions prior to 100, --bar will be replaced with --foo.
+# For revisions prior to 110, --baz will be removed.
+# For revisions prior to 120, flags matching --bar=-*, e.g. --bar=10 will be
+# removed.
+FLAG_HISTORY = [
+    (97513, None, r'--framework=.*'),
+]
+
 
 class Command:
   """Helper class representing a command line to V8's run-tests.py."""
   def __init__(self, outdir, test_name, variant, repetitions, repro_only,
-               total_timeout_sec, timeout=60, extra_args=None):
+               total_timeout_sec, timeout, extra_args, flag_history):
     self.repetitions = repetitions
     self.test_name = test_name
     self.total_timeout_sec = total_timeout_sec
     self.min_failures = 1 if repro_only else MIN_FLAKE_THRESHOLD
+    self.flag_history = flag_history
     self.base_cmd = [
         'tools/run-tests.py',
         '--progress=verbose',
@@ -176,8 +202,39 @@ class Command:
       return self.test_name[:MAX_LABEL_SIZE - 3] + '...'
     return self.test_name
 
-  def raw_cmd(self, multiplier, offset):
+  def rewrite_command(self, cmd, commit_position):
+    """Replace flags in the command line with older versions or drop them
+    entirely if no older version exists.
+
+    This does not rewrite the command at offset 0, for which we do not have a
+    commit position, since that is fetched lazily.
+    """
+    if not commit_position:
+      return cmd
+
+    # Loop over all replacements, but bail out early if we are in a newer
+    # revision.
+    result_command = cmd
+    for historical_position, old_flag, new_flag_re in self.flag_history:
+      if historical_position <= commit_position:
+        continue
+      command_with_replacement = []
+
+      for flag in result_command:
+        if not re.match(new_flag_re, flag):
+          command_with_replacement.append(flag)
+          continue
+
+        if old_flag is None:
+          continue
+
+        command_with_replacement.append(old_flag)
+      result_command = command_with_replacement
+    return result_command
+
+  def raw_cmd(self, multiplier, commit_position):
     cmd = list(self.base_cmd)
+    cmd = self.rewrite_command(cmd, commit_position)
     if self.total_timeout_sec:
       cmd.append('--random-seed-stress-count=1000000')
       cmd.append(f'--total-timeout-sec={self.total_timeout_sec * multiplier}')
@@ -293,6 +350,8 @@ class Depot:
     return commits
 
   def get_commit_position(self, offset):
+    if not self.commit_position_zero:
+      return None
     return self.commit_position_zero - offset
 
   def _guard_large_offset(self, fetch_offset):
@@ -593,6 +652,7 @@ class Runner:
 
     cas_digest = self.builds.get_cas_digest(offset)
     step_prefix = f'check {self.command.label} at #{offset}'
+    commit_position = self.builds.depot.get_commit_position(offset)
 
     def trigger_task(path, shard):
       # TODO(machenbach): Would be nice to just use 'shard X' as step names for
@@ -603,7 +663,7 @@ class Runner:
       task = self.api.chromium_swarming.task(
           name=f'{step_prefix} - shard {shard}',
           task_output_dir=path / f'task_output_dir_{shard}',
-          raw_cmd=self.command.raw_cmd(self.multiplier, offset),
+          raw_cmd=self.command.raw_cmd(self.multiplier, commit_position),
           cas_input_root=cas_digest,
       )
 
@@ -852,8 +912,8 @@ def create_flakes_pyl_entry_step(api, config):
 
 
 def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
-             failure_regexp, max_calibration_attempts, isolated_name,
-             mode, num_shards, outdir, repetitions, revision,
+             failure_regexp, max_calibration_attempts, isolated_name, mode,
+             num_shards, outdir, override_flag_history, repetitions, revision,
              swarming_dimensions, swarming_priority, swarming_expiration,
              test_name, timeout_sec, total_timeout_sec, to_revision, variant):
   # Convert floats to ints.
@@ -866,6 +926,15 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
   swarming_priority = max(min(int(swarming_priority), 255), 10)
   total_timeout_sec = int(total_timeout_sec)
 
+  flag_history = list(FLAG_HISTORY)
+  if override_flag_history:
+    flag_history = [
+        (int(num), old, new) for num, old, new in override_flag_history
+    ]
+
+  # Sort by commit position, newest first.
+  flag_history.sort(reverse=True, key=(lambda entry: entry[0]))
+
   # Set up swarming client.
   setup_swarming(
       api, swarming_dimensions, swarming_priority, swarming_expiration)
@@ -874,12 +943,10 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
   depot = Depot(api, revision or to_revision)
   builds = Builds(
       api, depot, bisect_builder_group, bisect_buildername, isolated_name)
-  command = Command(
-      outdir, test_name, variant, repetitions, repro_only, total_timeout_sec,
-      timeout_sec, extra_args)
-  runner = Runner(
-      api, builds, command, num_shards, repro_only, max_calibration_attempts,
-      failure_regexp)
+  command = Command(outdir, test_name, variant, repetitions, repro_only,
+                    total_timeout_sec, timeout_sec, extra_args, flag_history)
+  runner = Runner(api, builds, command, num_shards, repro_only,
+                  max_calibration_attempts, failure_regexp)
   bisector = BISECTORS[mode](api, depot, builds, runner.check_num_flakes)
 
   known_bad_offset = builds.find_closest_build(0)
@@ -1232,6 +1299,98 @@ def GenTests(api):
       verify_fixed(-1, -2),
       api.post_process(SummaryMarkdown,
                        f'Fixed in [#-1..#-2]({REPO}/+log/a-1..a-2)'),
+      api.post_process(DropExpectation),
+  )
+
+  # TODO(machenbach): Share this with the devtools-frontend recipe.
+  def check_task_arg(check, steps, step, arg, inverse):
+    """Check that `arg` is passed to the command of the swarming task of a
+    step. Or that it's not passed if `inverse` is True.
+    """
+    check(step in steps)
+
+    # A json string, configuring the task, is passed to the swarming command.
+    check('-json-input' in steps[step].cmd)
+    json_arg_index = steps[step].cmd.index('-json-input')
+    check(len(steps[step].cmd) > json_arg_index)
+
+    # The config must be valid json.
+    json_input = json.loads(steps[step].cmd[json_arg_index + 1])
+
+    # Dig down the structure to the wrapped command passed to the swarming
+    # task.
+    check(json_input)
+    requests = json_input.get('requests', [])
+    check(requests)
+    task_slices = requests[0].get('task_slices', [])
+    check(task_slices)
+    check('properties' in task_slices[0])
+    check('command' in task_slices[0]['properties'])
+    command = task_slices[0]['properties']['command']
+    check(command)
+
+    # Check if the argument is part of this command.
+    if inverse:
+      check(arg not in command)
+    else:
+      check(arg in command)
+
+  def check_arg_in_task(check, steps, step, arg):
+    check_task_arg(check, steps, step, arg, inverse=False)
+
+  def check_arg_not_in_task(check, steps, step, arg):
+    check_task_arg(check, steps, step, arg, inverse=True)
+
+  tr_tmpl = ('check mjsunit/foobar at #%d.[trigger] check mjsunit/foobar '
+             'at #%d - shard 1 on Ubuntu-16.04')
+  yield api.test(
+      'bisect_flag_rewrite',
+      # Test that flags are rewritten according to this history.
+      # --foo-flag -> --baz before position 96 (or offset #3)
+      # --baz -> --baam before position 94 (or offset #5)
+      # --bar-flag removed before position 95 (or offset #4)
+      builder_properties(override_flag_history=[[94, '--baam', '--baz'],
+                                                [96, '--baz', '--foo-.*'],
+                                                [95, None, '--bar-.*']]),
+      # Data for resolving offsets to git hashes. Simulate gitiles page size of
+      # 8, fetching all data in the first call.
+      get_revisions(1, 8),
+      # CAS digest data simulation for all revisions.
+      successful_lookups(0, 1, 3, 4, 5, 7),
+      # Calibration.
+      is_flaky(0, 0, 5, calibration_attempt=1),
+      # Bisect backwards from a0 until good revision a7 is found.
+      is_flaky(1, 0, 3),
+      is_flaky(3, 0, 3),
+      # Bisect into a7..a3.
+      is_flaky(4, 0, 2),
+      verify_suspects(5, 4),
+
+      # Check rewrites work for --foo-flag and --baz.
+      api.post_process(check_arg_in_task, tr_tmpl % (1, 1), '--foo-flag'),
+      api.post_process(check_arg_in_task, tr_tmpl % (3, 3), '--foo-flag'),
+      api.post_process(check_arg_in_task, tr_tmpl % (4, 4), '--baz'),
+      api.post_process(check_arg_in_task, tr_tmpl % (5, 5), '--baz'),
+      api.post_process(check_arg_in_task, tr_tmpl % (7, 7), '--baam'),
+
+      # Check the reverse.
+      api.post_process(check_arg_not_in_task, tr_tmpl % (1, 1), '--baz'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (1, 1), '--baam'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (3, 3), '--baz'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (3, 3), '--baam'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (4, 4), '--foo-flag'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (4, 4), '--baam'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--foo-flag'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--baam'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--foo-flag'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--baz'),
+
+      # Check removal works for the --bar-flag
+      api.post_process(check_arg_in_task, tr_tmpl % (1, 1), '--bar-flag'),
+      api.post_process(check_arg_in_task, tr_tmpl % (3, 3), '--bar-flag'),
+      api.post_process(check_arg_in_task, tr_tmpl % (4, 4), '--bar-flag'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--bar-flag'),
+      api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--bar-flag'),
       api.post_process(DropExpectation),
   )
 

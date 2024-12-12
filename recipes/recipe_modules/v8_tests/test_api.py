@@ -207,6 +207,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
     return self.m.json.output({
         'results': [{
             'flags': [],
+            'framework_name': 'standard_runner',
             'result': 'FAIL',
             'expected': ['PASS', 'SLOW'],
             'duration': 5,
