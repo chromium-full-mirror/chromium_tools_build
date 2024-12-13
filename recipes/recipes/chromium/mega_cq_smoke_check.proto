@@ -1,0 +1,20 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium.mega_cq_smoke_check;
+
+// Next ID: 2
+message InputProperties {
+  message BotsFile {
+    // Name of the repo to fetch the bots file from.
+    string repo = 1;
+
+    // Path in the repo to the bots file.
+    string file_path = 2;
+  }
+
+  repeated BotsFile bots_files = 1;
+}

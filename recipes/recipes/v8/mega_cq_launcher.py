@@ -17,7 +17,13 @@ DEPS = [
 
 def RunSteps(api):
   # TODO(https://crbug.com/336441276): Read list of trybots from V8.
-  trybots = ['v8_linux_noi18n_rel']
+  trybots = [
+      (
+          api.buildbucket.build.builder.project,
+          api.buildbucket.build.builder.bucket,
+          'v8_linux_noi18n_rel',
+      ),
+  ]
 
   return api.chromium_mega_cq.trigger_and_collect_bots(trybots)
 

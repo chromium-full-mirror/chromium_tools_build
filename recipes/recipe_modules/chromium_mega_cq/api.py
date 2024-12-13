@@ -4,6 +4,8 @@
 
 import datetime
 
+from typing import Tuple
+
 from recipe_engine import recipe_api
 from recipe_engine.engine_types import ResourceCost
 from PB.recipe_engine.result import RawResult
@@ -14,7 +16,21 @@ from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
 
 class ChromiumMegaCqApi(recipe_api.RecipeApi):
 
-  def read_bots_file(self, repo, file_path):
+  def read_bots_file(self,
+                     repo: str,
+                     file_path: str,
+                     *,
+                     branch: str = None) -> list[Tuple[str, str, str]]:
+    """Curls the given mega_cq bots file from the repo.
+
+    Args:
+      repo: URL of the repo to fetch from.
+      file_path: File path in the repo to the mega_cq bots file.
+      branch: Branch of the repo to fetch from. Will use the CL-under-test's
+        branch by default.
+
+    Return: list of tuples for each trybot in form of (project, bucket, builder)
+    """
     # Just curl the file to avoid needing a checkout. This means additions to
     # the mega CQ can't be tested in the CL that adds them via the mega CQ. We
     # assume this isn't a big deal.
@@ -22,7 +38,7 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
       mega_cq_bots_lines = self.m.gitiles.download_file(
           repo,
           file_path,
-          branch=self.m.tryserver.gerrit_change_target_ref,
+          branch=branch or self.m.tryserver.gerrit_change_target_ref,
           step_name='read mega_cq_bots.txt',
           step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(
               'chromium/try/bot1\nchromium/try/bot2'),
@@ -32,12 +48,7 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
     trybots = []
     for line in mega_cq_bots_lines:
       project, bucket, builder = line.split('/')
-      assert project == self.m.buildbucket.build.builder.project
-      assert self.m.buildbucket.build.builder.bucket in [
-          bucket,
-          bucket + '.shadow',  # For led builds.
-      ]
-      trybots.append(builder)
+      trybots.append((project, bucket, builder))
     return trybots
 
   def sleep_until_off_peak(self):
@@ -78,9 +89,20 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
       self.m.step('no sleep needed', None)
 
   def trigger_and_collect_bots(self, trybots):
+    """Triggers all given trybots.
+
+    Will trigger builds with adjusted priority and timeout.
+
+    Args:
+      trybots: list of tuples for each trybot in form of
+        (project, bucket, builder)
+
+    Returns: Combined RawResult for all tryjobs.
+    """
 
     def _run_bot(b, led_build):
-      with self.m.step.nest('trigger ' + b):
+      project, bucket, builder = b
+      with self.m.step.nest('trigger ' + builder):
         # Increase the default priority + timeout + expiration since we expect
         # mega CQ builds to take longer.
         per_build_expiration_s = 12 * 60 * 60
@@ -93,9 +115,9 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
           for t in self.m.buildbucket.build.tags:
             tags[t.key] = t.value
           req = self.m.buildbucket.schedule_request(
-              b,
-              project=self.m.buildbucket.build.builder.project,
-              bucket=self.m.buildbucket.build.builder.bucket,
+              builder,
+              project=project,
+              bucket=bucket,
               priority=self.m.buildbucket.swarming_priority + 10,
               tags=self.m.buildbucket.tags(**tags),
               properties=self.m.cv.props_for_child_build,
@@ -109,7 +131,6 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
 
         for i in range(1, 4):  # At most 2 retries per builder.
           if led_build:
-            builder = b.split('/')[-1]
             led_result = self.m.chromium_orchestrator.trigger_led_recipe_bundled_build(
                 priority=self.m.buildbucket.swarming_priority + 10,
                 builder=builder,
