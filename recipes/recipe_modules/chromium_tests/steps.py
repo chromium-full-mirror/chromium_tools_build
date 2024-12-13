@@ -2415,13 +2415,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         # tests). See https://crbug.com/1468343.
         llvm_profile_file = llvm_profile_file + 'default-%2m%c.profraw'
       else:
-        # b/381770609 - on mac, temporarily adding %c for testing.
-        os = self.spec.dimensions.get('os', '')
-        if os.lower().startswith('mac'):
-          llvm_profile_file = llvm_profile_file + 'default-%2m%c.profraw'
-        else:
-          llvm_profile_file = llvm_profile_file + 'default-%2m.profraw'
-
+        llvm_profile_file = llvm_profile_file + 'default-%2m.profraw'
       env_vars = {
           'LLVM_PROFILE_FILE': llvm_profile_file,
       }
