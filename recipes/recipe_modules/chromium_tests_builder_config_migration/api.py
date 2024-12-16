@@ -526,6 +526,15 @@ def _migrate_try_spec(
       if not try_spec.retry_without_patch:
         ts_fact.set_raw_arg('retry_without_patch', 'False')
 
+      if (rts_condition := try_spec.regression_test_selection) != ctbc.NEVER:
+        with ts_fact.start_call_arg(
+            'rts_config',
+            'builder_config.rts_config',
+        ) as rc_fact:
+          rc_fact.set_raw_arg(
+              'condition',
+              f'builder_config.rts_condition.{rts_condition.upper()}')
+
 
 class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
 

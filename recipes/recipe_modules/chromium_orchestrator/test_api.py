@@ -82,8 +82,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
             'e3b0c44298fc1c149afbfc8996fb92427ae41e4649b934ca495991b7852b855/0',
         'swarming_rts_command_lines_digest':
             '222222222222222222222222222222222222222222222222222222222222222/0',
-        'swarming_inverted_rts_command_lines_digest':
-            '111111111111111111111111111111111111111111111111111111111111111/0',
         'swarming_command_lines_cwd':
             'out/Release',
         'swarm_hashes':

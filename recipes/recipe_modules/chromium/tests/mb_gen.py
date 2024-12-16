@@ -9,6 +9,7 @@ from RECIPE_MODULES.build import chromium
 
 DEPS = [
     'chromium',
+    'chromium_rts',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -27,6 +28,8 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
+
+  api.chromium_rts.rts_model = api.properties.get('rts_model', None)
 
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
@@ -182,6 +185,14 @@ def GenTests(api):
       api.properties(chromium_apply_config=['mb', 'mb_no_luci_auth']),
       api.post_process(_StepCommandNotContains, 'generate_build_files',
                        '--luci-auth'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'use_rts',
+      api.properties(rts_model='smart-test-selection'),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       ['--rts-model', 'smart-test-selection']),
       api.post_process(post_process.DropExpectation),
   )
 

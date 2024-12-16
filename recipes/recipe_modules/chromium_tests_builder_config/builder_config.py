@@ -9,7 +9,7 @@ import traceback
 
 from .builder_spec import BuilderSpec, COMPILE_AND_TEST, TEST
 from .builder_db import BuilderDatabase
-from .try_spec import TryDatabase, ALWAYS, NEVER, QUICK_RUN_ONLY
+from .try_spec import TryDatabase, ALWAYS, NEVER
 
 from RECIPE_MODULES.build.chromium import BuilderId
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
@@ -181,6 +181,8 @@ class BuilderConfig:
   retry_failed_shards = attrib(bool, default=True)
   # Whether or not failed test suites should be retried without patch
   retry_without_patch = attrib(bool, default=True)
+  # Conditions where skipping a subset of tests is allowed
+  regression_test_selection = attrib(enum([ALWAYS, NEVER]), default=NEVER)
 
   @classmethod
   def create(cls,

@@ -9,6 +9,7 @@ DEPS = [
     'chromium',
     'chromium_bootstrap',
     'chromium_checkout',
+    'chromium_rts',
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',

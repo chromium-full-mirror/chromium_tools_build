@@ -98,6 +98,28 @@ _TEST_TRYBOTS = ctbc.TryDatabase.create({
                     ),
                 ],
             ),
+        'rts-rel':
+            ctbc.TrySpec.create(
+                mirrors=[
+                    ctbc.TryMirror.create(
+                        builder_group='chromium.test',
+                        buildername='chromium-rel',
+                        tester='chromium-rel',
+                    ),
+                ],
+                regression_test_selection=try_spec.ALWAYS,
+            ),
+        'rts-exp-rel':
+            ctbc.TrySpec.create(
+                mirrors=[
+                    ctbc.TryMirror.create(
+                        builder_group='chromium.test',
+                        buildername='chromium-rel',
+                        tester='chromium-rel',
+                    ),
+                ],
+                regression_test_selection=try_spec.ALWAYS,
+            ),
     }
 })
 
@@ -977,6 +999,251 @@ def GenTests(api):
                        'gclient runhooks (with patch)'),
       api.post_process(post_process.StepSuccess, 'compile (with patch)'),
       api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts enabled on dry run experiment',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium_rts.dry_run_rts'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'rts options'),
+      api.post_process(post_process.StepTextContains, 'rts options',
+                       ['RTS was enabled in a dry run']),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_model',
+                       'smart-test-selection'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts on dry run experiment',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium_rts.dry_run_rts'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'rts options'),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_model',
+                       'smart-test-selection'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'full run rts',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test':
+                          'base_unittests',
+                      'swarming': {},
+                      'args': [
+                          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter',
+                      ],
+                  }],
+              },
+          }),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '--test-launcher-filter-file=base_unittests.filter'
+              ]
+          })),
+      api.step_data(api.json.output(
+        [
+          {
+            "approvals": {
+                "Auto-Submit": " 0",
+                "Commit-Queue": " 0"
+            },
+            "_account_id": 1111,
+            "name": "Author Person",
+            "email": "someone@chromium.org"
+         },
+          {
+            "approvals": {
+                "Code-Review": " 0",
+                "Commit-Queue": " 0"
+            },
+            "_account_id": 222,
+            "name": "Reviewer Person",
+            "email": "someoneelse@chromium.org"
+         }
+        ])),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
+          lambda check, req: check(
+              '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter;base_unittests.filter'
+              in req[0].command)),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
+          lambda check, req: check(
+              '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter'
+              not in req[0].command)),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
+          lambda check, req: check(
+              '--test-launcher-filter-file=base_unittests.filter' \
+                not in req[0].command)),
+      api.post_process(post_process.MustRun, 'rts options'),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_model',
+                       'smart-test-selection'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'full run enabled but not used',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.post_process(post_process.DoesNotRun, 'RTS was used'),
+      api.post_process(post_process.MustRun, 'rts options'),
+      api.post_process(post_process.PropertyEquals, 'rts_model',
+                       'smart-test-selection'),
+      api.post_process(post_process.PropertiesDoNotContain, 'rts_was_used'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'full run rts disabled by footer',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests.read_targets_spec('chromium.test', {
+          'chromium-rel': {
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
+          },
+      }),
+      api.step_data('parse description',
+                    api.json.output({'Disable-Rts': ['true']})),
+      api.post_process(post_process.DoesNotRun, 'rts options'),
       api.post_process(post_process.DropExpectation),
   )
 

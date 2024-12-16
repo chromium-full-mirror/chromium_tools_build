@@ -49,6 +49,7 @@ TRY_DB = ctbc.TryDatabase.create({
                 analyze_names=('foo', 'bar'),
                 retry_failed_shards=False,
                 retry_without_patch=False,
+                regression_test_selection=ctbc.ALWAYS,
             ),
     },
     # Some of the internal try builders have the same builder group and name as
@@ -95,6 +96,7 @@ def GenTests(api):
               analyze_names=(),
               retry_failed_shards=False,
               retry_without_patch=True,
+              regression_test_selection=ctbc.NEVER,
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -115,6 +117,7 @@ def GenTests(api):
               analyze_names=(),
               retry_failed_shards=False,
               retry_without_patch=True,
+              regression_test_selection=ctbc.NEVER,
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -158,6 +161,7 @@ def GenTests(api):
               analyze_names=('foo', 'bar'),
               retry_failed_shards=False,
               retry_without_patch=False,
+              regression_test_selection=ctbc.ALWAYS,
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -246,6 +250,9 @@ def GenTests(api):
                   additional_exclusions=[
                       'fake-group/fake-builder/gn-args.json',
                   ],
+                  rts_config=properties_pb.BuilderConfig.RtsConfig(
+                      condition=properties_pb.BuilderConfig.RtsConfig.Condition
+                      .ALWAYS),
               ))),
       api.properties(
           expected_attrs=dict(
@@ -294,6 +301,7 @@ def GenTests(api):
               analyze_names=(),
               retry_failed_shards=False,
               retry_without_patch=True,
+              regression_test_selection=ctbc.ALWAYS,
               additional_exclusions=tuple([
                   'fake-group/fake-builder/gn-args.json',
               ]),

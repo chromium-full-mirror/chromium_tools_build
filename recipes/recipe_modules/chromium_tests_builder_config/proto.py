@@ -40,8 +40,7 @@ from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
                                                                   )
 
 from . import (BuildbucketBuilderId, BuilderConfig, BuilderDatabase,
-               BuilderSpec, COMPILE_AND_TEST, TEST, NEVER, QUICK_RUN_ONLY,
-               ALWAYS)
+               BuilderSpec, COMPILE_AND_TEST, TEST, NEVER, ALWAYS)
 
 VALIDATORS = proto_validation.Registry()
 
@@ -227,6 +226,12 @@ def _validate_builder_config(obj, ctx):
       obj, 'mirroring_builder_group_and_names', optional=True)
 
 
+_RTS_CONDITION_MAP = {
+    properties_pb.BuilderConfig.RtsConfig.Condition.NEVER: NEVER,
+    properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS: ALWAYS,
+}
+
+
 def convert_builder_config(obj, default_retry_failed_shards=True):
   # The builder ID in the protos is (project, bucket, builder), whereas the
   # one in the recipes is (group, builder), so we need to map between them
@@ -237,6 +242,12 @@ def convert_builder_config(obj, default_retry_failed_shards=True):
                                  entry.builder_id.builder)
       for entry in obj.builder_db.entries
   }
+
+  rts_condition = obj.rts_config and obj.rts_config.condition
+  # coerce an unspecified condition to None
+  rts_condition = rts_condition or None
+  regression_test_selection = (
+      _RTS_CONDITION_MAP[rts_condition] if rts_condition is not None else None)
 
   return BuilderConfig.create(
       builder_db=_convert_builder_database(
@@ -267,6 +278,7 @@ def convert_builder_config(obj, default_retry_failed_shards=True):
                            default_retry_failed_shards),
       retry_without_patch=(obj.retry_without_patch
                            if obj.HasField('retry_without_patch') else True),
+      regression_test_selection=regression_test_selection,
   )
 
 

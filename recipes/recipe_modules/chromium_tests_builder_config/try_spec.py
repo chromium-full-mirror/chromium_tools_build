@@ -13,7 +13,6 @@ COMPILE = 'compile'
 
 ALWAYS = 'always'
 NEVER = 'never'
-QUICK_RUN_ONLY = 'quick_run_only'
 
 
 @attrs()
@@ -93,6 +92,8 @@ class TrySpec:
   retry_failed_shards = attrib(bool, default=True)
   # Whether or not failed test suites should be retried without patch
   retry_without_patch = attrib(bool, default=True)
+  # Conditions where skipping a subset of tests is allowed
+  regression_test_selection = attrib(enum([ALWAYS, NEVER]), default=NEVER)
 
   @classmethod
   def create(cls, mirrors, **kwargs):

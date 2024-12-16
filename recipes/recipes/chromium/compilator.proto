@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.compilator;
 
-// Next ID: 9
+// Next ID: 10
 message InputProperties {
   message Orchestrator {
     string builder_name = 1;
@@ -46,7 +46,10 @@ message InputProperties {
   // orchestrators and compilators
   string root_solution_revision = 4;
 
-  // Sets the rts setting to be used
+  reserved "rts_setting";
+  reserved 5;
+
+  // Sets the rts model to be used
   // This will control which RTS model to be used for test selection, if any
-  string rts_setting = 5;
+  string rts_model = 9;
 }

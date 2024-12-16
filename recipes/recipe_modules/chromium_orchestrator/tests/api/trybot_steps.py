@@ -7,11 +7,14 @@ from PB.recipe_modules.build.chromium_orchestrator.properties import (
     InputProperties)
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.chromium_orchestrator.api import (
     COMPILATOR_SWARMING_TASK_COLLECT_STEP)
 from RECIPE_MODULES.build.chromium_orchestrator.api import (
     BUILD_CANCELED_SUMMARY)
+from RECIPE_MODULES.build.chromium_orchestrator.api import (RTS_SUMMARY)
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import common as resultdb_common
@@ -124,6 +127,9 @@ def GenTests(api):
           'read test spec (fake-group.json)',
           ['[CLEANUP]/src/testing/buildbot/fake-group.json'],
       ),
+      api.post_process(post_process.LogDoesNotContain,
+                       'trigger compilator (with patch)', 'request',
+                       ['rts_model']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -598,6 +604,304 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('CANCELED'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  fake_rts_command_lines = {
+      'browser_tests': [
+          './%s' % 'browser_tests', '--fake-without-patch-flag',
+          '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+          '-filter=browser_tests.filter'
+      ]
+  }
+  yield api.test(
+      'rts_full_run',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              }
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.TrySpec.create(
+                          mirrors=[
+                              ctbc.TryMirror.create(
+                                  builder_group='fake-group',
+                                  buildername='fake-tester',
+                                  tester='fake-tester',
+                              ),
+                          ],
+                          regression_test_selection=try_spec.ALWAYS,
+                      ),
+              }
+          }),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.cv(run_mode='FULL_RUN', top_level=True),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+          tests=['browser_tests', 'content_unittests']),
+      api.chromium_orchestrator.override_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.step_data('read command lines (2)',
+                    api.file.read_json(fake_rts_command_lines)),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.MustRun, 'rts options'),
+      api.post_process(
+          post_process.LogContains,
+          'trigger compilator (with patch)',
+          'request',
+          ['$recipe_engine/cq', 'FULL_RUN'],
+      ),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.LogContains,
+                       'trigger compilator (with patch)', 'request',
+                       ['"rts_model": "smart-test-selection"']),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
+      'rts_full_run_not_used',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              }
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.TrySpec.create(
+                          mirrors=[
+                              ctbc.TryMirror.create(
+                                  builder_group='fake-group',
+                                  buildername='fake-tester',
+                                  tester='fake-tester',
+                              ),
+                          ],
+                          regression_test_selection=try_spec.ALWAYS,
+                      ),
+              }
+          }),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.cq(run_mode='FULL_RUN', top_level=True),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+          tests=['browser_tests', 'content_unittests']),
+      api.chromium_orchestrator.override_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.post_process(post_process.DoesNotRun, 'RTS was used'),
+      api.post_process(post_process.MustRun, 'rts options'),
+      api.post_process(
+          post_process.LogContains,
+          'trigger compilator (with patch)',
+          'request',
+          ['$recipe_engine/cq', 'FULL_RUN'],
+      ),
+      api.post_process(post_process.PropertiesDoNotContain, 'rts_was_used'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
+      'rts_with_unrecoverable_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              }
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.TrySpec.create(
+                          mirrors=[
+                              ctbc.TryMirror.create(
+                                  builder_group='fake-group',
+                                  buildername='fake-tester',
+                                  tester='fake-tester',
+                              ),
+                          ],
+                          regression_test_selection=try_spec.ALWAYS,
+                      ),
+              }
+          }),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.cv(run_mode='FULL_RUN', top_level=True),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+          tests=['browser_tests', 'content_unittests']),
+      api.chromium_orchestrator.override_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False,
+          sub_build_summary=("1 Test Suite(s) failed.\n\n"
+                             "**headless_python_unittests** failed."),
+          sub_build_status=common_pb.FAILURE,
+      ),
+      api.chromium_orchestrator.override_compilator_steps(with_patch=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'content_unittests', 'with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'retry shards with patch', failures=['Test.One']),
+      api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
+      api.post_process(post_process.DoesNotRun,
+                       'content_unittests (without patch)'),
+      api.post_process(post_process.SummaryMarkdownRE, RTS_SUMMARY),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_with_invalid_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              }
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.TrySpec.create(
+                          mirrors=[
+                              ctbc.TryMirror.create(
+                                  builder_group='fake-group',
+                                  buildername='fake-tester',
+                                  tester='fake-tester',
+                              ),
+                          ],
+                          regression_test_selection=try_spec.ALWAYS,
+                      ),
+              }
+          }),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.cv(run_mode='FULL_RUN', top_level=True),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.override_step_data(
+          'browser_tests (with patch)',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results('invalid', retcode=1),
+              failure=True)),
+      api.override_step_data(
+          'browser_tests (retry shards with patch)',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results('invalid', retcode=1),
+              failure=True)),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False),
+      api.post_process(post_process.SummaryMarkdownRE, RTS_SUMMARY),
+      api.post_process(post_process.MustRun,
+                       'browser_tests (retry shards with patch)'),
+      api.post_process(post_process.DoesNotRun,
+                       'browser_tests (without patch)'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

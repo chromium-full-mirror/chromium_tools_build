@@ -10,6 +10,7 @@ from PB.recipes.build.chromium.compilator import InputProperties
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
 from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES
@@ -23,6 +24,7 @@ from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 DEPS = [
     'chromium',
     'chromium_checkout',
+    'chromium_rts',
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
@@ -73,6 +75,10 @@ def compilator_steps(api, properties):
             builder_id=orch_builder_id))
 
     api.chromium_tests.report_builders(orch_builder_config)
+
+    # This should eventually be replaced with a property that controls compile
+    # with RTS independent of compilator
+    api.chromium_rts.rts_model = properties.rts_model
 
     # test_targets implies that this compilator build must be compiled
     # without a patch so that the orchestrator can retry these tests
@@ -345,6 +351,32 @@ def RunSteps(api, properties):
 
 
 def GenTests(api):
+  _TEST_BUILDERS = ctbc.BuilderDatabase.create({
+      'chromium.test': {
+          'chromium-rel':
+              ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+              ),
+      },
+  })
+
+  _TEST_TRYBOTS = ctbc.TryDatabase.create({
+      'tryserver.chromium.test': {
+          'rts-rel':
+              ctbc.TrySpec.create(
+                  mirrors=[
+                      ctbc.TryMirror.create(
+                          builder_group='chromium.test',
+                          buildername='chromium-rel',
+                          tester='chromium-rel',
+                      ),
+                  ],
+                  regression_test_selection=try_spec.ALWAYS,
+              ),
+      }
+  })
+
   def override_test_spec():
     return api.chromium_tests.read_targets_spec(
         'fake-group', {
@@ -869,6 +901,85 @@ def GenTests(api):
           post_process.PropertyEquals,
           'src_side_test_spec_dir',
           'testing/buildbot',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'full run rts',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.chromium_tests_builder_config.databases(_TEST_BUILDERS,
+                                                  _TEST_TRYBOTS),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_group='tryserver.chromium.test',
+                  builder_name='rts-rel'),
+              rts_model='smart-test-selection')),
+      api.chromium_tests.read_targets_spec('chromium.test', {
+          'chromium-rel': {
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
+          },
+      }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'generate_build_files (with patch)',
+          ['smart-test-selection'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'full run rts without_patch',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.chromium_tests_builder_config.databases(_TEST_BUILDERS,
+                                                  _TEST_TRYBOTS),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_group='tryserver.chromium.test',
+                  builder_name='rts-rel'),
+              test_targets=['base_unittests']),
+          rts_model='smart-test-selection'),
+      api.chromium_tests.read_targets_spec('chromium.test', {
+          'chromium-rel': {
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
+          },
+      }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'generate_build_files (without patch)',
+          ['smart-test-selection'],
       ),
       api.post_process(post_process.DropExpectation),
   )

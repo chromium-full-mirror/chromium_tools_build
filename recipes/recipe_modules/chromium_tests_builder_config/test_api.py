@@ -16,7 +16,7 @@ from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
                                                                   )
 
 from . import (builders, trybots, BuilderConfig, BuilderDatabase, BuilderSpec,
-               TryDatabase, ALWAYS, QUICK_RUN_ONLY, NEVER)
+               TryDatabase, ALWAYS, NEVER)
 
 _DEFAULT_SPEC = BuilderSpec.create(
     gclient_config='chromium',
@@ -322,6 +322,12 @@ class _CiTesterPropertiesAssembler:
         retry_failed_shards=self._retry_failed_shards,)
 
 
+_RTS_CONDITION_MAP = {
+    NEVER: properties_pb.BuilderConfig.RtsConfig.Condition.NEVER,
+    ALWAYS: properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS,
+}
+
+
 class _TryBuilderPropertiesAssembler:
 
   def __init__(self, props_assembler, builder_config_kwargs):
@@ -332,14 +338,13 @@ class _TryBuilderPropertiesAssembler:
     self._builder_config_kwargs = builder_config_kwargs
 
   @classmethod
-  def create(
-      cls,
-      is_compile_only=False,
-      analyze_names=None,
-      additional_exclusions=None,
-      retry_failed_shards=True,
-      retry_without_patch=True,
-  ):
+  def create(cls,
+             is_compile_only=False,
+             analyze_names=None,
+             additional_exclusions=None,
+             retry_failed_shards=True,
+             retry_without_patch=True,
+             regression_test_selection=None):
     props_assembler = _PropertiesAssembler()
 
     builder_config_kwargs = {}
@@ -353,6 +358,10 @@ class _TryBuilderPropertiesAssembler:
       builder_config_kwargs['retry_failed_shards'] = False
     if not retry_without_patch:
       builder_config_kwargs['retry_without_patch'] = False
+    if regression_test_selection:
+      rts_config = properties_pb.BuilderConfig.RtsConfig(
+          condition=_RTS_CONDITION_MAP[regression_test_selection])
+      builder_config_kwargs['rts_config'] = rts_config
 
     return cls(props_assembler, builder_config_kwargs)
 
