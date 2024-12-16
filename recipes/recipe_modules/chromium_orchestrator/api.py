@@ -481,7 +481,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
                                        priority,
                                        builder,
                                        experiments=None,
-                                       properties=None):
+                                       properties=None,
+                                       gerrit_change=None):
     """Launches the provided builder from the same project using led
 
     Args:
@@ -490,6 +491,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       experiments: A dictionary of experiments and their values
       properties: A dictionary of properties and their values to apply to the
         build
+      gerrit_change: A buildbucket.common.GerritChange of the CL to test. Will
+        use the current CL-under-test if not specified.
     Returns:
       The LedResult from launching the build
     """
@@ -504,7 +507,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     get_cmd.append(builder_name)
     led_result = self.m.led(*get_cmd)
 
-    gerrit_change = self.m.tryserver.gerrit_change
+    if not gerrit_change:
+      gerrit_change = self.m.tryserver.gerrit_change
     gerrit_cl_url = (
         'https://{gerrit_host}/c/{project}/+/{change}/{patchset}'.format(
             gerrit_host=gerrit_change.host,

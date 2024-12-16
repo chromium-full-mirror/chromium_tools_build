@@ -522,7 +522,7 @@ def RunSteps(api):
 
     cl = cls_by_filepath.get(file_path)
     if not cl:
-      cl = api.chromium_gerrit_utils.create_temp_cl(
+      _, cl = api.chromium_gerrit_utils.create_temp_cl(
           file_path,
           GERRIT_TOPIC,
           [f'Created for {api.tryserver.gerrit_change_review_url}'],

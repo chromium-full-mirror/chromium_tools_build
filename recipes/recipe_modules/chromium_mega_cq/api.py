@@ -4,8 +4,6 @@
 
 import datetime
 
-from typing import Tuple
-
 from recipe_engine import recipe_api
 from recipe_engine.engine_types import ResourceCost
 from PB.recipe_engine.result import RawResult
@@ -20,7 +18,7 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
                      repo: str,
                      file_path: str,
                      *,
-                     branch: str = None) -> list[Tuple[str, str, str]]:
+                     branch: str = None) -> list[tuple[str, str, str]]:
     """Curls the given mega_cq bots file from the repo.
 
     Args:
@@ -88,7 +86,13 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
     else:
       self.m.step('no sleep needed', None)
 
-  def trigger_and_collect_bots(self, trybots):
+  def trigger_and_collect_bots(
+      self,
+      trybots: list[tuple[str, str, str]],
+      *,
+      retries: int = 2,
+      gerrit_change: common_pb.GerritChange = None,
+  ) -> tuple[RawResult, list[str]]:
     """Triggers all given trybots.
 
     Will trigger builds with adjusted priority and timeout.
@@ -96,8 +100,12 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
     Args:
       trybots: list of tuples for each trybot in form of
         (project, bucket, builder)
+      retries: Number of times to retry any failed tryjobs. Defaults to 2.
+      gerrit_change: buildbucket.common.GerritChange of the CL to test. Defaults
+        to current CL-under-test if not specified.
 
-    Returns: Combined RawResult for all tryjobs.
+    Returns tuple of (combined RawResult for all tryjobs, list of trybots that
+      failed)
     """
 
     def _run_bot(b, led_build):
@@ -113,27 +121,36 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
           # CV recipe module reads both tags and props, so need to propagate both
           # from parent build to children.
           for t in self.m.buildbucket.build.tags:
-            tags[t.key] = t.value
+            if t.key.startswith(('cq', 'cv')):
+              tags[t.key] = t.value
+          buildbucket_schedule_kwargs = {}
+          if gerrit_change:
+            # The buildbucket module uses a special default val for
+            # gerrit_changes, so only pass it down if it's not None for us.
+            buildbucket_schedule_kwargs['gerrit_changes'] = [gerrit_change]
           req = self.m.buildbucket.schedule_request(
               builder,
               project=project,
               bucket=bucket,
               priority=self.m.buildbucket.swarming_priority + 10,
               tags=self.m.buildbucket.tags(**tags),
+              inherit_buildsets=False,
               properties=self.m.cv.props_for_child_build,
               as_shadow_if_parent_is_led=True,
               # This ensures the triggered builds will get canceled if this
               # build ends
-              swarming_parent_run_id=self.m.swarming.task_id)
+              swarming_parent_run_id=self.m.swarming.task_id,
+              **buildbucket_schedule_kwargs)
           req.scheduling_timeout.FromSeconds(per_build_expiration_s)
           req.execution_timeout.FromSeconds(per_build_timeout_s)
           return req
 
-        for i in range(1, 4):  # At most 2 retries per builder.
+        for i in range(1, 2 + retries):
           if led_build:
             led_result = self.m.chromium_orchestrator.trigger_led_recipe_bundled_build(
                 priority=self.m.buildbucket.swarming_priority + 10,
                 builder=builder,
+                gerrit_change=gerrit_change,
             )
             build_id = led_result.launch_result.build_id
 
@@ -143,7 +160,7 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
             req = _make_req()
             build = self.m.buildbucket.schedule(
                 [req],
-                step_name='trigger (attempt %d)' % i,
+                step_name=f'trigger (attempt {i})',
                 # Merging all sub-builds' test results into a single invocation is
                 # too much for RDB. So don't bother. Gerrit should still show all
                 # results in the checks tab.
@@ -162,22 +179,22 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
             return result
         return result
 
-    workers = []
+    workers = {}
     for b in trybots:
-      workers.append(
-          self.m.futures.spawn_immediate(_run_bot, b, self.m.led.led_build))
-    self.m.futures.wait(workers)
-    final_build_results = []
-    for w in workers:
-      final_build_results.append(w.result())
+      workers[b] = self.m.futures.spawn_immediate(_run_bot, b,
+                                                  self.m.led.led_build)
+    self.m.futures.wait(workers.values())
 
     total_success = 0
     total_failure = 0
-    for result in final_build_results:
+    failed_trybots = []
+    for trybot, worker in workers.items():
+      result = worker.result()
       if result.status == common_pb.SUCCESS:
         total_success += 1
       else:
         total_failure += 1
+        failed_trybots.append(trybot)
         step_result = self.m.step(result.builder.builder + ' failed', cmd=None)
         step_result.presentation.links[str(result.id)] = (
             self.m.buildbucket.build_url(build_id=result.id))
@@ -192,4 +209,5 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
       overall_status = common_pb.FAILURE
       # We retry each builder so many times, no need to have the CQ retry us.
       self.m.cv.set_do_not_retry_build()
-    return RawResult(status=overall_status, summary_markdown=summary_md)
+    return (RawResult(status=overall_status,
+                      summary_markdown=summary_md), failed_trybots)

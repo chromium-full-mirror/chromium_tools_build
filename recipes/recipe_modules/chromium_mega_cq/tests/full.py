@@ -13,6 +13,7 @@ DEPS = [
     'chromium_orchestrator',
     'chromium_mega_cq',
     'depot_tools/gitiles',
+    'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/json',
     'recipe_engine/properties',
@@ -28,10 +29,25 @@ def RunSteps(api):
 
   api.chromium_mega_cq.sleep_until_off_peak()
 
-  return api.chromium_mega_cq.trigger_and_collect_bots(trybots)
+  gerrit_change = None
+  if api.tryserver.is_tryserver:
+    gerrit_change = api.tryserver.gerrit_change
+  result, _ = api.chromium_mega_cq.trigger_and_collect_bots(
+      trybots, gerrit_change=gerrit_change)
+  return result
 
 
 def GenTests(api):
+  yield api.test(
+      'ci_bot',
+      api.chromium.ci_build(),
+      api.step_data(
+          'get time',
+          stdout=api.raw_io.output_text('2023-10-23 23:00:00.000000-07:00'),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'sleep',
       api.chromium.try_build(),
@@ -136,10 +152,8 @@ def GenTests(api):
       api.properties(
           **{
               '$recipe_engine/led': {
-                  'shadowed_bucket':
-                      'bucket',
-                  'led_run_id':
-                      'chromium/led/kimstephanie_google.com/88a27cab21a8ad2',
+                  'shadowed_bucket': 'bucket',
+                  'led_run_id': 'chromium/led/user_google.com/88a27cab21a8ad2',
                   'rbe_cas_input': {
                       'cas_instance':
                           'projects/chromium-swarm/instances/default_instance',

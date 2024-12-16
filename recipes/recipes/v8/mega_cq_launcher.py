@@ -25,7 +25,8 @@ def RunSteps(api):
       ),
   ]
 
-  return api.chromium_mega_cq.trigger_and_collect_bots(trybots)
+  result, _ = api.chromium_mega_cq.trigger_and_collect_bots(trybots)
+  return result
 
 
 def GenTests(api):

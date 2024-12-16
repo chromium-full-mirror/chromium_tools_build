@@ -6,6 +6,8 @@ from collections.abc import Iterable
 
 from recipe_engine import recipe_api
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+
 
 class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
 
@@ -14,10 +16,12 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
   GERRIT_HOST = 'chromium-review.googlesource.com'
   GERRIT_URL = 'https://' + GERRIT_HOST
 
-  def create_temp_cl(self,
-                     file_path: str,
-                     topic: str,
-                     extra_commit_msg_lines: Iterable[str] | None = None):
+  def create_temp_cl(
+      self,
+      file_path: str,
+      topic: str,
+      extra_commit_msg_lines: Iterable[str] | None = None,
+  ) -> tuple[common_pb.GerritChange, str]:
     """Creates a throw-away CL in chromium/src.git via Gerrit's REST API.
 
     The CL is intended to be used for interacting with tryjobs, and not for
@@ -29,8 +33,8 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
       topic - Name of the gerrit topic to attach to the CL.
       extra_commit_msg_lines - List of lines to add to the commit message.
 
-    Returns:
-      Full URL of the Gerrit CL.
+    Returns tuple of (buildbucket.common.GerritChange of the CL, full URL of
+      the CL)
     """
     extra_commit_msg_lines = extra_commit_msg_lines or []
     old_contents = self.m.gitiles.download_file(
@@ -65,7 +69,17 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
         '\n'.join(commit_msg_lines),
         params=['work_in_progress=true', 'notify=NONE', f'topic={topic}'])
     change_num = int(change_info['_number'])
-    return f'{self.GERRIT_URL}/c/{self.GERRIT_CHROMIUM_SRC_PROJECT}/+/{change_num}'
+    gerrit_change = common_pb.GerritChange(
+        host=self.GERRIT_HOST,
+        project=change_info['project'],
+        change=change_num,
+        # We hardcode '2' here since the current_revision_number field returned
+        # by Gerrit can sometimes not be the latest patchset.
+        patchset=2)
+    return (
+        gerrit_change,
+        f'{self.GERRIT_URL}/c/{self.GERRIT_CHROMIUM_SRC_PROJECT}/+/{change_num}'
+    )
 
   def abandon_cl(self, change_num: str):
     """Abandons a chromium/src.git CL via Gerrit's REST API.
