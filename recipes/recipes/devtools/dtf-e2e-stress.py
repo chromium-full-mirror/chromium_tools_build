@@ -67,13 +67,31 @@ def RunSteps(api, clobber, runner_args):
 
     divider = E2ETestDivider(api, source_dir, builder_config)
     trigger = SwarmingTrigger(api, cas_digest)
-    e2e_stressor = E2ETests(api, source_dir, trigger, builder_config,
-                            'E2E Tests', divider)
-    e2e_stressor.extra_args.extend(split(runner_args) if runner_args else [])
+    e2e_stressor = E2EStressTests(api, source_dir, trigger, builder_config,
+                                  'E2E Tests', divider, runner_args)
 
     results = FirstRunPhase(api).run_all([e2e_stressor])
 
     return results.raw_result()
+
+
+class E2EStressTests(E2ETests):
+
+  def __init__(self, api, source_dir, trigger, builder_config, step_name,
+               divider, runner_args):
+    super().__init__(api, source_dir, trigger, builder_config, step_name,
+                     divider)
+    self.test_list = []
+    self.extra_args = []
+    for arg in split(runner_args or ""):
+      is_option = arg.startswith('-')
+      (self.extra_args if is_option else self.test_list).append(arg)
+    self.runner_args = runner_args
+
+  def commands(self):
+    tests = self.test_list or ['test/e2e']
+    return [self.run_tests_command(*tests)]
+
 
 def GenTests(api):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
@@ -100,9 +118,18 @@ def GenTests(api):
   )
 
   yield api.test(
-      'e2e stress test',
+      'e2e stress test default',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='e2e_stressor_linux'),
+      api.post_process(post_process.Filter().include_re(r'Run tests.*')),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'e2e stress test with args',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='e2e_stressor_linux'),
+      api.properties(runner_args='test123 --repeat=2'),
       api.post_process(post_process.Filter().include_re(r'Run tests.*')),
       status='SUCCESS',
   )
