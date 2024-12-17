@@ -56,9 +56,13 @@ def RunSteps(api):
     with api.context(
         env_prefixes={'PATH': [source_dir.joinpath('tools', 'golang', 'bin')]}):
       api.step('Roll WebGPU CTS', [
-          source_dir.joinpath('tools', 'run'), 'cts', 'roll', '-verbose',
-          '-parent-swarming-run-id', api.swarming.task_id, '-send-to-gardener',
-          '-use-simplified-codepath'
+          source_dir.joinpath('tools', 'run'),
+          'cts',
+          'roll',
+          '-verbose',
+          '-parent-swarming-run-id',
+          api.swarming.task_id,
+          '-send-to-gardener',
       ])
 
 
