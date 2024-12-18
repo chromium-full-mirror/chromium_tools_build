@@ -28,10 +28,10 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/gclient',
+    'depot_tools/git',
     'depot_tools/gsutil',
     'gn',
     'isolate',
-    'depot_tools/git',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
     'recipe_engine/cipd',
@@ -52,6 +52,7 @@ WEB_TEST_EXTRA_ARGS = [
     '--wrapper=../../rr_tool/bin/rr record --output-trace-dir=../../trace_dir'
 ]
 RUNNER_PACKAGE_PATH = 'rr_tool_runner'
+PERNOSCO_REPO_PATH = 'pernosco'
 UPLOAD_BUCKET = 'chromium-rr-traces'
 TRACE_FILE = 'trace.tar'
 
@@ -116,6 +117,13 @@ def _bot_update(api, builder_config):
   update_results, _, targets_config = api.chromium_tests.prepare_checkout(
       builder_config, report_cache_state=False)
 
+  # Checkout the pernosco repo for the test runner.
+  api.git.checkout(
+      url='https://chromium.googlesource.com/'
+      'external/github.com/Pernosco/on-prem',
+      dir_path=update_results.source_root.path / PERNOSCO_REPO_PATH,
+      ref='refs/heads/upstream/main',
+  )
   return update_results.source_root.path, targets_config
 
 
@@ -162,8 +170,9 @@ def _isolate(api, tests, source_dir, build_dir, builder_config):
   isolate_targets = [t.isolate_target for t in tests]
   for isolate_target in isolate_targets:
     file_path = build_dir.joinpath('%s.isolate' % isolate_target)
-    api.isolate.add_files_to_isolate_file(file_path,
-                                          [f'../../{RUNNER_PACKAGE_PATH}/'])
+    api.isolate.add_files_to_isolate_file(
+        file_path,
+        [f'../../{RUNNER_PACKAGE_PATH}/', f'../../{PERNOSCO_REPO_PATH}/'])
   api.chromium_tests.isolate_tests(
       source_dir,
       build_dir,
