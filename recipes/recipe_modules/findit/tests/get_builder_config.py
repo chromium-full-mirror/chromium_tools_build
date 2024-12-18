@@ -26,6 +26,9 @@ def RunSteps(api):
       builder_config.builder_ids_in_scope_for_testing,
       api.properties['builder_ids_in_scope_for_testing'])
 
+  if 'targets_spec_directory' in api.properties:
+    api.assertions.assertEqual(builder_config.targets_spec_directory,
+                               api.properties['targets_spec_directory'])
 
 def GenTests(api):
   builder_id = chromium.BuilderId.create_for_group('fake-group', 'fake-builder')
@@ -52,6 +55,7 @@ def GenTests(api):
           target_builder_id=tester_id,
           builder_ids=[builder_id],
           builder_ids_in_scope_for_testing=[builder_id, tester_id],
+          targets_spec_directory='fake-targets-spec-directory',
       ),
       api.chromium_tests_builder_config.properties(
           api.chromium_tests_builder_config.properties_assembler_for_ci_tester(
@@ -60,7 +64,8 @@ def GenTests(api):
           ).with_parent(
               builder_group=builder_id.group,
               builder=builder_id.builder,
-          ).assemble()),
+          ).with_targets_spec_directory(
+              'fake-targets-spec-directory').assemble()),
       api.post_process(post_process.DropExpectation),
   )
 

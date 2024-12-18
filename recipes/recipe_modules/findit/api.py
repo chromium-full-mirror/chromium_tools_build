@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import attr
+
 from recipe_engine import recipe_api
 
 from RECIPE_MODULES.build import chromium
@@ -43,9 +45,9 @@ class FinditApi(recipe_api.RecipeApi):
     builder_id = chromium.BuilderId.create_for_group(
         target_builder_spec.parent_builder_group or target_builder_id.group,
         target_builder_spec.parent_buildername)
-    return ctbc.BuilderConfig.create(
-        builder_config.builder_db,
+    return attr.evolve(
+        builder_config,
         builder_ids=[builder_id],
         builder_ids_in_scope_for_testing=[target_builder_id],
         include_all_triggered_testers=False,
-        step_api=self.m.step)
+    )
