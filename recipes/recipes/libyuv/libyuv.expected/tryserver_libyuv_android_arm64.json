@@ -1597,37 +1597,6 @@
   {
     "cmd": [
       "vpython3",
-      "[CACHE]/builder/src/third_party/catapult/devil/devil/android/tools/device_recovery.py",
-      "--denylist-file",
-      "[CACHE]/builder/src/out/bad_devices.json",
-      "--known-devices-file",
-      "[HOME]/.android/known_devices.json",
-      "--adb-path",
-      "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb",
-      "-v"
-    ],
-    "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "libyuv:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "device_recovery"
-  },
-  {
-    "cmd": [
-      "vpython3",
       "[CACHE]/builder/src/third_party/catapult/devil/devil/android/tools/provision_devices.py",
       "--adb-path",
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb",
