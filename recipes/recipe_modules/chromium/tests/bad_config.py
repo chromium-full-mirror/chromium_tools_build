@@ -4,27 +4,42 @@
 
 from recipe_engine import post_process
 from recipe_engine.config import BadConf
+from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.chromium.config import config_ctx
 
 DEPS = [
     'chromium',
     'recipe_engine/assertions',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
 ]
 
+PROPERTIES = {
+    'config': Property(kind=str, default=''),
+    'host_platform': Property(kind=str, default=''),
+}
 
 @config_ctx()
 def bad_generator(c):
   c.project_generator.tool = 'this is not a valid generator'
 
 
-def RunSteps(api):
+def RunSteps(api, config, host_platform):
   with api.assertions.assertRaises(BadConf):
-    api.chromium.set_config('bad_generator')
+    api.chromium.set_config(config, HOST_PLATFORM=host_platform)
 
 
 def GenTests(api):
   yield api.test(
-      'basic',
+      'bad_generator',
+      api.properties(config='bad_generator'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'bad_host_platform',
+      api.properties(config='chromium', host_platform='linux'),
+      api.platform('win', 64),
       api.post_process(post_process.DropExpectation),
   )

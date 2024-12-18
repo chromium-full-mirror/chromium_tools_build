@@ -28,9 +28,10 @@ def check(val, potentials):
 # Schema for config items in this module.
 # Note: The default values for these parameters are defined via recipe_magic in
 # chromium/api.py:get_config_defaults().
-def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
-               TARGET_ARCH, TARGET_BITS, BUILD_CONFIG, TARGET_CROS_BOARDS,
-               CROS_BOARDS_WITH_QEMU_IMAGES, TEST_ONLY, **_kwargs):
+def BaseConfig(HOST_PLATFORM, DEFAULT_HOST_PLATFORM, HOST_ARCH, HOST_BITS,
+               TARGET_PLATFORM, TARGET_ARCH, TARGET_BITS, BUILD_CONFIG,
+               TARGET_CROS_BOARDS, CROS_BOARDS_WITH_QEMU_IMAGES, TEST_ONLY,
+               **_kwargs):
   equal_fn = lambda tup: ('%s=%s' % (tup[0], pipes.quote(str(tup[1]))))
   return ConfigGroup(
       compile_py=ConfigGroup(
@@ -108,7 +109,9 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       # passed as --target on the command line.
       build_config_fs=Single(str),
       BUILD_CONFIG=Static(check(BUILD_CONFIG, BUILD_CONFIGS)),
-      HOST_PLATFORM=Static(check(HOST_PLATFORM, HOST_PLATFORMS)),
+      HOST_PLATFORM=Static(
+          check(HOST_PLATFORM or DEFAULT_HOST_PLATFORM, HOST_PLATFORMS)),
+      HOST_PLATFORM_EXPLICIT=Static(bool(HOST_PLATFORM)),
       HOST_ARCH=Static(check(HOST_ARCH, HOST_ARCHS)),
       HOST_BITS=Static(check(HOST_BITS, HOST_TARGET_BITS)),
       TARGET_PLATFORM=Static(check(TARGET_PLATFORM, TARGET_PLATFORMS)),
@@ -123,12 +126,15 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
   )
 
 
-def validate_config(c):
+def validate_config(c, actual_host_platform):
   """Validate the configuration.
 
   This will be called after chromium.{set,make,apply}_config to validate
   the config object.
   """
+  if c.HOST_PLATFORM != actual_host_platform:
+    raise BadConf(f'Current platform: {actual_host_platform} does not match '
+                  f'expected platform: {c.HOST_PLATFORM}')
   host_targ_tuples = [(c.HOST_PLATFORM, c.HOST_ARCH, c.HOST_BITS),
                       (c.TARGET_PLATFORM, c.TARGET_ARCH, c.TARGET_BITS)]
 

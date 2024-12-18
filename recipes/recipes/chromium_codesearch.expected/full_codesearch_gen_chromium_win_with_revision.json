@@ -3,21 +3,21 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'checkout_android_prebuilts_build_tools': 'True', 'checkout_telemetry_dependencies': 'False', 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/fake-reclient-instance/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]\ntarget_os = ['win']",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'checkout_android_prebuilts_build_tools': 'True', 'checkout_telemetry_dependencies': 'False', 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/fake-reclient-instance/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]\ntarget_os = ['win']",
       "--revision_mapping_file",
       "{\"got_angle_revision\": \"src/third_party/angle\", \"got_buildtools_revision\": \"src/buildtools\", \"got_dawn_revision\": \"src/third_party/dawn\", \"got_nacl_revision\": \"src/native_client\", \"got_revision\": \"src\", \"got_swiftshader_revision\": \"src/third_party/swiftshader\", \"got_v8_revision\": \"src/v8\", \"got_webrtc_revision\": \"src/third_party/webrtc\"}",
       "--git-cache-dir",
-      "[CACHE]/git",
+      "[CACHE]\\git",
       "--cleanup-dir",
-      "[CLEANUP]/bot_update",
+      "[CLEANUP]\\bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
       "src@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/codesearch-gen-chromium-win/8945511751514863184",
       "GIT_BACKENDINFO": "1",
@@ -25,10 +25,10 @@
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800",
       "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
-      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
-      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE2_EVENT": "[CLEANUP]\\trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]\\trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet",
+      "GIT_TRACE_PACKET": "[CLEANUP]\\trace-packet",
       "PACKFILE_OFFLOADING": "1"
     },
     "env_suffixes": {
@@ -192,10 +192,10 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
+      "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/codesearch-gen-chromium-win/8945511751514863184",
@@ -224,7 +224,7 @@
     "cmd": [
       "forfiles",
       "/p",
-      "[CACHE]/builder/src/out",
+      "[CACHE]\\builder\\src\\out",
       "/s",
       "/m",
       "*",
@@ -251,17 +251,17 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb.py",
       "lookup",
       "-m",
       "chromium.linux",
       "-b",
       "codesearch-gen-chromium-win",
       "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--quiet"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -286,19 +286,19 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb.py",
       "gen",
       "-m",
       "chromium.linux",
       "-b",
       "codesearch-gen-chromium-win",
       "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/win-Debug"
+      "[CACHE]\\builder\\src\\out\\win-Debug"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -327,11 +327,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/win-Debug/gn_logs.txt",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -380,7 +380,7 @@
       }
     },
     "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate build files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m chromium.linux -b codesearch-gen-chromium-win --config-file tools/mb/mb_config.pyl out/win-Debug```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate build files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m chromium.linux -b codesearch-gen-chromium-win --config-file tools\\\\mb\\\\mb_config.pyl out\\\\win-Debug```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -393,7 +393,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m chromium.linux -b codesearch-gen-chromium-win --config-file tools/mb/mb_config.pyl out/win-Debug```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m chromium.linux -b codesearch-gen-chromium-win --config-file tools\\\\mb\\\\mb_config.pyl out\\\\win-Debug```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -414,11 +414,11 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/clang/scripts/generate_compdb.py",
+      "[CACHE]\\builder\\src\\tools\\clang\\scripts\\generate_compdb.py",
       "-p",
-      "[CACHE]/builder/src/out/win-Debug",
+      "[CACHE]\\builder\\src\\out\\win-Debug",
       "-o",
-      "[CACHE]/builder/src/out/win-Debug/compile_commands.json",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\compile_commands.json",
       "all"
     ],
     "luci_context": {
@@ -439,13 +439,13 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gn.py",
+      "RECIPE_REPO[depot_tools]\\gn.py",
       "desc",
-      "[CACHE]/builder/src/out/win-Debug",
+      "[CACHE]\\builder\\src\\out\\win-Debug",
       "*",
       "--format=json"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"
@@ -464,12 +464,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "\n{\n   \"//ipc:mojom_constants__generator\": {\n      \"args\": [ \"--use_bundled_pylibs\", \"generate\", \"-d\", \"../../\", \"-I\", \"../../\", \"-o\", \"gen\", \"--bytecode_path\", \"gen/mojo/public/tools/bindings\", \"--filelist={{response_file_name}}\", \"-g\", \"c++\", \"--typemap\", \"gen/ipc/mojom_constants__type_mappings\" ],\n      \"deps\": [ \"//ipc:mojom_constants__parsed\", \"//ipc:mojom_constants__type_mappings\", \"//ipc:mojom_constants__verify_deps\", \"//mojo/public/tools/bindings:precompile_templates\" ],\n      \"inputs\": [ \"//mojo/public/tools/bindings/generators/mojom_cpp_generator.py\" ],\n      \"outputs\": [ \"//out/Debug/gen/ipc/constants.mojom.cc\", \"//out/Debug/gen/ipc/constants.mojom.h\", \"//out/Debug/gen/ipc/constants.mojom-test-utils.cc\", \"//out/Debug/gen/ipc/constants.mojom-test-utils.h\" ],\n      \"public\": \"*\",\n      \"script\": \"//mojo/public/tools/bindings/mojom_bindings_generator.py\",\n      \"sources\": [ \"//ipc/constants.mojom\" ],\n      \"testonly\": false,\n      \"toolchain\": \"//build/toolchain/linux:clang_x64\",\n      \"type\": \"action\",\n      \"visibility\": [ \"//ipc:*\" ]\n   }\n}\n",
-      "[CACHE]/builder/src/out/win-Debug/gn_targets.json"
+      "[CACHE]\\builder\\src\\out\\win-Debug\\gn_targets.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -490,13 +490,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/src/out/win-Debug/kzip"
+      "[CACHE]\\builder\\src\\out\\win-Debug\\kzip"
     ],
     "infra_step": true,
     "luci_context": {
@@ -517,12 +517,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "cr-cs-sentinel",
-      "[CACHE]/builder/cr-cs-sentinel"
+      "[CACHE]\\builder\\cr-cs-sentinel"
     ],
     "infra_step": true,
     "luci_context": {
@@ -542,17 +542,17 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::chromium]/resources/clang_revision.py",
+      "RECIPE_MODULE[build::chromium]\\resources\\clang_revision.py",
       "--src-dir",
-      "[CACHE]/builder/src",
+      "[CACHE]\\builder\\src",
       "--output-json",
       "/path/to/tmp/json"
     ],
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "luci_context": {
       "realm": {
@@ -583,19 +583,19 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]/builder/src/buildtools/reclient_cfgs",
+      "[CACHE]\\builder\\src\\buildtools\\reclient_cfgs",
       "--recursive"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -613,8 +613,8 @@
     "name": "preprocess for reclient.list reclient_cfgs dir",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/src/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/src/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]\\builder\\src\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]\\builder\\src\\buildtools\\reclient_cfgs\\reproxy.cfg@@@",
       "@@@STEP_LOG_END@listdir@@@"
     ]
   },
@@ -622,20 +622,20 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/reclient/deps/codesearch_gen_chromium_win"
+      "[CACHE]\\builder\\reclient\\deps\\codesearch_gen_chromium_win"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -659,18 +659,18 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]/builder/reclient/deps/codesearch_gen_chromium_win"
+      "[CACHE]\\builder\\reclient\\deps\\codesearch_gen_chromium_win"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -694,23 +694,23 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
       "start",
       "--cloudtail-path",
-      "cloudtail",
+      "cloudtail.exe",
       "--cloudtail-project-id",
       "goma-logs",
       "--cloudtail-log-path",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy.exe.INFO",
       "--pid-file",
-      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+      "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -725,7 +725,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "preprocess for reclient.start cloudtail: reproxy.INFO",
+    "name": "preprocess for reclient.start cloudtail: reproxy.exe.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
@@ -734,23 +734,23 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
       "start",
       "--cloudtail-path",
-      "cloudtail",
+      "cloudtail.exe",
       "--cloudtail-project-id",
       "goma-logs",
       "--cloudtail-log-path",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.INFO",
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.INFO",
       "--pid-file",
-      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+      "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -774,23 +774,23 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
       "start",
       "--cloudtail-path",
-      "cloudtail",
+      "cloudtail.exe",
       "--cloudtail-project-id",
       "goma-logs",
       "--cloudtail-log-path",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy_outerr.log",
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy_outerr.log",
       "--pid-file",
-      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+      "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -813,20 +813,20 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/buildtools/reclient/bootstrap"
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
-      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/codesearch_gen_chromium_win",
-      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/codesearch_gen_chromium_win",
+      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\codesearch_gen_chromium_win",
+      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\codesearch_gen_chromium_win",
       "RBE_deps_cache_max_mb": "256",
       "RBE_enable_deps_cache": "true",
       "RBE_fail_early_min_action_count": "4000",
@@ -835,12 +835,12 @@
       "RBE_grpc_keepalive_permit_without_stream": "false",
       "RBE_grpc_keepalive_time": "30s",
       "RBE_instance": "projects/fake-reclient-instance/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_re_proxy": "[CACHE]/builder/src/buildtools/reclient/reproxy",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
+      "RBE_server_address": "pipe://reproxy.pipe",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
       "RBE_use_batching": "true",
@@ -866,34 +866,78 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "preprocess for reclient.get reclient version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@reclient_version@{@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"HASH\": \"aaaaaaaa\",@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MAJOR\": 0,@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MINOR\": 110,@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"PATCH\": 0@@@",
+      "@@@STEP_LOG_LINE@reclient_version@}@@@",
+      "@@@STEP_LOG_END@reclient_version@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
+      "--version"
+    ],
+    "cwd": "[CACHE]\\builder\\src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "preprocess for reclient.get reclient version.call bootstrap --version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
-      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
+      "RECIPE_MODULE[build::chromium]\\resources\\ninja_wrapper.py",
       "--ninja_info_output",
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
       "--",
-      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/src/out/win-Debug",
+      "[CACHE]\\builder\\src\\out\\win-Debug",
       "-k",
       "0",
       "-j",
       "160"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_server_address": "pipe://reproxy.pipe"
     },
     "luci_context": {
       "realm": {
@@ -916,25 +960,25 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/win-Debug/.ninja_log",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\.ninja_log",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_server_address": "pipe://reproxy.pipe"
     },
     "infra_step": true,
     "luci_context": {
@@ -955,25 +999,25 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_server_address": "pipe://reproxy.pipe"
     },
     "infra_step": true,
     "luci_context": {
@@ -994,26 +1038,26 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
       "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_server_address": "pipe://reproxy.pipe"
     },
     "infra_step": true,
     "luci_context": {
@@ -1036,9 +1080,9 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/src/out/win-Debug",
+      "[CACHE]\\builder\\src\\out\\win-Debug",
       "-k",
       "0",
       "-j",
@@ -1047,18 +1091,18 @@
       "explain",
       "-n"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_server_address": "pipe://reproxy.pipe"
     },
     "luci_context": {
       "realm": {
@@ -1080,21 +1124,21 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/buildtools/reclient/bootstrap",
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
       "-shutdown"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
-      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/codesearch_gen_chromium_win",
-      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/codesearch_gen_chromium_win",
+      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\codesearch_gen_chromium_win",
+      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\codesearch_gen_chromium_win",
       "RBE_deps_cache_max_mb": "256",
       "RBE_enable_deps_cache": "true",
       "RBE_fail_early_min_action_count": "4000",
@@ -1103,12 +1147,12 @@
       "RBE_grpc_keepalive_permit_without_stream": "false",
       "RBE_grpc_keepalive_time": "30s",
       "RBE_instance": "projects/fake-reclient-instance/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_re_proxy": "[CACHE]/builder/src/buildtools/reclient/reproxy",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
+      "RBE_server_address": "pipe://reproxy.pipe",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
       "RBE_use_batching": "true",
@@ -1136,17 +1180,17 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+      "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1169,17 +1213,17 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+      "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1202,17 +1246,17 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+      "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1236,19 +1280,19 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]/reclient_log_tmp_1/rbe_metrics.pb",
+      "[CLEANUP]\\reclient_log_tmp_1\\rbe_metrics.pb",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1279,20 +1323,20 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1314,10 +1358,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
       "-ensure-file",
       "infra/tools/bqupload/${platform} latest",
       "-max-threads",
@@ -1325,12 +1369,12 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1363,15 +1407,15 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8\\bqupload",
       "goma-logs.rbe_metrics.builds"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1467,18 +1511,18 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\generate_rpl_gzip.py",
       "--reclient-log-dir",
-      "[CLEANUP]/reclient_log_tmp_1",
+      "[CLEANUP]\\reclient_log_tmp_1",
       "--output-gzip-path",
-      "[TMP_BASE]/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133d.gz"
+      "[TMP_BASE]\\reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133d.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1502,20 +1546,20 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133d.gz",
+      "[TMP_BASE]\\reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133d.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133d.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1540,18 +1584,18 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CLEANUP]/reclient_log_tmp_1"
+      "[CLEANUP]\\reclient_log_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1569,11 +1613,11 @@
     "name": "postprocess for reclient.list reclient log directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.INFO@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.rpl@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/rewrapper.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\rewrapper.INFO@@@",
       "@@@STEP_LOG_END@listdir@@@"
     ]
   },
@@ -1588,19 +1632,19 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1615,7 +1659,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1624,20 +1668,20 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1652,29 +1696,29 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "name": "postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1689,7 +1733,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1698,20 +1742,20 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/reproxy.INFO"
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1726,29 +1770,29 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
+    "name": "postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO@@@"
     ]
   },
   {
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1763,7 +1807,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1772,20 +1816,20 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log"
+      "[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1800,29 +1844,29 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
+    "name": "postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log@@@"
     ]
   },
   {
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d.tar.gz"
+      "[TMP_BASE]\\reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1846,20 +1890,20 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d.tar.gz",
+      "[TMP_BASE]\\reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d.tar.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1883,18 +1927,18 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
+      "RECIPE_MODULE[build::reclient]\\resources\\perform_health_check.py",
       "--reclient-log-dir",
-      "[CLEANUP]/reclient_log_tmp_1",
+      "[CLEANUP]\\reclient_log_tmp_1",
       "--build-exit-status",
       "0"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1918,18 +1962,18 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CLEANUP]/reclient_log_tmp_1"
+      "[CLEANUP]\\reclient_log_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/win-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]\\builder\\src"
     },
     "infra_step": true,
     "luci_context": {
@@ -1953,11 +1997,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/cr-cs-sentinel"
+      "[CACHE]\\builder\\cr-cs-sentinel"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1978,9 +2022,9 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/clang/scripts/update.py",
+      "[CACHE]\\builder\\src\\tools\\clang\\scripts\\update.py",
       "--package=translation_unit",
-      "--output-dir=[CLEANUP]/tmp_tmp_1"
+      "--output-dir=[CLEANUP]\\tmp_tmp_1"
     ],
     "luci_context": {
       "realm": {
@@ -2000,13 +2044,13 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/clang/scripts/run_tool.py",
+      "[CACHE]\\builder\\src\\tools\\clang\\scripts\\run_tool.py",
       "--tool",
       "translation_unit",
       "--tool-path",
-      "[CLEANUP]/tmp_tmp_1/bin",
+      "[CLEANUP]\\tmp_tmp_1\\bin",
       "-p",
-      "[CACHE]/builder/src/out/win-Debug",
+      "[CACHE]\\builder\\src\\out\\win-Debug",
       "--all"
     ],
     "luci_context": {
@@ -2026,10 +2070,10 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[infra::codesearch]/resources/add_kythe_metadata.py",
+      "RECIPE_MODULE[infra::codesearch]\\resources\\add_kythe_metadata.py",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
-      "[CACHE]/builder/src/out/win-Debug"
+      "[CACHE]\\builder\\src\\out\\win-Debug"
     ],
     "luci_context": {
       "realm": {
@@ -2053,13 +2097,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra/tools/package_index/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+      "[START_DIR]\\cipd_tool\\infra\\tools\\package_index\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2081,10 +2125,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/tools/package_index/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\package_index\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
       "-ensure-file",
       "infra/tools/package_index/${platform} latest",
       "-max-threads",
@@ -2123,23 +2167,23 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/package_index/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/package_index",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\package_index\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8\\package_index",
       "--checkout_dir",
-      "[CACHE]/builder/src",
+      "[CACHE]\\builder\\src",
       "--path_to_compdb",
-      "[CACHE]/builder/src/out/win-Debug/compile_commands.json",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\compile_commands.json",
       "--path_to_gn_targets",
-      "[CACHE]/builder/src/out/win-Debug/gn_targets.json",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\gn_targets.json",
       "--path_to_archive_output",
-      "[CACHE]/builder/src/out/win-Debug/chromium_win.kzip",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\chromium_win.kzip",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--project",
       "chromium",
       "--path_to_java_kzips",
-      "[CACHE]/builder/src/out/win-Debug/kzip",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\kzip",
       "--out_dir",
-      "src/out/win-Debug",
+      "src\\out\\win-Debug",
       "--build_config",
       "win"
     ],
@@ -2161,12 +2205,12 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CACHE]/builder/src/out/win-Debug/chromium_win.kzip",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\chromium_win.kzip",
       "gs://chrome-codesearch/prod/chromium_win_170242_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa+1531887759.kzip"
     ],
     "infra_step": true,
@@ -2191,12 +2235,12 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CACHE]/builder/src/out/win-Debug/compile_commands.json",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\compile_commands.json",
       "gs://chrome-codesearch/debug/compile_commands_win_170242.json"
     ],
     "infra_step": true,
@@ -2221,12 +2265,12 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CACHE]/builder/src/out/win-Debug/gn_targets.json",
+      "[CACHE]\\builder\\src\\out\\win-Debug\\gn_targets.json",
       "gs://chrome-codesearch/debug/gn_targets_win_170242.json"
     ],
     "infra_step": true,
@@ -2254,7 +2298,7 @@
       "core.longpaths",
       "true"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2274,9 +2318,9 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::git]/resources/git_setup.py",
+      "RECIPE_MODULE[depot_tools::git]\\resources\\git_setup.py",
       "--path",
-      "[CACHE]/generated",
+      "[CACHE]\\generated",
       "--url",
       "https://chromium.googlesource.com/chromium/src/out"
     ],
@@ -2308,11 +2352,11 @@
       "--depth",
       "1"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "0",
       "GIT_HTTP_LOW_SPEED_TIME": "0",
-      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools];<PATH>"
     },
     "infra_step": true,
     "luci_context": {
@@ -2336,7 +2380,7 @@
       "-f",
       "FETCH_HEAD"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "0",
       "GIT_HTTP_LOW_SPEED_TIME": "0"
@@ -2362,7 +2406,7 @@
       "rev-parse",
       "HEAD"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "0",
       "GIT_HTTP_LOW_SPEED_TIME": "0"
@@ -2393,7 +2437,7 @@
       "-d",
       "-x"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "0",
       "GIT_HTTP_LOW_SPEED_TIME": "0"
@@ -2420,7 +2464,7 @@
       "user.email",
       "git-generated-files-sync@chromium.org"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2443,7 +2487,7 @@
       "user.name",
       "Automatic Generated Files Sync"
     ],
-    "cwd": "[CACHE]/generated",
+    "cwd": "[CACHE]\\generated",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2462,14 +2506,14 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_MODULE[infra::codesearch]/resources/sync_generated_files.py",
+      "RECIPE_MODULE[infra::codesearch]\\resources\\sync_generated_files.py",
       "--copy",
-      "[CACHE]/builder/src/out/win-Debug;win-Debug",
+      "[CACHE]\\builder\\src\\out\\win-Debug;win-Debug",
       "--message",
       "Generated files from \"codesearch-gen-chromium-win\" build 8945511751514863184, revision aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "--dest-branch",
       "main",
-      "[CACHE]/generated",
+      "[CACHE]\\generated",
       "--nokeycheck"
     ],
     "luci_context": {

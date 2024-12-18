@@ -55,7 +55,7 @@ message BuilderSpec {
   // Required, details for configuring the chromium recipe module using the
   // recipe engine's config item facility
   //
-  // Next ID: 9
+  // Next ID: 10
   //
   // TODO(gbeaty) Replace this with a message that describes the actual chromium
   // config instead of named config items
@@ -69,6 +69,7 @@ message BuilderSpec {
     // setting the config
     optional string build_config = 3;
 
+    optional string host_platform = 9;
     optional string target_arch = 4;
     optional int32 target_bits = 5;
     optional string target_platform = 6;

@@ -11,6 +11,7 @@ DEPS = [
     'chromium',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'symupload',
 ]
@@ -33,6 +34,7 @@ def GenTests(api):
   yield api.test(
       'symupload_file',
       api.properties(target_platform='mac', host_platform='mac'),
+      api.platform('mac', 64),
       api.path.exists(api.path.tmp_base_dir / 'symupload',
                       api.path.cache_dir.joinpath('path', 'to', 'config.json')),
       api.post_process(
@@ -48,6 +50,7 @@ def GenTests(api):
   yield api.test(
       'non_existing_source_side_spec_path',
       api.properties(target_platform='mac', host_platform='mac'),
+      api.platform('mac', 64),
       api.path.exists(api.path.tmp_base_dir.joinpath('symupload')),
       api.post_process(post_process.StepException,
                        'Could not find specified symupload config'),

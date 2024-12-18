@@ -162,6 +162,7 @@ class _PropertiesAssembler:
     }
     for a in (
         'BUILD_CONFIG',
+        'HOST_PLATFORM',
         'TARGET_ARCH',
         'TARGET_BITS',
         'TARGET_PLATFORM',

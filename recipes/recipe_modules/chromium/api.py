@@ -71,13 +71,13 @@ class ChromiumApi(recipe_api.RecipeApi):
   def make_config_params(self, *args, **kwargs):
     config_object, params = super().make_config_params(*args, **kwargs)
     if config_object is not None and self._verify_config:
-      validate_config(config_object)
+      validate_config(config_object, self.m.platform.name)
     return config_object, params
 
   def apply_config(self, config_name, config_object=None, optional=False):
     super().apply_config(config_name, config_object, optional)
     if self._verify_config:
-      validate_config(config_object or self.c)
+      validate_config(config_object or self.c, self.m.platform.name)
 
   @contextlib.contextmanager
   def chromium_layout(self):
@@ -110,7 +110,8 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   def get_config_defaults(self):
     defaults = {
-        'HOST_PLATFORM': self.m.platform.name,
+        'HOST_PLATFORM': None,
+        'DEFAULT_HOST_PLATFORM': self.m.platform.name,
         'HOST_ARCH': self.m.platform.arch,
         'HOST_BITS': self.m.platform.bits,
         'TARGET_PLATFORM': self.m.platform.name,

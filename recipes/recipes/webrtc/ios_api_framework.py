@@ -9,6 +9,7 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
     'reclient',
@@ -44,6 +45,7 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'build_ok',
+      api.platform('mac', 64),
       api.builder_group.for_current('client.webrtc'),
       api.buildbucket.generic_build(builder='iOS API Framework Builder'),
       api.properties(xcode_build_version='dummy_xcode'),
@@ -52,6 +54,7 @@ def GenTests(api):
 
   yield api.test(
       'build_failure',
+      api.platform('mac', 64),
       api.builder_group.for_current('client.webrtc'),
       api.buildbucket.generic_build(builder='iOS API Framework Builder'),
       api.properties(xcode_build_version='dummy_xcode'),
@@ -62,6 +65,7 @@ def GenTests(api):
 
   yield api.test(
       'trybot_build',
+      api.platform('mac', 64),
       api.builder_group.for_current('tryserver.webrtc'),
       api.buildbucket.try_build(builder='ios_api_framework'),
       api.properties(

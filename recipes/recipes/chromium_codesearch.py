@@ -31,6 +31,7 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -395,8 +396,10 @@ def GenTests(api):
                    'ios', 'win', 'webview'):
     for internal in (True, False):
       buildername = _format_builder_name(platform, internal)
+      platform_map = {'win': 'win', 'mac': 'mac', 'ios': 'mac'}
       yield api.test(
           'full_%s' % (_sanitize_nonalpha(buildername)),
+          api.platform(platform_map.get(platform, 'linux'), 64),
           props(platform, internal),
           api.chromium.generic_build(builder=buildername),
           api.step_data('generate gn target list',
@@ -405,6 +408,7 @@ def GenTests(api):
 
       yield api.test(
           'full_%s_with_revision' % (_sanitize_nonalpha(buildername)),
+          api.platform(platform_map.get(platform, 'linux'), 64),
           props(platform, internal),
           api.chromium.generic_build(builder=buildername),
           api.step_data('generate gn target list',
@@ -416,6 +420,7 @@ def GenTests(api):
 
   yield api.test(
       'full_%s_with_patch' % _sanitize_nonalpha('gen-linux-try'),
+      api.platform('linux', 64),
       props('linux'),
       api.chromium.try_build(
           builder_group='tryserver.chromium.codesearch',
@@ -427,6 +432,7 @@ def GenTests(api):
   yield api.test(
       'full_%s_delete_generated_files_fail' %
       _sanitize_nonalpha('codesearch-gen-chromium-win'),
+      api.platform('win', 64),
       props('win'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-win'),
       api.step_data('delete old generated files', retcode=1),
@@ -473,6 +479,7 @@ def GenTests(api):
   yield api.test(
       'full_%s_git_config_fail' %
       _sanitize_nonalpha('codesearch-gen-chromium-win'),
+      api.platform('win', 64),
       props('win'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-win'),
       api.step_data('set core.longpaths', retcode=1),

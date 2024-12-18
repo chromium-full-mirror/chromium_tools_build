@@ -7,11 +7,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]/fake-repo/build/win_toolchain.json",
+      "[CLEANUP]\\fake-repo\\build\\win_toolchain.json",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -32,7 +32,7 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "glob",
@@ -41,7 +41,7 @@
     ],
     "env_suffixes": {
       "PATH": [
-        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f/DIA SDK/bin/amd64",
+        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\DIA SDK\\bin\\amd64",
         "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\sys64"
       ]
     },
@@ -49,67 +49,67 @@
     "name": "symupload.expand file globs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@glob@[TMP_BASE]/glob1.txt@@@",
-      "@@@STEP_LOG_LINE@glob@[TMP_BASE]/glob2.txt@@@",
+      "@@@STEP_LOG_LINE@glob@[TMP_BASE]\\glob1.txt@@@",
+      "@@@STEP_LOG_LINE@glob@[TMP_BASE]\\glob2.txt@@@",
       "@@@STEP_LOG_END@glob@@@"
     ]
   },
   {
     "cmd": [
-      "[TMP_BASE]/symupload.exe",
+      "[TMP_BASE]\\symupload.exe",
       "--timeout",
       "0",
-      "[TMP_BASE]/glob1.txt",
+      "[TMP_BASE]\\glob1.txt",
       "https://some.url.com"
     ],
     "env_suffixes": {
       "PATH": [
-        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f/DIA SDK/bin/amd64",
+        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\DIA SDK\\bin\\amd64",
         "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\sys64"
       ]
     },
     "infra_step": true,
-    "name": "symupload.symupload [TMP_BASE]/glob1.txt",
+    "name": "symupload.symupload [TMP_BASE]\\glob1.txt",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
-      "[TMP_BASE]/symupload.exe",
+      "[TMP_BASE]\\symupload.exe",
       "--timeout",
       "0",
-      "[TMP_BASE]/glob2.txt",
+      "[TMP_BASE]\\glob2.txt",
       "https://some.url.com"
     ],
     "env_suffixes": {
       "PATH": [
-        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f/DIA SDK/bin/amd64",
+        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\DIA SDK\\bin\\amd64",
         "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\sys64"
       ]
     },
     "infra_step": true,
-    "name": "symupload.symupload [TMP_BASE]/glob2.txt",
+    "name": "symupload.symupload [TMP_BASE]\\glob2.txt",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
-      "[TMP_BASE]/symupload.exe",
+      "[TMP_BASE]\\symupload.exe",
       "--timeout",
       "0",
-      "[TMP_BASE]/some_artifact.txt",
+      "[TMP_BASE]\\some_artifact.txt",
       "https://some.url.com"
     ],
     "env_suffixes": {
       "PATH": [
-        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f/DIA SDK/bin/amd64",
+        "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\DIA SDK\\bin\\amd64",
         "C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\sys64"
       ]
     },
     "infra_step": true,
-    "name": "symupload.symupload [TMP_BASE]/some_artifact.txt",
+    "name": "symupload.symupload [TMP_BASE]\\some_artifact.txt",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

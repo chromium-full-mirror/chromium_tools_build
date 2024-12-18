@@ -12,6 +12,7 @@ DEPS = [
     'chromium_checkout',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'symupload',
 ]
@@ -42,6 +43,7 @@ def GenTests(api):
 
   yield api.test(
       'basic_win',
+      api.platform('win', 64),
       api.properties(target_platform='win', host_platform='win'),
       api.path.exists(api.path.tmp_base_dir / 'symupload.exe'),
       api.symupload(input_properties),
@@ -49,6 +51,7 @@ def GenTests(api):
 
   yield api.test(
       'basic_win_override_win_toolchain_json',
+      api.platform('win', 64),
       api.properties(target_platform='win', host_platform='win'),
       api.override_step_data(
           'symupload.find_win_toolchain',
@@ -66,6 +69,7 @@ def GenTests(api):
 
   yield api.test(
       'basic_linux/mac',
+      api.platform('mac', 64),
       api.properties(target_platform='mac', host_platform='mac'),
       api.path.exists(api.path.tmp_base_dir / 'symupload'),
       api.symupload(input_properties),
@@ -74,6 +78,7 @@ def GenTests(api):
 
   yield api.test(
       'no symupload binary',
+      api.platform('win', 64),
       api.properties(target_platform='win', host_platform='win'),
       api.symupload(input_properties),
       api.post_process(post_process.StepException, 'symupload'),
@@ -83,6 +88,7 @@ def GenTests(api):
 
   yield api.test(
       'no action',
+      api.platform('mac', 64),
       api.properties(target_platform='mac', host_platform='mac'),
       api.symupload(properties.InputProperties()),
       api.post_process(post_process.DoesNotRun, 'symupload'),
@@ -112,6 +118,7 @@ def GenTests(api):
 
   yield api.test(
       'win_symupload_v2',
+      api.platform('win', 64),
       api.properties(target_platform='win', host_platform='win'),
       api.path.exists(api.path.tmp_base_dir / 'symupload.exe'),
       api.symupload(input_properties_v2),
@@ -119,7 +126,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'symupload.symupload_v2', [
                            '--api-key-file',
-                           '[CLEANUP]/symupload-api-key.txt',
+                           '[CLEANUP]\\symupload-api-key.txt',
                        ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -140,6 +147,7 @@ def GenTests(api):
   symupload_data.artifact_type = "dsym"
   yield api.test(
       'mac_symupload_v2',
+      api.platform('mac', 64),
       api.properties(target_platform='mac', host_platform='mac'),
       api.path.exists(api.path.tmp_base_dir / 'symupload'),
       api.symupload(input_properties_v2),
@@ -247,6 +255,7 @@ def GenTests(api):
 
   yield api.test(
       'symupload_with_custom_vars',
+      api.platform('win', 64),
       api.properties(
           target_platform='win',
           host_platform='win',
@@ -285,6 +294,7 @@ def GenTests(api):
 
   yield api.test(
       'symupload_with_unresolved_placeholder',
+      api.platform('win', 64),
       api.properties(
           target_platform='win',
           host_platform='win',

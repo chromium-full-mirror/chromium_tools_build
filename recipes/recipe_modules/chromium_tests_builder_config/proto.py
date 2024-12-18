@@ -109,6 +109,7 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
   chromium_config_kwargs = {}
   for a in (
       'build_config',
+      'host_platform',
       'target_arch',
       'target_bits',
       'target_platform',
