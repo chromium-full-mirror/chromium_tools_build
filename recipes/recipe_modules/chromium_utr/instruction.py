@@ -16,7 +16,8 @@ def get_utr_instruction(command: str,
                         builder: str,
                         test_names: Iterable[str],
                         utr_flags: Iterable[str] | None = None,
-                        extra_args: Iterable[str] | None = None) -> str:
+                        extra_args: Iterable[str] | None = None,
+                        include_preface_text: bool = True) -> str:
   """ Provides the Universal Test Runner (UTR) steps to reproduce a step
 
   Adds any provided local and remote instructions for to the provided by
@@ -25,9 +26,14 @@ def get_utr_instruction(command: str,
 
   Args:
     command: The UTR command to run (eg 'compile', 'compile-and-run')
+    project: LUCI project of the builder to embed in the UTR cmd.
+    bucket: LUCI bucket of the builder to embed in the UTR cmd.
+    builder: LUCI builder of the builder to embed in the UTR cmd.
     test_names: Test names to invoke UTR with or none to compile all
     utr_flags: Any extra UTR flags to append to the command (eg --reuse-task)
     extra_args: Any extra args to append after the command (eg a test filter)
+    include_preface_text: If True, prints a generic description before the
+      UTR cmd.
   Returns:
     The UTR command that can be run from chromium/src checkout
   """
@@ -60,11 +66,12 @@ def get_utr_instruction(command: str,
     utr_cmd.extend(extra_args)
 
   utr_cmd = ' '.join([sanitize_arg(arg) for arg in utr_cmd])
-  utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
   lines = []
-  lines.append(
-      f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
-      'checkout:')
+  if include_preface_text:
+    utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
+    lines.append(
+        f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
+        'checkout:')
   lines.append('```' + utr_cmd + '```')
   lines.append('')
   return '<br/>'.join(lines)
@@ -95,6 +102,17 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
        chromium_api.m.buildbucket.build.builder.bucket),
       builder_id.builder,
       [],
+  )
+  utr_instructions += '<br/>To run in your own build dir:<br/>'
+  utr_instructions += get_utr_instruction(
+      'compile',
+      chromium_api.m.buildbucket.build.builder.project,
+      (chromium_api.m.led.shadowed_bucket or
+       chromium_api.m.buildbucket.build.builder.bucket),
+      builder_id.builder,
+      [],
+      utr_flags=['--build-dir', '${YOUR_BUILD_DIR_HERE}'],
+      include_preface_text=False,
   )
   local_instructions = (
       utr_instructions + '<br/>*To force non-remote services '
