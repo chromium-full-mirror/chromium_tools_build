@@ -5,9 +5,7 @@
 # Exposes the builder and recipe configurations to GenTests in recipes.
 
 from recipe_engine import recipe_test_api
-from . import builders
 
 
 class LibyuvTestApi(recipe_test_api.RecipeTestApi):
-  BUILDERS = builders.BUILDERS
-  RECIPE_CONFIGS = builders.RECIPE_CONFIGS
+  pass

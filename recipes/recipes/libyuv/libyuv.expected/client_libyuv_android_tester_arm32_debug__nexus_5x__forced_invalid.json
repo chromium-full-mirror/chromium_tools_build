@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"android\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",
@@ -101,8 +108,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/ci/Android Tester ARM32 Debug (Nexus 5X)/8945511751514863184",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/ci/Android Tester ARM32 Debug (Nexus 5X)/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [

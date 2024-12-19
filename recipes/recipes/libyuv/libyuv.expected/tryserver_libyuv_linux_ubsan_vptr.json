@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"linux\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
@@ -190,7 +197,7 @@
       "--root=[CACHE]/builder/src",
       "gen",
       "[CACHE]/builder/src/out/Release",
-      "--args=is_clang=true is_ubsan_vptr=true is_debug=false target_cpu=\"x64\" use_remoteexec=true"
+      "--args=is_clang=true is_ubsan_vptr=true symbol_level=2 dcheck_always_on=true is_debug=false target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

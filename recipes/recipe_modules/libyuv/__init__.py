@@ -4,6 +4,7 @@ DEPS = [
     'chromium',
     'chromium_android',
     'chromium_checkout',
+    'chromium_tests',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/osx_sdk',

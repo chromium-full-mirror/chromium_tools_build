@@ -25,60 +25,22 @@ _LOCAL_COMPILE_BUILDERS = [
 
 
 class LibyuvApi(recipe_api.RecipeApi):
-  BUILDERS = libyuv_builders.BUILDERS
-  RECIPE_CONFIGS = libyuv_builders.RECIPE_CONFIGS
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.group_config = None
     self.bot_config = None
     self.bot_type = None
     self.buildername = None
-    self.recipe_config = None
     self.revision = ''
 
-  def apply_bot_config(self, builders, recipe_configs):
-    builder_group = self.m.builder_group.for_current
-    self.buildername = self.m.buildbucket.builder_name
-    group_dict = builders.get(builder_group, {})
-    self.group_config = group_dict.get('settings', {})
-
-    self.bot_config = group_dict.get('builders', {}).get(self.buildername)
-    assert self.bot_config, ('Unrecognized builder name "%r" for group "%r".' %
-                             (self.buildername, builder_group))
-
-    self.bot_type = self.bot_config['bot_type']
-    recipe_config_name = self.bot_config['recipe_config']
-    self.recipe_config = recipe_configs.get(recipe_config_name)
-    assert self.recipe_config, (
-        'Cannot find recipe_config "%s" for builder "%r".' %
-        (recipe_config_name, self.buildername))
-
-    chromium_kwargs = self.bot_config.get('chromium_config_kwargs', {})
-    if self.recipe_config.get('chromium_android_config'):
-      self.m.chromium_android.set_config(
-          self.recipe_config['chromium_android_config'], **chromium_kwargs)
-
-    self.m.chromium.set_config(self.recipe_config['chromium_config'],
-                               **chromium_kwargs)
-    self.m.gclient.set_config(self.recipe_config['gclient_config'])
-
-    # Support applying configs both at the bot and the recipe config level.
-    for c in self.bot_config.get('chromium_apply_config', []):
-      self.m.chromium.apply_config(c)
-
-    self.m.chromium.apply_config('gn')
-
+  def apply_bot_config(self, builder_id, builder_config):
+    self.bot_config = libyuv_builders.BUILDERS_DB.builders_by_group[
+        builder_id.group][builder_id.builder]
+    self.bot_type = self.bot_config.bot_type
+    self.buildername = builder_id.builder
+    self.m.chromium_tests.configure_build(builder_config)
     if self.m.tryserver.is_tryserver:
-      if self.m.platform.is_win:
-        # Windows builds are currently failing due to crbug.com/659439 when
-        # fastbuild is enabled since it implies symbol_level=2. So we can only
-        # enable dcheck for those.
-        self.m.chromium.apply_config('dcheck')
-      elif 'ubsan' in self.buildername.lower():
-        pass  # UBSAN with dchecks crashes clang on some bots.
-      else:
-        self.m.chromium.apply_config('trybot_flavor')
+      self.m.chromium.apply_config('trybot_flavor')
 
   @property
   def should_build(self):
@@ -94,11 +56,11 @@ class LibyuvApi(recipe_api.RecipeApi):
 
   @property
   def should_upload_build(self):
-    return self.bot_config.get('triggers')
+    return self.bot_config.triggers
 
   @property
   def should_download_build(self):
-    return self.bot_config.get('parent_buildername')
+    return self.bot_config.parent_buildername
 
   def checkout(self):
     with self.m.context(cwd=self.m.chromium_checkout.default_checkout_dir):
@@ -109,28 +71,29 @@ class LibyuvApi(recipe_api.RecipeApi):
 
   @contextlib.contextmanager
   def ensure_sdk(self):
-    if 'ensure_sdk' in self.bot_config:
-      with self.m.osx_sdk(self.bot_config['ensure_sdk']):
+    if self.bot_config.ensure_sdk:
+      with self.m.osx_sdk(self.bot_config.ensure_sdk):
         yield
     else:
       yield
 
   def maybe_trigger(self):
-    triggers = self.bot_config.get('triggers')
+    triggers = self.bot_config.triggers
     properties = {
-      'revision': self.revision,
-      'parent_got_revision': self.revision,
-      'parent_buildername': self.m.buildbucket.builder_name,
+        'revision': self.revision,
+        'parent_got_revision': self.revision,
+        'parent_buildername': self.m.buildbucket.builder_name,
     }
     if triggers:
       self.m.scheduler.emit_trigger(
           self.m.scheduler.BuildbucketTrigger(properties=properties),
-          project='libyuv', jobs=triggers)
+          project='libyuv',
+          jobs=[triggers])
 
 
   def package_build(self, source_dir: Path):
     upload_url = self.m.archive.legacy_upload_url(
-        self.group_config.get('build_gs_bucket'),
+        'chromium-libyuv',
         extra_url_components=self.m.builder_group.for_current)
     self.m.archive.zip_and_upload_build(
         'package build',
@@ -150,7 +113,7 @@ class LibyuvApi(recipe_api.RecipeApi):
     self.m.file.rmtree('build directory', build_dir)
 
     download_url = self.m.archive.legacy_download_url(
-        self.group_config.get('build_gs_bucket'),
+        'chromium-libyuv',
         extra_url_components=self.m.builder_group.for_current)
     self.m.archive.download_and_unzip_build(
         'extract build',

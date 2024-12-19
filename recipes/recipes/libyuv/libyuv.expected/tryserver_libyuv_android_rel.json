@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"android\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
@@ -161,8 +168,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/try/android_rel/8945511751514863184",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/try/android_rel/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -194,8 +200,7 @@
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -498,7 +503,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
@@ -650,7 +654,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
@@ -1518,9 +1521,6 @@
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1576,9 +1576,6 @@
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1609,9 +1606,6 @@
       "-v"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1645,9 +1639,6 @@
       "--overwrite-known-devices-files"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1767,9 +1758,6 @@
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "luci_context": {
       "realm": {
         "name": "libyuv:try"
@@ -1878,8 +1866,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Release",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Release"
     },
     "infra_step": true,
     "luci_context": {
@@ -1907,8 +1894,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Release",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Release"
     },
     "infra_step": true,
     "luci_context": {

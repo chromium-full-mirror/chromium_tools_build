@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"android\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",
@@ -101,8 +108,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/ci/Android Tester ARM64 Debug (Nexus 5X)/8945511751514863184",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/ci/Android Tester ARM64 Debug (Nexus 5X)/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -212,9 +218,6 @@
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -270,9 +273,6 @@
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -303,9 +303,6 @@
       "-v"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -339,9 +336,6 @@
       "--overwrite-known-devices-files"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -461,9 +455,6 @@
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
-    "env": {
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
     "luci_context": {
       "realm": {
         "name": "libyuv:ci"
@@ -570,8 +561,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Debug",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Debug"
     },
     "infra_step": true,
     "luci_context": {
@@ -599,8 +589,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Debug",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Debug"
     },
     "infra_step": true,
     "luci_context": {

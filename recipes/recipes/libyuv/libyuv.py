@@ -9,11 +9,13 @@ Recipe for building and running tests for Libyuv stand-alone.
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from RECIPE_MODULES.build.libyuv import builders
 
 DEPS = [
     'builder_group',
     'chromium',
     'chromium_android',
+    'chromium_tests_builder_config',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/tryserver',
@@ -30,7 +32,9 @@ DEPS = [
 
 def RunSteps(api):
   libyuv = api.libyuv
-  libyuv.apply_bot_config(libyuv.BUILDERS, libyuv.RECIPE_CONFIGS)
+  builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
+      builder_db=builders.BUILDERS_DB)
+  libyuv.apply_bot_config(builder_id, builder_config)
 
   api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   update_result = libyuv.checkout()
@@ -62,14 +66,13 @@ def _sanitize_nonalpha(text):
 
 
 def GenTests(api):
-  builders = api.libyuv.BUILDERS
-
   def generate_builder(builder_group, buildername, revision, suffix=None):
     suffix = suffix or ''
-    bot_config = builders[builder_group]['builders'][buildername]
-    bot_type = bot_config.get('bot_type', 'builder_tester')
+    bot_config = builders.BUILDERS_DB.builders_by_group[builder_group][
+        buildername]
+    bot_type = bot_config.bot_type
 
-    chromium_kwargs = bot_config.get('chromium_config_kwargs', {})
+    chromium_kwargs = bot_config.chromium_config_kwargs
     test = api.test('%s_%s%s' % (_sanitize_nonalpha(builder_group),
                                  _sanitize_nonalpha(buildername), suffix))
 
@@ -96,12 +99,11 @@ def GenTests(api):
         buildername=buildername,
         bot_id='bot_id',
         BUILD_CONFIG=chromium_kwargs['BUILD_CONFIG'])
-    test += api.platform(bot_config['testing']['platform'],
+    test += api.platform(bot_config.simulation_platform,
                          chromium_kwargs.get('TARGET_BITS', 64))
 
-    if bot_config.get('parent_buildername'):
-      test += api.properties(
-          parent_buildername=bot_config['parent_buildername'])
+    if bot_config.parent_buildername:
+      test += api.properties(parent_buildername=bot_config.parent_buildername)
 
     if bot_type == 'tester':
       test += api.properties(parent_got_revision=revision)
@@ -109,8 +111,9 @@ def GenTests(api):
     test += api.properties(buildnumber=1337)
     return test
 
-  for builder_group, group_config in builders.items():
-    for buildername in group_config['builders'].keys():
+  for builder_group, group_config in builders.BUILDERS_DB.builders_by_group.items(
+  ):
+    for buildername in group_config.keys():
       yield generate_builder(builder_group, buildername, revision='a' * 40)
 
   # Forced builds (not specifying any revision) and test failures.

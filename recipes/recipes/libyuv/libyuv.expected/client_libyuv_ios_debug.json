@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"ios\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",

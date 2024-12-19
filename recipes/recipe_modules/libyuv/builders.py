@@ -5,794 +5,789 @@
 # Contains the bulk of the libyuv builder configurations to improve readability
 # of the recipe.
 
-from recipe_engine.engine_types import freeze
+from RECIPE_MODULES.build.attr_utils import (attrib, attrs)
+from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
+                                                                builder_spec)
 
-RECIPE_CONFIGS = freeze({
-    'libyuv': {
-        'chromium_config': 'libyuv',
-        'gclient_config': 'libyuv',
-    },
-    'libyuv_clang': {
-        'chromium_config': 'libyuv_clang',
-        'gclient_config': 'libyuv',
-    },
-    'libyuv_gcc': {
-        'chromium_config': 'libyuv_gcc',
-        'gclient_config': 'libyuv',
-    },
-    # TODO(libyuv:880): MSVC support might be removed soon, this config is
-    # neeed to temporary fix bots that are implicitly using is_clang=true.
-    'libyuv_msvc': {
-        'chromium_config': 'libyuv_msvc',
-        'gclient_config': 'libyuv',
-    },
-    'libyuv_android': {
-        'chromium_config': 'libyuv_android',
-        'chromium_android_config': 'libyuv',
-        'gclient_config': 'libyuv_android',
-    },
-    'libyuv_ios': {
-        'chromium_config': 'libyuv_ios',
-        'gclient_config': 'libyuv_ios',
-    },
-})
 
-BUILDERS = freeze({
-    'client.libyuv': {
-        'settings': {
-            'build_gs_bucket': 'chromium-libyuv',
-        },
-        'builders': {
-            'Win32 Debug': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+@attrs()
+class LibYUVBuilderSpec(builder_spec.BuilderSpec):
+  bot_type = attrib(str, default=None)
+  ensure_sdk = attrib(str, default=None)
+  triggers = attrib(str, default=None)
+
+
+_CLIENT_LIBYUV_SPEC = {
+    'Win32 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
             },
-            'Win32 Release': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win32 Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
             },
-            'Win64 Debug': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win64 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
             },
-            'Win64 Release': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win64 Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Win32 Debug (Clang)': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win32 Debug (Clang)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
             },
-            'Win32 Release (Clang)': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win32 Release (Clang)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
             },
-            'Win64 Debug (Clang)': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win64 Debug (Clang)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
             },
-            'Win64 Release (Clang)': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Win64 Release (Clang)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Mac64 Debug': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'mac'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'Mac64 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
             },
-            'Mac64 Release': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'mac'
-                },
+            bot_type='builder_tester',
+            simulation_platform='mac',
+        ),
+    'Mac64 Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Mac Asan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['asan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'mac'
-                },
+            bot_type='builder_tester',
+            simulation_platform='mac',
+        ),
+    'Mac Asan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['asan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'iOS Debug': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder_tester',
+            simulation_platform='mac',
+        ),
+    'iOS Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'iOS Release': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'iOS Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'iOS ARM64 Debug': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'iOS ARM64 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'iOS ARM64 Release': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'iOS ARM64 Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'Linux32 Debug': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'Linux32 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
             },
-            'Linux32 Release': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux32 Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
             },
-            'Linux64 Debug': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux64 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
             },
-            'Linux64 Release': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux64 Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Linux GCC': {
-                'recipe_config': 'libyuv_gcc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux GCC':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_gcc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Linux Asan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['asan', 'lsan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux Asan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['asan', 'lsan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Linux MSan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['msan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux MSan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['msan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Linux Tsan v2': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['tsan2'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux Tsan v2':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['tsan2'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Linux UBSan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['ubsan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux UBSan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['ubsan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Linux UBSan vptr': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['ubsan_vptr'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Linux UBSan vptr':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['ubsan_vptr'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'Android Debug': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
-                'triggers': ['Android Tester ARM32 Debug (Nexus 5X)',],
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'Android Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
-            'Android Release': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
-                'triggers': ['Android Tester ARM32 Release (Nexus 5X)',],
+            bot_type='builder',
+            simulation_platform='linux',
+            triggers='Android Tester ARM32 Debug (Nexus 5X)',
+        ),
+    'Android Release':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
-            'Android ARM64 Debug': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
-                'triggers': ['Android Tester ARM64 Debug (Nexus 5X)',],
+            bot_type='builder',
+            simulation_platform='linux',
+            triggers='Android Tester ARM32 Release (Nexus 5X)',
+        ),
+    'Android ARM64 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 64,
             },
-            'Android32 x86 Debug': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'intel',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='linux',
+            triggers='Android Tester ARM64 Debug (Nexus 5X)',
+        ),
+    'Android32 x86 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'intel',
+                'TARGET_BITS': 32,
             },
-            'Android32 MIPS Debug': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'mipsel',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='linux',
+        ),
+    'Android32 MIPS Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'mipsel',
+                'TARGET_BITS': 32,
             },
-            'Android64 x64 Debug': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'intel',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='linux',
+        ),
+    'Android64 x64 Debug':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'intel',
+                'TARGET_BITS': 64,
             },
-            'Android Tester ARM32 Debug (Nexus 5X)': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'tester',
-                'parent_buildername': 'Android Debug',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='linux',
+        ),
+    'Android Tester ARM32 Debug (Nexus 5X)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
-            'Android Tester ARM32 Release (Nexus 5X)': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'tester',
-                'parent_buildername': 'Android Release',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='tester',
+            execution_mode=builder_spec.TEST,
+            parent_builder_group='client.libyuv',
+            parent_buildername='Android Debug',
+            simulation_platform='linux',
+        ),
+    'Android Tester ARM32 Release (Nexus 5X)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
-            'Android Tester ARM64 Debug (Nexus 5X)': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'tester',
-                'parent_buildername': 'Android ARM64 Debug',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='tester',
+            execution_mode=builder_spec.TEST,
+            parent_builder_group='client.libyuv',
+            parent_buildername='Android Release',
+            simulation_platform='linux',
+        ),
+    'Android Tester ARM64 Debug (Nexus 5X)':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 64,
             },
-        },
-    },
-    'tryserver.libyuv': {
-        'settings': {
-            'build_gs_bucket': 'chromium-libyuv',
-        },
-        'builders': {
-            'win': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='tester',
+            execution_mode=builder_spec.TEST,
+            parent_builder_group='client.libyuv',
+            parent_buildername='Android ARM64 Debug',
+            simulation_platform='linux',
+        ),
+}
+
+_TRYSERVER_LIBYUV_SPEC = {
+    'win':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
             },
-            'win_rel': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'win_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
             },
-            'win_x64_rel': {
-                'recipe_config': 'libyuv_msvc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'win_x64_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_msvc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'win_clang': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'win_clang':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
             },
-            'win_clang_rel': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'win_clang_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
             },
-            'win_x64_clang_rel': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'win'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'win_x64_clang_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'mac': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'mac'
-                },
+            bot_type='builder_tester',
+            simulation_platform='win',
+        ),
+    'mac':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
             },
-            'mac_rel': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'mac'
-                },
+            bot_type='builder_tester',
+            simulation_platform='mac',
+        ),
+    'mac_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'mac_asan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['asan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'mac'
-                },
+            bot_type='builder_tester',
+            simulation_platform='mac',
+        ),
+    'mac_asan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['asan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'ios': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 32,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder_tester',
+            simulation_platform='mac',
+        ),
+    'ios':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 32,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'ios_rel': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 32,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'ios_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 32,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'ios_arm64': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'ios_arm64':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'ios_arm64_rel': {
-                'recipe_config': 'libyuv_ios',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_PLATFORM': 'ios',
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'mac'
-                },
-                'ensure_sdk': 'ios',
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'ios_arm64_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_ios',
+            gclient_config='libyuv_ios',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
+                'TARGET_ARCH': 'arm',
+                'TARGET_PLATFORM': 'ios',
             },
-            'linux': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='mac',
+            ensure_sdk='ios',
+        ),
+    'linux':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
             },
-            'linux_rel': {
-                'recipe_config': 'libyuv',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'linux_gcc': {
-                'recipe_config': 'libyuv_gcc',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_gcc':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_gcc',
+            gclient_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'linux_asan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['asan', 'lsan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_asan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['asan', 'lsan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'linux_msan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['msan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_msan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['msan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'linux_tsan2': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['tsan2'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_tsan2':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['tsan2'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'linux_ubsan': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['ubsan'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_ubsan':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['ubsan'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'linux_ubsan_vptr': {
-                'recipe_config': 'libyuv_clang',
-                'chromium_apply_config': ['ubsan_vptr'],
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'linux_ubsan_vptr':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_clang',
+            gclient_config='libyuv',
+            chromium_apply_config=['ubsan_vptr'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
             },
-            'android': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'android':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
-            'android_rel': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Release',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'android_rel':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
-            'android_arm64': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'arm',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder_tester',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'android_arm64':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 64,
             },
-            'android_x86': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'intel',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder_tester',
+            simulation_platform='linux',
+        ),
+    'android_x86':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'intel',
+                'TARGET_BITS': 32,
             },
-            'android_x64': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'intel',
-                    'TARGET_BITS': 64,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='linux',
+        ),
+    'android_x64':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'intel',
+                'TARGET_BITS': 64,
             },
-            'android_mips': {
-                'recipe_config': 'libyuv_android',
-                'chromium_config_kwargs': {
-                    'BUILD_CONFIG': 'Debug',
-                    'TARGET_PLATFORM': 'android',
-                    'TARGET_ARCH': 'mipsel',
-                    'TARGET_BITS': 32,
-                },
-                'bot_type': 'builder',
-                'testing': {
-                    'platform': 'linux'
-                },
+            bot_type='builder',
+            simulation_platform='linux',
+        ),
+    'android_mips':
+        LibYUVBuilderSpec.create(
+            chromium_config='libyuv_android',
+            gclient_config='libyuv_android',
+            android_config='libyuv',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'mipsel',
+                'TARGET_BITS': 32,
             },
-        },
-    },
+            bot_type='builder',
+            simulation_platform='linux',
+        ),
+}
+
+BUILDERS_DB = builder_db.BuilderDatabase.create({
+    'client.libyuv': _CLIENT_LIBYUV_SPEC,
+    'tryserver.libyuv': _TRYSERVER_LIBYUV_SPEC,
 })

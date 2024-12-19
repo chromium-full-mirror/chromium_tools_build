@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"android\"@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
@@ -161,8 +168,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/try/android_x86/8945511751514863184",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "DEPOT_TOOLS_REPORT_BUILD": "libyuv/try/android_x86/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -190,12 +196,11 @@
       "--root=[CACHE]/builder/src",
       "gen",
       "[CACHE]/builder/src/out/Debug",
-      "--args=is_component_build=false android_full_debug=true symbol_level=2 dcheck_always_on=true is_debug=true target_os=\"android\" target_cpu=\"x86\" use_remoteexec=true"
+      "--args=is_component_build=false symbol_level=2 dcheck_always_on=true is_debug=true target_os=\"android\" target_cpu=\"x86\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -498,7 +503,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
@@ -650,7 +654,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
