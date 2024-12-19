@@ -58,7 +58,6 @@ def RunSteps(api):
   ]
   analyzers = [
       api.tricium.analyzers.INCLUSIVE_LANGUAGE_CHECK,
-      api.tricium.analyzers.OBJECTIVE_C_STYLE,
       api.tricium.analyzers.SPELLCHECKER,
   ]
   api.tricium.run_legacy(analyzers, source_dir, affected_files, commit_message)
