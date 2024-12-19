@@ -46,7 +46,6 @@ def RunSteps(api):
     ]
     # TODO(qyearsley): Add Pylint analyzer after debugging.
     analyzers = [
-        api.tricium.analyzers.MOJOM_COMMENTATOR,
         api.tricium.analyzers.SPELLCHECKER,
     ]
     api.tricium.run_legacy(analyzers, input_dir, affected_files, commit_message)
