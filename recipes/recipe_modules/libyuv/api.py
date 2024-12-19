@@ -121,6 +121,15 @@ class LibyuvApi(recipe_api.RecipeApi):
         download_url,
         source_dir,
         build_revision=self.revision)
+    # The zip_and_upload_build step ignores files in obj folder
+    # but it is the binary in obj that is executed.
+    self.m.step(
+        'mkdir',
+        ['mkdir', '-p', build_dir / 'exe.unstripped/obj/libyuv_unittest'])
+    self.m.step('cp exe', [
+        'cp', build_dir / 'libyuv_unittest',
+        build_dir / 'exe.unstripped/obj/libyuv_unittest'
+    ])
 
   def runtests(self, build_dir: Path):
     """Add a suite of test steps."""
