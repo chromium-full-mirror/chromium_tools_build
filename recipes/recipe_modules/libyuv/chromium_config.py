@@ -45,6 +45,7 @@ def libyuv_ios(c):
   c.build_config_fs = c.BUILD_CONFIG + '-iphoneos'
 
   c.gn_args.append('ios_enable_code_signing=false')
+  c.gn_args.append('target_environment="simulator"')
   c.gn_args.append('target_os="%s"' % c.TARGET_PLATFORM)
   _libyuv_common(c)
 
