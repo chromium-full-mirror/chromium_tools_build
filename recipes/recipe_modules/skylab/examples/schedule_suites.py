@@ -17,6 +17,7 @@ DEPS = [
 import base64
 import copy
 import json
+import re
 
 from google.protobuf import json_format
 
@@ -303,17 +304,19 @@ def RunSteps(api, requests):
 
   api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
   ctp_build_ids = []
+  step_results = []
   with api.step.nest('schedule skylab test'):
     for r in requests:
-      api.skylab.schedule_suite(
-          r, '', retry_shards=api.properties.get('retry_shards'))
+      step_results.append(
+          api.skylab.schedule_suite(
+              r, '', retry_shards=api.properties.get('retry_shards')))
       if cpt_id := r.ctp_build_ids.get(''):
         ctp_build_ids.append(cpt_id)
+  for result in step_results:
+    api.step.raise_on_failure(result)
   api.buildbucket.collect_builds(ctp_build_ids, timeout=60)
   with api.step.nest('find test runner build'):
     for r in requests:
-      if not r.ctp_build_ids.get(''):
-        continue
       api.skylab.fetch_test_runners(r, '')
 
 
@@ -376,51 +379,23 @@ def GenTests(api):
   def b64_encode(s):
     return base64.b64encode(s.encode('utf-8')).decode('ascii')
 
-  def test_args(name, test_level_retries=0):
-    args = []
-    args.append('resultdb_settings={}'.format(
-        b64_encode(json.dumps(gen_skylab_rdb(name)))))
-    args.append('tast_expr_b64={}'.format(b64_encode(LACROS_TAST_EXPR)))
-    args.append('retries={}'.format(test_level_retries))
-    args.append('exe_rel_path=out/Release/chrome')
-    return ' '.join(args)
-
   yield api.test(
       'basic',
       api.properties(requests=REQUESTS[:1]),
-      api.post_process(
-          post_process.StepCommandContains,
-          'schedule skylab test.' + REQUESTS[0].name + '.schedule', [
-              '--chromium-src',
-              '[CLEANUP]/fake-repo',
-              '--json-outfile',
-              '/path/to/tmp/json',
-              'request',
-              '--board',
-              'eve',
-              '--model',
-              'baks',
-              '--bucket',
-              'a_different_chromium_bucket',
-              '--public-builder',
-              'ctp-public-builder',
-              '--public-builder-bucket',
-              'public-bucket',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
-              '--timeout-mins',
-              '60',
-              '--qs-account',
-              'lacros',
-              '--retry',
-              '1',
-              '--test-args',
-              test_args(REQUESTS[0].name) + ' run_private_tests=False',
-              '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
-          ]),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       [
+                           '--board',
+                           REQUESTS[0].spec.cros_board,
+                           '--model',
+                           REQUESTS[0].spec.cros_model,
+                           '--bucket',
+                           REQUESTS[0].spec.bucket,
+                           '--public-builder',
+                           REQUESTS[0].spec.public_builder,
+                           '--public-builder-bucket',
+                           REQUESTS[0].spec.public_builder_bucket,
+                       ]),
       api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.post_process(post_process.DropExpectation),
   )
@@ -432,13 +407,20 @@ def GenTests(api):
       api.step_data(
           'schedule skylab test.' + REQUESTS[0].name + '.schedule', retcode=1),
       api.post_process(post_process.StepFailure, 'schedule skylab test'),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[2].name + '.schedule',
+                       ['--pool', REQUESTS[2].spec.dut_pool]),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[2].name + '.schedule',
+                       ['--autotest-name', REQUESTS[2].spec.autotest_name]),
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab test.' + REQUESTS[2].name + '.schedule', [
-              'request', '--board', 'eve', '--pool', 'cross_device_multi_cb',
-              '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--test-args',
+              re.compile('resultdb_settings=.* '
+                         f'tast_expr_file={REQUESTS[2].tast_expr_file} .*'),
           ]),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -454,6 +436,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[4].name + '.schedule',
                        ['--total-shards', '2']),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -588,31 +571,19 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab test.' + MULTI_DUT_REQUESTS[1].name + '.schedule', [
-              'request',
-              '--board',
-              'eve',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
               '--secondary-boards',
-              'pixel6',
+              MULTI_DUT_REQUESTS[1].spec.secondary_cros_board,
               '--secondary-images',
-              '',
-              '--timeout-mins',
-              '60',
-              '--qs-account',
-              'lacros',
-              '--test-args',
-              test_args(MULTI_DUT_REQUESTS[1].name),
-              '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
+              MULTI_DUT_REQUESTS[1].spec.secondary_cros_img,
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[1].name + '.schedule',
+          [
+              # `should_provision_browser_files=[False]` should map to a single
+              # --secondary-lacros-gcs-path arg with an empty string val.
               '--secondary-lacros-gcs-path',
               '',
-              '--autotest-name',
-              'tast.nearby-share',
-              '--total-shards',
-              '1',
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -623,43 +594,18 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab test.' + MULTI_DUT_REQUESTS[2].name + '.schedule', [
-              'request',
-              '--board',
-              'eve',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
               '--secondary-boards',
-              'atlas',
+              MULTI_DUT_REQUESTS[2].spec.secondary_cros_board.split(',')[0],
               '--secondary-images',
-              'atlas-release/R111-15300.0.0',
+              MULTI_DUT_REQUESTS[2].spec.secondary_cros_img.split(',')[0],
               '--secondary-boards',
-              'pixel6',
+              MULTI_DUT_REQUESTS[2].spec.secondary_cros_board.split(',')[1],
               '--secondary-images',
-              '',
+              MULTI_DUT_REQUESTS[2].spec.secondary_cros_img.split(',')[1],
               '--secondary-boards',
-              'octopus',
+              MULTI_DUT_REQUESTS[2].spec.secondary_cros_board.split(',')[2],
               '--secondary-images',
-              'octopus-release/R111-15300.0.0',
-              '--timeout-mins',
-              '60',
-              '--qs-account',
-              'lacros',
-              '--test-args',
-              test_args(MULTI_DUT_REQUESTS[2].name),
-              '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
-              '--secondary-lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
-              '--secondary-lacros-gcs-path',
-              '',
-              '--secondary-lacros-gcs-path',
-              'gs://fake_bucket/fake_test/skylab_runtime_deps.tar.zst',
-              '--autotest-name',
-              'tast.nearby-share',
-              '--total-shards',
-              '1',
+              MULTI_DUT_REQUESTS[2].spec.secondary_cros_img.split(',')[2],
           ]),
       api.post_process(post_process.DropExpectation),
   )

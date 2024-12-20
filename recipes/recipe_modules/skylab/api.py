@@ -129,6 +129,8 @@ class SkylabApi(recipe_api.RecipeApi):
     * test (step.SkylabTest): a steps.SkylabTest to schedule.
     * suffix: A string suffix.
     * retry_shards (list[str]): the index for shards to retry. None by default.
+
+    Returns the StepResult of the skylab.py resource script invocation.
     """
     with self.m.step.nest(test.step_name(suffix)) as presentation:
       cmd = [
@@ -318,6 +320,7 @@ class SkylabApi(recipe_api.RecipeApi):
         presentation.links[
             test.name] = 'https://ci.chromium.org/b/%s' % build_id
         test.ctp_build_ids[suffix] = build_id
+      return step_result
 
   def fetch_test_runners(self, test, suffix):
     """Fetch the CrOS test runner builds for each shard.
@@ -381,8 +384,10 @@ class SkylabApi(recipe_api.RecipeApi):
     var.update({
         'device_type': test.spec.cros_board,
         'os': 'ChromeOS',
-        'cros_img': cros_img,
     })
+    tags = test.spec.resultdb.base_tags or []
+    if not any(t[0] == 'cros_img' for t in tags):
+      tags.append(('cros_img', cros_img))
     result_format = 'gtest'
     if test.is_tast_test:
       result_format = 'tast'
@@ -410,6 +415,7 @@ class SkylabApi(recipe_api.RecipeApi):
     return attr.evolve(
         test.spec.resultdb,
         test_id_prefix=test.spec.test_id_prefix,
+        base_tags=tags,
         base_variant=var,
         result_format=result_format,
         # Skylab's result_file is hard-coded by the autotest wrapper in OS
