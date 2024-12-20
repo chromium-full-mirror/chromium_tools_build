@@ -4,14 +4,17 @@
 """Script to run the tests using the rr tool on swarming testing bots."""
 
 import argparse
+import json
 import logging
 import subprocess
 import os
+import pathlib
 import platform
 import sys
 
 MAX_RUNS = 5
 TRACE_DIR = 'trace_dir'
+TEST_RESULTS_JSON = pathlib.Path('layout-test-results/full_results.json')
 
 
 def parse_args(args):
@@ -62,15 +65,41 @@ def main(args):
   if platform.system() != 'Linux':
     raise Exception('This test runner only supports Linux')
 
+  def _remove_old_trace_dir():
+    run_cmd(['rm', '-rf', TRACE_DIR], '../../')
+
   for test_name in args.test:
     test_name_plain = sanitize_test_name(test_name, '_')
     if not test_name_plain:
       continue
     test_cmd = args.test_cmd
     test_cmd.append(test_name)
-    for i in range(MAX_RUNS):
+
+    found_failure = False
+    found_pass = False
+    for _ in range(MAX_RUNS):
       run_cmd(test_cmd, './')
-      # TODO(jiesheng): Select test traces to upload based on test result.
+
+      test_result = None
+      with open(
+          pathlib.Path(args.output_dir) / TEST_RESULTS_JSON,
+          'r',
+          encoding='utf-8') as f:
+        results = json.load(f).get('num_failures_by_type', {})
+        if results.get('PASS', 0) > 0:
+          if found_pass:
+            _remove_old_trace_dir()
+            continue
+          found_pass = True
+          test_result = 'PASS'
+        # If nothing passed, assume it was a failure (CRASH or FAIL)
+        else:
+          if found_failure:
+            _remove_old_trace_dir()
+            continue
+          found_failure = True
+          test_result = 'FAIL'
+
       # Pack the test trace and upload the trace and test result file to output
       # dir.
       result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../../')
@@ -79,12 +108,15 @@ def main(args):
             'tar', '--exclude', './db*', '--use-compress-program=zstd', '-cf',
             'trace.tar', f'../../{TRACE_DIR}'
         ], './')
-        os.renames('trace.tar',
-                   f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
+        os.renames(
+            'trace.tar',
+            f'{args.output_dir}/{test_name_plain}/{test_result}/trace.tar')
       else:
         logging.error('Result of running rr pack is %r', result)
-      # Remove the trace dir.
-      run_cmd(['rm', '-rf', TRACE_DIR], '../../')
+      _remove_old_trace_dir()
+
+      if found_failure and found_pass:
+        break
 
 
 if __name__ == '__main__':

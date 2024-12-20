@@ -57,25 +57,6 @@ UPLOAD_BUCKET = 'chromium-rr-traces'
 TRACE_FILE = 'trace.tar'
 
 
-def find_traces(api, target_path, invocation):
-  """Find the first pass run trace and failed run trace from the input result.
-  """
-  pass_run_dir = ''
-  failed_run_dir = ''
-  if not api.path.exists(target_path):
-    return pass_run_dir, failed_run_dir
-
-  for i, test_result in enumerate(invocation.test_results):
-    dir_path = target_path / str(i)
-    test_trace_file = target_path / str(i) / TRACE_FILE
-    if api.path.exists(test_trace_file):
-      if test_result.status == test_result_pb2.PASS and not pass_run_dir:
-        pass_run_dir = f'{dir_path}'
-      if test_result.status != test_result_pb2.PASS and not failed_run_dir:
-        failed_run_dir = f'{dir_path}'
-  return pass_run_dir, failed_run_dir
-
-
 def RunSteps(api, properties):
   if not any(
       test_info.test_suite for test_info in properties.target_test_infos):
@@ -264,21 +245,22 @@ def _process_task_results(api, task_results_and_test_infos):
     for target_path in api.file.listdir(
         'listdir test dirs', download_dir, test_data=['test_name']):
       target_name = api.path.basename(target_path)
-      pass_run_dir, failed_run_dir = find_traces(api, target_path, invocation)
-      if failed_run_dir:
+      failed_run_dir = target_path / 'FAIL'
+      if api.path.exists(failed_run_dir):
         # Pass Run trace is optional if failed run trace exists.
-        if pass_run_dir:
+        pass_run_dir = target_path / 'PASS'
+        if api.path.exists(pass_run_dir):
           pass_run_new_dir = api.path.join(traces_out_dir, target_name,
                                            'pass_run_trace')
           api.file.ensure_directory('ensure pass trace dir exist',
                                     pass_run_new_dir)
-          api.file.move('move pass trace', f'{pass_run_dir}/trace.tar',
+          api.file.move('move pass trace', f'{str(pass_run_dir)}/trace.tar',
                         pass_run_new_dir)
         failed_run_new_dir = api.path.join(traces_out_dir, target_name,
                                            'failed_run_trace')
         api.file.ensure_directory('ensure failed trace dir exist',
                                   failed_run_new_dir)
-        api.file.move('move failed trace', f'{failed_run_dir}/trace.tar',
+        api.file.move('move failed trace', f'{str(failed_run_dir)}/trace.tar',
                       failed_run_new_dir)
         found_test_traces = True
 
@@ -410,18 +392,22 @@ def GenTests(api):
       api.resultdb.query(step_name='rdb query (3)', inv_bundle=inv_bundle),
       api.resultdb.query(step_name='rdb query (4)', inv_bundle=inv_bundle),
       api.path.files_exist(
-          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '0' /
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / 'PASS' /
           'test_result',
-          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '0' / TRACE_FILE,
-          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '1' /
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / 'PASS' /
+          TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / 'FAIL' /
           'test_result',
-          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / '1' / TRACE_FILE,
-          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '0' /
+          api.path.cleanup_dir / 'trace_dir_1' / 'test_name' / 'FAIL' /
+          TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / 'PASS' /
           'test_result',
-          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '0' / TRACE_FILE,
-          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '1' /
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / 'PASS' /
+          TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / 'FAIL' /
           'test_result',
-          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / '1' / TRACE_FILE,
+          api.path.cleanup_dir / 'trace_dir_2' / 'test_name' / 'FAIL' /
+          TRACE_FILE,
       ),
       api.post_process(DropExpectation),
   )
