@@ -157,8 +157,9 @@ def GenTests(api: RecipeTestApi):
       api.post_process(
           post_process.SummaryMarkdown,
           'Caution: the recipe config for this builder may be incompatible '
-          'with the current machine: Can not compile "ios" on "linux". '
-          'Continue?'),
+          'with the current machine: Unexpectedly attempting to compile ios '
+          'from linux. The chromium config HOST_PLATFORM was not set '
+          'explicitly. Continue?'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

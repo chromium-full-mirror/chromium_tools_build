@@ -18,6 +18,7 @@ DEPS = [
 PROPERTIES = {
     'config': Property(kind=str, default=''),
     'host_platform': Property(kind=str, default=''),
+    'target_platform': Property(kind=str, default='linux'),
 }
 
 @config_ctx()
@@ -25,9 +26,13 @@ def bad_generator(c):
   c.project_generator.tool = 'this is not a valid generator'
 
 
-def RunSteps(api, config, host_platform):
+def RunSteps(api, config, host_platform, target_platform):
   with api.assertions.assertRaises(BadConf):
-    api.chromium.set_config(config, HOST_PLATFORM=host_platform)
+    api.chromium.set_config(
+        config,
+        HOST_PLATFORM=host_platform,
+        TARGET_PLATFORM=target_platform,
+    )
 
 
 def GenTests(api):
@@ -41,5 +46,12 @@ def GenTests(api):
       'bad_host_platform',
       api.properties(config='chromium', host_platform='linux'),
       api.platform('win', 64),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cross_compile_without_host_platform_set_explicitly',
+      api.properties(config='chromium', target_platform='win'),
+      api.platform('linux', 64),
       api.post_process(post_process.DropExpectation),
   )

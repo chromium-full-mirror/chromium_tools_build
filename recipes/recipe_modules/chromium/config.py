@@ -157,6 +157,22 @@ def validate_config(c, actual_host_platform):
   # TEST_ONLY builders are not compiling that are not limited by host platforms
   # listed in the potential_platforms.
   if not c.TEST_ONLY:
+    # Configs have assumed platforms based on their target. Only accept
+    # deviations when the host_platform is set explicitly in the chromium config
+    # This requires builders that are "cross compiling" to set their
+    # host_platform
+    expected_compiler_platform = {
+        'android': 'linux',
+        'chromeos': 'linux',
+        'fuchsia': 'linux',
+        'ios': 'mac',
+    }.get(c.TARGET_PLATFORM, c.TARGET_PLATFORM)
+    if (not c.HOST_PLATFORM_EXPLICIT and
+        c.HOST_PLATFORM != expected_compiler_platform):
+      raise BadConf(f'Unexpectedly attempting to compile {c.TARGET_PLATFORM} '
+                    f'from {c.HOST_PLATFORM}. The chromium config '
+                    'HOST_PLATFORM was not set explicitly')
+
     potential_platforms = {
         # host -> potential target platforms
         'win': ('win',),

@@ -6,6 +6,7 @@ DEPS = [
     'chromium',
     'recipe_engine/json',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/runtime',
@@ -88,6 +89,7 @@ def GenTests(api):
 
   yield api.test(
       'official_win_luci',
+      api.platform('win', 64),
       api.properties(target_platform='win', chromium_apply_config=['official']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
