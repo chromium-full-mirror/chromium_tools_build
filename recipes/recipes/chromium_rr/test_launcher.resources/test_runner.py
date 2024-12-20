@@ -33,12 +33,12 @@ def parse_args(args):
   return parser.parse_args(args)
 
 
-def run_cmd(cmd, cwd=None):
+def run_cmd(cmd, cwd='./'):
   """Run command locally.
 
   Args:
     cmd (list[str]): Sequence of cmd arguments.
-    cwd (str): Change working directory.
+    cwd (str): Change working directory, default is current directory.
   """
   logging.info('Running %r in %r', cmd, cwd)
   old_cwd = os.getcwd()
@@ -65,6 +65,14 @@ def main(args):
   if platform.system() != 'Linux':
     raise Exception('This test runner only supports Linux')
 
+  # Set up the docker image of pernosco. For details, see:
+  # https://github.com/Pernosco/on-prem/blob/main/README.md#google-cloud
+  run_cmd([
+      'gcloud/bin/gcloud', 'auth', '-q', 'configure-docker',
+      'us-west1-docker.pkg.dev'
+  ], '../../')
+  run_cmd(['pernosco/pernosco', '--gcloud', 'pull'], '../../')
+
   def _remove_old_trace_dir():
     run_cmd(['rm', '-rf', TRACE_DIR], '../../')
 
@@ -78,7 +86,7 @@ def main(args):
     found_failure = False
     found_pass = False
     for _ in range(MAX_RUNS):
-      run_cmd(test_cmd, './')
+      run_cmd(test_cmd)
 
       test_result = None
       with open(
@@ -107,7 +115,7 @@ def main(args):
         run_cmd([
             'tar', '--exclude', './db*', '--use-compress-program=zstd', '-cf',
             'trace.tar', f'../../{TRACE_DIR}'
-        ], './')
+        ])
         os.renames(
             'trace.tar',
             f'{args.output_dir}/{test_name_plain}/{test_result}/trace.tar')

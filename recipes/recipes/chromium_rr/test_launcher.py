@@ -170,6 +170,11 @@ def _create_tasks_and_test_infos(api, target_test_infos, tests):
           name='infra/3pp/tools/rr/${platform}',
           version='latest',
           root='rr_tool',
+      ),
+      chromium_swarming.CipdPackage.create(
+          name='infra/3pp/tools/gcloud/${platform}',
+          version='latest',
+          root='gcloud',
       )
   ]
   test_suite_to_tests = {t.name: t for t in tests}
