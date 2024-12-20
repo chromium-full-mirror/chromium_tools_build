@@ -78,7 +78,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if run_mode == self.m.cv.DRY_RUN:
       dry_run = ('chromium_rts.dry_run_rts'
                  in self.m.buildbucket.build.input.experiments)
-      step_result = self.m.step('rts dry run', [])
+      if dry_run:
+        step_result = self.m.step('rts dry run', [])
 
     self._rts_model = None
     use_rts = (
