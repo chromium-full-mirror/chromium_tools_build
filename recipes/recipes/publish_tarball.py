@@ -343,6 +343,19 @@ def export_lite_tarball(api, source_dir, version):
                 '!',
                 '-iname',
                 '*.grd*',
+                '!',
+                '-iname',
+                '*LICENSE*',
+                '!',
+                '-iname',
+                '*Copyright*',
+                '!',
+                '-iname',
+                '*COPYING*',
+                '!',
+                '-iname',
+                # Name of FreeType's license file
+                '*FTL.TXT*',
                 '-delete'
             ])
       except api.step.StepFailure:  # pragma: no cover
