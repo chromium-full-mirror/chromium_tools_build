@@ -319,7 +319,6 @@ class WebRTCApi(recipe_api.RecipeApi):
     result.presentation.properties['binary_sizes'] = result.json.output
 
   def include_cleaner(self, source_dir: Path, builder_id):
-    GENERATE_DATABASE = 'tools/clang/scripts/generate_compdb.py'
     INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply-include-cleaner'
     SKIP_FOOTER = 'No-Iwyu'
 
@@ -331,12 +330,11 @@ class WebRTCApi(recipe_api.RecipeApi):
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True)
     with self.m.context(cwd=source_dir):
-      self.m.step('generate compile commands', [
-          GENERATE_DATABASE, '--filter_arg', 'exec_root', '-p', build_dir, '>',
-          build_dir + '/compile_commands.json'
-      ])
+      self.m.step('remove compile_commands.json',
+                  ['rm', '-f', build_dir + '/compile_commands.json'])
       for f in affected_files:
         if _is_cpp_file(f) and self.m.path.exists(source_dir / f):
+          # First call to apply-include-cleaner generates compile_commands.json.
           step_result = self.m.step(
               'apply-include-cleaner ' + f,
               [INCLUDE_CLEANER, '-r', '-c', '-w', build_dir, f],

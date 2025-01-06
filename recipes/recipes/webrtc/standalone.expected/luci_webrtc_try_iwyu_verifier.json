@@ -2283,12 +2283,8 @@
   },
   {
     "cmd": [
-      "tools/clang/scripts/generate_compdb.py",
-      "--filter_arg",
-      "exec_root",
-      "-p",
-      "out/iwyu_verifier",
-      ">",
+      "rm",
+      "-f",
       "out/iwyu_verifier/compile_commands.json"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -2304,7 +2300,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "generate compile commands"
+    "name": "remove compile_commands.json"
   },
   {
     "cmd": [
