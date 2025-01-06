@@ -72,6 +72,9 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   summary_md_lines = [f'{len(failed_trybots)} builders failed:']
   for trybot in failed_trybots:
     summary_md_lines.append(' - ' + '/'.join(trybot))
+
+  step_result = api.step.empty('record results')
+  step_result.presentation.properties['failed_trybots'] = failed_trybots
   return RawResult(
       status=result.status, summary_markdown='\n'.join(summary_md_lines))
 
