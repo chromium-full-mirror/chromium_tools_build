@@ -22,6 +22,8 @@ from PB.recipes.build.chromium.mega_cq_smoke_check import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
     BatchResponse)
 
+from RECIPE_MODULES.build.chromium_tests import steps
+
 DEPS = [
     'chromium',
     'chromium_gerrit_utils',
@@ -53,6 +55,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
       # list.
       'base/check.cc',
       GERRIT_TOPIC,
+      git_footers=[steps.INCLUDE_CI_FOOTER + ': true'],
   )
 
   # Clean up any old CLs left around from previous runs. A mega CQ run might

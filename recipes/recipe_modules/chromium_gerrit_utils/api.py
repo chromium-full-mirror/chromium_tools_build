@@ -21,6 +21,7 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
       file_path: str,
       topic: str,
       extra_commit_msg_lines: Iterable[str] | None = None,
+      git_footers: Iterable[str] | None = None,
   ) -> tuple[common_pb.GerritChange, str]:
     """Creates a throw-away CL in chromium/src.git via Gerrit's REST API.
 
@@ -32,11 +33,14 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
       file_path - File path in chromium/src.git to change.
       topic - Name of the gerrit topic to attach to the CL.
       extra_commit_msg_lines - List of lines to add to the commit message.
+      git_footers - Like extra_commit_msg_lines, but list of lines to put at
+        the very end of the commit msg.
 
     Returns tuple of (buildbucket.common.GerritChange of the CL, full URL of
       the CL)
     """
     extra_commit_msg_lines = extra_commit_msg_lines or []
+    git_footers = git_footers or []
     old_contents = self.m.gitiles.download_file(
         self.GITILES_CHROMIUM_SRC_URL,
         file_path,
@@ -59,6 +63,7 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
         'Bug: None',
         # 'Commit: false' to prevent someone from accidentally submitting the CL.
         'Commit: false',
+        *git_footers,
         '',
     ]
     change_info = self.m.gerrit.update_files(
