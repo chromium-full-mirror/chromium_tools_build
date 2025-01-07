@@ -26,6 +26,7 @@ def libyuv_msvc(c):
   _libyuv_common(c)
   c.gn_args.append('is_clang=false')
   c.gn_args.append('use_lld=false')
+  c.gn_args.append('use_custom_libcxx=false')
 
 
 @CONFIG_CTX(includes=['android'])

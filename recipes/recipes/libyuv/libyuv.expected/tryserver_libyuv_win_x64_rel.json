@@ -196,7 +196,7 @@
       "--root=[CACHE]\\builder\\src",
       "gen",
       "[CACHE]\\builder\\src\\out\\Release_x64",
-      "--args=is_clang=false use_lld=false symbol_level=2 dcheck_always_on=true is_debug=false target_cpu=\"x64\""
+      "--args=is_clang=false use_lld=false use_custom_libcxx=false symbol_level=2 dcheck_always_on=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
