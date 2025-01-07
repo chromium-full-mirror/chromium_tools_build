@@ -1246,6 +1246,7 @@ class SwarmingApi(recipe_api.RecipeApi):
                             merge_arguments,
                             build_properties,
                             requests_json,
+                            server=None,
                             output_json=None,
                             task_output_dir=None):
     """Generate the arguments needed to run collect_task.py.
@@ -1253,6 +1254,8 @@ class SwarmingApi(recipe_api.RecipeApi):
     Args:
       requests_json: the swarming task IDs for the collect task to collect. IDs
                       are in JSON format.
+      server: The Swarming server to wait for the tasks on. If not provided, the
+                      server the current task is running on will be used.
       For the other arguments, please refer to collect_task.collect_task() for
       details.
     """
@@ -1286,7 +1289,7 @@ class SwarmingApi(recipe_api.RecipeApi):
            self.m.json.dumps(build_properties)])
     task_args.extend(['--summary-json-file', self.summary()])
     collect_cmd = ['swarming']
-    collect_cmd.extend(self.get_collect_cmd_args(requests_json))
+    collect_cmd.extend(self.get_collect_cmd_args(requests_json, server))
     task_args.append('--')
     task_args.extend(collect_cmd)
     return task_args
@@ -1371,6 +1374,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         merge_arguments=merge.args,
         build_properties=build_properties,
         requests_json=task.collect_cmd_input(),
+        server=task.server,
         output_json=output_placeholder,
         task_output_dir=task.task_output_dir)
 
@@ -1677,15 +1681,14 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     return has_valid_results
 
-  def get_collect_cmd_args(self, requests_json):
+  def get_collect_cmd_args(self, requests_json, server=None):
     """
     SwarmingTask -> argument list for go swarming command.
     """
     args = [
         'collect',
         '-server',
-        self.m.swarming.current_server,
-
+        server or self.m.swarming.current_server,
         '-task-summary-python',
         '-task-output-stdout',
         self.task_output_stdout,
