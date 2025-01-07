@@ -821,9 +821,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         if requested_test_name in (t.name, t.canonical_name):
           return t
       raise self.m.step.StepFailure(
-          f'No suites on the bot matched the request for {requested_test_name}.'
-          'Passed-in tests must either all be test suite names, or all be '
-          'paths to test files.')
+          'No suites on the bot matched the request for '
+          f'{requested_test_name}. Passed-in tests must either all be test '
+          'suite names, or all be paths to test files.')
 
     # An empty list of tests implies we should use all
     tests = targets_config.all_tests
