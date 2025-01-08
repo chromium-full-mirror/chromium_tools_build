@@ -143,6 +143,16 @@ def GenTests(api):
                        ['--remote_jobs', '100']),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'keep_going',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(keep_going=0),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-k', '0']),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'limits',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
