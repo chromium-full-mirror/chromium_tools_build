@@ -53,14 +53,31 @@ ESSENTIAL_GIT_DIRS = (
     'third_party/rust-src/',)
 
 TEST_DIRS = (
+    'base/tracing/test/data',
     'chrome/test/data',
+    'components/test/data',
     'content/test/data',
     'courgette/testdata',
     'extensions/test/data',
     'media/test/data',
     'native_client/src/trusted/service_runtime/testdata',
+    'testing/libfuzzer/fuzzers/wasm_corpus',
+    'third_party/blink/perf_tests',
     'third_party/breakpad/breakpad/src/processor/testdata',
     'third_party/catapult/tracing/test_data',
+    'third_party/dawn/test',
+    'third_party/expat/src/testdata',
+    'third_party/harfbuzz-ng/src/test',
+    'third_party/llvm/llvm/test',
+    'third_party/ots/src/tests/fonts',
+    'third_party/rust-src/src/gcc/gcc/testsuite',
+    'third_party/rust-src/src/llvm-project/clang/test',
+    'third_party/rust-src/src/llvm-project/llvm/test',
+    'third_party/screen-ai/linux/resources',
+    'third_party/sqlite/src/test',
+    'third_party/swiftshader/tests/regres',
+    'third_party/test_fonts/test_fonts',
+    'tools/perf/testdata',
 )
 
 
