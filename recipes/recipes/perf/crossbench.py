@@ -24,9 +24,13 @@ def RunSteps(api):
 
   chrome_app_path, chrome_driver_path = download_chrome(api)
 
-  test_driver = 'crossbench/tests/end2end/runner.py'
+  # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
+  if not api.platform.is_win:
+    api.step('Run Unit Tests',
+             ['vpython3', 'crossbench/tests/crossbench/runner.py'])
+
   api.step('Run End2End Tests', [
-      'vpython3', test_driver,
+      'vpython3', 'crossbench/tests/end2end/runner.py',
       '--test-gsutil-path=%s' % api.gsutil.gsutil_py_path,
       '--test-browser-path=%s' % chrome_app_path,
       '--test-driver-path=%s' % chrome_driver_path, '--ignore-tests=android'
