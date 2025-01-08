@@ -5,6 +5,8 @@
    See also go/chrome-build-time
 """
 
+import json
+
 from recipe_engine import post_process
 from recipe_engine.config_types import Path
 
@@ -13,6 +15,7 @@ from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
+    'depot_tools/gsutil',
     'builder_group',
     'chromium',
     'chromium_build_perf',
@@ -30,59 +33,153 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
-    'reclient',
+    'siso',
 ]
 
-_BQ_TABLE_NAME = 'chromium-build-stats.public.build_resource_usage'
+_BQ_TABLE_NAME = 'chromium-build-stats.public.build_stats'
 
-def _raise_raw_result_on_failure(api, raw_result):
-  if raw_result.status != common_pb.SUCCESS:
-    raise api.step.StepFailure(raw_result.summary_markdown)
+# TODO: Create a new bucket to make the include analysis public.
+_GS_BUCKET = 'chrome-goma-log'
 
 
-def _compile_without_remote_execution(
+def _compile(
     api,
     source_dir: Path,
     build_dir: Path,
     target,
-    resource_usage_output_dir,
+    resource_usage_output_file: Path,
+    build_log: Path,
 ):
-  # Build without remote execution.
   api.chromium_build_perf.recreate_build_dir(
       source_dir, build_dir, remove_deps_cache=True)
-  resource_usage_output_file = resource_usage_output_dir / 'resource_usage.json'
-  raw_result = api.chromium_build_perf.build_with_siso(
-      source_dir,
-      build_dir,
-      target,
-      with_remote_cache=False,
-      use_rbe=False,
-      resource_usage_output_file=resource_usage_output_file)
-  _raise_raw_result_on_failure(api, raw_result)
+  with api.context(cwd=build_dir):
+    cmd = [
+        'ninja',
+        '-C',
+        build_dir,
+        '-v',
+        target,
+    ]
+    step_result = api.siso.run_ninja(
+        source_dir,
+        cmd,
+        stdout=api.raw_io.output(
+            leak_to=build_log, name="build_log", add_output_log=True),
+        resource_usage_output_file=resource_usage_output_file,
+    )
+    rusage = api.file.read_json(
+        'read resource usage log',
+        resource_usage_output_file,
+        test_data={'ru_utime': '0:01.00'},
+    )
+    return step_result, rusage
 
-  rusage = api.file.read_json(
-      'read resource usage log',
-      resource_usage_output_file,
-      test_data={'ru_utime': '0:01.00'},
-  )
-  rusage['build_id'] = api.buildbucket.build.id
-  rusage['builder'] = api.buildbucket.builder_full_name
-  rusage['revision'] = api.buildbucket.build.input.gitiles_commit.id
-  rusage['build_timestamp'] = api.time.utcnow().isoformat()
+
+def _analyze_includes(
+    api,
+    target: str,
+    source_dir: Path,
+    staging_dir: Path,
+    build_log: Path,
+):
+  with api.step.nest('analyze includes') as parent_step:
+    result_js_file = staging_dir / 'include-analysis.js'
+    cmd = [
+        'python3',
+        'tools/clang/scripts/analyze_includes.py',
+        '--target=%s' % target,
+        '--revision=%s' % api.buildbucket.build.input.gitiles_commit.id,
+        '--json-out=%s' % result_js_file,
+        build_log,
+    ]
+    with api.context(cwd=source_dir):
+      api.step('analyze includes', cmd)
+
+    # It starts with `data = ` to be included as JS file.
+    # https://source.chromium.org/chromium/chromium/src/+/main:tools/clang/scripts/analyze_includes.py;l=438-440;drc=b9664d07c6b204b35a6e42141ba9581e261624fb
+    test_js_data = 'data = ' + json.dumps({
+        'target': target,
+        'revision': 'abcd',
+        'date': None,
+        'files': [
+            'a.cc',
+            'a.h',
+        ],
+        'roots': [0],
+        'includes': [[1]],
+        'included_by': [[], [0]],
+        'sizes': [10, 20],
+        'tsizes': [30, 20],
+    })
+    js_data_raw = api.file.read_text(
+        'read include analysis result', result_js_file, test_data=test_js_data)
+    if js_data_raw.startswith('data = '):
+      result_json = js_data_raw[len('data = '):]
+    analysis_result = json.loads(result_json)
+
+    # Read include-analysis.html and replace <script> tag with the JS data.
+    analysis_html = api.file.read_text(
+        'read include-analysis.html',
+        source_dir / 'tools/clang/scripts/include-analysis.html')
+    analysis_html = analysis_html.replace(
+        '<script src="include-analysis.js"></script>',
+        f'<script>{js_data_raw}</script>')
+    archive_file = api.path.mkstemp()
+    api.file.write_text('write archive file', archive_file, analysis_html)
+
+    # Upload include-analysis.html to GCS.
+    upload_path = 'chrome-includes-analysis/%s/%d/%s' % (
+        api.buildbucket.builder_full_name,
+        api.buildbucket.build.number,
+        'include-analysis.html',
+    )
+    upload_result = api.gsutil.upload(
+        archive_file,
+        _GS_BUCKET,
+        upload_path,
+        link_name="include-analysis.html",
+        metadata={'Content-Type': 'text/html'},
+        name='upload include-analysis.html')
+
+    archive_link = upload_result.presentation.links['include-analysis.html']
+    analysis_result['archive_link'] = archive_link
+    parent_step.links['include-analysis.html'] = archive_link
+    parent_step.logs['analysis_result'] = api.json.dumps(
+        analysis_result, indent=2)
+
+    return analysis_result
+
+
+def _upload_result_to_bq(api, rusage, include_analysis):
+  result = {
+      'build_id': api.buildbucket.build.id,
+      'builder': api.buildbucket.builder_full_name,
+      'revision': api.buildbucket.build.input.gitiles_commit.id,
+      # TODO: use the timestamp of the commit.
+      'build_timestamp': api.time.utcnow().isoformat(),
+      'rusage': rusage,
+      'include_analysis': {
+          'total_build_size':
+              sum(include_analysis['tsizes'][r]
+                  for r in include_analysis['roots']),
+          'archive_link':
+              include_analysis['archive_link'],
+      },
+  }
+
   bqupload_cipd_path = api.cipd.ensure_tool('infra/tools/bqupload/${platform}',
                                             'latest')
   try:
     api.step(
-        'upload resource usage metrics to BigQuery', [
+        'upload build stats to BigQuery', [
             bqupload_cipd_path,
             _BQ_TABLE_NAME,
         ],
-        stdin=api.raw_io.input(data=api.json.dumps(rusage)),
+        stdin=api.raw_io.input(data=api.json.dumps(result)),
         infra_step=True)
   finally:
-    api.step.active_result.presentation.logs[
-        'resource_usage_metrics'] = api.json.dumps(
-            rusage, indent=2)
+    api.step.active_result.presentation.logs['build_stats'] = api.json.dumps(
+        result, indent=2)
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
@@ -103,18 +200,24 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks(source_dir, build_dir)
 
-  resource_usage_output_dir = api.path.cache_dir / 'resource_usage'
-  api.file.ensure_directory('init resource usage dir if not exists',
-                            resource_usage_output_dir)
-
+  staging_dir = api.path.mkdtemp()
+  resource_usage_output_file = staging_dir / 'resource_usage.json'
+  build_log = staging_dir / 'build_log'
   # Build target: chrome
-  _compile_without_remote_execution(
+  target = 'chrome'
+  _, rusage = _compile(
       api,
       source_dir,
       build_dir,
-      'chrome',
-      resource_usage_output_dir,
+      target,
+      resource_usage_output_file,
+      build_log,
   )
+
+  include_analysis = _analyze_includes(api, target, source_dir, staging_dir,
+                                       build_log)
+
+  _upload_result_to_bq(api, rusage, include_analysis)
 
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
@@ -140,10 +243,9 @@ def GenTests(api):
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
-      api.reclient.properties(),
-      api.post_process(post_process.StepCommandContains,
-                       'Build chrome without remote execution',
-                       ['--resource_usage_output_file']),
+      api.siso.properties(),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['/usr/bin/time']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -158,8 +260,8 @@ def GenTests(api):
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
-      api.reclient.properties(),
-      api.step_data('Build chrome without remote execution', retcode=1),
+      api.siso.properties(),
+      api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

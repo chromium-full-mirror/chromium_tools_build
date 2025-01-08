@@ -33,8 +33,8 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       with_remote_cache=None,
       step_name_suffix=None,
       use_rbe=True,
-      resource_usage_output_file=None,
-  ):
+      # TODO: Remove this flag.
+      resource_usage_output_file=None):
     """Run a build.
 
         Args:

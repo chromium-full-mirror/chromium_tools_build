@@ -78,7 +78,7 @@ class SisoApi(recipe_api.RecipeApi):
                 ninja_command,
                 *,
                 ninja_env=None,
-                name=None,
+                name='compile',
                 siso_args=None,
                 post_step_func=None,
                 skip_log_upload=False,
