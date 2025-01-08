@@ -982,24 +982,36 @@ class TestUtilsApi(recipe_api.RecipeApi):
           return True
 
     unexpected = [
-        x.suite_name
-        for x in rdb_results.unexpected_failing_suites
+        x for x in rdb_results.unexpected_failing_suites
         if x.suite_name not in allowed_failing_suites
     ]
     should_abort = len(unexpected) >= self._min_failed_suites_to_skip_retry
+    total_test_cases_ran = 0
+    total_test_cases_failed = 0
+    for suite in unexpected:
+      total_test_cases_ran += suite.total_tests_ran
+      total_test_cases_failed += len(suite.unexpected_failing_tests)
     if should_abort:
       result = self.m.step('abort retry', [])
       result.presentation.status = self.m.step.FAILURE
       result.presentation.step_text = (
           '\nskip retrying because there are >= {} test suites with test '
           'failures and it most likely indicates a problem with the CL. These '
-          'suites being:\n{}'.format(self._min_failed_suites_to_skip_retry,
-                                     '\n'.join(x for x in unexpected)))
+          'suites being:\n{}'.format(
+              self._min_failed_suites_to_skip_retry,
+              '\n'.join(x.suite_name for x in unexpected)))
     else:
       result = self.m.step('proceed with retry', [])
       result.presentation.step_text = (
           '\nfewer than {} failures, continue with retries'.format(
               self._min_failed_suites_to_skip_retry))
+
+    # TODO(crbug.com/388310032): Consider incorporating these stats in the
+    # "abort retry" logic above rather than using total suite numbers.
+    result.presentation.properties['retry_decision_stats'] = {
+        'total_test_cases_ran': total_test_cases_ran,
+        'total_test_cases_failed': total_test_cases_failed,
+    }
 
     return should_abort
 

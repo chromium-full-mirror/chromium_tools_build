@@ -3042,7 +3042,8 @@
     "cmd": [],
     "name": "proceed with retry",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@"
+      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@",
+      "@@@SET_BUILD_PROPERTY@retry_decision_stats@{\"total_test_cases_failed\": 1, \"total_test_cases_ran\": 1}@@@"
     ]
   },
   {

@@ -251,6 +251,11 @@ class RDBPerSuiteResults:
   # update get_size_in_mem() below.
   suite_name = attrib(str)
   variant_hash = attrib(str)
+  # NOTE: total_tests_ran is the total number of test results in the suite,
+  # *not* test cases. So if there were 10 test cases in a suite, and they
+  # all retried once, total_tests_ran would be 20.
+  # TODO(crbug.com/388310028): Clarify the name of this var once RDB returns
+  # both stats.
   total_tests_ran = attrib(int)
   unexpected_passing_tests = attrib(set_[RDBPerIndividualTestResults])
   unexpected_failing_tests = attrib(set_[RDBPerIndividualTestResults])
