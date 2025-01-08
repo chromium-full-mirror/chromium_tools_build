@@ -92,26 +92,18 @@
     "name": "gclient runhooks"
   },
   {
-    "cmd": [],
-    "name": "Download Chrome Binaries"
-  },
-  {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "gs://chromium-browser-snapshots/Linux_x64/LAST_CHANGE",
-      "[CLEANUP]/chrome_tmp_1"
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
+      "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json",
+      "--status-json",
+      "/path/to/tmp/json",
+      "--outfile",
+      "/path/to/tmp/json"
     ],
-    "infra_step": true,
-    "name": "Download Chrome Binaries.gsutil download",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
+    "name": "Get the latest Chrome Stable binary URL to download"
   },
   {
     "cmd": [
@@ -120,15 +112,47 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/chrome_tmp_1/LAST_CHANGE",
-      "/path/to/tmp/"
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/chrome/Stable/131.0.6778.204"
     ],
     "infra_step": true,
-    "name": "Download Chrome Binaries.read latest chrome version",
+    "name": "Init cache if not exists"
+  },
+  {
+    "cmd": [],
+    "name": "Download Chrome Stable 131.0.6778.204"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "gs://chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip",
+      "[CACHE]/builder/chrome/Stable/131.0.6778.204"
+    ],
+    "cwd": "[CACHE]/builder/chrome/Stable/131.0.6778.204",
+    "infra_step": true,
+    "name": "Download Chrome Stable 131.0.6778.204.gsutil download_url",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@LAST_CHANGE@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[infra::zip]/resources/unzip.py"
+    ],
+    "cwd": "[CACHE]/builder/chrome/Stable/131.0.6778.204",
+    "name": "Download Chrome Stable 131.0.6778.204.Extract archive",
+    "stdin": "{\"output\": \"[CACHE]/builder/chrome/Stable/131.0.6778.204/chrome\", \"quiet\": true, \"zip_file\": \"[CACHE]/builder/chrome/Stable/131.0.6778.204/chrome-linux64.zip\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -140,11 +164,12 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "gs://chromium-browser-snapshots/Linux_x64//chrome-linux.zip",
-      "[CLEANUP]/chrome_tmp_1"
+      "gs://chrome-for-testing-public/131.0.6778.204/linux64/chromedriver-linux64.zip",
+      "[CACHE]/builder/chrome/Stable/131.0.6778.204"
     ],
+    "cwd": "[CACHE]/builder/chrome/Stable/131.0.6778.204",
     "infra_step": true,
-    "name": "Download Chrome Binaries.gsutil download (2)",
+    "name": "Download Chrome Stable 131.0.6778.204.gsutil download_url (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -154,37 +179,9 @@
       "python3",
       "RECIPE_MODULE[infra::zip]/resources/unzip.py"
     ],
-    "name": "Download Chrome Binaries.Extract archive",
-    "stdin": "{\"output\": \"[CLEANUP]/chrome_tmp_1/zip/chrome\", \"quiet\": false, \"zip_file\": \"[CLEANUP]/chrome_tmp_1/chrome-linux.zip\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "gs://chromium-browser-snapshots/Linux_x64//chromedriver_linux64.zip",
-      "[CLEANUP]/chrome_tmp_1"
-    ],
-    "infra_step": true,
-    "name": "Download Chrome Binaries.gsutil download (3)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[infra::zip]/resources/unzip.py"
-    ],
-    "name": "Download Chrome Binaries.Extract archive (2)",
-    "stdin": "{\"output\": \"[CLEANUP]/chrome_tmp_1/zip/chromedriver\", \"quiet\": false, \"zip_file\": \"[CLEANUP]/chrome_tmp_1/chromedriver_linux64.zip\"}",
+    "cwd": "[CACHE]/builder/chrome/Stable/131.0.6778.204",
+    "name": "Download Chrome Stable 131.0.6778.204.Extract archive (2)",
+    "stdin": "{\"output\": \"[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver\", \"quiet\": true, \"zip_file\": \"[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver-linux64.zip\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -201,8 +198,8 @@
       "vpython3",
       "crossbench/tests/end2end/runner.py",
       "--test-gsutil-path=RECIPE_REPO[depot_tools]/gsutil.py",
-      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome/chrome-linux/chrome",
-      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver/chromedriver_linux64/chromedriver",
+      "--test-browser-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chrome/chrome-linux64/chrome",
+      "--test-driver-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver/chromedriver-linux64/chromedriver",
       "--ignore-tests=android"
     ],
     "name": "Run End2End Tests"

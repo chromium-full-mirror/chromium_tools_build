@@ -92,11 +92,33 @@
     "name": "gclient runhooks"
   },
   {
-    "cmd": [],
-    "name": "Download Chrome Binaries",
-    "~followup_annotations": [
-      "@@@STEP_EXCEPTION@@@"
-    ]
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
+      "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json",
+      "--status-json",
+      "/path/to/tmp/json",
+      "--outfile",
+      "/path/to/tmp/json"
+    ],
+    "name": "Get the latest Chrome Stable binary URL to download"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/chrome/Stable/131.0.6778.204"
+    ],
+    "infra_step": true,
+    "name": "Init cache if not exists"
   },
   {
     "cmd": [],
@@ -118,10 +140,10 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 25, in RunSteps",
-      "    chrome_app_path, chrome_driver_path = download_chrome(api)",
-      "                                          ^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 109, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 32, in RunSteps",
+      "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
+      "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 144, in download_chrome",
       "    raise NotImplementedError('Unsupported platform: %s' % (config_key,))",
       "NotImplementedError: Unsupported platform: ('linux', 'intel', 32)"
     ]

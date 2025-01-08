@@ -5,16 +5,23 @@
 Recipe for running Crossbench's End2End tests.
 '''
 
+from urllib.parse import urlparse
+
 DEPS = [
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/gsutil',
     'infra/zip',
+    'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/platform',
     'recipe_engine/path',
     'recipe_engine/step',
+    'recipe_engine/url',
 ]
+CFT_LKGR_URL = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
+MOCK_VER = '131.0.6778.204'
+MOCK_URL = f'https://storage.googleapis.com/chrome-for-testing-public/{MOCK_VER}'
 
 
 def RunSteps(api):
@@ -22,7 +29,7 @@ def RunSteps(api):
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
-  chrome_app_path, chrome_driver_path = download_chrome(api)
+  chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')
 
   # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
   if not api.platform.is_win:
@@ -65,79 +72,100 @@ def GenTests(api):
       api.platform('mac', 64),
       api.platform.arch('arm'),
   )
+  yield api.test(
+      'using-cache',
+      api.platform('linux', 64),
+      api.platform.arch('intel'),
+      api.path.exists(
+          api.path.cache_dir /
+          f'builder/chrome/Stable/{MOCK_VER}/chrome/chrome-linux64/chrome',),
+  )
 
 
 CHROME_CONFIG = {
     ('mac', 'arm', 64): {
-        'gs_path': 'Mac_Arm',
-        'chrome_archive_stem': 'chrome-mac',
-        'driver_archive_stem': 'chromedriver_mac64',
-        'app_name': 'Chromium.app'
+        'cft_platform': 'mac-arm64',
+        'chrome_archive_path': 'chrome-mac-arm64/Google Chrome for Testing.app',
+        'driver_archive_path': 'chromedriver-mac-arm64/chromedriver'
     },
     ('mac', 'intel', 64): {
-        'gs_path': 'Mac',
-        'chrome_archive_stem': 'chrome-mac',
-        'driver_archive_stem': 'chromedriver_mac64',
-        'app_name': 'Chromium.app'
+        'cft_platform': 'mac-x64',
+        'chrome_archive_path': 'chrome-mac-x64/Google Chrome for Testing.app',
+        'driver_archive_path': 'chromedriver-mac-x64/chromedriver'
     },
     ('linux', 'intel', 64): {
-        'gs_path': 'Linux_x64',
-        'chrome_archive_stem': 'chrome-linux',
-        'driver_archive_stem': 'chromedriver_linux64',
-        'app_name': 'chrome'
+        'cft_platform': 'linux64',
+        'chrome_archive_path': 'chrome-linux64/chrome',
+        'driver_archive_path': 'chromedriver-linux64/chromedriver'
     },
     ('win', 'intel', 64): {
-        'gs_path': 'Win_x64',
-        'chrome_archive_stem': 'chrome-win',
-        'driver_archive_stem': 'chromedriver_win32',
-        'app_name': 'chrome.exe'
+        'cft_platform': 'win64',
+        'chrome_archive_path': 'chrome-win64/chrome.exe',
+        'driver_archive_path': 'chromedriver-win64/chromedriver.exe'
     },
 }
 
 
-def download_chrome(api):
-  """
-  Download the latest chrome binaries
-  """
-  with api.step.nest('Download Chrome Binaries'):
-    chrome = api.path.mkdtemp(prefix='chrome')
-    gs_bucket = 'chromium-browser-snapshots'
-    version_file = 'LAST_CHANGE'
-
+def download_chrome(api, channel):
+  channel_info = api.url.get_json(
+      CFT_LKGR_URL,
+      step_name=f'Get the latest Chrome {channel} binary URL to download',
+      default_test_data={
+          'channels': {
+              'Stable': {
+                  'version': MOCK_VER,
+                  'downloads': {
+                      'chrome': [{
+                          'platform': 'linux64',
+                          'url': f'{MOCK_URL}/linux64/chrome-linux64.zip'
+                      }, {
+                          'platform': 'mac-arm64',
+                          'url': f'{MOCK_URL}/mac-arm64/chrome-mac-arm64.zip'
+                      }, {
+                          'platform': 'mac-x64',
+                          'url': f'{MOCK_URL}/mac-x64/chrome-mac-x64.zip'
+                      }, {
+                          'platform': 'win64',
+                          'url': f'{MOCK_URL}/win64/chrome-win64.zip'
+                      }]
+                  }
+              }
+          }
+      }).output['channels'][channel]
+  version = channel_info['version']
+  chrome_dir = api.path.cache_dir.joinpath('builder', 'chrome', channel,
+                                           version)
+  api.file.ensure_directory('Init cache if not exists', chrome_dir)
+  with api.context(cwd=chrome_dir):
+    chrome_output_path = chrome_dir / 'chrome'
+    driver_output_path = chrome_dir / 'chromedriver'
     config_key = (api.platform.name, api.platform.arch, api.platform.bits)
     if config_key not in CHROME_CONFIG:
       raise NotImplementedError('Unsupported platform: %s' % (config_key,))
     config = CHROME_CONFIG[config_key]
-    gs_path = config['gs_path']
-    app_name = config['app_name']
-    chrome_archive_stem = config['chrome_archive_stem']
-    chrome_driver_archive_stem = config['driver_archive_stem']
+    chrome_app_path = chrome_output_path / config['chrome_archive_path']
+    chrome_driver_path = driver_output_path / config['driver_archive_path']
+    if api.path.exists(chrome_app_path):
+      return chrome_app_path, chrome_driver_path
+    downloads = channel_info['downloads']['chrome']
+    with api.step.nest(f'Download Chrome {channel} {version}'):
+      cft_platform = config['cft_platform']
+      url = [x['url'] for x in downloads if x['platform'] == cft_platform][0]
+      parsed_url = urlparse(url)
+      url_parts = parsed_url.path.split('/')
 
-    chrome_zip = '%s.zip' % chrome_archive_stem
-    chrome_driver_zip = '%s.zip' % chrome_driver_archive_stem
-    api.gsutil.download(gs_bucket, '%s/%s' % (gs_path, version_file), chrome)
-    version = api.file.read_text('read latest chrome version',
-                                 chrome / version_file)
-    chrome_output_path = download(api, gs_bucket, '%s/%s/%s' %
-                                  (gs_path, version, chrome_zip),
-                                  chrome) / 'chrome'
-    unzip_archive(api, chrome / chrome_zip, chrome_output_path)
-    chrome_app_path = chrome_output_path / chrome_archive_stem / app_name
+      # Downloading and unzipping the latest ChromeDriver
+      chrome_zip = url_parts[-1]
+      api.gsutil.download_url(url, chrome_dir)
+      unzip_archive(api, chrome_dir / chrome_zip, chrome_output_path)
 
-    chromedriver_output_path = download(
-        api, gs_bucket, '%s/%s/%s' %
-        (gs_path, version, chrome_driver_zip), chrome) / 'chromedriver'
-    unzip_archive(api, chrome / chrome_driver_zip, chromedriver_output_path)
-    chrome_driver_path = (
-        chromedriver_output_path / chrome_driver_archive_stem / 'chromedriver')
-    return chrome_app_path, chrome_driver_path
-
-
-def download(api, gs_bucket, file_path, download_dir):
-  api.gsutil.download(gs_bucket, file_path, download_dir)
-  output_path = download_dir / 'zip'
-  return output_path
+      # Downloading and unzipping the latest ChromeDriver
+      chromedriver_zip = chrome_zip.replace('chrome', 'chromedriver')
+      chromedriver_url = url.replace(chrome_zip, chromedriver_zip)
+      api.gsutil.download_url(chromedriver_url, chrome_dir)
+      unzip_archive(api, chrome_dir / chromedriver_zip, driver_output_path)
+      return chrome_app_path, chrome_driver_path
 
 
 def unzip_archive(api, archive_path, output):
-  api.zip.unzip('Extract archive', archive_path, output)
+  api.zip.unzip('Extract archive', archive_path, output, quiet=True)
