@@ -355,7 +355,8 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
   ninja_path = source_dir.joinpath('third_party', 'ninja')
   cmake_path = source_dir.joinpath('tools', 'cmake', 'bin', 'cmake')
   # TODO(388504160): Remove this when we get CMake from CIPD on Windows.
-  if api.platform.is_win and not api.path.exists(cmake_path):
+  if api.platform.is_win and not api.path.exists(
+      source_dir.joinpath('tools', 'cmake')):
     cmake_path = source_dir.joinpath('tools', 'cmake-win32', 'bin', 'cmake')
 
   with api.context(cwd=source_dir, env_prefixes={'PATH': [ninja_path]}):
