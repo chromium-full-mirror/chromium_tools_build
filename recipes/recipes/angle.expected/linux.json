@@ -1848,13 +1848,13 @@
     "cmd": [],
     "name": "$debug - all results",
     "~followup_annotations": [
-      "@@@STEP_TEXT@168.00 B@@@",
+      "@@@STEP_TEXT@136.00 B@@@",
       "@@@STEP_LOG_LINE@serialized results@{@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [],@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"unexpected_failing_suites\": []@@@",
       "@@@STEP_LOG_LINE@serialized results@}@@@",
       "@@@STEP_LOG_END@serialized results@@@",
-      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 168.00 B@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 136.00 B@@@",
       "@@@STEP_LOG_END@memory usage@@@"
     ]
   },

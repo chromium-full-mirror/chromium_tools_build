@@ -113,85 +113,6 @@ class GTestResults:
 
 
 @attrs()
-class RDBResults:
-  """Like TestResults above, but used to handle results as returned by RDB.
-
-  Wraps a collection of RDBPerSuiteResults instances.
-  """
-
-  # NOTE: If you add an attribute here, make sure to reflect the change in
-  # update get_size_in_mem() below.
-  all_suites = attrib(list)
-  unexpected_failing_suites = attrib(list)
-
-  @classmethod
-  def create(cls, results):
-    all_suites = []
-    unexpected_failing_suites = []
-
-    for res in results:
-      assert isinstance(res, RDBPerSuiteResults)
-      all_suites.append(res)
-      if res.unexpected_failing_tests or res.invalid:
-        unexpected_failing_suites.append(res)
-
-    return cls(all_suites, unexpected_failing_suites)
-
-  def to_jsonish(self):
-    jsonish_repr = {
-        'unexpected_failing_suites': [
-            s.suite_name for s in self.unexpected_failing_suites
-        ],
-        'all_suites': [s.to_jsonish() for s in self.all_suites],
-    }
-    return jsonish_repr
-
-  def get_size_in_mem(self):
-    total = sys.getsizeof(self)
-    total += sys.getsizeof(self.all_suites)
-    seen_prefix_ids = set()
-    for s in self.all_suites:
-      total += s.get_size_in_mem()
-      # A suite's test_id_prefix may or may not be unique across all suites.
-      if id(s.test_id_prefix) not in seen_prefix_ids:
-        total += sys.getsizeof(s.test_id_prefix)
-      seen_prefix_ids.add(id(s.test_id_prefix))
-    # self.unexpected_failing_suites is a subset of self.all_suites, so no need
-    # to count the size of the elements in self.unexpected_failing_suites.
-    total += sys.getsizeof(self.unexpected_failing_suites)
-    return total
-
-  def get_size_details(self):
-    """Returns a human-readable description of this object's mem footprint.
-
-    Returns: tuple of (total size of this object, list of human-readable lines)
-    """
-
-    def hr_size(size):
-      for unit in ['B', 'KB', 'MB', 'GB']:
-        if size < 1000.0:
-          break
-        size /= 1000.0
-      return f'{size:.2f} {unit}'
-
-    total_size_hr = hr_size(self.get_size_in_mem())
-    lines = []
-    lines.append('Size of this RDBResults: {}'.format(total_size_hr))
-    for suite in self.all_suites:
-      lines.append('')
-      lines.append('\tSize of RDBPerSuiteResults for {}: {}'.format(
-          suite.suite_name, hr_size(suite.get_size_in_mem())))
-      lines.append(
-          '\t\tNumber of RDBPerIndividualTestResults entries: {}'.format(
-              len(suite.all_tests)))
-      lines.append(
-          '\t\tSize of all RDBPerIndividualTestResults entries: {}'.format(
-              hr_size(sum(t.get_size_in_mem() for t in suite.all_tests))))
-
-    return total_size_hr, lines
-
-
-@attrs()
 class RDBPerIndividualTestResults:
   """Contains result info of an individual test as returned by RDB.
 
@@ -522,6 +443,95 @@ class RDBPerSuiteResults:
     # Let the RDBResults account for test_id_prefix since it can de-dupe
     # repeats.
     return total
+
+
+@attrs()
+class RDBResults:
+  """Captures all results reported by RDB for all suites in a build's phase.
+
+  Wraps a collection of RDBPerSuiteResults instances, each of which wrap
+  a collections of RDBPerIndividualTestResults instances.
+
+  Relationship looks something like the following, with each arrow representing
+  a "one to many" relationship:
+   ------------      --------------------      -----------------------------
+  | RDBResults | -> | RDBPerSuiteResults | -> | RDBPerIndividualTestResults |
+   ------------      --------------------      -----------------------------
+
+  There should be one RDBResults for each phase of the build (eg: "with patch",
+  "without patch", etc.) constructed higher up in the recipe stack.
+  """
+
+  # NOTE: If you add an attribute here, make sure to reflect the change in
+  # update get_size_in_mem() below.
+  all_suites = attrib(sequence[RDBPerSuiteResults])
+  unexpected_failing_suites = attrib(sequence[RDBPerSuiteResults])
+
+  @classmethod
+  def create(cls, results):
+    all_suites = []
+    unexpected_failing_suites = []
+
+    for res in results:
+      assert isinstance(res, RDBPerSuiteResults)
+      all_suites.append(res)
+      if res.unexpected_failing_tests or res.invalid:
+        unexpected_failing_suites.append(res)
+
+    return cls(all_suites, unexpected_failing_suites)
+
+  def to_jsonish(self):
+    jsonish_repr = {
+        'unexpected_failing_suites': [
+            s.suite_name for s in self.unexpected_failing_suites
+        ],
+        'all_suites': [s.to_jsonish() for s in self.all_suites],
+    }
+    return jsonish_repr
+
+  def get_size_in_mem(self):
+    total = sys.getsizeof(self)
+    total += sys.getsizeof(self.all_suites)
+    seen_prefix_ids = set()
+    for s in self.all_suites:
+      total += s.get_size_in_mem()
+      # A suite's test_id_prefix may or may not be unique across all suites.
+      if id(s.test_id_prefix) not in seen_prefix_ids:
+        total += sys.getsizeof(s.test_id_prefix)
+      seen_prefix_ids.add(id(s.test_id_prefix))
+    # self.unexpected_failing_suites is a subset of self.all_suites, so no need
+    # to count the size of the elements in self.unexpected_failing_suites.
+    total += sys.getsizeof(self.unexpected_failing_suites)
+    return total
+
+  def get_size_details(self):
+    """Returns a human-readable description of this object's mem footprint.
+
+    Returns: tuple of (total size of this object, list of human-readable lines)
+    """
+
+    def hr_size(size):
+      for unit in ['B', 'KB', 'MB', 'GB']:
+        if size < 1000.0:
+          break
+        size /= 1000.0
+      return f'{size:.2f} {unit}'
+
+    total_size_hr = hr_size(self.get_size_in_mem())
+    lines = []
+    lines.append('Size of this RDBResults: {}'.format(total_size_hr))
+    for suite in self.all_suites:
+      lines.append('')
+      lines.append('\tSize of RDBPerSuiteResults for {}: {}'.format(
+          suite.suite_name, hr_size(suite.get_size_in_mem())))
+      lines.append(
+          '\t\tNumber of RDBPerIndividualTestResults entries: {}'.format(
+              len(suite.all_tests)))
+      lines.append(
+          '\t\tSize of all RDBPerIndividualTestResults entries: {}'.format(
+              hr_size(sum(t.get_size_in_mem() for t in suite.all_tests))))
+
+    return total_size_hr, lines
 
 
 @attrs()
