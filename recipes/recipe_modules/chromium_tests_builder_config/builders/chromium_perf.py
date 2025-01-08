@@ -181,11 +181,11 @@ _AddBuildSpec(
     bisect_archive_build=False)
 
 # LUCI builder
-_AddBuildSpec(
-    'android_arm64_high_end-builder-perf-pgo',
-    'android',
-    target_bits=64,
-    bisect_archive_build=True)
+# The config for the following builders is now specified src-side in
+# //internal/infra/config/subprojects/chrome/ci/chromium.perf.star
+# * android_arm64_high_end-builder-perf-pgo
+# * android-pixel4_webview-perf-pgo
+# * android-pixel6-perf-pgo
 
 _AddBuildSpec('win64-builder-perf', 'win', bisect_archive_build=False)
 _AddBuildSpec('win64-builder-perf-pgo', 'win', bisect_archive_build=True)
@@ -219,13 +219,9 @@ _AddIsolatedTestSpec('android-pixel4-perf', 'android',
                      'android_arm64-builder-perf')
 _AddIsolatedTestSpec('android-pixel4_webview-perf', 'android',
                      'android_arm64-builder-perf')
-_AddIsolatedTestSpec('android-pixel4_webview-perf-pgo', 'android',
-                     'android_arm64_high_end-builder-perf-pgo')
 
 _AddIsolatedTestSpec('android-pixel6-perf', 'android',
                      'android_arm64_high_end-builder-perf')
-_AddIsolatedTestSpec('android-pixel6-perf-pgo', 'android',
-                     'android_arm64_high_end-builder-perf-pgo')
 _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 _AddIsolatedTestSpec('android-pixel-fold-perf', 'android',
