@@ -1,0 +1,19 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.ytdevinfra;
+
+message InputProperties {
+
+    // The recipe version primarily for the debugging purposes.
+
+    // An example file looks like
+    // {
+    //   "ytdevinfra_recipe_version": 0.1
+    // }
+    int32 ytdevinfra_recipe_version = 1;
+}
+
