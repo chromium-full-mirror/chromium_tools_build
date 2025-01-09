@@ -98,14 +98,12 @@ def main(args):
           if found_pass:
             _remove_old_trace_dir()
             continue
-          found_pass = True
           test_result = 'PASS'
         # If nothing passed, assume it was a failure (CRASH or FAIL)
         else:
           if found_failure:
             _remove_old_trace_dir()
             continue
-          found_failure = True
           test_result = 'FAIL'
 
       # Pack the test trace and upload the trace and test result file to output
@@ -119,6 +117,11 @@ def main(args):
         os.renames(
             'trace.tar',
             f'{args.output_dir}/{test_name_plain}/{test_result}/trace.tar')
+
+        if test_result == 'PASS':
+          found_pass = True
+        else:
+          found_failure = True
       else:
         logging.error('Result of running rr pack is %r', result)
       _remove_old_trace_dir()
