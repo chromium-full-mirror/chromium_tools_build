@@ -63,8 +63,7 @@ def _compile(
     step_result = api.siso.run_ninja(
         source_dir,
         cmd,
-        stdout=api.raw_io.output(
-            leak_to=build_log, name="build_log", add_output_log=True),
+        stdout=api.raw_io.output(leak_to=build_log),
         resource_usage_output_file=resource_usage_output_file,
     )
     rusage = api.file.read_json(
