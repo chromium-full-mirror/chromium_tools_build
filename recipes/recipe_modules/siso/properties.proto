@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 17
+// NEXT ID TO USE: 15
 message InputProperties {
   // Backend config
 
@@ -61,7 +61,4 @@ message InputProperties {
 
   // Siso flag for `--output_local_strategy`.
   string output_local_strategy = 12;
-
-  // Siso flag for `-k`.
-  int32 keep_going = 16;
 }
