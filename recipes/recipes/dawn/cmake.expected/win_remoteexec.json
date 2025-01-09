@@ -324,7 +324,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -2143,7 +2143,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -3958,7 +3958,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",

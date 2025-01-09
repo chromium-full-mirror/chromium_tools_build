@@ -278,7 +278,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -338,7 +338,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
@@ -384,7 +384,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -444,7 +444,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
@@ -606,7 +606,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -666,7 +666,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
