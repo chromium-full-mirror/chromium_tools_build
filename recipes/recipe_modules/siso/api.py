@@ -132,6 +132,9 @@ class SisoApi(recipe_api.RecipeApi):
         '--job_id',
         self.m.buildbucket.build.id,
     ])
+    if self._props.keep_going:
+      cmd.extend(['-k', '0'])
+
     if not skip_log_upload:
       cmd.append('--enable_cloud_logging')
     if self._props.reapi_address:
