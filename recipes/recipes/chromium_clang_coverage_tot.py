@@ -98,6 +98,8 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   cmd.extend(SAMPLE_TARGETS)
 
   for target in SAMPLE_TARGETS:
+    if api.platform.is_win:
+      target += '.exe'
     cmd.extend(['-c', build_dir / target])
 
   cmd.extend(['-b', build_dir])
