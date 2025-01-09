@@ -150,7 +150,7 @@
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: NotImplementedError('Unsupported platform: ('linux', 'intel', 32)')"
+      "humanReason": "Uncaught Exception: NotImplementedError(\"Unsupported platform: ('linux', 'intel', 32)\")"
     },
     "name": "$result"
   }

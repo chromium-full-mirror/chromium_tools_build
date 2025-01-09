@@ -2289,7 +2289,7 @@
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: ValueError('Couldn't find CELab version in vpython file: [CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\.vpython3')"
+      "humanReason": "Uncaught Exception: ValueError(\"Couldn't find CELab version in vpython file: [CACHE]\\\\builder\\\\src\\\\chrome\\\\test\\\\enterprise\\\\e2e\\\\.vpython3\")"
     },
     "name": "$result"
   }
