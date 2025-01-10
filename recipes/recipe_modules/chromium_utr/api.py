@@ -830,6 +830,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     # An empty list of tests implies we should use all
     tests = targets_config.all_tests
+    additional_compile_targets = targets_config.compile_only_targets
     if test_names:
       # If all passed-in tests are paths, assume they're test files. In which
       # case, hand this off to autotest.py so it can do its thing. We need to
@@ -845,6 +846,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
                     source_dir, build_dir, builder_recipe, is_cog)
         return self.run_autotest(source_dir, build_dir, list(test_names)), []
       tests = [_get_matching_test(n) for n in test_names]
+      additional_compile_targets = [
+          t for t in targets_config.compile_only_targets if t in test_names
+      ]
 
     for test in tests:
       # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
@@ -876,7 +880,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           build_dir,
           builder_recipe,
           is_cog,
-          targets_config.compile_only_targets,
+          additional_compile_targets,
       )
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
