@@ -1238,7 +1238,7 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/buildtools/third_party/libc++",
+      "[CLEANUP]/tmp_tmp_1/src/buildtools/reclient",
       "-type",
       "f",
       "!",
@@ -1279,7 +1279,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune buildtools/third_party/libc++"
+    "name": "prune buildtools/reclient"
   },
   {
     "cmd": [
@@ -1560,6 +1560,144 @@
   {
     "cmd": [
       "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/angle/third_party/VK-GL-CTS",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "!",
+      "-iname",
+      "*LICENSE*",
+      "!",
+      "-iname",
+      "*Copyright*",
+      "!",
+      "-iname",
+      "*COPYING*",
+      "!",
+      "-iname",
+      "*FTL.TXT*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/angle/third_party/VK-GL-CTS"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/apache-linux",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "!",
+      "-iname",
+      "*LICENSE*",
+      "!",
+      "-iname",
+      "*Copyright*",
+      "!",
+      "-iname",
+      "*COPYING*",
+      "!",
+      "-iname",
+      "*FTL.TXT*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/apache-linux"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/catapult/third_party/vinn/third_party/v8",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "!",
+      "-iname",
+      "*LICENSE*",
+      "!",
+      "-iname",
+      "*Copyright*",
+      "!",
+      "-iname",
+      "*COPYING*",
+      "!",
+      "-iname",
+      "*FTL.TXT*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/catapult/third_party/vinn/third_party/v8"
+  },
+  {
+    "cmd": [
+      "find",
       "[CLEANUP]/tmp_tmp_1/src/third_party/closure_compiler",
       "-type",
       "f",
@@ -1606,98 +1744,6 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/freetype",
-      "-type",
-      "f",
-      "!",
-      "-iname",
-      "*.gyp*",
-      "!",
-      "-iname",
-      "*.gn*",
-      "!",
-      "-iname",
-      "*.isolate*",
-      "!",
-      "-iname",
-      "*.grd*",
-      "!",
-      "-iname",
-      "*LICENSE*",
-      "!",
-      "-iname",
-      "*Copyright*",
-      "!",
-      "-iname",
-      "*COPYING*",
-      "!",
-      "-iname",
-      "*FTL.TXT*",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/freetype"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/icu",
-      "-type",
-      "f",
-      "!",
-      "-iname",
-      "*.gyp*",
-      "!",
-      "-iname",
-      "*.gn*",
-      "!",
-      "-iname",
-      "*.isolate*",
-      "!",
-      "-iname",
-      "*.grd*",
-      "!",
-      "-iname",
-      "*LICENSE*",
-      "!",
-      "-iname",
-      "*Copyright*",
-      "!",
-      "-iname",
-      "*COPYING*",
-      "!",
-      "-iname",
-      "*FTL.TXT*",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/icu"
-  },
-  {
-    "cmd": [
-      "find",
       "[CLEANUP]/tmp_tmp_1/src/third_party/instrumented_libs",
       "-type",
       "f",
@@ -1740,98 +1786,6 @@
       }
     },
     "name": "prune third_party/instrumented_libs"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/libjpeg_turbo",
-      "-type",
-      "f",
-      "!",
-      "-iname",
-      "*.gyp*",
-      "!",
-      "-iname",
-      "*.gn*",
-      "!",
-      "-iname",
-      "*.isolate*",
-      "!",
-      "-iname",
-      "*.grd*",
-      "!",
-      "-iname",
-      "*LICENSE*",
-      "!",
-      "-iname",
-      "*Copyright*",
-      "!",
-      "-iname",
-      "*COPYING*",
-      "!",
-      "-iname",
-      "*FTL.TXT*",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/libjpeg_turbo"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/libxml/src",
-      "-type",
-      "f",
-      "!",
-      "-iname",
-      "*.gyp*",
-      "!",
-      "-iname",
-      "*.gn*",
-      "!",
-      "-iname",
-      "*.isolate*",
-      "!",
-      "-iname",
-      "*.grd*",
-      "!",
-      "-iname",
-      "*LICENSE*",
-      "!",
-      "-iname",
-      "*Copyright*",
-      "!",
-      "-iname",
-      "*COPYING*",
-      "!",
-      "-iname",
-      "*FTL.TXT*",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/libxml/src"
   },
   {
     "cmd": [
@@ -1974,6 +1928,52 @@
   {
     "cmd": [
       "find",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/node/linux",
+      "-type",
+      "f",
+      "!",
+      "-iname",
+      "*.gyp*",
+      "!",
+      "-iname",
+      "*.gn*",
+      "!",
+      "-iname",
+      "*.isolate*",
+      "!",
+      "-iname",
+      "*.grd*",
+      "!",
+      "-iname",
+      "*LICENSE*",
+      "!",
+      "-iname",
+      "*Copyright*",
+      "!",
+      "-iname",
+      "*COPYING*",
+      "!",
+      "-iname",
+      "*FTL.TXT*",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune third_party/node/linux"
+  },
+  {
+    "cmd": [
+      "find",
       "[CLEANUP]/tmp_tmp_1/src/third_party/rust-src",
       "-type",
       "f",
@@ -2020,7 +2020,7 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/snappy",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/rust-toolchain",
       "-type",
       "f",
       "!",
@@ -2061,7 +2061,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/snappy"
+    "name": "prune third_party/rust-toolchain"
   },
   {
     "cmd": [
@@ -2108,52 +2108,6 @@
       }
     },
     "name": "prune third_party/webgl"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/tools/win",
-      "-type",
-      "f",
-      "!",
-      "-iname",
-      "*.gyp*",
-      "!",
-      "-iname",
-      "*.gn*",
-      "!",
-      "-iname",
-      "*.isolate*",
-      "!",
-      "-iname",
-      "*.grd*",
-      "!",
-      "-iname",
-      "*LICENSE*",
-      "!",
-      "-iname",
-      "*Copyright*",
-      "!",
-      "-iname",
-      "*COPYING*",
-      "!",
-      "-iname",
-      "*FTL.TXT*",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune tools/win"
   },
   {
     "cmd": [
