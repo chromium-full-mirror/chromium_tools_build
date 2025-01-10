@@ -846,12 +846,16 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         return self.run_autotest(source_dir, build_dir, list(test_names)), []
       tests = [_get_matching_test(n) for n in test_names]
 
-    # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
-    # ci builders that would point to gcs dirs that devs do not have access to.
-    # Remove when layout tests can be archived
     for test in tests:
+      # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
+      # ci builders that would point to gcs dirs that devs do not have access
+      # to. Remove when layout tests can be archived
       if isinstance(test, SwarmingIsolatedScriptTest):
         test.spec = attr.evolve(test.spec, results_handler_name=None)
+      # Prevent deduping in case the user is trying to run the same suite in
+      # parallel multiple times to suss out flakiness.
+      if test.runs_on_swarming:
+        test.spec = attr.evolve(test.spec, idempotent=False)
       if properties.additional_test_args:
         test.spec = attr.evolve(
             test.spec,
@@ -934,9 +938,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     swarm_hashes = {
         test.target_name: digest['hash'] + '/' + digest['size_bytes']
     }
-
-    # Prevent the task from getting deduped
-    test.spec = attr.evolve(test.spec, idempotent=False)
 
     self.m.isolate.set_isolated_tests(swarm_hashes)
 
