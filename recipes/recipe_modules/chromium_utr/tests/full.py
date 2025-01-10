@@ -202,6 +202,53 @@ solutions = [
   )
 
   yield api.test(
+      'skylab',
+      boilerplate(
+          ctbc_properties=gen_ctbc_properties(
+              builder_spec=ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+                  skylab_gs_bucket='gs://bar-bucket',
+                  skylab_gs_extra='lacros',
+              ),),
+          target_spec={
+              'fake-tester': {
+                  'skylab_tests': [{
+                      'name': 'skylab_test',
+                      'cros_board': 'foo-board',
+                  }]
+              }
+          },
+          test_names=['skylab_test'],
+      ),
+      api.path.exists(
+          api.path.cache_dir.joinpath('src', 'out', 'Release',
+                                      'skylab_test.isolate')),
+      api.step_data(
+          'prepare skylab tests.'
+          'collect runtime deps for skylab_test.read isolate file',
+          api.file.read_text("""
+          {'variables':
+            {'command': ['foo/skylab_test', '--logs-dir=${ISOLATED_OUTDIR}'],
+                'files': ['../../.vpython',
+                          'bin/skylab_test',
+                          './chrome'
+            ]}
+          }""")),
+      api.override_step_data(
+          'skylab_test results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'skylab_test', passing_tests=['Test.Two']))),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['[CACHE]/src/out/Release', 'skylab_test']),
+      api.post_process(post_process.DoesNotRun, 'upload_ninja_log'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'invalid_swarming_task',
       boilerplate(),
       api.override_step_data(

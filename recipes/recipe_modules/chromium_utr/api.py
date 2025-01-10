@@ -885,6 +885,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
     skylab_tests = [test for test in tests if test.runs_on_skylab]
+    if skylab_tests:
+      self.m.chromium_tests.prepare_artifact_for_skylab(builder_config,
+                                                        checkout_dir,
+                                                        source_dir, build_dir,
+                                                        skylab_tests)
     if not should_build or not generated_isolates or skylab_tests:
       # When compiling, "mb.py gen" will produce the *.isolate files for us. In
       # all other instances, we need to ask mb.py to do so specifically. Do so
