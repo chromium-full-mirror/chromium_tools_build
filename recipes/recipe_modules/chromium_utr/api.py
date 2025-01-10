@@ -731,6 +731,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       build_dir: Path,
       builder_recipe: str,
       is_cog: bool,
+      compile_only_targets: Iterable[str],
   ) -> result_pb2.RawResult:
     """Builds the test targets
 
@@ -744,10 +745,12 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         build_dir: Path to the directory to use for building
         builder_recipe: The recipe normally run by the requested builder
         is_cog: The run is currently in cog
+        compile_only_targets: additional compile targets to compile
     Returns tuple of (a RawResult object for the compile or None if it was
         skipped, a boolean indicating if the *.isolate files were generated)
     """
-    targets = list(itertools.chain(*[t.compile_targets() for t in tests]))
+    targets = list(itertools.chain(
+        *[t.compile_targets() for t in tests])) + list(compile_only_targets)
 
     # Remove duplicate targets.
     targets = sorted(set(targets))
@@ -869,6 +872,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           build_dir,
           builder_recipe,
           is_cog,
+          targets_config.compile_only_targets,
       )
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
