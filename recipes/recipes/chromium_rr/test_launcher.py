@@ -259,13 +259,12 @@ def _process_task_results(api, task_results_and_test_infos):
                                            'pass_run_trace')
           api.file.ensure_directory('ensure pass trace dir exist',
                                     pass_run_new_dir)
-          api.file.move('move pass trace', f'{str(pass_run_dir)}/trace.tar',
-                        pass_run_new_dir)
+          api.file.move('move pass trace', str(pass_run_dir), pass_run_new_dir)
         failed_run_new_dir = api.path.join(traces_out_dir, target_name,
                                            'failed_run_trace')
         api.file.ensure_directory('ensure failed trace dir exist',
                                   failed_run_new_dir)
-        api.file.move('move failed trace', f'{str(failed_run_dir)}/trace.tar',
+        api.file.move('move failed trace', str(failed_run_dir),
                       failed_run_new_dir)
         found_test_traces = True
 

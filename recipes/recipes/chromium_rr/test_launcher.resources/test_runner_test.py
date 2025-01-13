@@ -43,7 +43,7 @@ class TestRunnerTest(unittest.TestCase):
     test_runner.run_cmd(cmd, cwd='out\\Release_x64')
     mock_logging.assert_called_once_with('Running %r in %r', cmd,
                                          'out\\Release_x64')
-    mock_popen.assert_called_once_with(cmd)
+    mock_popen.assert_called_once_with(cmd, env=None)
     self.assertEqual(mock_chdir.call_count, 2)
 
   @patch('subprocess.Popen')
@@ -53,7 +53,7 @@ class TestRunnerTest(unittest.TestCase):
     mock_popen.return_value.__enter__.return_value.wait.return_value = 1
     cmd = ['./exec', '--args']
     ret = test_runner.run_cmd(cmd, cwd='out\\Release_x64')
-    mock_popen.assert_called_once_with(cmd)
+    mock_popen.assert_called_once_with(cmd, env=None)
     self.assertEqual(ret, 1)
     self.assertEqual(mock_chdir.call_count, 2)
 

@@ -15,6 +15,8 @@ import sys
 MAX_RUNS = 5
 TRACE_DIR = 'trace_dir'
 TEST_RESULTS_JSON = pathlib.Path('layout-test-results/full_results.json')
+RR_PATH = os.path.abspath(os.path.join(os.getcwd(), '../../rr_tool/bin'))
+TRACE_PATH = os.path.abspath(os.path.join(os.getcwd(), '../../', TRACE_DIR))
 
 
 def parse_args(args):
@@ -33,7 +35,7 @@ def parse_args(args):
   return parser.parse_args(args)
 
 
-def run_cmd(cmd, cwd='./'):
+def run_cmd(cmd, cwd='./', env=None):
   """Run command locally.
 
   Args:
@@ -44,7 +46,7 @@ def run_cmd(cmd, cwd='./'):
   old_cwd = os.getcwd()
   os.chdir(cwd)
   try:
-    with subprocess.Popen(cmd) as process:
+    with subprocess.Popen(cmd, env=env) as process:
       return process.wait()
   finally:
     os.chdir(old_cwd)
@@ -106,6 +108,13 @@ def main(args):
             continue
           test_result = 'FAIL'
 
+      # Add a new directory to the PATH
+      env = os.environ.copy()
+      env['PATH'] = f"{env['PATH']}{os.pathsep}{RR_PATH}"
+      # Run a subprocess with the modified environment
+      run_cmd(['pernosco/pernosco', '--gcloud', 'build', TRACE_PATH], '../../',
+              env)
+
       # Pack the test trace and upload the trace and test result file to output
       # dir.
       result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../../')
@@ -114,9 +123,13 @@ def main(args):
             'tar', '--exclude', './db*', '--use-compress-program=zstd', '-cf',
             'trace.tar', f'../../{TRACE_DIR}'
         ])
-        os.renames(
-            'trace.tar',
-            f'{args.output_dir}/{test_name_plain}/{test_result}/trace.tar')
+        output_path = f'{args.output_dir}/{test_name_plain}/{test_result}'
+        os.renames('trace.tar', f'{output_path}/trace.tar')
+        run_cmd([
+            'split', '-b', '10G', f'{output_path}/trace.tar',
+            f'{output_path}/trace'
+        ])
+        run_cmd(['rm', '-rf', f'{output_path}/trace.tar'])
 
         if test_result == 'PASS':
           found_pass = True
