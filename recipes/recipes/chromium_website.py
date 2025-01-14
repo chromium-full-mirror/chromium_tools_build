@@ -51,7 +51,7 @@ def RunSteps(api):
     # pylint: disable=line-too-long
     msg = (
         "Deployed site but don't know where.\n"
-        "Please [file a bug](https://bugs.chromium.org/p/chromium/issues/entry?template=Chromium.org+bug)\n"
+        "Please [file a bug](http://crbug.com/new?component=1456097&template=1923269)\n"
     )
     # pylint: enable=line-too-long
 

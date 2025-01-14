@@ -261,10 +261,7 @@ def _RunStepsInternal(api):
       raw_result.status = common_pb2.INFRA_FAILURE
       raw_result.summary_markdown = (
           'Something unexpected occurred while running presubmit checks.'
-          ' Please [file a bug]('
-          'https://bugs.chromium.org/p/chromium/issues/entry'
-          '?components=Infra%3EClient%3EChrome'
-          '&status=Untriaged)')
+          ' Please [file a bug](https://crbug.com/new?component=1456211)')
   return raw_result
 
 
@@ -633,10 +630,7 @@ def GenTests(api):
   )
 
   bug_msg = ('Something unexpected occurred while running presubmit checks.'
-             ' Please [file a bug]('
-             'https://bugs.chromium.org/p/chromium/issues/entry'
-             '?components=Infra%3EClient%3EChrome'
-             '&status=Untriaged)')
+             ' Please [file a bug](https://crbug.com/new?component=1456211)')
   yield api.test(
       'presubmit-failure-no-json',
       api.buildbucket.try_build(
