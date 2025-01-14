@@ -526,9 +526,9 @@ def _MainLinux(options, args, extra_env):
       )
       pipes = [symbolize_command]
 
-      command = _GenerateRunIsolatedCommand(
-          build_dir, test_exe_path, options, command
-      )
+    command = _GenerateRunIsolatedCommand(
+        build_dir, test_exe_path, options, command
+    )
     result = _RunGTestCommand(
         options, command, extra_env, pipes=pipes, log_processor=log_processor
     )
