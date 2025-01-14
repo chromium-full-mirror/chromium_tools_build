@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import itertools
-import json
-from typing import NamedTuple
+import base64
+import collections
+import zlib
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-from google.protobuf import duration_pb2
+from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from recipe_engine import post_process
 
 DEPS = [
@@ -15,11 +15,12 @@ DEPS = [
     'depot_tools/gerrit',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/findings',
     'recipe_engine/json',
     'recipe_engine/platform',
+    'recipe_engine/proto',
     'recipe_engine/step',
     'recipe_engine/swarming',
-    'recipe_engine/tricium',
 ]
 
 # TODO(crbug.com/1153919): Figure out which subset of these are the best
@@ -35,120 +36,6 @@ _CHILD_BUILDERS = (
     #'mac-clang-tidy-rel',
     #'win10-clang-tidy-rel',
 )
-
-# Go's protobuf package outputs camelCase JSON, whereas Python prefers
-# snake_case; handle that transformation here.
-_TRICIUM_KEY_TRANSFORMATIONS = {
-    'startLine': 'start_line',
-    'endLine': 'end_line',
-    'startChar': 'start_char',
-    'endChar': 'end_char',
-}
-
-# A singular `Replacement` emitted by Tricium.
-_TriciumReplacement = NamedTuple(
-    '_TriciumReplacement',
-    (
-        ('path', str),
-        ('replacement', str),
-        ('start_line', int),
-        ('end_line', int),
-        ('start_char', int),
-        ('end_char', int),
-    ),
-)
-
-
-class _TriciumSuggestion(
-    NamedTuple(
-        '_TriciumSuggestion',
-        (
-            ('description', str),
-            ('replacements', tuple[_TriciumReplacement]),
-        ),
-    )):
-  """A `suggestion` emitted by Tricium."""
-
-  def as_json_dict(self):
-    """Converts `self` to a dict that can be serialized as JSON."""
-    as_dict = self._asdict()
-    as_dict['replacements'] = [x._asdict() for x in as_dict['replacements']]
-    return as_dict
-
-
-class _TriciumComment(
-    NamedTuple(
-        '_TriciumComment',
-        (
-            ('category', str),
-            ('message', str),
-            ('path', str),
-            ('start_line', int),
-            ('end_line', int),
-            ('start_char', int),
-            ('end_char', int),
-            ('suggestions', tuple[_TriciumSuggestion]),
-        ),
-    )):
-  """A full comment emitted by tricium.
-
-  The intent is for it to have all of the information that can possibly be
-  passed to api.tricium.add_comment.
-  """
-
-  def as_json_dict(self):
-    """Converts `self` to a dict that can be serialized as JSON."""
-    as_dict = self._asdict()
-    as_dict['suggestions'] = [x.as_json_dict() for x in as_dict['suggestions']]
-    return as_dict
-
-
-def _parse_tricium_replacement(replacement):
-  # Start with defaults, and update below to overwrite them as necessary.
-  full_replacement = {
-      'replacement': '',
-      'start_line': 0,
-      'end_line': 0,
-      'start_char': 0,
-      'end_char': 0,
-  }
-  for k, v in replacement.items():
-    full_replacement[_TRICIUM_KEY_TRANSFORMATIONS.get(k, k)] = v
-  return _TriciumReplacement(**full_replacement)
-
-
-def _parse_tricium_suggestion_with_defaults(description='', replacements=()):
-  return _TriciumSuggestion(
-      description=description,
-      replacements=tuple(_parse_tricium_replacement(x) for x in replacements),
-  )
-
-
-def _build_tricium_comment_with_defaults(category,
-                                         message,
-                                         path,
-                                         start_line=0,
-                                         end_line=0,
-                                         start_char=0,
-                                         end_char=0,
-                                         suggestions=()):
-  return _TriciumComment(category, message, path, start_line, end_line,
-                         start_char, end_char, suggestions)
-
-
-def _parse_comments_from_json_list(json_list):
-  results = []
-  # Use `**s` in cases below so we crash if unknown keys are found. That
-  # indicates that this code should be updated to deal with the new keys.
-  for x in json_list:
-    x = {_TRICIUM_KEY_TRANSFORMATIONS.get(k, k): v for k, v in x.items()}
-    if 'suggestions' in x:
-      x['suggestions'] = tuple(
-          _parse_tricium_suggestion_with_defaults(**s)
-          for s in x['suggestions'])
-    results.append(_build_tricium_comment_with_defaults(**x))
-  return results
-
 
 def _should_skip_linting(api):
   revision_info = api.gerrit.get_revision_info(
@@ -177,18 +64,15 @@ def _build_textual_bot_list(bots, conjunction):
   return ' '.join((', '.join(bots[:-1]), conjunction, bots[-1]))
 
 
-def _note_observed_on(platforms, all_platforms, lint):
-  """Returns a lint noting where the given lint was observed.
+def _note_observed_on(platforms, all_platforms, finding):
+  """Append the finding message with observed platforms
 
-  >>> _note_observed_on(['foo'], ['foo', 'bar'], some_lint)
-  some_lint.replace(
-      message=lint.message + '\n\n(Lint observed on foo, but not bar)')
+  >>> _note_observed_on(['foo'], ['foo', 'bar'], some_finding)
+  some_finding.message += '\n\n(Lint observed on foo, but not bar)'
   >>> _note_observed_on(['foo', 'bar'], ['foo', 'bar'], some_lint)
-  some_lint.replace(
-      message=lint.message + '\n\n(Lint observed on foo and bar)')
+  some_finding.message += '\n\n(Lint observed on foo and bar)'
   >>> _note_observed_on(['foo'], ['foo', 'bar', 'baz'], some_lint)
-  some_lint.replace(
-      message=lint.message + '\n\n(Lint observed on foo, but not bar or baz)')
+  some_finding.message += '\n\n(Lint observed on foo, but not bar or baz)'
   """
   msg = 'Lint observed on ' + _build_textual_bot_list(
       platforms,
@@ -201,42 +85,52 @@ def _note_observed_on(platforms, all_platforms, lint):
   )
   if not_observed_on:
     msg += ', but not on ' + not_observed_on
+  finding.message += f'\n\n({msg})'
 
-  return lint._replace(message=lint.message + '\n\n(%s)' % msg)
 
-
-def _fixup_lint_paths(lint):
+def _fixup_finding_paths(finding):
   # Filter out third_party/dawn from path if present. Chromium will not have third_party/dawn
   # entries in the results because Dawn is pulled in from Deps. These show up when running
   # clang-tidy on changes in the Dawn gerrit where the prefix needs to be stripped.
   fixup_path = lambda x: x.removeprefix('third_party/dawn/')
-  fixup_replacements = lambda replacements: tuple(
-      x._replace(path=fixup_path(x.path)) for x in replacements)
-  return lint._replace(
-      path=fixup_path(lint.path),
-      suggestions=tuple(
-          suggestion._replace(
-              replacements=fixup_replacements(suggestion.replacements))
-          for suggestion in lint.suggestions),
-  )
+  finding.location.file_path = fixup_path(finding.location.file_path)
+  for f in finding.fixes:
+    for r in f.replacements:
+      r.location.file_path = fixup_path(r.location.file_path)
 
 
-def _dedup_and_fixup_tricium_lints(all_platforms, lints):
-  merged_lints = []
-  for platform, platform_lints in lints.items():
-    for l in platform_lints:
-      merged_lints.append((_fixup_lint_paths(l), platform))
-
-  # _TriciumComments contain data which is unhashable, but comparable. While
-  # the comparison order may not always be intuitive, we don't care; it's
-  # deterministic, and we only ultimately care about having identical lints
-  # placed adjacent to each other, so we may deduplicate them in < n^2 time.
-  merged_lints.sort()
+def _dedup_findings(api, all_platforms, findings_by_platform):
+  platforms_by_encoded_finding = collections.defaultdict(list)
+  for platform, findings in findings_by_platform.items():
+    for f in findings:
+      # sort the replacements and fixes to de-duplicate findings with same
+      # fixes and replacements but in different order.
+      if f.fixes:
+        for fix in f.fixes:
+          fix.replacements.sort(key=lambda r: (
+              r.location.file_path,
+              r.location.range.start_line,
+              r.location.range.start_column,
+              r.location.range.end_line,
+              r.location.range.end_column,
+              r.new_content,
+          ))
+        f.fixes.sort(key=lambda f: (
+            f.replacements[0].location.file_path,
+            f.replacements[0].location.range.start_line,
+            f.replacements[0].location.range.start_column,
+            f.replacements[0].location.range.end_line,
+            f.replacements[0].location.range.end_column,
+            f.replacements[0].new_content,
+        ))
+      encoded_finding = api.proto.encode(f, 'BINARY')
+      platforms_by_encoded_finding[encoded_finding].append(platform)
 
   results = []
-  for lint, items in itertools.groupby(merged_lints, lambda x: x[0]):
-    observed_on = [x for _, x in items]
-    results.append(_note_observed_on(observed_on, all_platforms, lint))
+  for encoded_finding, observed_on in platforms_by_encoded_finding.items():
+    finding = api.proto.decode(encoded_finding, findings_pb.Finding, 'BINARY')
+    _note_observed_on(observed_on, all_platforms, finding)
+    results.append(finding)
   return results
 
 
@@ -299,21 +193,21 @@ def RunSteps(api):
     builds = [(x, build_dict[i]) for x, i in zip(_CHILD_BUILDERS, build_ids)]
 
   with api.step.nest('analyze lints'):
-    lints = {}
+    findings_by_builder = {}
     for builder_name, build_result in builds:
       properties = build_result.output.properties
-      if 'tricium' not in properties:
+      if 'findings' not in properties:
         continue
+      binary_encoded_findings = zlib.decompress(
+          base64.b64decode(properties['findings'].encode()))
+      findings_by_builder[builder_name] = api.proto.decode(
+          binary_encoded_findings, findings_pb.Findings, 'BINARY').findings
 
-      comments = json.loads(properties['tricium']).get('comments', ())
-      lints[builder_name] = _parse_comments_from_json_list(comments)
-
-    tricium_lints = _dedup_and_fixup_tricium_lints(_CHILD_BUILDERS, lints)
-
-  with api.step.nest('emit comments'):
-    for lint in tricium_lints:
-      api.tricium.add_comment(**lint.as_json_dict())
-    api.tricium.write_comments()
+    findings = _dedup_findings(api, _CHILD_BUILDERS, findings_by_builder)
+    if findings:
+      for f in findings:
+        _fixup_finding_paths(f)
+      api.findings.upload_findings(findings, step_name='upload findings')
 
   if all_failures:
     # crbug.com/1343619: There are many reasons that a bot may fail (a broken
@@ -327,37 +221,24 @@ def RunSteps(api):
                                'block the CQ.')
 
 
-def _get_tricium_comments(steps):
-  write_results = steps['emit comments.write results']
-  tricium_json = write_results.output_properties['tricium']
-  comments = json.loads(tricium_json).get('comments')
-  if comments:
-    comments = _parse_comments_from_json_list(comments)
-  return comments
-
-
-def _tricium_has_no_comments(check, steps):
-  comments = _get_tricium_comments(steps)
-  check(not comments)
-
-
-def _tricium_has_comment(check, steps, comment):
-  comments = _get_tricium_comments(steps)
-  check(comments)
-  if comments:
-    check(comment in comments)
-
-
 def GenTests(api):
+  gerrit_change_ref = findings_pb.Location.GerritChangeReference(
+      host='chromium-review.googlesource.com',
+      project='chromium/src',
+      change=12345,
+      patchset=1)
 
-  def test_data(tricium_data, bot_status_overrides=None, commit_message='foo'):
+  def test_data(findings_by_builder=None,
+                bot_status_overrides=None,
+                commit_message='foo'):
 
     test_data = sum([
         api.chromium.try_build(
             builder_group='tryserver.chromium.linux',
             builder='linux_chromium_compile_rel_ng',
             build_number=1234,
-            patch_set=1),
+            change_number=gerrit_change_ref.change,
+            patch_set=gerrit_change_ref.patchset),
         api.platform('linux', 64),
         api.override_step_data(
             'gerrit changes',
@@ -394,15 +275,16 @@ def GenTests(api):
         ) for i, builder_name in zip(build_ids, _CHILD_BUILDERS)
     ]
 
-    if tricium_data is not None:
+    if findings_by_builder:
       builder_indices = {n: i for i, n in enumerate(_CHILD_BUILDERS)}
-      for builder_name, comments in tricium_data.items():
-        n = builder_indices[builder_name]
-        tricium_section = {}
-        if comments:
-          tricium_section['comments'] = [x.as_json_dict() for x in comments]
-        build_output[n].output.properties['tricium'] = api.json.dumps(
-            tricium_section)
+      for builder_name, findings in findings_by_builder.items():
+        if findings is not None:
+          n = builder_indices[builder_name]
+          build_output[n].output.properties['findings'] = base64.b64encode(
+              zlib.compress(
+                  api.proto.encode(
+                      findings_pb.Findings(findings=findings),
+                      'BINARY'))).decode()
 
     test_data += api.buildbucket.simulated_collect_output(
         build_output,
@@ -410,223 +292,281 @@ def GenTests(api):
     )
     return test_data
 
+  def _get_uploaded_findings(steps):
+    if 'analyze lints.upload findings' not in steps or (
+        'findings.json' not in steps['analyze lints.upload findings'].logs):
+      return []
+    findings_json = steps['analyze lints.upload findings'].logs['findings.json']
+    return api.proto.decode(findings_json, findings_pb.Findings,
+                            'JSONPB').findings
+
+  def _has_no_finding(check, steps):
+    check(not _get_uploaded_findings(steps))
+
+  def _has_finding(check, steps, finding):
+    findings = _get_uploaded_findings(steps)
+    check(findings)
+    if findings:
+      check(finding in findings)
+
   yield api.test(
       'skip_reverted_cl',
-      test_data(tricium_data=None, commit_message='Revert foo'),
+      test_data(findings_by_builder=None, commit_message='Revert foo'),
       api.post_process(post_process.DoesNotRun, 'schedule tidy builds'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'success_on_no_tricium_output',
-      test_data(tricium_data=None),
-      api.post_process(_tricium_has_no_comments),
+      'success_on_no_findings',
+      test_data(findings_by_builder=None),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'success_on_empty_tricium_output',
-      test_data(tricium_data={name: [] for name in _CHILD_BUILDERS}),
-      api.post_process(_tricium_has_no_comments),
+      'success_on_empty_findings_output',
+      test_data(findings_by_builder={name: [] for name in _CHILD_BUILDERS}),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
-  comment0 = _build_tricium_comment_with_defaults(
-      category='some category',
+  finding = findings_pb.Finding(
+      category='some_category',
+      location=findings_pb.Location(
+          gerrit_change_ref=gerrit_change_ref,
+          file_path='foo.cpp',
+      ),
       message='some message',
-      path='foo.cpp',
+      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
   )
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding)
+  _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS, expected_finding)
   yield api.test(
       'basic_tidy_output_works',
-      test_data(tricium_data={_CHILD_BUILDERS[0]: [comment0]}),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS, comment0)),
+      test_data(findings_by_builder={_CHILD_BUILDERS[0]: [finding]}),
+      api.post_process(_has_finding, expected_finding),
       api.post_process(post_process.DropExpectation),
   )
 
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding)
+  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
+                    expected_finding)
   yield api.test(
       'multibot_tidy_output_works',
-      test_data(tricium_data={
-          _CHILD_BUILDERS[0]: [comment0],
-          _CHILD_BUILDERS[1]: [comment0],
+      test_data(findings_by_builder={
+          _CHILD_BUILDERS[0]: [finding],
+          _CHILD_BUILDERS[1]: [finding],
       }),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                            _CHILD_BUILDERS, comment0)),
+      api.post_process(_has_finding, expected_finding),
       api.post_process(post_process.DropExpectation),
   )
 
-  comment1 = _build_tricium_comment_with_defaults(
-      category='some other category',
+  another_finding = findings_pb.Finding(
+      category='another_category',
+      location=findings_pb.Location(
+          gerrit_change_ref=gerrit_change_ref,
+          file_path='foo2.cpp',
+      ),
       message='some other message',
-      path='foo2.cpp',
-      suggestions=(_TriciumSuggestion(
-          description='foo',
-          replacements=(_TriciumReplacement(
-              path='path/to/foo.cc',
-              replacement='replaced',
-              start_line=0,
-              end_line=0,
-              start_char=0,
-              end_char=0,
-          ),),
-      ),),
-  )
+      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING)
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding)
+  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
+                    expected_finding)
+  expected_another_finding = findings_pb.Finding()
+  expected_another_finding.CopyFrom(another_finding)
+  _note_observed_on([_CHILD_BUILDERS[1]], _CHILD_BUILDERS,
+                    expected_another_finding)
   yield api.test(
       'multibot_multicomment_tidy_output_works',
-      test_data(tricium_data={
-          _CHILD_BUILDERS[0]: [comment0],
-          _CHILD_BUILDERS[1]: [comment0, comment1],
-      }),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                            _CHILD_BUILDERS, comment0),
-      ),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[1]], _CHILD_BUILDERS, comment1),
-      ),
+      test_data(
+          findings_by_builder={
+              _CHILD_BUILDERS[0]: [finding],
+              _CHILD_BUILDERS[1]: [finding, another_finding],
+          }),
+      api.post_process(_has_finding, expected_finding),
+      api.post_process(_has_finding, expected_another_finding),
       api.post_process(post_process.DropExpectation),
   )
 
-  comment1_with_new_replacement = comment1._replace(
-      suggestions=(_TriciumSuggestion(
-          description='foo',
-          replacements=(_TriciumReplacement(
-              path='path/to/foo.cc',
-              replacement='replaced',
-              start_line=0,
-              end_line=0,
-              start_char=0,
-              end_char=1,
-          ),),
-      ),),)
-
-  # crbug.com/1336328
+  finding_with_fixes = findings_pb.Finding(
+      category='some_category',
+      location=findings_pb.Location(
+          gerrit_change_ref=gerrit_change_ref,
+          file_path='foo.cpp',
+      ),
+      message='some message',
+      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+      fixes=[
+          findings_pb.Fix(replacements=[
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='path/to/bar.cc',
+                      range=findings_pb.Location.Range(
+                          start_line=1,
+                          start_column=1,
+                          end_line=1,
+                          end_column=2,
+                      ),
+                  ),
+              ),
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='path/to/bar.cc',
+                      range=findings_pb.Location.Range(
+                          start_line=3,
+                          start_column=0,
+                          end_line=4,
+                          end_column=5,
+                      ),
+                  ),
+              ),
+          ]),
+          findings_pb.Fix(replacements=[
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='path/to/foo.cc',
+                  ),
+              ),
+          ]),
+      ])
+  finding_with_same_fixes = findings_pb.Finding(
+      category='some_category',
+      location=findings_pb.Location(
+          gerrit_change_ref=gerrit_change_ref,
+          file_path='foo.cpp',
+      ),
+      message='some message',
+      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+      fixes=[
+          findings_pb.Fix(replacements=[
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='path/to/foo.cc',
+                  ),
+              ),
+          ]),
+          findings_pb.Fix(replacements=[
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='path/to/bar.cc',
+                      range=findings_pb.Location.Range(
+                          start_line=3,
+                          start_column=0,
+                          end_line=4,
+                          end_column=5,
+                      ),
+                  ),
+              ),
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='path/to/bar.cc',
+                      range=findings_pb.Location.Range(
+                          start_line=1,
+                          start_column=1,
+                          end_line=1,
+                          end_column=2,
+                      ),
+                  ),
+              ),
+          ]),
+      ])
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding_with_fixes)
+  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
+                    expected_finding)
   yield api.test(
-      'messages_with_replacements_must_sort',
+      'deduplicate_semantically_same_findings',
       test_data(
-          tricium_data={
-              _CHILD_BUILDERS[0]: [comment1],
-              _CHILD_BUILDERS[1]: [comment1, comment1_with_new_replacement],
+          findings_by_builder={
+              _CHILD_BUILDERS[0]: [finding_with_fixes],
+              _CHILD_BUILDERS[1]: [finding_with_same_fixes],
           }),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                            _CHILD_BUILDERS, comment1),
-      ),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[1]], _CHILD_BUILDERS,
-                            comment1_with_new_replacement),
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  comment1_with_empty_replacement = comment1._replace(
-      suggestions=(_TriciumSuggestion(
-          description='foo',
-          replacements=(_TriciumReplacement(
-              path='path/to/foo.cc',
-              replacement='',
-              start_line=0,
-              end_line=0,
-              start_char=0,
-              end_char=1,
-          ),),
-      ),),)
-
-  yield api.test(
-      'messages_with_empty_replacements_must_work',
-      test_data(
-          tricium_data={
-              _CHILD_BUILDERS[0]: [comment1_with_empty_replacement],
-              _CHILD_BUILDERS[1]: [comment1_with_empty_replacement],
-          }),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                            _CHILD_BUILDERS, comment1_with_empty_replacement),
-      ),
+      api.post_process(_has_finding, expected_finding),
       api.post_process(post_process.DropExpectation),
   )
 
   step_failure = 'FAILURE'
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding)
+  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
+                    expected_finding)
   yield api.test(
       'single_bot_failure',
       test_data(
           bot_status_overrides={
               _CHILD_BUILDERS[0]: step_failure,
           },
-          tricium_data={
-              _CHILD_BUILDERS[0]: [comment0],
-              _CHILD_BUILDERS[1]: [comment0],
+          findings_by_builder={
+              _CHILD_BUILDERS[0]: [finding],
+              _CHILD_BUILDERS[1]: [finding],
           }),
       api.post_process(post_process.StepWarning, 'schedule tidy builds'),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                            _CHILD_BUILDERS, comment0),
-      ),
+      api.post_process(_has_finding, expected_finding),
       api.post_process(post_process.DropExpectation),
   )
 
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding)
+  _note_observed_on(_CHILD_BUILDERS, _CHILD_BUILDERS, expected_finding)
   yield api.test(
       'all_bot_failure',
       test_data(
           bot_status_overrides={
               builder: step_failure for builder in _CHILD_BUILDERS
           },
-          tricium_data={builder: [comment0] for builder in _CHILD_BUILDERS}),
+          findings_by_builder={
+              builder: [finding] for builder in _CHILD_BUILDERS
+          }),
       api.expect_status('FAILURE'),
       api.post_process(post_process.StepWarning, 'schedule tidy builds'),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on(_CHILD_BUILDERS, _CHILD_BUILDERS, comment0),
-      ),
+      api.post_process(_has_finding, expected_finding),
       api.post_process(post_process.DropExpectation),
   )
 
-  comment_dawn = _build_tricium_comment_with_defaults(
-      category='some other category',
-      message='some other message',
-      path='third_party/dawn/src/tint/foo2.cpp',
-      suggestions=(_TriciumSuggestion(
-          description='foo',
-          replacements=(_TriciumReplacement(
-              path='third_party/dawn/src/tint/foo.cc',
-              replacement='replaced',
-              start_line=0,
-              end_line=0,
-              start_char=0,
-              end_char=0,
-          ),),
-      ),),
-  )
-  comment_dawn_with_new_replacement = comment_dawn._replace(
-      path='src/tint/foo2.cpp',
-      suggestions=(_TriciumSuggestion(
-          description='foo',
-          replacements=(_TriciumReplacement(
-              path='src/tint/foo.cc',
-              replacement='replaced',
-              start_line=0,
-              end_line=0,
-              start_char=0,
-              end_char=0,
-          ),),
-      ),),
-  )
+  finding_dawn = findings_pb.Finding(
+      category='dawn_category',
+      location=findings_pb.Location(
+          gerrit_change_ref=gerrit_change_ref,
+          file_path='third_party/dawn/src/tint/foo2.cpp',
+      ),
+      message='some message',
+      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+      fixes=[
+          findings_pb.Fix(replacements=[
+              findings_pb.Fix.Replacement(
+                  new_content='replaced',
+                  location=findings_pb.Location(
+                      gerrit_change_ref=gerrit_change_ref,
+                      file_path='third_party/dawn/src/tint/foo.cc',
+                  ),
+              ),
+          ])
+      ])
+  expected_finding_dawn = findings_pb.Finding()
+  expected_finding_dawn.CopyFrom(finding_dawn)
+  _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS,
+                    expected_finding_dawn)
+  expected_finding_dawn.location.file_path = 'src/tint/foo2.cpp'
+  expected_finding_dawn.fixes[0].replacements[
+      0].location.file_path = 'src/tint/foo.cc'
   yield api.test(
       'filter_dawn_paths',
-      test_data(tricium_data={_CHILD_BUILDERS[0]: [comment_dawn]}),
-      api.post_process(
-          _tricium_has_comment,
-          _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS,
-                            comment_dawn_with_new_replacement),
-      ),
+      test_data(findings_by_builder={_CHILD_BUILDERS[0]: [finding_dawn]}),
+      api.post_process(_has_finding, expected_finding_dawn),
       api.post_process(post_process.DropExpectation),
   )
