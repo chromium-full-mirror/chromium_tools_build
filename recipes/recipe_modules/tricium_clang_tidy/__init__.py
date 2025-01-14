@@ -6,10 +6,10 @@ DEPS = [
     'chromium',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/findings',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/step',
-    'recipe_engine/tricium',
     'reclient',
 ]
 

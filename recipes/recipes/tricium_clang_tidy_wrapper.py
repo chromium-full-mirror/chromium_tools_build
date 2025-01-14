@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
+import zlib
+
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
-from RECIPE_MODULES.build.attr_utils import attrs, attrib
+from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from RECIPE_MODULES.build.tricium_clang_tidy import _clang_tidy_path
 from RECIPE_MODULES.build import chromium
 
@@ -22,9 +25,9 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/proto',
     'recipe_engine/raw_io',
     'recipe_engine/step',
-    'recipe_engine/tricium',
     'tricium_clang_tidy',
     'reclient',
 ]
@@ -113,7 +116,6 @@ def RunSteps(api):
     source_dir = update_result.source_root.path
     build_dir = api.chromium.default_build_dir(source_dir)
     api.chromium.runhooks(source_dir, build_dir, name='runhooks (with patch)')
-
     with api.context(cwd=source_dir):
       affected = [
           source_dir.joinpath(_normalize_path_for_os(api, f))
@@ -129,12 +131,50 @@ def RunSteps(api):
       api.file.ensure_directory('ensure out dir', build_dir)
       api.file.write_text('write args.gn', build_dir / 'args.gn', gn_args_str)
 
-      api.tricium_clang_tidy.lint_source_files(
+      findings = api.tricium_clang_tidy.lint_source_files(
           source_dir,
           build_dir,
           affected,
           api.platform.name == 'win',
       )
+
+      if findings:
+        # write 'findings' build property that will be consumed by
+        # the orchestrator.
+        findings = findings_pb.Findings(findings=findings)
+        step = api.step.empty(
+            'write findings',
+            log_text=api.proto.encode(findings, 'JSONPB'),
+            log_name='findings.json')
+        step.presentation.properties['findings'] = base64.b64encode(
+            zlib.compress(api.proto.encode(findings, 'BINARY'))).decode()
+
+        step.presentation.properties['tricium'] = api.json.dumps(
+            {
+                'comments': [{
+                    'category':
+                        f.category,
+                    'message':
+                        f.message,
+                    'path':
+                        f.location.file_path,
+                    'startLine':
+                        f.location.range.start_line,
+                    'endLine':
+                        f.location.range.end_line,
+                    'suggestions': [{
+                        'replacements': [{
+                            'path': r.location.file_path,
+                            'startLine': r.location.start_line,
+                            'endLine': r.location.end_line,
+                            'startChar': r.location.start_column,
+                            'endChar': r.location.end_column,
+                            'replacement': r.new_content,
+                        } for r in fix.replacements]
+                    } for fix in f.fixes]
+                } for f in findings.findings],
+            },
+            indent=0)
 
 
 def GenTests(api):
@@ -185,11 +225,23 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # Simple test to improve coverage. All other logic is tested in the
-  # tricium_clang_tidy recipe module.
   yield api.test(
-      'no_files',
-      build_with_patch(affected_files=[]),
-      api.post_process(post_process.DoesNotRun, 'clang-tidy'),
+      'generate_findings',
+      build_with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.tryserver.get_files_affected_by_patch(['path/to/some/cc/file.cpp']),
+      api.step_data(
+          'clang-tidy.generate-warnings.read tidy output',
+          api.file.read_json({
+              'diagnostics': [{
+                  'file_path': 'path/to/some/cc/file.cpp',
+                  'line_number': 2,
+                  'diag_name': 'super-cool-diag',
+                  'message': 'hello, world 1',
+                  'replacements': [],
+                  'expansion_locs': [],
+              },]
+          })),
+      api.post_process(post_process.PropertiesContain, 'findings'),
+      api.post_process(post_process.PropertiesContain, 'tricium'),
       api.post_process(post_process.DropExpectation),
   )

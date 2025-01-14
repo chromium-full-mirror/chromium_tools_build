@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 """
 Recipe module to encapsulate the logic of calling clang-tidy on a list
-of affected files, gather warnings, and post via Tricium.
+of affected files, gather warnings, and generate code findings.
 """
 
 import collections
 
+from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from recipe_engine.config_types import Path
 from recipe_engine.recipe_api import RecipeApi
 
@@ -61,13 +62,12 @@ class _SourceFileComments:
                                                     check_name), suggestions))
 
   def __iter__(self):
-    """Yields comments as (category, message, line_num, suggestions) tuples."""
-    category = 'ClangTidy'
+    """Yields comments as (check_name, message, line_num, suggestions) tuples."""
 
     if self._tidy_timed_out:
       message = ('warning: clang-tidy timed out on this file; issuing '
                  'diagnostics is impossible.')
-      yield category, message, 0, ()
+      yield '', message, 0, ()
 
     def fix_message(message, check_name):
       if '-' in check_name:
@@ -90,9 +90,8 @@ class _SourceFileComments:
 
     for (message, line_number,
          check_name), suggestions in self._source_comments:
-      subcategory = '/'.join([category, check_name])
       message = fix_message(message, check_name) + failure_suffix
-      yield subcategory, message, line_number, suggestions
+      yield check_name, message, line_number, suggestions
 
     macro_comments = sorted(self._macro_comments.items())
     for (message, line_number, check_name), expansions in macro_comments:
@@ -111,8 +110,7 @@ class _SourceFileComments:
       else:
         suffix += ', and %d other places.' % (len(expansions) - 1)
 
-      subcategory = '/'.join([category, check_name])
-      yield subcategory, message + suffix + failure_suffix, line_number, ()
+      yield check_name, message + suffix + failure_suffix, line_number, ()
 
 
 def _fix_win_file_path(file_path):
@@ -162,11 +160,11 @@ class TriciumClangTidyApi(RecipeApi):
                         source_dir: Path,
                         output_dir,
                         file_paths,
-                        is_windows=False):
-    """Runs clang-tidy on provided source files in file_paths, then writes
-    warnings to Tricium.
+                        is_windows=False) -> list[findings_pb.Finding]:
+    """Runs clang-tidy on provided source files in file_paths and returns
+    findings.
 
-    file_paths is an interable of Path, only files that exist and have C/C++
+    file_paths is an iterable of Path, only files that exist and have C/C++
     extensions will be linted.
 
     is_windows is a boolean; if true, we'll expect build commands to use
@@ -182,27 +180,50 @@ class TriciumClangTidyApi(RecipeApi):
     ]
 
     if not affected:
-      # No files affect, just write and be done.
-      self.m.tricium.write_comments()
-      return
+      return []  # No files affected.
 
     with self.m.step.nest('clang-tidy'):
       with self.m.step.nest('generate-warnings'):
         per_file_comments = self._generate_clang_tidy_comments(
             source_dir, output_dir, affected, is_windows)
-
-      for file_path, comments in per_file_comments.items():
-        for category, message, line_number, suggestions in comments:
-          # Clang-tidy only gives us one file offset, so we use line
-          # comments.
-          self.m.tricium.add_comment(
-              category,
-              message,
-              file_path,
-              start_line=line_number,
-              suggestions=suggestions)
-
-    self.m.tricium.write_comments()
+        findings = []
+        for file_path, comments in per_file_comments.items():
+          for check_name, message, line_number, suggestions in comments:
+            # Clang-tidy only gives us one file offset, so we use line comments.
+            finding = findings_pb.Finding(
+                category='clang-tidy',
+                location=findings_pb.Location(file_path=file_path),
+                message=f'check: {check_name}\n\n{message}'
+                if check_name else message,
+                severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+            )
+            self.m.findings.populate_source_from_current_build(finding.location)
+            if line_number:
+              finding.location.range.start_line = line_number
+              finding.location.range.end_line = line_number
+            if suggestions:
+              finding.fixes.extend([
+                  findings_pb.Fix(replacements=[
+                      findings_pb.Fix.Replacement(
+                          location=findings_pb.Location(
+                              file_path=r['path'],
+                              range=findings_pb.Location.Range(
+                                  start_line=r['start_line'],
+                                  end_line=r['end_line'],
+                                  start_column=r['start_char'],
+                                  end_column=r['end_char'],
+                              ),
+                          ),
+                          new_content=r['replacement'])
+                      for r in s['replacements']
+                  ])
+                  for s in suggestions
+              ])
+              for f in finding.fixes:
+                for r in f.replacements:
+                  self.m.findings.populate_source_from_current_build(r.location)
+            findings.append(finding)
+        return findings
 
   def _generate_clang_tidy_comments(
       self,

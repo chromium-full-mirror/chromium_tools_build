@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
-
-from recipe_engine import post_process
+from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from RECIPE_MODULES.build.tricium_clang_tidy import _clang_tidy_path
+from recipe_engine import post_process
 
 DEPS = [
     'recipe_engine/context',
@@ -13,8 +12,8 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/proto',
     'recipe_engine/step',
-    'recipe_engine/tricium',
     'tricium_clang_tidy',
     'reclient',
     'chromium',
@@ -25,45 +24,17 @@ def RunSteps(api):
   source_dir = cache_dir / 'builder' / 'src'
   with api.context(cwd=cache_dir):
     # file_paths should be kept in sync with the paths used in test below.
-    api.tricium_clang_tidy.lint_source_files(
+    findings = api.tricium_clang_tidy.lint_source_files(
         source_dir,
         output_dir=cache_dir / 'out',
         file_paths=[cache_dir.joinpath('src', 'path/to/some/cc/file.cpp')],
         is_windows=api.properties['is_windows'])
-
-
-def _get_tricium_comments(steps):
-  write_results = steps['write results']
-  tricium_json = write_results.output_properties['tricium']
-  return json.loads(tricium_json).get('comments')
-
-
-def _tricium_has_no_messages(check, steps):
-  comments = _get_tricium_comments(steps)
-  check(not comments)
-
-
-def _tricium_has_message(check, steps, message):
-  comments = _get_tricium_comments(steps)
-  check(comments)
-  if comments:
-    check(message in [x['message'] for x in comments])
-
-
-def _tricium_has_replacements(check, steps, *expected_replacements):
-  replacement_messages = set()
-  for comment in _get_tricium_comments(steps):
-    for suggestion in comment.get('suggestions', ()):
-      for replacement in suggestion['replacements']:
-        replacement_messages.add(replacement['replacement'])
-
-  check(set(expected_replacements) == replacement_messages)
-
-
-def _tricium_outputs_json(check, steps, json_obj):
-  comments = _get_tricium_comments(steps)
-  check(comments == json_obj)
-
+    if findings:
+      api.step.empty(
+          'dump findings',
+          log_text=api.proto.encode(
+              findings_pb.Findings(findings=findings), 'JSONPB'),
+          log_name='findings.json')
 
 def GenTests(api):
 
@@ -86,12 +57,36 @@ def GenTests(api):
       test_data += api.path.exists(*existing_files)
     return test_data
 
+  def _get_uploaded_findings(steps):
+    if 'dump findings' not in steps or ('findings.json'
+                                        not in steps['dump findings'].logs):
+      return []
+    findings_json = steps['dump findings'].logs['findings.json']
+    return api.proto.decode(findings_json, findings_pb.Findings,
+                            'JSONPB').findings
+
+  def _has_no_finding(check, steps):
+    check(not _get_uploaded_findings(steps))
+
+  def _has_finding(check, steps, finding):
+    findings = _get_uploaded_findings(steps)
+    check(findings)
+    if findings:
+      check(finding in findings)
+
+  gerrit_change_ref = findings_pb.Location.GerritChangeReference(
+      host='chromium-review.googlesource.com',
+      project='chromium/src',
+      change=456789,
+      patchset=12)
+
   yield api.test(
       'no_files',
       with_patch(affected_files=[]),
       api.chromium.try_build(),
       api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -101,6 +96,7 @@ def GenTests(api):
       api.chromium.try_build(),
       api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -111,7 +107,7 @@ def GenTests(api):
       api.chromium.try_build(),
       api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
-      api.post_process(_tricium_has_no_messages),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -125,8 +121,15 @@ def GenTests(api):
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
       api.post_process(
-          _tricium_has_message, 'warning: clang-tidy timed out on this '
-          'file; issuing diagnostics is impossible.'),
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref, file_path='oh/no.cpp'),
+              message='warning: clang-tidy timed out on this file; '
+              'issuing diagnostics is impossible.',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -141,6 +144,7 @@ def GenTests(api):
                              })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -155,6 +159,7 @@ def GenTests(api):
               {'failed_tidy_files': ['path/to/some/cc/file.cpp']})),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -188,8 +193,37 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
       api.post_process(
-          _tricium_has_message, 'hello, world 1 (https://clang.llvm.org/'
-          'extra/clang-tidy/checks/super/cool-diag.html)'),
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: super-cool-diag\n\nhello, world 1 '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/super/'
+              'cool-diag.html)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=50,
+                      end_line=50,
+                  )),
+              message='check: moderately-cool-diag\n\nhello, world '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/moderately/'
+              'cool-diag.html)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -213,8 +247,21 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
       api.post_process(
-          _tricium_has_message, 'hello, world 1 (https://clang.llvm.org/'
-          'extra/clang-tidy/checks/super/cool-diag.html)'),
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: super-cool-diag\n\nhello, world 1 '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/super/'
+              'cool-diag.html)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -248,7 +295,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(_tricium_has_no_messages),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -273,10 +320,22 @@ def GenTests(api):
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
       api.post_process(
-          _tricium_has_message,
-          'a (https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
-          '(Note: building this file or its dependencies failed; this '
-          'diagnostic might be incorrect as a result.)'),
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: b\n\na '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
+              '(Note: building this file or its dependencies failed; this '
+              'diagnostic might be incorrect as a result.)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -302,10 +361,22 @@ def GenTests(api):
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
       api.post_process(
-          _tricium_has_message,
-          'a (https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
-          '(Note: building this file or its dependencies failed; this '
-          'diagnostic might be incorrect as a result.)'),
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: b\n\na '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
+              '(Note: building this file or its dependencies failed; this '
+              'diagnostic might be incorrect as a result.)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -330,10 +401,22 @@ def GenTests(api):
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
       api.post_process(
-          _tricium_has_message,
-          'a (https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
-          '(Note: running clang-tidy on this file failed; this '
-          'diagnostic might be incorrect as a result.)'),
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: b\n\na '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
+              '(Note: running clang-tidy on this file failed; this '
+              'diagnostic might be incorrect as a result.)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -371,7 +454,51 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(_tricium_has_replacements, 'foo', 'bar'),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: tidy-is-angry\n\nhello, world '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/tidy/'
+              'is-angry.html)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              fixes=[
+                  findings_pb.Fix(
+                      replacements=[
+                          findings_pb.Fix.Replacement(
+                              location=findings_pb.Location(
+                                  gerrit_change_ref=gerrit_change_ref,
+                                  file_path='path/to/some/cc/file.cpp',
+                                  range=findings_pb.Location.Range(
+                                      start_line=1,
+                                      end_line=2,
+                                      start_column=0,
+                                      end_column=1,
+                                  )),
+                              new_content='foo',
+                          ),
+                          findings_pb.Fix.Replacement(
+                              location=findings_pb.Location(
+                                  gerrit_change_ref=gerrit_change_ref,
+                                  file_path='path/to/some/cc/file.cpp',
+                                  range=findings_pb.Location.Range(
+                                      start_line=3,
+                                      end_line=4,
+                                      start_column=5,
+                                      end_column=5,
+                                  )),
+                              new_content='bar',
+                          )
+                      ],)
+              ],
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -417,16 +544,23 @@ def GenTests(api):
                       api.file.read_json({'diagnostics': diags})),
         api.post_process(post_process.StepSuccess,
                          'clang-tidy.generate-warnings'),
-        api.post_process(_tricium_outputs_json, [{
-            'category': 'ClangTidy/tidy-is-angry',
-            'path': 'path/to/some/cc/file.h',
-            'message':
-                'grrr '
-                '(https://clang.llvm.org/extra/clang-tidy/checks/tidy/is-angry'
-                '.html)'
-                '\n\nExpanded from path/to/some/cc/file0.cpp:2' + suffix,
-            'startLine': 3,
-        }]),
+        api.post_process(
+            _has_finding,
+            findings_pb.Finding(
+                category='clang-tidy',
+                location=findings_pb.Location(
+                    gerrit_change_ref=gerrit_change_ref,
+                    file_path='path/to/some/cc/file.h',
+                    range=findings_pb.Location.Range(
+                        start_line=3,
+                        end_line=3,
+                    )),
+                message='check: tidy-is-angry\n\ngrrr '
+                '(https://clang.llvm.org/extra/clang-tidy/checks/tidy/'
+                'is-angry.html)\n\nExpanded from '
+                'path/to/some/cc/file0.cpp:2' + suffix,
+                severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+            )),
         api.post_process(post_process.DropExpectation),
     )
 
@@ -463,24 +597,39 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(_tricium_outputs_json, [
-          {
-              'category': 'ClangTidy/bugprone-use-after-move',
-              'path': 'path/to/some/cc/file.cpp',
-              'message': 'base message '
-                         '(https://clang.llvm.org/extra/clang-tidy/checks/'
-                         'bugprone/use-after-move.html)',
-              'startLine': 2,
-          },
-          {
-              'category': 'ClangTidy/bugprone-use-after-move',
-              'path': 'path/to/some/cc/file.cpp',
-              'message': 'A `move` operation occurred here, which caused '
-                         "'base message' at path/to/some/cc/file.cpp:2 "
-                         '(https://clang.llvm.org/extra/clang-tidy/checks/'
-                         'bugprone/use-after-move.html)',
-              'startLine': 321,
-          },
-      ]),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=2,
+                      end_line=2,
+                  )),
+              message='check: bugprone-use-after-move\n\nbase message '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/'
+              'bugprone/use-after-move.html)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=321,
+                      end_line=321,
+                  )),
+              message='check: bugprone-use-after-move\n\n'
+              'A `move` operation occurred here, which caused '
+              "'base message' at path/to/some/cc/file.cpp:2 "
+              '(https://clang.llvm.org/extra/clang-tidy/checks/'
+              'bugprone/use-after-move.html)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
