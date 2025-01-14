@@ -165,10 +165,10 @@ def RunSteps(api):
                     'suggestions': [{
                         'replacements': [{
                             'path': r.location.file_path,
-                            'startLine': r.location.start_line,
-                            'endLine': r.location.end_line,
-                            'startChar': r.location.start_column,
-                            'endChar': r.location.end_column,
+                            'startLine': r.location.range.start_line,
+                            'endLine': r.location.range.end_line,
+                            'startChar': r.location.range.start_column,
+                            'endChar': r.location.range.end_column,
                             'replacement': r.new_content,
                         } for r in fix.replacements]
                     } for fix in f.fixes]
