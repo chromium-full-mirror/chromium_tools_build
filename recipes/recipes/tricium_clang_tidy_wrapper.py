@@ -104,6 +104,15 @@ def RunSteps(api):
   if _should_skip_linting(api):
     return
 
+  skip_checks_footer_lines = api.tryserver.get_footer(
+      api.tryserver.normalize_footer_name(
+          api.tricium_clang_tidy.SKIP_CHECKS_FOOTER_KEY))
+  skip_checks = [
+      check.strip()
+      for line in skip_checks_footer_lines
+      for check in line.split(',')
+  ]
+
   with api.chromium.chromium_layout():
     me, config = api.chromium.configure_bot(BUILDERS)
 
@@ -135,7 +144,8 @@ def RunSteps(api):
           source_dir,
           build_dir,
           affected,
-          api.platform.name == 'win',
+          skip_checks=skip_checks,
+          is_windows=api.platform.name == 'win',
       )
 
       if findings:
@@ -230,6 +240,9 @@ def GenTests(api):
       build_with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.tryserver.get_files_affected_by_patch(['path/to/some/cc/file.cpp']),
       api.step_data(
+          'parse description',
+          api.json.output({'Skip-Clang-Tidy-Checks': ['foo,bar', 'baz']})),
+      api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
               'diagnostics': [{
@@ -241,6 +254,10 @@ def GenTests(api):
                   'expansion_locs': [],
               },]
           })),
+      api.post_process(
+          post_process.StepCommandContains,
+          'clang-tidy.generate-warnings.tricium_clang_tidy_script.py',
+          ['--tidy_checks=-foo,-bar,-baz']),
       api.post_process(post_process.PropertiesContain, 'findings'),
       api.post_process(post_process.PropertiesContain, 'tricium'),
       api.post_process(post_process.DropExpectation),

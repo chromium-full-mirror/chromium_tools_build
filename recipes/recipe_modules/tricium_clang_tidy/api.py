@@ -78,6 +78,11 @@ class _SourceFileComments:
       return (message + ' (https://clang.llvm.org/extra/clang-tidy/checks/'
               '%s.html)' % url_path)
 
+    def skip_suffix(check_name):
+      return ('\n\n(Note: You can add '
+              f'`{TriciumClangTidyApi.SKIP_CHECKS_FOOTER_KEY}: {check_name}` '
+              'footer to the CL description to skip the check)')
+
     if self._build_failed:
       failure_suffix = ('\n\n(Note: building this file or its dependencies '
                         'failed; this diagnostic might be incorrect as a '
@@ -90,7 +95,8 @@ class _SourceFileComments:
 
     for (message, line_number,
          check_name), suggestions in self._source_comments:
-      message = fix_message(message, check_name) + failure_suffix
+      message = fix_message(
+          message, check_name) + skip_suffix(check_name) + failure_suffix
       yield check_name, message, line_number, suggestions
 
     macro_comments = sorted(self._macro_comments.items())
@@ -110,7 +116,8 @@ class _SourceFileComments:
       else:
         suffix += ', and %d other places.' % (len(expansions) - 1)
 
-      yield check_name, message + suffix + failure_suffix, line_number, ()
+      message += suffix + skip_suffix(check_name) + failure_suffix
+      yield check_name, message, line_number, ()
 
 
 def _fix_win_file_path(file_path):
@@ -156,16 +163,23 @@ def _parse_tidy_diagnostic(diagnostic, diagnostic_name, is_windows):
 
 class TriciumClangTidyApi(RecipeApi):
 
+  SKIP_CHECKS_FOOTER_KEY = 'Skip-Clang-Tidy-Checks'
+
   def lint_source_files(self,
                         source_dir: Path,
                         output_dir,
                         file_paths,
-                        is_windows=False) -> list[findings_pb.Finding]:
+                        skip_checks: list[str] | None = None,
+                        is_windows: bool = False) -> list[findings_pb.Finding]:
     """Runs clang-tidy on provided source files in file_paths and returns
     findings.
 
     file_paths is an iterable of Path, only files that exist and have C/C++
     extensions will be linted.
+
+    skip_checks are a list of clang-tidy checks that should be skipped. If not
+    provided or empty list is provided, all checks gathered from .clang-tidy
+    files in the source tree will be enabled by default.
 
     is_windows is a boolean; if true, we'll expect build commands to use
     clang-cl, and use windows-compatible linting.
@@ -185,7 +199,7 @@ class TriciumClangTidyApi(RecipeApi):
     with self.m.step.nest('clang-tidy'):
       with self.m.step.nest('generate-warnings'):
         per_file_comments = self._generate_clang_tidy_comments(
-            source_dir, output_dir, affected, is_windows)
+            source_dir, output_dir, affected, skip_checks, is_windows)
         findings = []
         for file_path, comments in per_file_comments.items():
           for check_name, message, line_number, suggestions in comments:
@@ -230,6 +244,7 @@ class TriciumClangTidyApi(RecipeApi):
       source_dir: Path,
       output_dir,
       file_paths,
+      skip_checks,
       is_windows,
   ):
     clang_tidy_location = self.m.context.cwd.joinpath(*_clang_tidy_path)
@@ -248,7 +263,11 @@ class TriciumClangTidyApi(RecipeApi):
         '--verbose',
     ]
 
-    # Speficy the path to gn under buldtools explicitly.
+    if skip_checks:
+      tricium_clang_tidy_command.append(
+          f'--tidy_checks={",".join("-"+ check for check in skip_checks)}')
+
+    # Specify the path to gn under buildtools explicitly.
     gn_subdir = {
         'linux': 'linux64',
         'mac': 'mac',

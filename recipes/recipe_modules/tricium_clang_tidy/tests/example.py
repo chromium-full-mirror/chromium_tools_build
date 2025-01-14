@@ -28,6 +28,7 @@ def RunSteps(api):
         source_dir,
         output_dir=cache_dir / 'out',
         file_paths=[cache_dir.joinpath('src', 'path/to/some/cc/file.cpp')],
+        skip_checks=api.properties.get('skip_checks', None),
         is_windows=api.properties['is_windows'])
     if findings:
       api.step.empty(
@@ -205,7 +206,9 @@ def GenTests(api):
                   )),
               message='check: super-cool-diag\n\nhello, world 1 '
               '(https://clang.llvm.org/extra/clang-tidy/checks/super/'
-              'cool-diag.html)',
+              'cool-diag.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: super-cool-diag` footer to '
+              'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(
@@ -221,9 +224,28 @@ def GenTests(api):
                   )),
               message='check: moderately-cool-diag\n\nhello, world '
               '(https://clang.llvm.org/extra/clang-tidy/checks/moderately/'
-              'cool-diag.html)',
+              'cool-diag.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: moderately-cool-diag` footer to '
+              'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'analyze_skip_checks',
+      with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.properties(skip_checks=['super-cool-diag', 'moderately-cool-diag']),
+      api.chromium.try_build(),
+      api.reclient.properties(),
+      api.step_data('clang-tidy.generate-warnings.read tidy output',
+                    api.file.read_json({'diagnostics': []})),
+      api.post_process(post_process.StepSuccess,
+                       'clang-tidy.generate-warnings'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'clang-tidy.generate-warnings.tricium_clang_tidy_script.py',
+          ['--tidy_checks=-super-cool-diag,-moderately-cool-diag']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -259,7 +281,9 @@ def GenTests(api):
                   )),
               message='check: super-cool-diag\n\nhello, world 1 '
               '(https://clang.llvm.org/extra/clang-tidy/checks/super/'
-              'cool-diag.html)',
+              'cool-diag.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: super-cool-diag` footer to the CL '
+              'description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(post_process.DropExpectation),
@@ -332,6 +356,8 @@ def GenTests(api):
                   )),
               message='check: b\n\na '
               '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
+              '(Note: You can add `Skip-Clang-Tidy-Checks: b` footer to '
+              'the CL description to skip the check)\n\n'
               '(Note: building this file or its dependencies failed; this '
               'diagnostic might be incorrect as a result.)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
@@ -373,6 +399,8 @@ def GenTests(api):
                   )),
               message='check: b\n\na '
               '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
+              '(Note: You can add `Skip-Clang-Tidy-Checks: b` footer to '
+              'the CL description to skip the check)\n\n'
               '(Note: building this file or its dependencies failed; this '
               'diagnostic might be incorrect as a result.)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
@@ -413,6 +441,8 @@ def GenTests(api):
                   )),
               message='check: b\n\na '
               '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
+              '(Note: You can add `Skip-Clang-Tidy-Checks: b` footer to '
+              'the CL description to skip the check)\n\n'
               '(Note: running clang-tidy on this file failed; this '
               'diagnostic might be incorrect as a result.)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
@@ -467,7 +497,9 @@ def GenTests(api):
                   )),
               message='check: tidy-is-angry\n\nhello, world '
               '(https://clang.llvm.org/extra/clang-tidy/checks/tidy/'
-              'is-angry.html)',
+              'is-angry.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: tidy-is-angry` footer to '
+              'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
               fixes=[
                   findings_pb.Fix(
@@ -558,7 +590,9 @@ def GenTests(api):
                 message='check: tidy-is-angry\n\ngrrr '
                 '(https://clang.llvm.org/extra/clang-tidy/checks/tidy/'
                 'is-angry.html)\n\nExpanded from '
-                'path/to/some/cc/file0.cpp:2' + suffix,
+                'path/to/some/cc/file0.cpp:2' + suffix +
+                '\n\n(Note: You can add `Skip-Clang-Tidy-Checks: tidy-is-angry`'
+                ' footer to the CL description to skip the check)',
                 severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
             )),
         api.post_process(post_process.DropExpectation),
@@ -610,7 +644,9 @@ def GenTests(api):
                   )),
               message='check: bugprone-use-after-move\n\nbase message '
               '(https://clang.llvm.org/extra/clang-tidy/checks/'
-              'bugprone/use-after-move.html)',
+              'bugprone/use-after-move.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: bugprone-use-after-move` footer to '
+              'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(
@@ -628,7 +664,9 @@ def GenTests(api):
               'A `move` operation occurred here, which caused '
               "'base message' at path/to/some/cc/file.cpp:2 "
               '(https://clang.llvm.org/extra/clang-tidy/checks/'
-              'bugprone/use-after-move.html)',
+              'bugprone/use-after-move.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: bugprone-use-after-move` footer to '
+              'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(post_process.DropExpectation),
