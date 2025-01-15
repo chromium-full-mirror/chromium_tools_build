@@ -14,6 +14,7 @@ DEPS = [
     'infra/zip',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/cas',
     'recipe_engine/platform',
     'recipe_engine/path',
     'recipe_engine/step',
@@ -22,6 +23,8 @@ DEPS = [
 CFT_LKGR_URL = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
 MOCK_VER = '131.0.6778.204'
 MOCK_URL = f'https://storage.googleapis.com/chrome-for-testing-public/{MOCK_VER}'
+# The prefix is used in the tests to identify whether they are running in CQ.
+_CAS_DIR_PREFIX = 'cq_archive_'
 
 
 def RunSteps(api):
@@ -36,12 +39,17 @@ def RunSteps(api):
     api.step('Run Unit Tests',
              ['vpython3', 'crossbench/tests/crossbench/runner.py'])
 
-  api.step('Run End2End Tests', [
-      'vpython3', 'crossbench/tests/end2end/runner.py',
-      '--test-gsutil-path=%s' % api.gsutil.gsutil_py_path,
-      '--test-browser-path=%s' % chrome_app_path,
-      '--test-driver-path=%s' % chrome_driver_path, '--ignore-tests=android'
-  ])
+  cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
+  try:
+    api.step('Run End2End Tests', [
+        'vpython3', 'crossbench/tests/end2end/runner.py',
+        '--test-gsutil-path=%s' % api.gsutil.gsutil_py_path,
+        '--test-browser-path=%s' % chrome_app_path,
+        '--test-driver-path=%s' % chrome_driver_path,
+        '--cas-archive=%s' % cas_archive, '--ignore-tests=android'
+    ])
+  finally:
+    api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)
 
 
 def GenTests(api):

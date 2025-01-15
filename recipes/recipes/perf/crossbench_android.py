@@ -15,6 +15,7 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/gsutil',
     'recipe_engine/buildbucket',
+    'recipe_engine/cas',
     'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -30,6 +31,8 @@ PROPERTIES = InputProperties
 _AVD_CIPD_VERSION = 'latest'
 # A list of available AVDs: docs/android_emulator.md
 _AVD_CONFIG_VERSION = 'android_%s_google_apis_x64.textpb'
+# The prefix is used in the tests to identify whether they are running in CQ.
+_CAS_DIR_PREFIX = 'cq_archive_'
 
 
 class AndroidEmulator:
@@ -171,11 +174,17 @@ def RunSteps(api, properties):
   with android_emulator.start():
     env = {}
     with api.context(env=env):
-      api.step('Run Android End2End Tests', [
-          'vpython3', test_driver,
-          '--adb-device-id=%s' % android_emulator.adb_device_id,
-          '--adb-path=%s' % android_emulator.adb_path, '--ignore-tests=desktop'
-      ])
+      cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
+      try:
+        api.step('Run Android End2End Tests', [
+            'vpython3', test_driver,
+            '--adb-device-id=%s' % android_emulator.adb_device_id,
+            '--adb-path=%s' % android_emulator.adb_path,
+            '--cas-archive=%s' % cas_archive, '--ignore-tests=desktop'
+        ])
+      finally:
+        api.cas.archive('Copy End2End test logs to CAS', cas_archive,
+                        cas_archive)
 
 
 def GenTests(api):
