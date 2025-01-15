@@ -323,40 +323,21 @@ def export_lite_tarball(api, source_dir, version):
 
     for directory in directories:
       try:
-        api.step(
-            'prune %s' % directory,
-            [
-                'find',
-                api.path.join(dest_dir, directory),
-                '-type',
-                'f',
-                '!',
-                '-iname',
-                '*.gyp*',
-                '!',
-                '-iname',
-                '*.gn*',
-                '!',
-                '-iname',
-                '*.isolate*',
-                '!',
-                '-iname',
-                '*.grd*',
-                '!',
-                '-iname',
-                '*LICENSE*',
-                '!',
-                '-iname',
-                '*Copyright*',
-                '!',
-                '-iname',
-                '*COPYING*',
-                '!',
-                '-iname',
-                # Name of FreeType's license file
-                '*FTL.TXT*',
-                '-delete'
-            ])
+        api.step('prune %s' % directory, [
+            'find', api.path.join(dest_dir, directory),
+            '-type', 'f,l',
+            '-regextype', 'egrep',
+            '!', '-regex', '.*\.(gn|gni|grd|grdp|isolate|pydeps)(\.[^ /]+)?',
+            '!', '(', '(', '-iname', '*COPYING*',   '-o',
+                           '-iname', '*Copyright*', '-o',
+                           '-iname', '*LICENSE*',
+                      ')',
+                      # Files with these extensions are probably not
+                      # actual license text.
+                      '!', '-iregex', '.*\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)',
+                 ')',
+            '-delete'
+        ])  # yapf: disable
       except api.step.StepFailure:  # pragma: no cover
         # Ignore failures to delete these directories - they can be inspected
         # later to see whether they have moved to a different location

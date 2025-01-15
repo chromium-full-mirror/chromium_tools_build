@@ -18,6 +18,7 @@ The above will create file /foo/bar.tar.xz.
 
 import optparse
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -152,22 +153,23 @@ class MyTarFile(tarfile.TarFile):
         self.__report_skipped(name)
         return
 
-      # Preserve GYP/GN files, and other potentially critical files, so that
-      # build/gyp_chromium / gn gen can work.
+      # Preserve GN files, and other potentially critical files, so that
+      # `gn gen` can work.
       #
       # Preserve `*.pydeps` files too. `gn gen` reads them to generate build
       # targets, even if those targets themselves are not built
       # (crbug.com/1362021).
-      keep_file = ('.gyp' in file_name or '.gn' in file_name or
-                   '.isolate' in file_name or '.grd' in file_name or
-                   file_name.endswith('.pydeps') or rel_name in ESSENTIAL_FILES)
+      keep_file = (
+          re.search(r'\.(gn|gni|grd|grdp|isolate|pydeps)(\.\S+)?$', file_name)
+          or rel_name in ESSENTIAL_FILES)
 
       # Remove contents of non-essential directories.
       if not keep_file:
-        for nonessential_dir in (set(nonessential_dirs) | set(TEST_DIRS)):
-          if rel_name.startswith(nonessential_dir) and os.path.isfile(name):
-            self.__report_skipped(name)
-            return
+        if any((rel_name == path or rel_name.startswith(path + '/'))
+            for path in (set(nonessential_dirs) | set(TEST_DIRS))) and \
+            (os.path.isfile(name) or os.path.islink(name)):
+          self.__report_skipped(name)
+          return
 
     self.__report_added(name)
     tarfile.TarFile.add(

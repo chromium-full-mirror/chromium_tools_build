@@ -30,7 +30,7 @@ def main(argv):
         getattr(hashlib, alg)(file_contents).hexdigest(),
         os.path.basename(args.input_file.name)))
 
-  args.output_file.write('\n'.join(hashes))
+  args.output_file.write('\n'.join(hashes) + '\n')
 
   return 0
 
