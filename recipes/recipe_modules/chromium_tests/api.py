@@ -1850,7 +1850,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         targets_config.compile_targets,
         targets_config.all_tests,
         mb_config_path=mb_config_path,
-        mb_phase=mb_phase)
+        mb_phase=mb_phase,
+        include_utr_instruction=True)
 
     if compile_result and compile_result.status != common_pb.SUCCESS:
       return compile_result, update_result
