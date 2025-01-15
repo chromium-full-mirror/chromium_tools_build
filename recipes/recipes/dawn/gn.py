@@ -259,8 +259,11 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   api.step('Run the Dawn end2end tests with SwiftShader',
            [dawn_end2end_tests, '--adapter-vendor-id=0x1AE0'])
   api.step(
-      'Run the Dawn end2end tests with ANGLE/SwiftShader',
-      [dawn_end2end_tests, '--backend=opengles', '--use-angle=swiftshader'])
+      'Run the Dawn end2end tests with ANGLE/SwiftShader on gles 3.1 and no extensions',
+      [
+          dawn_end2end_tests, '--backend=opengles', '--use-angle=swiftshader',
+          '--enable-toggles=gl_force_es_31_and_no_extensions'
+      ])
 
 
 def GenTests(api):

@@ -363,7 +363,8 @@
     "cmd": [
       "[CACHE]/builder/dawn/out/ce29809e7bd2b4100171702ba2c0c0f527b9ddea/dawn_end2end_tests",
       "--backend=opengles",
-      "--use-angle=swiftshader"
+      "--use-angle=swiftshader",
+      "--enable-toggles=gl_force_es_31_and_no_extensions"
     ],
     "luci_context": {
       "realm": {
@@ -377,7 +378,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run the Dawn end2end tests with ANGLE/SwiftShader"
+    "name": "Run the Dawn end2end tests with ANGLE/SwiftShader on gles 3.1 and no extensions"
   },
   {
     "name": "$result"
