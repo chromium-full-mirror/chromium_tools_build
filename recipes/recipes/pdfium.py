@@ -40,10 +40,8 @@ from recipe_engine.config import Set
 from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
-    'clang': Property(default=False, kind=bool),
     'component': Property(default=False, kind=bool),
     'memory_tool': Property(default=None, kind=str),
-    'msvc': Property(default=False, kind=bool),
     'rel': Property(default=False, kind=bool),
     'renderers': Property(default=None, kind=Set(str)),
     'run_skia_gold': Property(default=True, kind=bool),
@@ -171,8 +169,8 @@ class _TestRequest:
   command: str
 
 
-def _is_reclient_enabled(api, msvc):
-  return not msvc and api.reclient.instance
+def _is_reclient_enabled(api):
+  return api.reclient.instance
 
 
 def _checkout_step(api, target_os, reclient_enabled, rust):
@@ -195,8 +193,7 @@ def _checkout_step(api, target_os, reclient_enabled, rust):
     return update_result
 
 
-def _generate_out_path(memory_tool, skia, rust, xfa, v8, clang, msvc, rel,
-                       component):
+def _generate_out_path(memory_tool, skia, rust, xfa, v8, rel, component):
   out_dir = 'release' if rel else 'debug'
 
   if skia:
@@ -208,11 +205,6 @@ def _generate_out_path(memory_tool, skia, rust, xfa, v8, clang, msvc, rel,
     out_dir += '_xfa'
   if v8:
     out_dir += '_v8'
-
-  if clang:
-    out_dir += '_clang'
-  elif msvc:
-    out_dir += '_msvc'
 
   if component:
     out_dir += '_component'
@@ -230,8 +222,8 @@ def _generate_out_path(memory_tool, skia, rust, xfa, v8, clang, msvc, rel,
 # _gn_gen_builds() calls 'gn gen' and returns a dictionary of
 # the used build configuration to be used by Gold.
 def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
-                   target_cpu, clang, msvc, rel, component, target_os, out_dir):
-  enable_reclient = _is_reclient_enabled(api, msvc)
+                   target_cpu, rel, component, target_os, out_dir):
+  enable_reclient = _is_reclient_enabled(api)
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
   gn_cmd = api.depot_tools.gn_py_path
@@ -252,28 +244,11 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
     args.append('use_remoteexec=true')
   if api.platform.is_win and not memory_tool:
     args.append('symbol_level=1')
-  if api.platform.is_win:
-    assert not clang or not msvc
-    if clang:
-      args.append('is_clang=true')
-    elif msvc:
-      args.append('is_clang=false')
-      args.append('use_custom_libcxx=false')
-    else:
-      # Default to Clang.
-      args.append('is_clang=true')
-  else:
-    # All other platforms already build with Clang, so no need to set it.
-    assert not clang
 
   if memory_tool == 'asan':
     args.extend(['is_asan=true', 'use_raw_ptr_asan_unowned_impl=true'])
-    if api.platform.is_win:
-      # ASAN requires Clang. Until Clang is default on Windows for certain,
-      # bots should set it explicitly.
-      assert clang
-      # No LSAN support.
-    else:
+    if not api.platform.is_win:
+      # No LSAN support on Windows.
       args.append('is_lsan=true')
   elif memory_tool == 'msan':
     assert not api.platform.is_win
@@ -298,8 +273,8 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
   return _gold_build_config(args)
 
 
-def _build_steps(api, source_root, clang, msvc, out_dir):
-  enable_reclient = _is_reclient_enabled(api, msvc)
+def _build_steps(api, source_root, out_dir):
+  enable_reclient = _is_reclient_enabled(api)
   debug_path = source_root.joinpath('out', out_dir)
   ninja_path = source_root.joinpath('third_party', 'ninja', 'ninja')
   ninja_cmd = [ninja_path, '-C', debug_path]
@@ -975,16 +950,15 @@ def _gen_properties(api, **kwargs):
   return api.properties(**updated_kwargs)
 
 
-def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, clang, msvc,
-             rel, run_skia_gold, component, skip_test, target_os, renderers,
+def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, rel,
+             run_skia_gold, component, skip_test, target_os, renderers,
              swarming):
-  update_result = _checkout_step(api, target_os,
-                                 _is_reclient_enabled(api, msvc), rust)
+  update_result = _checkout_step(api, target_os, _is_reclient_enabled(api),
+                                 rust)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
 
-  out_dir = _generate_out_path(memory_tool, skia, rust, xfa, v8, clang, msvc,
-                               rel, component)
+  out_dir = _generate_out_path(memory_tool, skia, rust, xfa, v8, rel, component)
 
   with api.osx_sdk('mac'):
     # buildbot sets 'clobber' to the empty string which evaluates to false if
@@ -993,11 +967,11 @@ def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, clang, msvc,
       api.file.rmtree('clobber', source_dir.joinpath('out', out_dir))
 
     build_config = _gn_gen_builds(api, source_dir, memory_tool, skia, rust, xfa,
-                                  v8, target_cpu, clang, msvc, rel, component,
-                                  target_os, out_dir)
+                                  v8, target_cpu, rel, component, target_os,
+                                  out_dir)
     if not run_skia_gold:
       build_config = {}
-    _build_steps(api, source_dir, clang, msvc, out_dir)
+    _build_steps(api, source_dir, out_dir)
 
     if skip_test:
       return
@@ -1080,22 +1054,6 @@ def GenTests(api):
       _gen_properties(
           api, skia=True, xfa=True, renderers=['agg', 'gdi', 'skia']),
       _gen_ci_build(api, 'windows_agg_gdi_skia'),
-  )
-
-  yield api.test(
-      'win_no_v8_msvc_32',
-      api.platform('win', 64),
-      api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, v8=False, msvc=True, target_cpu='x86'),
-      _gen_ci_build(api, 'windows_no_v8_msvc_32'),
-  )
-
-  yield api.test(
-      'win_no_v8_msvc',
-      api.platform('win', 64),
-      api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, v8=False, msvc=True),
-      _gen_ci_build(api, 'windows_no_v8_msvc'),
   )
 
   yield api.test(
@@ -1254,7 +1212,7 @@ def GenTests(api):
       'win_asan',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, clang=True, memory_tool='asan', rel=True),
+      _gen_properties(api, memory_tool='asan', rel=True),
       _gen_ci_build(api, 'windows_asan'),
   )
 
@@ -1262,7 +1220,7 @@ def GenTests(api):
       'win_xfa_asan',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, clang=True, memory_tool='asan', rel=True, xfa=True),
+      _gen_properties(api, memory_tool='asan', rel=True, xfa=True),
       _gen_ci_build(api, 'windows_xfa_asan'),
   )
 
