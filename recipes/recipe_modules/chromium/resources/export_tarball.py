@@ -41,10 +41,6 @@ ESSENTIAL_FILES = (
     'chrome/test/data/webui/i18n_process_css_test.html',
     'chrome/test/data/webui/mojo/foobar.mojom',
 
-    # TODO(rockot): Remove this once web_ui_test.mojom is no longer in the
-    # chrome/test directory (https://crbug.com/926270).
-    'chrome/test/data/webui/web_ui_test.mojom',
-
     # Allows the orchestrator_all target to work with gn gen
     'v8/test/torque/test-torque.tq',
 )
@@ -57,7 +53,12 @@ TEST_DIRS = (
     'base/tracing/test/data',
     'chrome/test/data',
     'components/test/data',
-    'content/test/data',
+    # Some files in content/test/data/ are needed to build content_shell.
+    # The subdirectories listed below are not needed, and take up most of
+    # the space anyway. (https://crbug.com/40213591)
+    'content/test/data/accessibility',
+    'content/test/data/gpu',
+    'content/test/data/media',
     'courgette/testdata',
     'extensions/test/data',
     'media/test/data',
