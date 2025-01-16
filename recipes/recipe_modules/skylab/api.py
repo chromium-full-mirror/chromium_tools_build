@@ -141,6 +141,8 @@ class SkylabApi(recipe_api.RecipeApi):
           '--json-outfile',
           self.m.json.output(),
           'request',
+          '--parent-build-id',
+          str(self.m.buildbucket.build.id),
       ]
 
       cmd.extend(['--board', test.spec.cros_board])

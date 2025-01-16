@@ -382,6 +382,7 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.ci_build(build_id=8912345678999999999),
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[0].name + '.schedule',
                        [
@@ -467,9 +468,9 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains, 'schedule skylab test.' +
           BUILD_VARIANT_REQUESTS[0].name + '.schedule', [
-              'request', '--board', 'eve', '--pool', 'DUT_POOL_QUOTA',
-              '--image', 'eve-arc-t-release/R111-15300.0.0', '--timeout-mins',
-              '60', '--qs-account', 'lacros'
+              'request', '--parent-build-id', '0', '--board', 'eve', '--pool',
+              'DUT_POOL_QUOTA', '--image', 'eve-arc-t-release/R111-15300.0.0',
+              '--timeout-mins', '60', '--qs-account', 'lacros'
           ]),
       # Multi-DUT
       api.post_process(
@@ -499,6 +500,8 @@ def GenTests(api):
           post_process.StepCommandContains, 'schedule skylab test.' +
           BUILD_VARIANT_REQUESTS[1].name + '.schedule', [
               'request',
+              '--parent-build-id',
+              '0',
               '--board',
               'eve',
               '--pool',
@@ -557,10 +560,11 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab test.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
-              'request', '--board', 'eve', '--pool', 'DUT_POOL_QUOTA',
-              '--image', 'eve-release/R88-13545.0.0', '--secondary-boards',
-              'eve', '--secondary-images', 'eve-release/R88-13545.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              'request', '--parent-build-id', '0', '--board', 'eve', '--pool',
+              'DUT_POOL_QUOTA', '--image', 'eve-release/R88-13545.0.0',
+              '--secondary-boards', 'eve', '--secondary-images',
+              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -639,6 +643,8 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + MULTI_DUT_REQUESTS[3].name + '.schedule', [
               'request',
+              '--parent-build-id',
+              '0',
               '--board',
               'eve',
               '--pool',
@@ -682,11 +688,12 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab test.' + LKGM_REQUESTS[0].name + '.schedule', [
-              'request', '--board', 'eve', '--bucket', 'chromeos-image-archive',
-              '--public-builder', 'ctp-public-builder',
-              '--public-builder-bucket', 'public-bucket', '--pool',
-              'DUT_POOL_QUOTA', '--image', 'eve-release/R118-15580.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              'request', '--parent-build-id', '0', '--board', 'eve', '--bucket',
+              'chromeos-image-archive', '--public-builder',
+              'ctp-public-builder', '--public-builder-bucket', 'public-bucket',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-release/R118-15580.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -712,7 +719,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
           [
-              'request', '--board', 'eve', '--bucket',
+              'request', '--parent-build-id', '0', '--board', 'eve', '--bucket',
               'chromiumos-image-archive', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-public/R118-15580.0.0', '--timeout-mins', '60',
               '--qs-account', 'lacros'

@@ -164,7 +164,7 @@ def schedule_skylab_tests(opts):
     autotest.autotest.test_args = _test_args
     tagged_requests[str(i)] = json_format.MessageToDict(req)
 
-  bb_request_data = json.dumps({
+  bb_request_data = {
       'builder': {
           'project': 'chromeos',
           'bucket': opts.public_builder_bucket or 'testplatform',
@@ -173,8 +173,21 @@ def schedule_skylab_tests(opts):
       'properties': {
           'requests': tagged_requests,
       },
-  })
-  resp = _call_buildbucket(bb_request_data, opts.json_creds,
+  }
+  if opts.parent_build_id:
+    bb_request_data['tags'] = [{
+        # "cros_test_platform" uses this tag to track the parent.
+        "key": "parent_buildbucket_id",
+        "value": opts.parent_build_id,
+    }]
+
+    # TODO(b/383918630): Uncomment the below line. This causes the permission
+    # error for some reason. See the issue for the detail.
+    # bb_request_data['parentBuildId'] = opts.parent_build_id
+    bb_request_data['canOutliveParent'] = 0  # 0 is UNSET
+
+  bb_request_data_json = json.dumps(bb_request_data)
+  resp = _call_buildbucket(bb_request_data_json, opts.json_creds,
                            BUILDBUCKET_SCHEDULE_ENDPOINT)
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
@@ -260,6 +273,11 @@ def main(args):
       type=str,
       default=None,
       help='Buildbucket bucket for public Skylab, aka Chromium CQ tests.')
+  subparser.add_argument(
+      '--parent-build-id',
+      type=str,
+      default=None,
+      help='Parent Buildbucket ID if any.')
   subparser.add_argument(
       '--pool', type=str, default='DUT_POOL_QUOTA', help='Skylab pool.')
   subparser.add_argument(
