@@ -70,7 +70,8 @@ def RunSteps(api):
         host=f'https://{api.m.tryserver.gerrit_change.host}',
         change=api.m.tryserver.gerrit_change.change,
         revision=api.m.tryserver.gerrit_change.patchset,
-        message=msg)
+        message=msg,
+        automatic_attention_set_update=False)
 
   return result_pb2.RawResult(
       status=common_pb.SUCCESS,
