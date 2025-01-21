@@ -1407,6 +1407,12 @@ class CiOnlyTest(TestWrapper):
     super().__init__(spec, test, chromium_tests_api)
     self._disabled = self._compute_disabled()
 
+  @property
+  def check_flakiness_for_new_tests(self) -> bool:
+    # There isn't sufficient result history data for tests that are normally
+    # CI-only.
+    return False
+
   def _compute_disabled(self) -> bool:
     if not self.api.m.tryserver.is_tryserver:
       return False

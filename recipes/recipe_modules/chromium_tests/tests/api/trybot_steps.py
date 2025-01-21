@@ -1401,20 +1401,26 @@ def GenTests(api):
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
-                  'isolated_scripts': [{
-                      "test":
-                          "ios_chrome_bookmarks_eg2tests_module",
-                      "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
-                               "Air 2 14.4"),
-                      "swarming": {
-                          "dimensions": {
-                              "os": "Mac-11"
+                  'isolated_scripts': [
+                      {
+                          "test":
+                              "ios_chrome_bookmarks_eg2tests_module",
+                          "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
+                                   "Air 2 14.4"),
+                          "swarming": {
+                              "dimensions": {
+                                  "os": "Mac-11"
+                              },
                           },
+                          "test_id_prefix":
+                              ("ninja://ios/chrome/test/earl_grey2:"
+                               "ios_chrome_bookmarks_eg2tests_module/")
                       },
-                      "test_id_prefix":
-                          ("ninja://ios/chrome/test/earl_grey2:"
-                           "ios_chrome_bookmarks_eg2tests_module/")
-                  },],
+                      {
+                          "test": "ci_only_test",
+                          "ci_only": True,
+                      },
+                  ],
               },
           }),
       api.flakiness(check_for_flakiness=True,),
