@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 from google.protobuf import json_format
-from PB.tricium.data import Data
+from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 
 DEPS = [
     'chromium',
@@ -17,13 +17,13 @@ DEPS = [
     'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/findings',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
-    'recipe_engine/tricium',
 ]
 
 
@@ -49,14 +49,15 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
       '--'
   ] + metrics_paths)
 
-  # This is where the Tricium metrics analyzer should write all results to.
-  out_file = out_dir.joinpath('tricium', 'data', 'results.json')
+  # This is where the metrics analyzer should write all results to.
+  out_file = out_dir / 'findings.out'
 
-  text_result = api.file.read_text('metrics_output', out_file)
-  results_msg = json_format.Parse(text_result, Data.Results())
-  result = api.step('write_results', [])
-  result.presentation.properties['tricium'] = json_format.MessageToJson(
-      results_msg)
+  findings = api.file.read_proto('metrics_output', out_file,
+                                 findings_pb.Findings, 'BINARY')
+  if findings.findings:
+    for f in findings.findings:
+      api.findings.populate_source_from_current_build(f.location)
+    api.findings.upload_findings(findings.findings, step_name='upload findings')
 
 
 def RunSteps(api):
@@ -205,9 +206,9 @@ def GenTests(api):
   yield api.test(
       'test_version_if_footer',
       build_with_patch(
-          affected_files=['some/test/test2/histograms.xml'],
-          test_footer=True),
-      api.step_data('metrics.metrics_output', api.file.read_json({})),
+          affected_files=['some/test/test2/histograms.xml'], test_footer=True),
+      api.step_data('metrics.metrics_output',
+                    api.file.read_proto(findings_pb.Findings())),
       api.post_process(post_process.DoesNotRun, 'metrics.load_prod_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
@@ -216,45 +217,45 @@ def GenTests(api):
 
   yield api.test(
       'analyze_xml_live',
-      build_with_patch(
-          affected_files=['some/test/test2/histograms.xml']),
+      build_with_patch(affected_files=['some/test/test2/histograms.xml']),
       api.step_data(
           'metrics.metrics_output',
-          api.file.read_json({
-              "comments": [{
-                  "category": "Metrics/Removed",
-                  "message": "[ERROR]: Removed",
-                  "path": "testdata/src/test/histograms.xml"
-              }]
-          })),
+          api.file.read_proto(
+              findings_pb.Findings(findings=[
+                  findings_pb.Finding(
+                      category="chromium_metrics",
+                      message="Removed",
+                      severity_level=findings_pb.Finding.SEVERITY_LEVEL_ERROR,
+                      location=findings_pb.Location(
+                          file_path="testdata/src/test/histograms.xml")),
+              ]))),
       api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_prod_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
-      api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
-          'metrics.write_results'].output_properties['tricium']),
+      api.post_process(post_process.MustRun, 'metrics.upload findings'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'show_file_path_not_found_but_succeed',
-      build_with_patch(
-          affected_files=['some/test/test2/histograms.xml']),
+      build_with_patch(affected_files=['some/test/test2/histograms.xml']),
       # Simulate a file missing error, this could happen if users add a new file
       # Make sure the exception is captured and the analyzer shouldn't fail.
       api.step_data('git show', retcode=128),
       api.step_data(
           'metrics.metrics_output',
-          api.file.read_json({
-              "comments": [{
-                  "category": "Metrics/Removed",
-                  "message": "[ERROR]: Removed",
-                  "path": "testdata/src/test/histograms.xml"
-              }]
-          })),
+          api.file.read_proto(
+              findings_pb.Findings(findings=[
+                  findings_pb.Finding(
+                      category="chromium_metrics",
+                      message="Removed",
+                      severity_level=findings_pb.Finding.SEVERITY_LEVEL_ERROR,
+                      location=findings_pb.Location(
+                          file_path="testdata/src/test/histograms.xml")),
+              ]))),
       api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_prod_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
-      api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
-          'metrics.write_results'].output_properties['tricium']),
+      api.post_process(post_process.MustRun, 'metrics.upload findings'),
       api.post_process(post_process.DropExpectation),
   )
