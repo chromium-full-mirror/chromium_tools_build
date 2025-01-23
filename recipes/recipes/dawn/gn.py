@@ -202,6 +202,13 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
       return
 
     with api.osx_sdk('mac'):
+      # Win/MSVC builds need this GN arg set to false in order for MSVC
+      # builds to work. See the discussion on
+      # https://dawn-review.googlesource.com/c/dawn/+/222337 for more context.
+      extra_gn_args = {}
+      if api.platform.is_win and not clang:
+        extra_gn_args['use_custom_libcxx'] = False
+
       with _gn_build(
           source_dir,
           'default targets',
@@ -211,6 +218,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
           is_clang=clang,
           is_component_build=False,
           dawn_use_swiftshader=False,
+          **extra_gn_args,
       ) as build:
         # Build default targets, and specifically the unittest binaries.
         (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
@@ -227,6 +235,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
             is_component_build=False,
             dawn_use_swiftshader=False,
             use_libfuzzer=True,
+            **extra_gn_args,
         ) as build:
           build('fuzzers')
 
@@ -242,6 +251,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
           is_clang=clang,
           is_component_build=True,
           dawn_use_swiftshader=True,
+          **extra_gn_args,
       ) as build:
         (dawn_end2end_tests,) = build('dawn_end2end_tests')
 
