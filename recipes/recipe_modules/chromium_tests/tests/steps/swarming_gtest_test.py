@@ -58,7 +58,7 @@ def RunSteps(api):
 
   try:
     assert len(test.get_invocation_names('')) == 0
-    _, invalid_tests, failed_tests = api.test_utils.run_tests_once(
+    invalid_tests, failed_tests = api.test_utils.run_tests_once(
         checkout_dir, source_dir, build_dir, [test], '')
     assert len(test.get_invocation_names('')) > 0
     assert test.runs_on_swarming

@@ -3908,14 +3908,6 @@
   },
   {
     "cmd": [],
-    "name": "proceed with retry",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@",
-      "@@@SET_BUILD_PROPERTY@retry_decision_stats@{\"total_test_cases_failed\": 1, \"total_test_cases_ran\": 1}@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "query LUCI Analysis for failure rates"
   },
   {
@@ -4059,6 +4051,14 @@
       "@@@STEP_LOG_LINE@stdout@}@@@",
       "@@@STEP_LOG_END@stdout@@@",
       "@@@SET_BUILD_PROPERTY@luci_analysis_info@[{\"exonerated\": false, \"strongly_exonerated\": false, \"test_id\": \"ninja://blink_web_tests/Test.One\", \"total_flaky\": {\"1\": 0, \"5\": 0}, \"total_recent_unexpected\": 0, \"variant_hash\": \"fake_variant_hash\"}]@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "proceed with retry",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@",
+      "@@@SET_BUILD_PROPERTY@retry_decision_stats@{\"total_test_cases_failed\": 1, \"total_test_cases_ran\": 1}@@@"
     ]
   },
   {

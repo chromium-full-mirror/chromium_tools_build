@@ -355,11 +355,6 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA']))),
-      api.override_step_data(
-          'collect tasks (with patch).failed_test results',
-          stdout=api.raw_io.output_text(
-              api.test_utils.rdb_results(
-                  'failed_test', failing_tests=['testA']))),
       api.properties(
           known_luci_analysis_flakes_expectations={
               'failed_test': ['testA'],

@@ -10,12 +10,13 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2)
 
+from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils import util
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
 
-
 DEPS = [
     'chromium',
+    'chromium_tests',
     'test_utils',
     'depot_tools/gerrit',
     'recipe_engine/assertions',
@@ -26,28 +27,30 @@ DEPS = [
 
 
 def RunSteps(api):
-  num_failed_suites = api.properties.get('num_failed_suites', 1)
-  failed_suites = ['fake_suite' + str(i) for i in range(num_failed_suites)]
+  test_specs = []
+  for i in range(api.properties.get('num_failed_suites', 1)):
+    test_specs.append(steps.MockTestSpec.create(name=f'fake_suite{i}'))
+  test_suites = [s.get_test(api.chromium_tests) for s in test_specs]
 
-  rdb_suite_results = []
-  for suite in failed_suites:
+  for suite in test_suites:
     var = common_pb2.Variant()
     var_def = getattr(var, 'def')
-    var_def['test_suite'] = suite
+    var_def['test_suite'] = suite.name
     invocation_dict = {
-        suite + '_inv_id':
+        suite.name + '_inv_id':
             api.resultdb.Invocation(test_results=[
                 test_result_pb2.TestResult(
-                    test_id=suite + '_test_case',
+                    test_id=suite.name + '_test_case',
                     status=test_result_pb2.FAIL,
                     expected=False,
                     variant=var)
             ])
     }
-    rdb_suite_results.append(
-        util.RDBPerSuiteResults.create(invocation_dict, suite, suite, 1))
-  rdb_results = util.RDBResults.create(rdb_suite_results)
-  should_abort = api.test_utils._should_abort_retry(rdb_results,
+    per_suite_results = util.RDBPerSuiteResults.create(invocation_dict,
+                                                       suite.name, suite.name,
+                                                       1)
+    suite.update_rdb_results('', per_suite_results)
+  should_abort = api.test_utils._should_abort_retry(test_suites, '',
                                                     {'fake_suite0'})
 
   expected_should_abort = api.properties.get('expected_should_abort', False)

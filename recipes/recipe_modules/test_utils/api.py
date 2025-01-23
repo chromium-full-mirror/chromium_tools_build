@@ -287,7 +287,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
         instructions
 
     Returns:
-      rdb_results: util.RDBResults instance for test results as reported by RDB
       invalid suites, list of test_suites which were malformed or otherwise
           aborted
       failed suites, list of test_suites which failed in any way. Superset of
@@ -332,7 +331,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
      bad_results_dict['failed']) = self._retrieve_bad_results(
          test_suites, suffix)
 
-    return rdb_results, bad_results_dict['invalid'], bad_results_dict['failed']
+    return bad_results_dict['invalid'], bad_results_dict['failed']
 
   def run_tests_for_flake_endorser(self,
                                    checkout_dir: Path,
@@ -954,11 +953,13 @@ class TestUtilsApi(recipe_api.RecipeApi):
         set(old_invalid_suites).intersection(retried_invalid_suites))
     return still_invalid_remote_suites + invalid_local_suites
 
-  def _should_abort_retry(self, rdb_results, allowed_failing_suites):
+  def _should_abort_retry(self, failed_test_suites, suffix,
+                          allowed_failing_suites):
     """Determines if the current recipe should skip its next retry phases.
 
     Args:
-      rdb_results: util.RDBResults instance for test results as reported by RDB
+      failed_test_suites: A list of failed steps.Test suites to check
+      suffix: The suffix for the context of the test run
       allowed_failing_suites: A set of suite names whose failures did not
         exceed the expectations and/or are suites names for experimental suites.
         Remove them from unexpected_failing_suites and do not retry them.
@@ -982,24 +983,24 @@ class TestUtilsApi(recipe_api.RecipeApi):
           return True
 
     unexpected = [
-        x for x in rdb_results.unexpected_failing_suites
-        if x.suite_name not in allowed_failing_suites
+        s for s in failed_test_suites if s.failures_including_retry(suffix) and
+        s.name not in allowed_failing_suites
     ]
     should_abort = len(unexpected) >= self._min_failed_suites_to_skip_retry
     total_test_cases_ran = 0
     total_test_cases_failed = 0
     for suite in unexpected:
-      total_test_cases_ran += suite.total_tests_ran
-      total_test_cases_failed += len(suite.unexpected_failing_tests)
+      rdb_results = suite.get_rdb_results(suffix)
+      total_test_cases_ran += rdb_results.total_tests_ran
+      total_test_cases_failed += len(rdb_results.unexpected_failing_tests)
     if should_abort:
       result = self.m.step('abort retry', [])
       result.presentation.status = self.m.step.FAILURE
       result.presentation.step_text = (
           '\nskip retrying because there are >= {} test suites with test '
           'failures and it most likely indicates a problem with the CL. These '
-          'suites being:\n{}'.format(
-              self._min_failed_suites_to_skip_retry,
-              '\n'.join(x.suite_name for x in unexpected)))
+          'suites being:\n{}'.format(self._min_failed_suites_to_skip_retry,
+                                     '\n'.join(x.name for x in unexpected)))
     else:
       result = self.m.step('proceed with retry', [])
       result.presentation.step_text = (
@@ -1084,7 +1085,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
           status=self.m.step.FAILURE,
           step_text=('every build supported by chromium recipe code'
                      ' must have resultdb enabled'))
-    rdb_results, invalid_test_suites, failed_test_suites = (
+    invalid_test_suites, failed_test_suites = (
         self.run_tests_once(
             checkout_dir,
             source_dir,
@@ -1100,13 +1101,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
         if not x.exceed_allowed_failure_rate(suffix)
     }
 
-    _experimental_suites = {x.name for x in test_suites if x.is_experimental}
-    if retry_failed_shards and self._should_abort_retry(
-        rdb_results,
-        allowed_failing_suites=_allowed_failing_suites.union(
-            _experimental_suites)):
-      return invalid_test_suites, invalid_test_suites + failed_test_suites
-
     exonerated_suites_to_retry = []
     if suffix == 'with patch':
       failed_test_suites, exonerated_suites_to_retry = (
@@ -1115,6 +1109,14 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # If we encounter any unexpected test results that we believe aren't due to
     # the CL under test, inform RDB of these tests so it keeps a record.
     self._exonerate_unrelated_failures(test_suites, suffix)
+
+    _experimental_suites = {x.name for x in test_suites if x.is_experimental}
+    if retry_failed_shards and self._should_abort_retry(
+        failed_test_suites,
+        suffix,
+        allowed_failing_suites=_allowed_failing_suites.union(
+            _experimental_suites)):
+      return invalid_test_suites, invalid_test_suites + failed_test_suites
 
     failed_and_invalid_suites = list(
         set(failed_test_suites + invalid_test_suites))
@@ -1132,7 +1134,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     output_retry_shard_step.presentation.properties[
         'ran_tests_retry_shard'] = True
     retry_suffix = self.prepend_retry_shards(suffix)
-    _, new_swarming_invalid_suites, _ = self.run_tests_once(
+    new_swarming_invalid_suites, _ = self.run_tests_once(
         checkout_dir,
         source_dir,
         build_dir,
