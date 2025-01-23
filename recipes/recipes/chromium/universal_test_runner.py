@@ -83,6 +83,14 @@ def configure_build(
   api.chromium.verify_config = not skip_validation
   api.chromium_tests.configure_build(builder_config, test_only=not build)
 
+  # A tester builder needs to explicitly check the platform for its parent
+  # builder. This check is normally done in the config validation.
+  if build and api.chromium.c.TEST_ONLY and not skip_validation:
+    _, compiling_config = api.chromium_utr.get_compiling_builder_config(
+        builder_id, builder_config)
+    api.chromium.make_config(compiling_config.chromium_config,
+                             **compiling_config.chromium_config_kwargs)
+
   return builder_id, builder_config
 
 
@@ -102,6 +110,36 @@ def GenTests(api: RecipeTestApi):
               'fake-group': {
                   'fake-builder':
                       ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tester_builder_validate_parent_chromium_config',
+      api.properties(
+          checkout_path='[CACHE]/src',
+          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          rerun_options=Request.RerunOptions(bypass_gclient=True),
+      ),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          parent_builder_group='fake-group',
                           chromium_config='chromium',
                           gclient_config='chromium',
                       ),
