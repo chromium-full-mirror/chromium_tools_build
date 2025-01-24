@@ -898,21 +898,6 @@ def _validate_params_for_code_coverage(params):
     raise RuntimeError('Diff mapping %s is missing' % params.diff_mapping_path)
 
 
-def _is_elf(binary_abspath):
-  """Checks if the given binary is an ELF file.
-
-  ELF is the executable format for Linux and macOS.
-  """
-  _ELF_MAGIC = b'\x7fELF'
-  try:
-    with open(binary_abspath, 'rb') as elf_file:
-      buf = elf_file.read(4)
-    return buf == _ELF_MAGIC
-  finally:
-    pass
-  return False
-
-
 def main():
   params = _parse_args(sys.argv[1:])
   _validate_params_for_code_coverage(params)
@@ -943,16 +928,12 @@ def main():
 
   if (params.fuzz):
     binaries = []
-    # Some fuzzers invoke multiple binaries (notably fuzztest where a thin
-    # wrapper binary invokes a more substantial unit test binary).
-    # We want to include coverage for all. We have no way to know which
-    # binaries are invoked as part of fuzzing, so pick up all the
-    # available binaries. In practice the vast majority will be fuzzers.
-    for binary_name in os.listdir(params.build_dir):
+    for profdata in os.listdir(params.profdata_dir):
+      binary_name = profdata.split(".")[0]
       binary_abspath = os.path.join(str(params.build_dir), binary_name)
-      # Only ELF binaries are instrumented, so we only want to include those.
-      if _is_elf(binary_abspath):
-        binaries.append(binary_abspath)
+      assert os.path.isfile(binary_abspath), ('Binary %s does not exist' %
+                                              binary_abspath)
+      binaries.append(binary_abspath)
     data, summaries = _generate_metadata(
         params.src_path,
         params.output_dir,
