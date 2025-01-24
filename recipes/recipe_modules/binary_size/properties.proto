@@ -22,4 +22,7 @@ message InputProperties {
 
   // Name of the GS bucket in which results should be saved.
   string results_bucket = 4;
+
+  // Location of size config JSON for arm64, relative to Chromium output directory.
+  string arm64_size_config_json = 5;
 }
