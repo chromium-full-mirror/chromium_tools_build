@@ -43,6 +43,8 @@ def RunSteps(api, request):
   builder_id = chromium.BuilderId.create_for_group(
       api.m.properties['builder_group'], builder)
 
+  api.chromium.verify_config = not request.rerun_options.skip_config_validation
+
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(
@@ -163,6 +165,7 @@ def GenTests(api):
               }
           },
       ),
+      api.platform('linux', 64),
       api.path.exists(api.path.cache_dir / '.gclient'),
       api.step_data(
           'read gclient',
@@ -866,5 +869,132 @@ target_os=['os']
       api.path.exists(api.path.cache_dir / 'src/path/to/a/test.cc'),
       api.override_step_data('invoke autotest.py', retcode=1),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cross_compile_checks_default_target_os_gclient',
+      api.properties(
+          checkout_path='[CACHE]/src',
+          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          rerun_options=Request.RerunOptions(skip_config_validation=True),
+      ),
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'TARGET_PLATFORM': 'ios',
+                          },
+                      ),
+              },
+          })),
+      api.path.exists(api.path.cache_dir.joinpath('.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'url': 'https://chromium.googlesource.com/chromium/src.git',
+    'custom_vars': {
+      'checkout_telemetry_dependencies': 'False',
+    },
+  },
+]
+target_os=['os']
+""")),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Caution: your .gclient file and the builder\'s mismatches in the '
+          'following way(s). Please run "gclient sync" after resolving these:'
+          '\n- target_os in builder config `"[\'mac\']"` is not in the local '
+          '.gclient file. Set it to: `target_os = ["os", "mac"]`'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cross_compile_checks_default_target_os_gclient_accepts_os_alias',
+      api.properties(
+          checkout_path='[CACHE]/src',
+          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          rerun_options=Request.RerunOptions(skip_config_validation=True),
+      ),
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'TARGET_PLATFORM': 'ios',
+                          },
+                      ),
+              },
+          })),
+      api.path.exists(api.path.cache_dir.joinpath('.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'url': 'https://chromium.googlesource.com/chromium/src.git',
+    'custom_vars': {
+      'checkout_telemetry_dependencies': 'False',
+    },
+  },
+]
+target_os=['osx']
+""")),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cross_compile_checks_default_target_os_gclient_accepts_default',
+      api.properties(
+          checkout_path='[CACHE]/src',
+          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          rerun_options=Request.RerunOptions(skip_config_validation=True),
+      ),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'TARGET_PLATFORM': 'ios',
+                          },
+                      ),
+              },
+          })),
+      api.platform('mac', 64),
+      api.path.exists(api.path.cache_dir.joinpath('.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'url': 'https://chromium.googlesource.com/chromium/src.git',
+    'custom_vars': {
+      'checkout_telemetry_dependencies': 'False',
+    },
+  },
+]
+target_os=[]
+""")),
       api.post_process(post_process.DropExpectation),
   )

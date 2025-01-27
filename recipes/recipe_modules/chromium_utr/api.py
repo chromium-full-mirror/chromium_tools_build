@@ -24,10 +24,17 @@ from PB.recipe_modules.build.chromium_utr.request import Request
 
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium.config import get_expected_host_platform
 from RECIPE_MODULES.build.chromium_tests_builder_config import (
     builder_config as builder_config_module)
 from RECIPE_MODULES.build.chromium_tests.steps import (
     Test, SwarmingIsolatedScriptTest)
+
+gclient_aliases = {
+    'linux': ['linux', 'unix'],
+    'mac': ['mac', 'osx'],
+    'win': ['win', 'windows']
+}
 
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
@@ -311,6 +318,21 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     current_target_os = gclient_config.get('target_os', [])
     builder_target_os = self.m.gclient.c.target_os
+
+    # If the builder's gclient is using its platform to allow the default
+    # target_os we need the gclient file to explicitly set it
+    if len(builder_target_os) == 0:
+      compiler_platform = (
+          self.m.chromium.c.HOST_PLATFORM
+          if self.m.chromium.c.HOST_PLATFORM_EXPLICIT else
+          get_expected_host_platform(self.m.chromium.c))
+      gclient_options = gclient_aliases.get(compiler_platform, None)
+      if (gclient_options and
+          not any(gclient_plat_option in current_target_os or
+                  gclient_plat_option == self.m.platform.name
+                  for gclient_plat_option in gclient_options)):
+        builder_target_os.add(compiler_platform)
+
     missing_os = list(set(builder_target_os) - set(current_target_os))
     target_os_snippet = (
         '`target_os = [%s]`' %

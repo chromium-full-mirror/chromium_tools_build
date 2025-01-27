@@ -126,6 +126,16 @@ def BaseConfig(HOST_PLATFORM, DEFAULT_HOST_PLATFORM, HOST_ARCH, HOST_BITS,
   )
 
 
+def get_expected_host_platform(c):
+  """ Get the expected compiling platform for a config """
+  return {
+      'android': 'linux',
+      'chromeos': 'linux',
+      'fuchsia': 'linux',
+      'ios': 'mac',
+  }.get(c.TARGET_PLATFORM, c.TARGET_PLATFORM)
+
+
 def validate_config(c, actual_host_platform):
   """Validate the configuration.
 
@@ -161,12 +171,7 @@ def validate_config(c, actual_host_platform):
     # deviations when the host_platform is set explicitly in the chromium config
     # This requires builders that are "cross compiling" to set their
     # host_platform
-    expected_compiler_platform = {
-        'android': 'linux',
-        'chromeos': 'linux',
-        'fuchsia': 'linux',
-        'ios': 'mac',
-    }.get(c.TARGET_PLATFORM, c.TARGET_PLATFORM)
+    expected_compiler_platform = get_expected_host_platform(c)
     if (not c.HOST_PLATFORM_EXPLICIT and
         c.HOST_PLATFORM != expected_compiler_platform):
       raise BadConf(f'Unexpectedly attempting to compile {c.TARGET_PLATFORM} '
