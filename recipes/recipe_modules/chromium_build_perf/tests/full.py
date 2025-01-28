@@ -54,6 +54,24 @@ def RunSteps(api):
       source_dir, build_dir, remove_deps_cache=True)
   api.chromium_build_perf.checkout(source_dir, build_dir, 'abcd')
 
+  rusage = {'foo': 1}
+  include_analysis = {
+      'target': 'chrome',
+      'revision': 'abcd',
+      'date': None,
+      'files': [
+          'a.cc',
+          'a.h',
+      ],
+      'roots': [0],
+      'includes': [[1]],
+      'included_by': [[], [0]],
+      'sizes': [10, 20],
+      'tsizes': [30, 20],
+      'archive_link': '',
+  }
+  api.chromium_build_perf.upload_build_stats_to_bq(rusage, include_analysis)
+
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config

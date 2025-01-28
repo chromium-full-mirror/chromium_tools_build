@@ -23,7 +23,6 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -35,8 +34,6 @@ DEPS = [
     'recipe_engine/time',
     'siso',
 ]
-
-_BQ_TABLE_NAME = 'chromium-build-stats.public.build_stats'
 
 # TODO: Create a new bucket to make the include analysis public.
 _GS_BUCKET = 'chrome-goma-log'
@@ -149,37 +146,6 @@ def _analyze_includes(
     return analysis_result
 
 
-def _upload_result_to_bq(api, rusage, include_analysis):
-  result = {
-      'build_id': api.buildbucket.build.id,
-      'builder': api.buildbucket.builder_full_name,
-      'revision': api.buildbucket.build.input.gitiles_commit.id,
-      # TODO: use the timestamp of the commit.
-      'build_timestamp': api.time.utcnow().isoformat(),
-      'rusage': rusage,
-      'include_analysis': {
-          'total_build_size':
-              sum(include_analysis['tsizes'][r]
-                  for r in include_analysis['roots']),
-          'archive_link':
-              include_analysis['archive_link'],
-      },
-  }
-
-  bqupload_cipd_path = api.cipd.ensure_tool('infra/tools/bqupload/${platform}',
-                                            'latest')
-  try:
-    api.step(
-        'upload build stats to BigQuery', [
-            bqupload_cipd_path,
-            _BQ_TABLE_NAME,
-        ],
-        stdin=api.raw_io.input(data=api.json.dumps(result)),
-        infra_step=True)
-  finally:
-    api.step.active_result.presentation.logs['build_stats'] = api.json.dumps(
-        result, indent=2)
-
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path.cache_dir / 'builder'
@@ -216,7 +182,7 @@ def RunSteps(api):
   include_analysis = _analyze_includes(api, target, source_dir, staging_dir,
                                        build_log)
 
-  _upload_result_to_bq(api, rusage, include_analysis)
+  api.chromium_build_perf.upload_build_stats_to_bq(rusage, include_analysis)
 
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))

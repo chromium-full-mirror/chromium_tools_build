@@ -12,6 +12,7 @@ from RECIPE_MODULES.build import chromium
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
+_BQ_TABLE_NAME = 'chromium-build-stats.public.build_stats'
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
@@ -120,3 +121,37 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       self.m.gclient.sync(cfg)
       self.m.chromium.runhooks(source_dir, build_dir)
     self.m.siso.check_version(source_dir)
+
+  def upload_build_stats_to_bq(self, rusage, include_analysis=None):
+    """Upload build stats to BigQuery."""
+    stats = {
+        'build_id': self.m.buildbucket.build.id,
+        'builder': self.m.buildbucket.builder_full_name,
+        'revision': self.m.buildbucket.build.input.gitiles_commit.id,
+        # TODO: use the timestamp of the commit.
+        'build_timestamp': self.m.time.utcnow().isoformat(),
+        'rusage': rusage,
+    }
+    if include_analysis:
+      stats['inclde_analysis'] = {
+          'total_build_size':
+              sum(include_analysis['tsizes'][r]
+                  for r in include_analysis['roots']),
+          'archive_link':
+              include_analysis['archive_link'],
+      }
+
+    bqupload_cipd_path = self.m.cipd.ensure_tool(
+        'infra/tools/bqupload/${platform}', 'latest')
+    try:
+      self.m.step(
+          'upload build stats to BigQuery', [
+              bqupload_cipd_path,
+              _BQ_TABLE_NAME,
+          ],
+          stdin=self.m.raw_io.input(data=self.m.json.dumps(stats)),
+          infra_step=True)
+    finally:
+      self.m.step.active_result.presentation.logs[
+          'build_stats'] = self.m.json.dumps(
+              stats, indent=2)

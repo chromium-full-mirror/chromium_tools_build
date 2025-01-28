@@ -53,13 +53,26 @@ def _run_builds(api,
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir(
       source_dir, build_dir, phase=phase, remove_deps_cache=True)
+  resource_usage_output_file = None
+  if phase == 'builtin' and api.platform.is_linux:
+    resource_usage_output_file = api.path.mkstemp()
   raw_result = api.chromium_build_perf.build_with_siso(
       source_dir,
       build_dir,
       target,
       with_remote_cache=False,
-      step_name_suffix=step_name_suffix)
+      step_name_suffix=step_name_suffix,
+      resource_usage_output_file=resource_usage_output_file,
+  )
   _raise_raw_result_on_failure(api, raw_result)
+
+  if resource_usage_output_file:
+    rusage = api.file.read_json(
+        'read resource usage log',
+        resource_usage_output_file,
+        test_data={'ru_utime': '0:01.00'},
+    )
+    api.chromium_build_perf.upload_build_stats_to_bq(rusage)
 
   # Warm-up the remote cache when not using reproxy, because otherwise
   # C++ actions will not get cache hits due to their deps changing
