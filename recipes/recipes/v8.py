@@ -445,24 +445,43 @@ def GenTests(api):
       status='FAILURE',
   ) + api.override_step_data('Fuzz on Ubuntu-16.04', step_test_data))
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'gcmole',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec=json.dumps({'tests': [
-            {'name': 'gcmole'},
-            {'name': 'gcmole_v2', 'variant': 'arm64'},
-            {'name': 'gcmole_v3', 'variant': 'x64', 'shards': 2},
-            {'name': 'gcmole_v2', 'variant': 'ia32', 'suffix': 'test',
-             'test_args': ['--test-run']},
-            {'name': 'gcmole_v3', 'variant': 'ia32', 'suffix': 'test',
-             'test_args': ['--test-run']},
-        ]}, indent=2),
-    )
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'gcmole',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec=json.dumps(
+          {
+              'tests': [
+                  {
+                      'name': 'gcmole'
+                  },
+                  {
+                      'name': 'gcmole_v2',
+                      'variant': 'arm64'
+                  },
+                  {
+                      'name': 'gcmole_v3',
+                      'variant': 'x64',
+                      'shards': 2
+                  },
+                  {
+                      'name': 'gcmole_v2',
+                      'variant': 'ia32',
+                      'suffix': 'test',
+                      'test_args': ['--test-run']
+                  },
+                  {
+                      'name': 'gcmole_v3',
+                      'variant': 'ia32',
+                      'suffix': 'test2',
+                      'test_args': ['--test-run']
+                  },
+              ]
+          },
+          indent=2),
+  ))
 
   yield (
     api.v8.test(

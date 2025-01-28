@@ -970,9 +970,13 @@ class V8GCMoleV3(V82PhaseGenericSwarmingTest):
 
     self.api.step('Merge callgraphs', command)
 
-    target = self.test.get('isolated_target')
-    digest = self.api.cas.archive('Archive workspace', workspace)
-    self.api.v8_tests.isolated_tests[target] = digest
+    with self.api.context(cwd=workspace):
+      isolate_file = self.api.path.join(workspace,
+                                        'merged_gcmole_files.isolate')
+      self.api.isolate.write_isolate_file(isolate_file, ['.'])
+      digest = self.api.isolate.isolate('Archive workspace', isolate_file)
+      target = self.test.get('isolated_target')
+      self.api.v8_tests.isolated_tests[target] = digest
 
 
 class V8RunPerf(V8CompositeSwarmingTest):
