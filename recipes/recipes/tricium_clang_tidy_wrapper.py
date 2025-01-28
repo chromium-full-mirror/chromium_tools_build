@@ -159,33 +159,6 @@ def RunSteps(api):
         step.presentation.properties['findings'] = base64.b64encode(
             zlib.compress(api.proto.encode(findings, 'BINARY'))).decode()
 
-        step.presentation.properties['tricium'] = api.json.dumps(
-            {
-                'comments': [{
-                    'category':
-                        f.category,
-                    'message':
-                        f.message,
-                    'path':
-                        f.location.file_path,
-                    'startLine':
-                        f.location.range.start_line,
-                    'endLine':
-                        f.location.range.end_line,
-                    'suggestions': [{
-                        'replacements': [{
-                            'path': r.location.file_path,
-                            'startLine': r.location.range.start_line,
-                            'endLine': r.location.range.end_line,
-                            'startChar': r.location.range.start_column,
-                            'endChar': r.location.range.end_column,
-                            'replacement': r.new_content,
-                        } for r in fix.replacements]
-                    } for fix in f.fixes]
-                } for f in findings.findings],
-            },
-            indent=0)
-
 
 def GenTests(api):
 
@@ -259,6 +232,5 @@ def GenTests(api):
           'clang-tidy.generate-warnings.tricium_clang_tidy_script.py',
           ['--tidy_checks=-foo,-bar,-baz']),
       api.post_process(post_process.PropertiesContain, 'findings'),
-      api.post_process(post_process.PropertiesContain, 'tricium'),
       api.post_process(post_process.DropExpectation),
   )
