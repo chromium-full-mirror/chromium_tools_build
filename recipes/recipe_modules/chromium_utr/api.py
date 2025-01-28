@@ -115,6 +115,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         compiling_builder_id,
         compiling_builder_config,
         should_build,
+        should_test,
         is_cog,
     )
     if raw_result and raw_result.status != common_pb2.SUCCESS:
@@ -816,6 +817,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       builder_id: chromium.BuilderId,
       builder_config: ctbc.BuilderConfig,
       should_build: bool,
+      should_test: bool,
       is_cog: bool,
   ) -> tuple[result_pb2.RawResult, Iterable[Test]]:
     """Creates the test objects for the provided builder/test names
@@ -829,6 +831,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         builder_config: A BuilderConfig with the configuration for the builder
           being reproduced
         should_build: Bool controlling whether the tests should be compiled
+        should_test: Bool controlling whether the tests will be run
         is_cog: The run is currently in cog
     """
     test_names = properties.test_names
@@ -907,11 +910,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
     skylab_tests = [test for test in tests if test.runs_on_skylab]
-    if skylab_tests:
-      self.m.chromium_tests.prepare_artifact_for_skylab(builder_config,
-                                                        checkout_dir,
-                                                        source_dir, build_dir,
-                                                        skylab_tests)
     if not should_build or not generated_isolates or skylab_tests:
       # When compiling, "mb.py gen" will produce the *.isolate files for us. In
       # all other instances, we need to ask mb.py to do so specifically. Do so
@@ -931,7 +929,12 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           '',
       )
 
-    # TODO(crbug.com/41492686): Prepare skylab artifacts
+    if skylab_tests and should_test:
+      self.m.chromium_tests.prepare_artifact_for_skylab(builder_config,
+                                                        checkout_dir,
+                                                        source_dir, build_dir,
+                                                        skylab_tests)
+
     return None, tests
 
   def reuse_swarming_task(
