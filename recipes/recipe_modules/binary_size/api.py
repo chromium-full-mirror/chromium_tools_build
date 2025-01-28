@@ -70,13 +70,11 @@ class BinarySizeApi(recipe_api.RecipeApi):
     self.compile_targets = list(properties.compile_targets or
                                 constants.DEFAULT_COMPILE_TARGETS)
     self.results_bucket = (
-        properties.results_bucket or constants.RESULTS_GS_BUCKET)
+        properties.results_bucket or constants.NDJSON_GS_BUCKET)
 
     # Path relative to Chromium output directory.
     self._size_config_json = (
         properties.size_config_json or constants.DEFAULT_SIZE_CONFIG_JSON)
-
-    self._arm64_size_config_json = properties.arm64_size_config_json
 
   def get_first_committed_ancestor_position(self,
                                             url,
@@ -300,7 +298,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       # case use_gs_analysis == False.
       expectations_without_patch_json = None
       with_results_dir, raw_result = self._build_and_measure(
-          'with_patch', source_dir, build_dir, staging_dir, analysis_func)
+          True, source_dir, build_dir, staging_dir, analysis_func)
 
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result
@@ -321,8 +319,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           self.m.chromium.runhooks(
               source_dir, build_dir, name='runhooks' + suffix)
           without_results_dir, raw_result = self._build_and_measure(
-              'without_patch', source_dir, build_dir, staging_dir,
-              analysis_func)
+              False, source_dir, build_dir, staging_dir, analysis_func)
 
           if raw_result and raw_result.status != common_pb.SUCCESS:
             self.m.step.empty(constants.PATCH_FIXED_BUILD_STEP_NAME)
@@ -349,7 +346,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
             review_subject,
             review_url,
             source_dir,
-            os.path.basename(self._size_config_json),
             without_results_dir,
             with_results_dir,
             size_results_path,
@@ -359,65 +355,9 @@ class BinarySizeApi(recipe_api.RecipeApi):
             expectations_with_patch_json, expectations_without_patch_json,
             allow_expectations_regressions)
 
-        binary_size_result, gerrit_plugin_details = self._check_for_undocumented_increase(
+        binary_size_result = self._check_for_undocumented_increase(
             size_results_path, staging_dir, allow_size_regressions,
             analysis_warning_statuses)
-
-        binary_size_result.presentation.properties[
-            constants.PLUGIN_OUTPUT_PROPERTY_NAME] = gerrit_plugin_details
-
-        if self._arm64_size_config_json and gerrit_plugin_details:
-          arm32_okay = True
-          arm64_okay = True
-          for listing in gerrit_plugin_details['listings']:
-            if listing.get('log_name') == 'resource_sizes_log':
-              arm32_okay = listing['allowed']
-            elif listing.get('log_name') == 'resource_sizes_64_log':
-              arm64_okay = (
-                  listing['allowed'] and not listing['large_improvement'])
-
-          if ((arm32_okay and not arm64_okay) or
-              commit_footers.get('CreateArm64SizeReport')):
-            # Create a supersize report for arm64.
-            # The output directory already contains the without-patch files at
-            # this point, so we need to:
-            # 1) Create a .size file
-            # 2) Re-build the with-patch artifacts
-            # 3) Create a .size file
-            # 4) Perform the diff
-            without_results_dir = staging_dir / 'without_patch_arm64'
-            self.m.file.ensure_directory('mkdir without_patch_arm64',
-                                         without_results_dir)
-            self.android_size_analysis_arm64(source_dir, build_dir,
-                                             without_results_dir)
-
-            with_results_dir, raw_result = self._build_and_measure(
-                'with_patch_arm64', source_dir, build_dir, staging_dir,
-                self.android_size_analysis_arm64)
-
-            if raw_result and raw_result.status != common_pb.SUCCESS:
-              return raw_result
-            size_results_path = staging_dir / 'size_results64.json'
-
-            diff_func(
-                author,
-                review_subject,
-                review_url,
-                source_dir,
-                os.path.basename(self._arm64_size_config_json),
-                without_results_dir,
-                with_results_dir,
-                size_results_path,
-                staging_dir,
-            )
-
-            _, gerrit_plugin_details_arm64 = self._check_for_undocumented_increase(
-                size_results_path, staging_dir, allow_size_regressions,
-                analysis_warning_statuses)
-            gerrit_plugin_details['extras'] += (
-                gerrit_plugin_details_arm64['extras'])
-            gerrit_plugin_details['listings'] += (
-                gerrit_plugin_details_arm64['listings'])
 
         if not expectation_success:
           raise self.m.step.StepFailure(constants.FAILED_CHECK_MESSAGE)
@@ -445,21 +385,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
     cmd += ['--staging-dir', staging_dir]
     cmd += ['--chromium-output-directory', build_dir]
     self.m.step(name='Generate commit size analysis files', cmd=cmd)
-
-  def android_size_analysis_arm64(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      staging_dir,
-  ):
-    """Runs supersize on the arm64 artifacts. """
-    generator_script = (
-        source_dir / 'tools/binary_size/generate_commit_size_analysis.py')
-    cmd = [generator_script]
-    cmd += ['--size-config-json', build_dir / self._arm64_size_config_json]
-    cmd += ['--staging-dir', staging_dir]
-    cmd += ['--chromium-output-directory', build_dir]
-    self.m.step(name='Generate commit size analysis files (arm64)', cmd=cmd)
 
   def fuchsia_size_analysis(
       self,
@@ -551,13 +476,14 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
   def _build_and_measure(
       self,
-      results_basename,
+      with_patch,
       source_dir: Path,
       build_dir: Path,
       staging_dir,
       analysis_func,
   ):
-    suffix = ' (' + results_basename.replace('_', ' ') + ')'
+    suffix = ' (with patch)' if with_patch else ' (without patch)'
+    results_basename = 'with_patch' if with_patch else 'without_patch'
 
     raw_result = self.m.chromium_tests.run_mb_and_compile(
         source_dir,
@@ -584,7 +510,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         constants.RESULT_JSON_STEP_NAME,
         results_path,
         test_data=constants.TEST_RESULT_JSON)
-    # Upload files to storage bucket.
+    # Upload files (.ndjson) to storage bucket.
     filename_map = {}
     for filename in result_json['archive_filenames']:
       filename_map[filename] = self._archive_artifact(staging_dir, filename)
@@ -612,6 +538,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
           url = extra['url']
           url = _linkify_filenames(url, filename_map)
           extra['url'] = url
+      step_result.presentation.properties[
+          constants.PLUGIN_OUTPUT_PROPERTY_NAME] = gerrit_plugin_details
 
     if not allow_regressions and result_json['status_code'] != 0:
       warning = warning_statuses.get(result_json['status_code'])
@@ -620,7 +548,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         step_result.presentation.step_text += '<br/>{}<br/>'.format(warning)
       else:
         step_result.presentation.status = self.m.step.FAILURE
-    return step_result, gerrit_plugin_details
+    return step_result
 
   def _synthesize_log_link(self, step_name, log_name):
     normalized_log_name = _normalize_name(log_name)
@@ -639,7 +567,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
       review_subject,
       review_url,
       source_dir: Path,
-      size_config_json_name: str,
       before_dir,
       after_dir,
       results_path,
@@ -653,7 +580,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
       cmd += ['--author', author]
       cmd += ['--review-subject', review_subject]
       cmd += ['--review-url', review_url]
-      cmd += ['--size-config-json-name', size_config_json_name]
+      cmd += [
+          '--size-config-json-name',
+          os.path.basename(self._size_config_json)
+      ]
       cmd += ['--before-dir', before_dir]
       cmd += ['--after-dir', after_dir]
       cmd += ['--results-path', results_path]
@@ -666,7 +596,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
       review_subject,
       review_url,
       source_dir: Path,
-      size_config_json_name: str,
       before_dir,
       after_dir,
       results_path,
