@@ -23,7 +23,8 @@ INSTRUMENT_ALL_JACOCO_OVERRIDE_TOKEN = 'INSTRUMENT_ALL_JACOCO'
 PROBLEMATIC_JACOCO_PATHS = [
     'ui/android/java/src/org/chromium/ui/UiUtils.java',  # crbug.com/1522985
     'base/android/java/src/org/chromium/base/BuildInfo.java',  # b/41495939#comment23
-    'base/android/java/src/org/chromium/base/PackageUtils.java'  # b/41495939#comment33
+    'base/android/java/src/org/chromium/base/PackageUtils.java',  # b/41495939#comment33
+    'base/android/java/src/org/chromium/base/ApkInfo.java'  # b/41495939#comment41
 ]
 class CodeCoverageApi(recipe_api.RecipeApi):
   """This module contains apis to generate code coverage data."""
