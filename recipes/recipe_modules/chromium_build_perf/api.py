@@ -133,7 +133,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
         'rusage': rusage,
     }
     if include_analysis:
-      stats['inclde_analysis'] = {
+      stats['include_analysis'] = {
           'total_build_size':
               sum(include_analysis['tsizes'][r]
                   for r in include_analysis['roots']),
