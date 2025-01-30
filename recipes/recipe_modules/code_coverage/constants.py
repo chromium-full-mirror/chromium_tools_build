@@ -82,9 +82,11 @@ INCLUDED_THIRD_PARTY_SUBDIRS = [
 
 # Only generate coverage data for CLs in these gerrit projects.
 # This is a list of (host, project) pairs
-SUPPORTED_PATCH_PROJECTS = [('chromium-review.googlesource.com',
-                             'chromium/src'),
-                            ('webrtc-review.googlesource.com', 'src')]
+SUPPORTED_PATCH_PROJECTS = [
+    ('chromium-review.googlesource.com', 'chromium/src'),
+    ('chrome-internal-review.googlesource.com', 'clank/internal/apps'),
+    ('webrtc-review.googlesource.com', 'src')
+]
 
 
 # Test type literals.
