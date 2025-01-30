@@ -72,7 +72,7 @@ def GenTests(api):
   yield api.test(
       'rts_on_dry_run',
       api.properties(builder_rts_selection=try_spec.ALWAYS),
-      api.chromium.try_build(experiments=['chromium_rts.dry_run_rts'],),
+      api.chromium.try_build(experiments=['chromium_rts.rts'],),
       api.cv(run_mode='DRY_RUN', top_level=True),
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.PropertyEquals, 'rts_model',

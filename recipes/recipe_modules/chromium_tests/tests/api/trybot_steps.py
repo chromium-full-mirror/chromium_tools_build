@@ -1018,7 +1018,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
-          experiments=['chromium_rts.dry_run_rts'],
+          experiments=['chromium_rts.rts'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec(
@@ -1065,7 +1065,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
-          experiments=['chromium_rts.dry_run_rts'],
+          experiments=['chromium_rts.rts'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec(

@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 
 DEPS = [
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cv',
-    'recipe_engine/properties',
-    'recipe_engine/step',
+    'depot_tools/tryserver', 'recipe_engine/buildbucket', 'recipe_engine/cv',
+    'recipe_engine/file', 'recipe_engine/led', 'recipe_engine/path',
+    'recipe_engine/properties', 'recipe_engine/step', 'recipe_engine/swarming',
+    'infra/secret_manager'
 ]

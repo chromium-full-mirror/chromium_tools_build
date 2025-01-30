@@ -8,11 +8,17 @@ DEPS = [
     'chromium_tests',
     'recipe_engine/properties',
     'recipe_engine/step',
+    'recipe_engine/swarming',
 ]
 
+from PB.recipes.build.chromium.compilator import InputProperties
+from PB.recipe_modules.recipe_engine.led.properties import InputProperties as InputPropertiesLed
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
+
+_ORCHESTRATOR_BUILD_ID = 1234
+_COMPILATOR_BUILD_ID = 5678
 
 
 def RunSteps(api):
@@ -23,6 +29,7 @@ def RunSteps(api):
   api.m.chromium_rts.rts_model = 'smart-test-selection'
 
   api.m.chromium_rts.setup_tests(tests)
+  api.m.chromium_rts.trigger_test_selection(tests)
   assert (tests[0].is_rts)
 
   api.m.chromium_rts.setup_tests(tests)
@@ -33,15 +40,52 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
-  )
-
   # RTS on dry run causes builds to be compatible for different run modes and
   # can only be determined when the individual tests are set
   yield api.test(
-      'dry_run_rts',
-      api.chromium.try_build(experiments=['chromium_rts.dry_run_rts']),
+      'rts_basic',
+      api.chromium.try_build(
+          experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
+      api.post_process(
+          post_process.MustRun,
+          'fetch api key and trigger test selection.Trigger test selection for MockTest'
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'rts_basic_with_orchestrator',
+      api.chromium.try_build(
+          experiments=['chromium_rts.rts'],
+          build_id=_COMPILATOR_BUILD_ID,
+          ancestor_ids=[_ORCHESTRATOR_BUILD_ID]),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      api.post_process(
+          post_process.MustRun,
+          'fetch api key and trigger test selection.Trigger test selection for MockTest'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'fetch api key and trigger test selection.Get orchestrator build'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_basic_with_led',
+      api.chromium.try_build(
+          experiments=['chromium_rts.rts'],
+          build_id=_COMPILATOR_BUILD_ID,
+          ancestor_ids=[_ORCHESTRATOR_BUILD_ID]),
+      api.properties(**{
+          '$recipe_engine/led': InputPropertiesLed(led_run_id='some-led-run'),
+      }),
+      api.swarming.properties(task_id='some-task-id'),
+      api.post_process(
+          post_process.MustRun,
+          'fetch api key and trigger test selection.Trigger test selection for MockTest'
+      ),
       api.post_process(post_process.DropExpectation),
   )

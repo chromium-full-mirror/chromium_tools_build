@@ -12,6 +12,9 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.code_coverage import constants
 
 _DISABLE_RTS_FOOTER = 'Disable-Rts'
+_SMART_TEST_SELECTION_MODEL = 'smart-test-selection'
+_API_KEY_HOLDER_PROJECT = 'findit-for-me'
+_API_KEY_SECRET = 'decisiongraph_api_key'
 
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
@@ -22,6 +25,17 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
 
     # A string indicating which RTS model to use regression test selection.
     self._rts_model = None
+
+  @property
+  def test_executor_build(self):
+    # If the current build is a compilator build, the tests will be executed
+    # by orchestrator
+    if ('orchestrator' in self.m.properties and
+        self.m.buildbucket.build.ancestor_ids):
+      parent_id = self.m.buildbucket.build.ancestor_ids[-1]
+      return self.m.buildbucket.get(
+          parent_id, step_name='Get orchestrator build')
+    return self.m.buildbucket.build
 
   @property
   def rts_model(self) -> str:
@@ -38,6 +52,35 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       if footer_vals:
         disabled = footer_vals[-1].lower() == 'true'
     return disabled
+
+  def _invoke_smart_test_selection(self, tests):
+    gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
+    with self.m.secret_manager.fetch(
+        project=_API_KEY_HOLDER_PROJECT,
+        secret=_API_KEY_SECRET,
+        step_name='fetch api key and trigger test selection') as api_key:
+      key_file = self.m.path.mkstemp()
+      self.m.file.write_text(
+          name='write api_key to disk',
+          dest=key_file,
+          text_data=api_key,
+          include_log=False)
+      build = self.test_executor_build
+      for target in {test.target_name for test in tests if test.is_rts}:
+        self.m.step('Trigger test selection for %s' % target, [
+            'vpython3',
+            self.resource('decisiongraph_invoker.py'), '--test-target', target,
+            '--build_id', build.id, '--change', gerrit_change.change,
+            '--patchset', gerrit_change.patchset, '--builder',
+            build.builder.builder, '--api_key_file', key_file
+        ])
+      self.m.file.remove('remove api_key file', source=key_file)
+
+  def trigger_test_selection(self, tests):
+    """Triggers smart test selection for given tests.
+    """
+    if self._rts_model == _SMART_TEST_SELECTION_MODEL:
+      self._invoke_smart_test_selection(tests)
 
   def setup_tests(self, tests):
     """Sets the given tests up to be run with RTS
@@ -61,7 +104,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       log_step = self.m.step.empty('RTS was used')
       log_step.presentation.properties['rts_was_used'] = True
 
-      compatible_run_modes = ('chromium_rts.dry_run_rts'
+      compatible_run_modes = ('chromium_rts.rts'
                               in self.m.buildbucket.build.input.experiments)
       if compatible_run_modes:
         self.m.cv.allow_reuse_for(self.m.cv.DRY_RUN)
@@ -76,7 +119,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
 
     dry_run = False
     if run_mode == self.m.cv.DRY_RUN:
-      dry_run = ('chromium_rts.dry_run_rts'
+      dry_run = ('chromium_rts.rts'
                  in self.m.buildbucket.build.input.experiments)
       if dry_run:
         step_result = self.m.step('rts dry run', [])
@@ -86,7 +129,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         dry_run or builder_config.regression_test_selection == try_spec.ALWAYS)
 
     if use_rts and not self._is_rts_footer_disabled():
-      self._rts_model = 'smart-test-selection'
+      self._rts_model = _SMART_TEST_SELECTION_MODEL
       step_result = self.m.step('rts options', [])
       if dry_run:
         step_result.presentation.step_text = 'RTS was enabled in a dry run'

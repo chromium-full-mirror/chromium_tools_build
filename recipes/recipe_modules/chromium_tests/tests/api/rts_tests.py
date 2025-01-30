@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium',
     'chromium_rts',
     'chromium_tests',
     'recipe_engine/properties',
@@ -29,5 +30,6 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
+      api.chromium.try_build(),
       api.post_process(post_process.DropExpectation),
   )
