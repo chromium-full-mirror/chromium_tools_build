@@ -252,6 +252,34 @@ solutions = [
   )
 
   yield api.test(
+      'skylab_with_extra_args',
+      boilerplate(
+          ctbc_properties=gen_ctbc_properties(
+              builder_spec=ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+                  skylab_gs_bucket='gs://bar-bucket',
+                  skylab_gs_extra='lacros',
+              ),),
+          additional_test_args=['foo=bar'],
+          target_spec={
+              'fake-tester': {
+                  'skylab_tests': [{
+                      'name': 'skylab_test',
+                      'cros_board': 'foo-board',
+                  }]
+              }
+          },
+          test_names=['skylab_test'],
+      ),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Additional arguments are not supported on skylab tests'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'invalid_swarming_task',
       boilerplate(),
       api.override_step_data(
