@@ -139,14 +139,11 @@ class LibyuvApi(recipe_api.RecipeApi):
           source_dir = self.m.chromium_checkout.source_dir
 
           # Below code is a copy of chromium_android.common_tests_setup_steps
-          # without the 'device_recovery' step that fails because
-          # the file 'known_devices.json' is missing.
+          # without some steps that are failing or flayky in libyuv.
           defer(self.m.chromium_android.create_adb_symlink, source_dir)
           defer(self.m.chromium_android.spawn_logcat_monitor, source_dir)
           defer(self.m.chromium_android.spawn_device_monitor, source_dir)
           defer(self.m.chromium_android.authorize_adb_devices, source_dir)
-          defer(self.m.chromium_android.provision_devices, source_dir)
-          defer(self.m.chromium_android.device_status, source_dir)
 
           defer(
               self.m.chromium_android.run_test_suite,
