@@ -74,19 +74,6 @@ def _run_builds(api,
     )
     api.chromium_build_perf.upload_build_stats_to_bq(rusage)
 
-  # Warm-up the remote cache when not using reproxy, because otherwise
-  # C++ actions will not get cache hits due to their deps changing
-  # after parsing the depsfile. TODO(b/283341125)
-  if phase == 'builtin':
-    api.chromium_build_perf.recreate_build_dir(
-        source_dir, build_dir, phase=phase)
-    raw_result = api.chromium_build_perf.build_with_siso(
-        source_dir,
-        build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=' (warmup)')
-
   # Second build with remote cache produced by the previous build.
   api.chromium_build_perf.recreate_build_dir(source_dir, build_dir, phase=phase)
   raw_result = api.chromium_build_perf.build_with_siso(
