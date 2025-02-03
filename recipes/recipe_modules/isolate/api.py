@@ -14,6 +14,10 @@ from recipe_engine.config_types import Path
 # is likely to work for the purpose above.
 _MAX_SWARM_HASHES_PROPERTY_LENGTH = 200
 
+# Take revision from https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
+_CIPD_VERSION = 'git_revision:c36fd1e86ba464371c3e6d817c14f2b40d43cb29'
+
+
 class IsolateApi(recipe_api.RecipeApi):
   """APIs for interacting with isolates."""
 
@@ -24,8 +28,7 @@ class IsolateApi(recipe_api.RecipeApi):
     self._isolated_tests = {}
 
   def __call__(self, args, step_name, **kwargs):
-    # Take revision from https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-    version = 'git_revision:190841dbb0247656d2791d274eb2bd210821b1cd'
+    version = _CIPD_VERSION
     if self._test_data.enabled:
       version = 'git_revision:mock_infra_git_revision'
     exe = self.m.cipd.ensure_tool('infra/tools/luci/isolate/${platform}',
