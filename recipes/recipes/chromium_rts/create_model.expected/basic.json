@@ -535,8 +535,6 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
-      "-metadata",
-      "build_id:0",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -639,8 +637,6 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
-      "-metadata",
-      "build_id:0",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -743,8 +739,6 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
-      "-metadata",
-      "build_id:0",
       "-json-output",
       "/path/to/tmp/json"
     ],
