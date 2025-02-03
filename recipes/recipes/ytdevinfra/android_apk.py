@@ -11,8 +11,10 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
+    'reclient',
     'ytdevinfra',
 ]
 
@@ -22,7 +24,7 @@ def _checkout_steps(api):
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
-    api.gclient.set_config('ytdevinfra')
+    api.gclient.set_config('ytdevinfra_github')
     update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
   return update_result
@@ -32,9 +34,44 @@ def RunSteps(api):
   api.step('Print recipe title', ['echo', 'Build recipe for Android APK'])
   api.ytdevinfra.set_config('ytdevinfra_android')
   api.ytdevinfra.title()
+
+  # Run shell scripts with bash on Windows
+  shell_wrapper = ('bash', '--') if api.platform.is_win else ()
+
   env = {}
   with api.context(env=env):
-    _checkout_steps(api)
+    update_result = _checkout_steps(api)
+    source_dir = update_result.source_root.path
+
+    if api.platform.is_linux:
+      with api.context(cwd=source_dir.joinpath('chromium', 'src')):
+        api.step(
+            'Generate build files (1)',
+            ['cobalt/build/gn.py', '-p', 'linux-x64x11', '-c', 'devel'],
+            wrapper=shell_wrapper)
+
+        api.step(
+            'Generate build files (2)', [
+                'gn', 'args', './out/linux-x64x11_devel',
+                '--list=is_component_build'
+            ],
+            wrapper=shell_wrapper)
+
+        api.step(
+            'Enable pre-commit (1)', ['pre-commit', 'clean'],
+            wrapper=shell_wrapper)
+
+        api.step(
+            'Enable pre-commit (2)',
+            ['pre-commit', 'install', '-t', 'pre-commit', '-t', 'pre-push'],
+            wrapper=shell_wrapper)
+
+        api.step(
+            'Build', [
+                'time', 'autoninja', '-C', 'out/linux-x64x11_devel',
+                'cobalt:gn_all content_shell'
+            ],
+            wrapper=shell_wrapper)
 
 
 def GenTests(api):
@@ -44,11 +81,11 @@ def GenTests(api):
       api.post_process(StepCommandRE, 'Print title from API module',
                        ['echo', 'Recipe for building']),
       api.post_process(DropExpectation),
-  )
+  ) + api.platform('linux', 64)
   yield api.test(
       'basic-0.1',
       api.properties(ytdevinfra_recipe_version=0.1),
       api.post_process(StepCommandRE, 'Print title from API module',
                        ['echo', 'Recipe for building']),
       api.post_process(DropExpectation),
-  )
+  ) + api.platform('linux', 64)
