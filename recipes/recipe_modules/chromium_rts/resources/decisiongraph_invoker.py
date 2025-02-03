@@ -87,6 +87,11 @@ if __name__ == "__main__":
       help="Path to file containing API key for Android Decisiongraph API")
   args = parser.parse_args()
 
+  # Find corresponding "main" CQ builder name
+  canonical_builder = args.builder
+  if args.builder.endswith('-test-selection'):
+    canonical_builder = args.builder[:args.builder.rfind("-test-selection")]
+
   payload = {
       'graph': {
           'name':
@@ -119,7 +124,7 @@ if __name__ == "__main__":
                       'luci_test': {
                           'project': PROJECT,
                           'branch': BRANCH,
-                          'builder': args.builder,
+                          'builder': canonical_builder,
                           'test_suite': args.test_target,
                       }
                   },
