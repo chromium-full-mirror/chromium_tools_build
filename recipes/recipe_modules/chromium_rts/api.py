@@ -96,7 +96,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if self._rts_model:
       for test in tests:
         if test.supports_rts:
-          test.is_rts = True
+          # TODO(b/394166078): Remove this check once CLASS based model is ready
+          if (test.canonical_name == 'browser_tests' and
+              self._rts_model == _SMART_TEST_SELECTION_MODEL):
+            test.is_rts = True
 
     if any(test.is_rts for test in tests):
       # RTS-enabled builds can't be reused for non-RTS because they are slightly

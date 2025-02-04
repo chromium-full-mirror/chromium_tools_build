@@ -17,7 +17,7 @@ from RECIPE_MODULES.build.chromium_tests import steps
 
 def RunSteps(api):
   tests = [
-      steps.MockTestSpec.create('MockTest',
+      steps.MockTestSpec.create('browser_tests',
                                 supports_rts=True).get_test(api.chromium_tests),
   ]
   api.m.chromium_rts.rts_model = 'smart-test-selection'
