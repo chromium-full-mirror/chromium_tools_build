@@ -82,9 +82,11 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
-      }),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
+          },
+          orchestrator={'builder_name': 'orchestrator'}),
       api.post_process(post_process.DropExpectation),
   )
 

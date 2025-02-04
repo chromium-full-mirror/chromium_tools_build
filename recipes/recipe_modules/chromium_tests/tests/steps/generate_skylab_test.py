@@ -185,6 +185,7 @@ def GenTests(api):
 
   yield api.test(
       'basic for tast',
+      api.properties(orchestrator={'builder_name': 'orchestrator'}),
       boilerplate(
           'chrome-test-builds',
           tast_expr='("group:mainline" && "dep:lacros")',

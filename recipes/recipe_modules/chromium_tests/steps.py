@@ -2264,6 +2264,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     cas_digest = self.api.m.isolate.isolated_tests.get(self.isolate_target)
     remote_instruction = None
     remote_dependency = None
+    builder = self.api.m.properties.get('orchestrator', {}).get(
+        'builder_name', self.api.m.buildbucket.build.builder.builder)
 
     def _create_prebuilt_instruction(extra_args: Iterable[str]):
       prebuilt_instruction = []
@@ -2275,10 +2277,11 @@ class SwarmingTest(Test, AbstractSwarmingTest):
                 self.api.m.buildbucket.build.builder.project,
                 self.api.m.led.shadowed_bucket or
                 self.api.m.buildbucket.build.builder.bucket,
-                self.api.m.buildbucket.build.builder.builder.replace(
-                    '-compilator', ''), [self.name],
+                builder,
+                [self.name],
                 utr_flags=['--reuse-task', prebuilt_task_id],
-                extra_args=extra_args))
+                extra_args=extra_args,
+            ))
         prebuilt_instruction.append(
             '*Note: additional args can be used by extending this command*')
         prebuilt_instruction.append('')
@@ -2296,11 +2299,13 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       remote_dependency = self.api.m.repro_instructions.get_dependency(
           r'bot_update')
       remote_instruction = get_utr_instruction(
-          'compile-and-test', self.api.m.buildbucket.build.builder.project,
+          'compile-and-test',
+          self.api.m.buildbucket.build.builder.project,
           self.api.m.led.shadowed_bucket or
           self.api.m.buildbucket.build.builder.bucket,
-          self.api.m.buildbucket.build.builder.builder.replace(
-              '-compilator', ''), [self.name])
+          builder,
+          [self.name],
+      )
     self.api.m.repro_instructions.create_step_instruction(
         self._instructions_tag_for_suffix('step', suffix),
         f'{self.name} instructions',
@@ -3386,6 +3391,8 @@ class SkylabTest(AbstractSkylabTest, Test):
         retry_shards.append(tr.shard)
     self.api.m.skylab.schedule_suite(self, suffix, retry_shards=retry_shards)
 
+    self._add_instructions(suffix, include_utr_instruction)
+
   def run(
       self,
       checkout_dir: Path,
@@ -3399,6 +3406,8 @@ class SkylabTest(AbstractSkylabTest, Test):
     del checkout_dir, source_dir, build_dir
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
+      step.tags['resultdb.instruction.id'] = self._instructions_tag_for_suffix(
+          'step', suffix)
       self.api.m.skylab.fetch_test_runners(self, suffix)
 
       _present_info_messages(step, self, info_messages)
@@ -3447,6 +3456,51 @@ class SkylabTest(AbstractSkylabTest, Test):
              for s in shard_steps):
         self._raise_failed_nested_step(suffix, step, self.api.m.step.EXCEPTION,
                                        'Some shards were unsuccessful.')
+
+  def _add_instructions(self, suffix: str, include_utr_instruction: bool):
+    """Gets the reproduction instructions to be attached to the invocation"""
+
+    if include_utr_instruction:
+      remote_dependency = self.api.m.repro_instructions.get_dependency(
+          r'bot_update')
+      builder = self.api.m.properties.get('orchestrator', {}).get(
+          'builder_name', self.api.m.buildbucket.build.builder.builder)
+      remote_instruction = get_utr_instruction(
+          'compile-and-test',
+          self.api.m.buildbucket.build.builder.project,
+          self.api.m.led.shadowed_bucket or
+          self.api.m.buildbucket.build.builder.bucket,
+          builder,
+          [self.name],
+      )
+      self.api.m.repro_instructions.create_step_instruction(
+          self._instructions_tag_for_suffix('step', suffix),
+          f'{self.name} instructions',
+          remote_content=remote_instruction,
+          remote_dependency=remote_dependency,
+      )
+
+      test_invocations = [
+          inv if '/' not in inv else inv.split('/')[1]
+          for inv in self.get_invocation_names(suffix)
+      ]
+
+      if test_invocations:
+        remote_instruction = get_utr_instruction(
+            'compile-and-test',
+            self.api.m.buildbucket.build.builder.project,
+            self.api.m.led.shadowed_bucket or
+            self.api.m.buildbucket.build.builder.bucket,
+            builder,
+            [self.name],
+        )
+        self.api.m.repro_instructions.create_test_result_instruction(
+            self._instructions_tag_for_suffix('test', suffix),
+            f'{self.name} instructions',
+            test_invocations,
+            remote_content=remote_instruction,
+            remote_dependency=remote_dependency,
+        )
 
   def compile_targets(self) -> Iterable[str]:
     t = [self.spec.target_name]
