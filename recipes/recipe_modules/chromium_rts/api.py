@@ -66,7 +66,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
           text_data=api_key,
           include_log=False)
       build = self.test_executor_build
-      for target in {test.target_name for test in tests if test.is_rts}:
+      for target in {test.canonical_name for test in tests if test.is_rts}:
         self.m.step('Trigger test selection for %s' % target, [
             'vpython3',
             self.resource('decisiongraph_invoker.py'), '--test-target', target,
