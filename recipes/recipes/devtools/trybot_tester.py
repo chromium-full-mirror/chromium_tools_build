@@ -4,7 +4,7 @@
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from recipe_engine.post_process import (DoesNotRunRE, DropExpectation)
+from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
 
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
@@ -95,6 +95,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       InteractionsTests(api, source_dir, trigger, builder_config,
                         'Interactions Tests'),
       E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests', divider),
+      NonHostedE2ETests(api, source_dir, trigger, builder_config,
+                        'E2E Tests (non-hosted)', divider),
       LintCheck(api, source_dir, trigger, builder_config, 'Lint Check',
                 api.devtools.lookup_command(source_dir, 'lint'), target_os),
   ]
@@ -104,6 +106,19 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   results = ExonerationPhase(api).run_all(tests)
   return results.raw_result()
 
+
+class NonHostedE2ETests(E2ETests):
+
+  def commands(self):
+    return [self.run_tests_command('test/non_hosted/e2e')]
+
+  @property
+  def test_type_tag(self):
+    return 'non_hosted_e2e_tests'
+
+  def skip(self):
+    return super().skip() or not self.api.path.exists(
+        self.source_dir.joinpath('test', 'non_hosted', 'e2e'))
 
 def GenTests(api):
   default_output_properties = {
@@ -151,4 +166,28 @@ def GenTests(api):
       api.post_process(DoesNotRunRE, 'Flake exonaration attempt.*'),
       api.post_process(DropExpectation),
       status='FAILURE',
+  )
+
+  yield test(
+      'run non-hosted',
+      subbuild_data(default_output_properties),
+      api.path.exists(
+          api.path.checkout_dir.joinpath('test', 'non_hosted', 'e2e')),
+      api.post_process(
+          MustRun, 'Run tests.Trigger Tests.'
+          'Trigger E2E Tests (non-hosted)'),
+      api.post_process(
+          MustRun, 'Run tests.Trigger Tests.'
+          'Trigger E2E Tests (non-hosted).'
+          '[trigger] E2E Tests (non-hosted) (Shard #0)'),
+      api.post_process(MustRun, 'Run tests.E2E Tests (non-hosted)'),
+      api.post_process(
+          MustRun, 'Run tests.E2E Tests (non-hosted).'
+          'E2E Tests (non-hosted) shards results'),
+      api.post_process(
+          MustRun, 'Run tests.E2E Tests (non-hosted).'
+          'E2E Tests (non-hosted) shards results.'
+          'E2E Tests (non-hosted) (Shard #0)'),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
   )
