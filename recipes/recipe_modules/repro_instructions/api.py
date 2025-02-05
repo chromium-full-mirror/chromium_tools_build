@@ -122,7 +122,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       instruction.targeted_instructions.append(local_instruction)
     if remote_content:
       instruction.targeted_instructions.append(remote_instruction)
-    if prebuilt_instruction:
+    if prebuilt_content:
       instruction.targeted_instructions.append(prebuilt_instruction)
     self._instructions[tag] = instruction
 
@@ -137,6 +137,7 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       prebuilt_content: str = None,
       local_dependency: instruction_pb.InstructionDependency | None = None,
       remote_dependency: instruction_pb.InstructionDependency | None = None,
+      recursive: bool = False,
   ) -> instruction_pb.Instruction:
     """Create a reproduction instruction
 
@@ -161,6 +162,9 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         require be run before they themselves are invoked
       remote_dependency: The InstructionDependency the remote instructions will
         require be run before they themselves are invoked
+      recursive: Whether or not to set the instruction filtering to recursive.
+        This is needed if the test results belong to a child builder's
+        invocation.
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
@@ -190,13 +194,17 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         id=tag,
         descriptive_name=description[:100],
         type=instruction_pb.InstructionType.TEST_RESULT_INSTRUCTION,
-        targeted_instructions=[
-            remote_instruction, local_instruction, prebuilt_instruction
-        ],
         instruction_filter=instruction_pb.InstructionFilter(
             invocation_ids=instruction_pb.InstructionFilterByInvocationID(
-                invocation_ids=test_invocations)),
+                invocation_ids=test_invocations, recursive=recursive)),
     )
+
+    if remote_content:
+      instruction.targeted_instructions.append(remote_instruction)
+    if local_content:
+      instruction.targeted_instructions.append(local_instruction)
+    if prebuilt_content:
+      instruction.targeted_instructions.append(prebuilt_instruction)
 
     self._instructions[tag] = instruction
 

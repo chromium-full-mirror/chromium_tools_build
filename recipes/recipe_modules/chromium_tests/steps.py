@@ -3500,6 +3500,7 @@ class SkylabTest(AbstractSkylabTest, Test):
             test_invocations,
             remote_content=remote_instruction,
             remote_dependency=remote_dependency,
+            recursive=True,
         )
 
   def compile_targets(self) -> Iterable[str]:
