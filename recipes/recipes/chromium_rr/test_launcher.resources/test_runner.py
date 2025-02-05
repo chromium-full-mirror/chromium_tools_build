@@ -17,6 +17,16 @@ TRACE_DIR = 'trace_dir'
 TEST_RESULTS_JSON = pathlib.Path('layout-test-results/full_results.json')
 RR_PATH = os.path.abspath(os.path.join(os.getcwd(), '../../rr_tool/bin'))
 TRACE_PATH = os.path.abspath(os.path.join(os.getcwd(), '../../', TRACE_DIR))
+SOURCE_DATA = """[{{
+"files": [
+  {{
+    "url": "https://chromium.googlesource.com/chromium/src/+/{0}/",
+    "at": "{1}",
+    "urlSuffix": "?format=TEXT"
+  }}
+],
+"relevance": "Relevant"
+}}]"""
 
 
 def parse_args(args):
@@ -26,11 +36,15 @@ def parse_args(args):
       '-t',
       required=True,
       action='append',
-      help="The test list of "
-      "failing tests to be reproduced.")
+      help='The test list of '
+      'failing tests to be reproduced.')
   parser.add_argument(
-      '--output-dir', required=True, help="The output dir of all test traces")
-  parser.add_argument('test_cmd', nargs='*', help="The test command list.")
+      '--output-dir', required=True, help='The output dir of all test traces.')
+  parser.add_argument(
+      '--git-revision',
+      required=True,
+      help='The git revision of the source code.')
+  parser.add_argument('test_cmd', nargs='*', help='The test command list.')
 
   return parser.parse_args(args)
 
@@ -111,6 +125,16 @@ def main(args):
       # Add a new directory to the PATH
       env = os.environ.copy()
       env['PATH'] = f"{env['PATH']}{os.pathsep}{RR_PATH}"
+
+      # Add the source code revision to the trace
+      source_path = os.path.abspath(os.path.join(os.getcwd(), '..', '..'))
+      with open(
+          pathlib.Path(TRACE_PATH) / 'sources.user', 'w',
+          encoding='utf-8') as f:
+        source_data = json.loads(
+            SOURCE_DATA.format(args.git_revision, source_path))
+        json.dump(source_data, f, indent=2)
+
       # Run a subprocess with the modified environment
       run_cmd(['pernosco/pernosco', '--gcloud', 'build', TRACE_PATH], '../../',
               env)

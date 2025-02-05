@@ -187,7 +187,9 @@ def _create_tasks_and_test_infos(api, target_test_infos, tests):
     command = [
         'vpython3', f'../../{RUNNER_PACKAGE_PATH}/test_runner.py',
         '--test={0}'.format(test_info.test_name),
-        '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
+        '--output-dir={0}'.format('${ISOLATED_OUTDIR}'),
+        '--git-revision={0}'.format(
+            api.buildbucket.build.input.gitiles_commit.id), '--'
     ]
     # TODO(jiesheng): Support other test type for rr test launcher.
     command.extend(test.raw_cmd)
