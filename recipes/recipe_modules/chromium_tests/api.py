@@ -1090,13 +1090,18 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         set(b.builder
             for b in builder_config.builder_db.builder_graph[builder_id]))
 
-  def _trigger_led_builds(self, to_trigger, properties):
+  def _trigger_led_builds(
+      self,
+      to_trigger: Iterable[str],
+      commit: common_pb.GitilesCommit,
+      properties: dict[str, object],
+  ) -> None:
     """Trigger builders using led.
 
     Args:
-      * to_trigger - A dict where the keys are the project name and the
-        values are a list of names of the builders within the project to
-        trigger.
+      to_trigger: The name of builders to trigger.
+      commit: The gitiles commit to set on the triggered builds.
+      properties: Properties to set on the triggered builds.
     """
     property_args = []
     for k, v in properties.items():
@@ -1117,13 +1122,22 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # TODO(https://crbug.com/1140621) Use command-line option instead of
       # changing environment.
       with self.m.context(env={'SWARMING_TASK_ID': None}):
+        commit_url = f'https://{commit.host}/{commit.project}/+/{commit.id}'
+        change_url = None
+        if (change := self.m.tryserver.gerrit_change) is not None:
+          change_url = (f'https://{change.host}/c/{change.project}'
+                        f'/+/{change.change}/{change.patchset}')
+
         for child_builder in to_trigger:
           child_builder_name = '{}/{}/{}'.format(project, bucket, child_builder)
           with self.m.step.nest(child_builder_name):
             led_builder_id = 'luci.{}.{}:{}'.format(project, bucket,
                                                     child_builder)
             led_job = self.m.led('get-builder', led_builder_id)
-
+            led_job = led_job.then('edit-gitiles-commit', '-ref', commit.ref,
+                                   commit_url)
+            if change_url:
+              led_job = led_job.then('edit-gerrit-cl', change_url)
             led_job = self.m.led.inject_input_recipes(led_job)
             led_job = led_job.then('edit', *property_args)
             result = led_job.then('launch').launch_result
@@ -1169,10 +1183,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       properties = self._get_trigger_properties(builder_id, update_step,
                                                 additional_properties)
 
-      if self.m.led.launched_by_led:
-        self._trigger_led_builds(to_trigger, properties)
-        return
-
       if (commit is None and
           self.m.buildbucket.build.output.HasField('gitiles_commit')):
         commit = self.m.buildbucket.build.output.gitiles_commit
@@ -1187,6 +1197,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             "* pass `commit` to trigger_child_builds",
         ])
         self.m.step.raise_on_failure(step_result)
+
+      if self.m.led.launched_by_led:
+        self._trigger_led_builds(to_trigger, commit, properties)
+        return
 
       repo = 'https://{}/{}'.format(commit.host, commit.project)
       trigger = self.m.scheduler.GitilesTrigger(

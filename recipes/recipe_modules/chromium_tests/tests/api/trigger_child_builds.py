@@ -126,6 +126,8 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        led_trigger_prefix + '.led get-builder'),
       api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit-gitiles-commit'),
+      api.post_process(post_process.StepSuccess,
                        led_trigger_prefix + '.led edit'),
       api.post_process(post_process.StepSuccess,
                        led_trigger_prefix + '.led edit (2)'),
@@ -156,6 +158,61 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess, led_trigger_prefix),
       api.post_process(post_process.StepSuccess,
                        led_trigger_prefix + '.led get-builder'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit-gitiles-commit'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit (2)'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led launch'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  # If someone uses led to trigger a CI builder with a CL applied, the CL should
+  # be applied on the triggered tester as well
+  yield api.test(
+      'led-with-cl',
+      api.chromium.try_build(
+          bucket='ci.shadow',
+          builder_group='fake-group',
+          builder='fake-builder',
+      ),
+      api.chromium_tests_builder_config.properties(
+          api.chromium_tests_builder_config.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+              ),
+          ).with_tester(
+              builder_group='fake-group',
+              builder='fake-tester',
+          ).assemble()),
+      api.properties(
+          **{
+              '$recipe_engine/led':
+                  led_properties_pb.InputProperties(
+                      led_run_id='fake-run-id',
+                      rbe_cas_input=swarming_pb.CASReference(
+                          cas_instance=(
+                              'projects/example/instances/default_instance'),
+                          digest=swarming_pb.Digest(
+                              hash='examplehash',
+                              size_bytes=71,
+                          ),
+                      ),
+                      shadowed_bucket='ci',
+                  ),
+          }),
+      api.post_process(post_process.StepSuccess, led_trigger_prefix),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led get-builder'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit-gitiles-commit'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit-gerrit-cl'),
       api.post_process(post_process.StepSuccess,
                        led_trigger_prefix + '.led edit'),
       api.post_process(post_process.StepSuccess,
