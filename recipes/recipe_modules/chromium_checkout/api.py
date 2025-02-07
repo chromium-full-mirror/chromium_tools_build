@@ -221,7 +221,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
                                 self._get_out_commit(update_result)):
         self.m.buildbucket.set_output_gitiles_commit(out_commit)
 
-      # HACK(dnj): Remove after 'crbug.com/398105' has landed
+      # TODO(crbug.com/395081730): Remove this prop plumbing.
       self.m.chromium.set_build_properties(update_result.properties)
 
       callback(update_result.manifest)

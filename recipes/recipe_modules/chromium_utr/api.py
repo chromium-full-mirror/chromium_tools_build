@@ -584,13 +584,16 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     with self.m.context(cwd=source_dir):
       result = self.m.git('rev-parse', 'HEAD', stdout=self.m.raw_io.output())
     rev = result.stdout.decode('utf-8').strip()
-    return {
+    rev_map = {
         # See the substitutions in recipe_modules/chromium_tests/generators.py
         # for what got_* revision keys might be used.
         'got_cr_revision': rev,
         'got_revision': rev,
         'got_src_revision': rev,
     }
+    # TODO(crbug.com/395081730): Remove this magic prop plumbing.
+    self.m.chromium.set_build_properties(rev_map)
+    return rev_map
 
   def handle_code_coverage(
       self,

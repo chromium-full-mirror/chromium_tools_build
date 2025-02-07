@@ -50,6 +50,7 @@ _BUILDER_GROUP_SWARMING_PRIORITIES = collections.defaultdict(
 _LOCATION_TAGS_FILE = '../../testing/location_tags.json'
 
 # Build properties used by merge scripts.
+# TODO(crbug.com/395081730): Remove all these in favor of real cmd-line args.
 _ALLOWED_BUILD_PROPERTIES = [
     "builder_group", "build_number", "buildnumber", "builder_name",
     "buildername", "chromium_revision", "got_revision_cp", "got_v8_revision",
