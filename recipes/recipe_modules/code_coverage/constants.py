@@ -88,6 +88,8 @@ SUPPORTED_PATCH_PROJECTS = [
     ('webrtc-review.googlesource.com', 'src')
 ]
 
+# Attach credentials when making REST API requests to these gerrit hosts
+NEEDS_AUTH_HOSTS = ['chrome-internal-review.googlesource.com']
 
 # Test type literals.
 class test_types:

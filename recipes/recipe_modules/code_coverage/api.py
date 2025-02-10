@@ -206,6 +206,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       local_to_gerrit_diff_mapping_file = output_dir.joinpath(
           constants.BOT_TO_GERRIT_LINE_NUM_MAPPING_FILE_NAME)
       timeout_in_minutes = 15
+      maybe_auth_args = []
+      if gerrit_change.host in constants.NEEDS_AUTH_HOSTS:
+        token = self.m.service_account.default().get_access_token(
+            scopes=['https://www.googleapis.com/auth/gerritcodereview'])
+        maybe_auth_args = [
+            '--token-path',
+            self.m.raw_io.input_text(token),
+        ]
       self.m.step(
           'generate line number mapping from bot to Gerrit',
           [
@@ -223,7 +231,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               self.source_dir,
               '--output-file',
               local_to_gerrit_diff_mapping_file,
-          ] + self._all_eligible_files(),
+          ] + maybe_auth_args + self._all_eligible_files(),
           timeout=timeout_in_minutes * 60,
           stdout=self.m.json.output())
       self._bot_to_gerrit_mapping_file = local_to_gerrit_diff_mapping_file

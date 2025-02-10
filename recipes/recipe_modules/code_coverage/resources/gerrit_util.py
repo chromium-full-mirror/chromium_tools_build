@@ -25,7 +25,14 @@ _RESPONSE_PREFIX = ')]}\n'
 _HTTP_NUM_RETRY = 3
 
 
-def fetch_files_content(host, project, change, patchset, file_paths):
+def fetch_files_content(
+    host,
+    project,
+    change,
+    patchset,
+    file_paths,
+    token_path=None,
+):
   """Fetches file content for a list of files from Gerrit.
 
   Args:
@@ -34,6 +41,7 @@ def fetch_files_content(host, project, change, patchset, file_paths):
     change (int): The change number.
     patchset (int): The patchset number.
     file_paths (list): A list of file paths that are relative to the checkout.
+    token_path (Optional[str]): Path to file with oauth token, if applicable.
 
   Returns:
     A list of String where each one corresponds to the content of each file.
@@ -45,7 +53,14 @@ def fetch_files_content(host, project, change, patchset, file_paths):
 
   url = 'https://%s/changes/%s?o=ALL_REVISIONS&o=SKIP_MERGEABLE' % (host,
                                                                     change_id)
-  response = _retry_url_open(url)
+  headers = {}
+  token = None
+  if token_path:
+    with open(token_path) as oauth_token_fd:
+      token = oauth_token_fd.read()
+      headers['Authorization'] = 'Bearer %s' % token
+  request = urllib.request.Request(url=url, headers=headers)
+  response = _retry_url_open(request)
   change_details = json.loads(response.read()[len(_RESPONSE_PREFIX):])
   patchset_revision = None
 
@@ -61,14 +76,15 @@ def fetch_files_content(host, project, change, patchset, file_paths):
 
   result = []
   for file_path in file_paths:
-    content = _fetch_file_content(host, change_id, patchset_revision, file_path)
+    content = _fetch_file_content(
+        host, change_id, patchset_revision, file_path, token=token)
     if content:
       result.append(content)
 
   return result
 
 
-def _fetch_file_content(host, change_id, revision, file_path):
+def _fetch_file_content(host, change_id, revision, file_path, token=None):
   """Fetches file content for a single file from Gerrit.
 
   Args:
@@ -76,6 +92,7 @@ def _fetch_file_content(host, change_id, revision, file_path):
     change_id (str): '<project>~<numericId>'.
     revision (str): Identifier that uniquely identifies a revision of a change.
     file_path (str): File path that is relative to the checkout.
+    token (Optional[str]): Oauth token string, if applicable.
 
   Returns:
     A string representing the file content.
@@ -86,7 +103,11 @@ def _fetch_file_content(host, change_id, revision, file_path):
   quoted_file_path = urllib.parse.quote(file_path, safe='')
   url = 'https://%s/changes/%s/revisions/%s/files/%s/content' % (
       host, change_id, revision, quoted_file_path)
-  response = _retry_url_open(url)
+  headers = {}
+  if token:
+    headers['Authorization'] = 'Bearer %s' % token
+  request = urllib.request.Request(url=url, headers=headers)
+  response = _retry_url_open(request)
   try:
     content = base64.b64decode(response.read())
     return content.decode()
@@ -99,7 +120,7 @@ def _retry_url_open(url):
   """Retry version of urllib.request.urlopen.
 
   Args:
-    url (str): The URL.
+    url (str|urllib.request.Request): The URL or Request object.
 
   Returns:
     The response if status code is 200, otherwise, exception is raised.

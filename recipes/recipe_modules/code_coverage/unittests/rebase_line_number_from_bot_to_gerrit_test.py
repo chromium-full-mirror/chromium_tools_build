@@ -53,8 +53,11 @@ class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):
         }
     }, file_to_line_num_mapping)
     mocked_fetch_files_content.assert_called_with(
-        self.host, self.project, self.change, self.patchset,
-        [os.path.basename(file_on_bot_path)])
+        self.host,
+        self.project,
+        self.change,
+        self.patchset, [os.path.basename(file_on_bot_path)],
+        token_path=None)
 
   @mock.patch.object(gerrit_util, 'fetch_files_content')
   def test_rebase_line_number_with_deleted_file(self,
@@ -71,8 +74,11 @@ class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):
         [os.path.basename(file_on_bot_path), 'non_exist_file'])
 
     mocked_fetch_files_content.assert_called_with(
-        self.host, self.project, self.change, self.patchset,
-        [os.path.basename(file_on_bot_path)])
+        self.host,
+        self.project,
+        self.change,
+        self.patchset, [os.path.basename(file_on_bot_path)],
+        token_path=None)
 
   @mock.patch.object(gerrit_util, 'fetch_files_content')
   def test_rebase_line_number_with_deleted_file_only(
@@ -83,7 +89,11 @@ class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):
             ['non_exist_file']))
 
     mocked_fetch_files_content.assert_called_with(
-        self.host, self.project, self.change, self.patchset, [])
+        self.host,
+        self.project,
+        self.change,
+        self.patchset, [],
+        token_path=None)
     self.assertDictEqual({}, file_to_line_num_mapping)
 
   @mock.patch.object(gerrit_util, 'fetch_files_content')
@@ -115,9 +125,30 @@ class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):
               }
           }, file_to_line_num_mapping)
       mocked_fetch_files_content.assert_called_with(
-          self.host, self.project, self.change, self.patchset,
-          [os.path.basename(file_on_bot_path)])
+          self.host,
+          self.project,
+          self.change,
+          self.patchset, [os.path.basename(file_on_bot_path)],
+          token_path=None)
       time.sleep(3)
+
+  @mock.patch.object(gerrit_util, 'fetch_files_content')
+  def test_rebase_line_number_with_auth_token(self, mocked_fetch_files_content):
+    token_path = '/tmp/token'
+    rebase_line_number_from_bot_to_gerrit.rebase_line_number(
+        self.host,
+        self.project,
+        self.change,
+        self.patchset,
+        '/checkout', [],
+        token_path=token_path)
+
+    mocked_fetch_files_content.assert_called_with(
+        self.host,
+        self.project,
+        self.change,
+        self.patchset, [],
+        token_path=token_path)
 
 
 if __name__ == '__main__':

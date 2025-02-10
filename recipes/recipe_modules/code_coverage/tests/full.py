@@ -527,6 +527,32 @@ def GenTests(api):
       ),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'tryserver with gerrit auth',
+      api.chromium.try_build(
+          project='chrome',
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          git_repo='https://chrome-internal.googlesource.com/clank/internal/apps'
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.code_coverage(use_clang_coverage=True),
+      api.properties(files_to_instrument=[
+          'some/path/to/file.cc',
+          'some/other/path/to/file.cc',
+      ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'process clang code coverage data for overall test coverage.generate '
+          'line number mapping from bot to Gerrit', ['--token-path']),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'merge errors',
       api.chromium.generic_build(
