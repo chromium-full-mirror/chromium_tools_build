@@ -28,7 +28,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
-    'reclient',
+    'siso',
 ]
 
 DETERMINISTIC_BUILDERS = freeze({
@@ -149,7 +149,7 @@ def ConfigureChromiumBuilder(api, recipe_config):
         recipe_config.get('android_config'),
         **recipe_config.get('chromium_config_kwargs', {}))
 
-  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+  api.siso.enable_download_remoteexec_cfg_hook()
 
   # Checkout chromium.
   return api.bot_update.ensure_checkout()
