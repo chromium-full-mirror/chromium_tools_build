@@ -41,7 +41,7 @@ def RunSteps(api):
         '%s:/usr/src/app' % fuzzer_dir,
         '-w',
         '/usr/src/app',
-        'node:10',
+        'node:23',
     ]
     with api.context(cwd=fuzzer_dir):
       api.docker.login(infra_step=True)

@@ -12,7 +12,7 @@
       "[CACHE]/builder/v8/tools/clusterfuzz/js_fuzzer:/usr/src/app",
       "-w",
       "/usr/src/app",
-      "node:10",
+      "node:23",
       "npm",
       "install"
     ],
@@ -35,7 +35,7 @@
       "[CACHE]/builder/v8/tools/clusterfuzz/js_fuzzer:/usr/src/app",
       "-w",
       "/usr/src/app",
-      "node:10",
+      "node:23",
       "npm",
       "test"
     ],
