@@ -183,12 +183,17 @@ def _create_tasks_and_test_infos(api, target_test_infos, tests):
     if test_info.test_suite not in test_suite_to_tests:
       continue
     test = test_suite_to_tests[test_info.test_suite]
+    # The request id for Pernosco service to track the test trace.
+    # The format is: 'ci|{buildbucket_id}|{test_name}|{test_suite}|{bug_id}'
+    request_id = (f'ci|{api.buildbucket.build.id}|{test_info.test_name}|'
+                  f'{test_info.test_suite}|{test_info.bug_id}')
+
     # Construct test cmd, trigger reproducing job in swarming.
     command = [
         'vpython3', f'../../{RUNNER_PACKAGE_PATH}/test_runner.py',
         '--test={0}'.format(test_info.test_name),
         '--output-dir={0}'.format('${ISOLATED_OUTDIR}'),
-        '--git-revision={0}'.format(
+        '--request-id={0}'.format(request_id), '--git-revision={0}'.format(
             api.buildbucket.build.input.gitiles_commit.id), '--'
     ]
     # TODO(jiesheng): Support other test type for rr test launcher.

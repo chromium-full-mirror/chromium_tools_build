@@ -41,6 +41,10 @@ def parse_args(args):
   parser.add_argument(
       '--output-dir', required=True, help='The output dir of all test traces.')
   parser.add_argument(
+      '--request-id',
+      required=True,
+      help='The request id for Pernosco service to track the test trace.')
+  parser.add_argument(
       '--git-revision',
       required=True,
       help='The git revision of the source code.')
@@ -143,6 +147,15 @@ def main(args):
       # dir.
       result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../../')
       if result == 0:
+        # Add the request id to the trace
+        request_id_directory = os.path.join(source_path, 'files.pernosco')
+        os.makedirs(request_id_directory, exist_ok=True)
+        with open(
+            pathlib.Path(request_id_directory) / 'request-id',
+            'w',
+            encoding='utf-8') as f:
+          f.write(args.request_id)
+
         run_cmd([
             'tar', '--exclude', './db*', '--use-compress-program=zstd', '-cf',
             'trace.tar', f'../../{TRACE_DIR}'

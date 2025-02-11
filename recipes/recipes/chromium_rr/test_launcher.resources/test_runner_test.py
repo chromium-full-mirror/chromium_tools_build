@@ -21,15 +21,25 @@ class TestRunnerTest(unittest.TestCase):
   def test_args(self):
     args = [
         '--test=test1', '-t', 'test2', '--output-dir', 'output_dir',
-        '--git-revision', 'abcd'
+        '--git-revision', 'abcd', '--request-id', 'request_id'
     ]
     expected = ['test1', 'test2']
     res = test_runner.parse_args(args)
     self.assertEqual(res.test, expected)
 
     args = [
-        '--test=test1', '-t', 'test2', '--output-dir', 'output_dir',
-        '--git-revision', 'abcd', '--', 'test_binary', 'binary_arg1'
+        '--test=test1',
+        '-t',
+        'test2',
+        '--output-dir',
+        'output_dir',
+        '--git-revision',
+        'abcd',
+        '--request-id',
+        'request_id`',
+        '--',
+        'test_binary',
+        'binary_arg1',
     ]
     expected_test = ['test1', 'test2']
     expected_test_cmd = ['test_binary', 'binary_arg1']
