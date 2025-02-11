@@ -125,7 +125,11 @@ def _retry_url_open(url):
   Returns:
     The response if status code is 200, otherwise, exception is raised.
   """
-  logging.info('Sending request to Gerrit: %s', url)
+  if isinstance(url, urllib.request.Request):
+    url_for_logging = url.get_full_url()
+  else:
+    url_for_logging = url
+  logging.info('Sending request to Gerrit: %s', url_for_logging)
   tries = _HTTP_NUM_RETRY
   delay_seconds = 1
   while True:
@@ -133,7 +137,7 @@ def _retry_url_open(url):
       return urllib.request.urlopen(url)
     except urllib.error.URLError:
       if tries == 0:
-        logging.error('Failed to open URL: %s', url)
+        logging.error('Failed to open URL: %s', url_for_logging)
         raise
 
       time.sleep(delay_seconds)
