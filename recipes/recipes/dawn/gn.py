@@ -62,8 +62,7 @@ def _checkout_steps(api):
 # returns a tuple of the file paths where those targets' executables should be located.
 @contextmanager
 def _gn_build(source_dir, flavor, api, **kwargs):
-  use_remoteexec = (kwargs['is_clang'] is True or
-                    kwargs['is_clang'] is None) and api.reclient.instance
+  use_remoteexec = kwargs['is_clang'] is True or kwargs['is_clang'] is None
   gn_args = []
   for key, value in kwargs.items():
     if value is None:
