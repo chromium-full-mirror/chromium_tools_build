@@ -174,22 +174,13 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/siso/siso",
-      "ninja",
-      "--project",
-      "test-rbe-project",
-      "--job_id",
-      "8945511751514863184",
-      "--enable_cloud_logging",
-      "--reapi_instance",
-      "default_instance",
+      "[CACHE]/builder/dawn/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/dawn/out/244d8d8eba82709538472a69c0a490d7625a21ea",
       "default",
       "dawn_unittests",
       "tint_unittests"
     ],
-    "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -202,14 +193,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile default targets with siso"
-  },
-  {
-    "cmd": [],
-    "name": "upload siso reports",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@compile default targets with siso@@@"
-    ]
+    "name": "compile default targets with ninja"
   },
   {
     "cmd": [
@@ -237,20 +221,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/siso/siso",
-      "ninja",
-      "--project",
-      "test-rbe-project",
-      "--job_id",
-      "8945511751514863184",
-      "--enable_cloud_logging",
-      "--reapi_instance",
-      "default_instance",
+      "[CACHE]/builder/dawn/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/dawn/out/2afda240ab207323b063306bf696ba742a23ed8c",
       "fuzzers"
     ],
-    "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -263,14 +238,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile fuzzer targets with siso"
-  },
-  {
-    "cmd": [],
-    "name": "upload siso reports (2)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@compile fuzzer targets with siso@@@"
-    ]
+    "name": "compile fuzzer targets with ninja"
   },
   {
     "cmd": [
@@ -298,20 +266,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/siso/siso",
-      "ninja",
-      "--project",
-      "test-rbe-project",
-      "--job_id",
-      "8945511751514863184",
-      "--enable_cloud_logging",
-      "--reapi_instance",
-      "default_instance",
+      "[CACHE]/builder/dawn/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/dawn/out/ce29809e7bd2b4100171702ba2c0c0f527b9ddea",
       "dawn_end2end_tests"
     ],
-    "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -324,14 +283,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile component build with Swiftshader with siso"
-  },
-  {
-    "cmd": [],
-    "name": "upload siso reports (3)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@compile component build with Swiftshader with siso@@@"
-    ]
+    "name": "compile component build with Swiftshader with ninja"
   },
   {
     "cmd": [
