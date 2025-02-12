@@ -25,7 +25,11 @@ PROBLEMATIC_JACOCO_PATHS = [
     'base/android/java/src/org/chromium/base/BuildInfo.java',  # b/41495939#comment23
     'base/android/java/src/org/chromium/base/PackageUtils.java',  # b/41495939#comment33
     'base/android/java/src/org/chromium/base/ApkInfo.java',  # b/41495939#comment41
-    'base/android/java/src/org/chromium/base/DeviceInfo.java'  # b/41495939#comment42
+    'base/android/java/src/org/chromium/base/DeviceInfo.java',  # b/41495939#comment42
+    (
+        'chrome/browser/auxiliary_search/java/src/org/chromium/chrome/'
+        'browser/auxiliary_search/AuxiliarySearchUtils.java'  # b/41495939#comment39
+    ),
 ]
 class CodeCoverageApi(recipe_api.RecipeApi):
   """This module contains apis to generate code coverage data."""
