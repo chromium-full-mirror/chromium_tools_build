@@ -910,7 +910,9 @@
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--test-data",
+      "--basename",
       "chromium-128.0.6534.0",
+      "chromium-128.0.6534.0-testdata",
       "--verbose",
       "--progress",
       "--version",
@@ -944,7 +946,7 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/export_tarball_tmp_2/chromium-128.0.6534.0.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_2/chromium-128.0.6534.0-testdata.tar.xz",
       "gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz"
     ],
     "infra_step": true,
@@ -969,7 +971,7 @@
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/generate_hashes.py",
-      "[CLEANUP]/export_tarball_tmp_2/chromium-128.0.6534.0.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_2/chromium-128.0.6534.0-testdata.tar.xz",
       "/path/to/tmp/"
     ],
     "luci_context": {
@@ -2045,7 +2047,9 @@
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--remove-nonessential-files",
+      "--basename",
       "chromium-128.0.6534.0",
+      "chromium-128.0.6534.0-lite",
       "--verbose",
       "--progress",
       "--version",
@@ -2079,7 +2083,7 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/export_tarball_tmp_3/chromium-128.0.6534.0.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_3/chromium-128.0.6534.0-lite.tar.xz",
       "gs://chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz"
     ],
     "infra_step": true,
@@ -2104,7 +2108,7 @@
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/generate_hashes.py",
-      "[CLEANUP]/export_tarball_tmp_3/chromium-128.0.6534.0.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_3/chromium-128.0.6534.0-lite.tar.xz",
       "/path/to/tmp/"
     ],
     "luci_context": {

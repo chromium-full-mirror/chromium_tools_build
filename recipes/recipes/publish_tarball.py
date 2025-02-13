@@ -242,7 +242,7 @@ def published_all_tarballs(version, ls_result):
   return all((check(version, ls_result) for check in checks))
 
 
-def export_tarball(api, args, source, destination, step_name_suffix):
+def export_tarball(api, args, tarball_name, step_name_suffix):
   try:
     temp_dir = api.path.mkdtemp('export_tarball')
     with api.context(cwd=temp_dir):
@@ -251,9 +251,9 @@ def export_tarball(api, args, source, destination, step_name_suffix):
           ['python3', api.chromium.resource('export_tarball.py')] + args)
     gsutil_upload(
         api,
-        api.path.join(temp_dir, source),
+        api.path.join(temp_dir, tarball_name),
         'chromium-browser-official',
-        destination,
+        tarball_name,
         args=['-a', 'public-read'])
 
     hashes_result = api.step(
@@ -261,7 +261,7 @@ def export_tarball(api, args, source, destination, step_name_suffix):
         [
             'python3',
             api.chromium.resource('generate_hashes.py'),
-            api.path.join(temp_dir, source),
+            api.path.join(temp_dir, tarball_name),
             api.raw_io.output(),
         ],
         step_test_data=lambda: api.raw_io.test_api.output(
@@ -271,7 +271,7 @@ def export_tarball(api, args, source, destination, step_name_suffix):
         api,
         api.raw_io.input(hashes_result.raw_io.output),
         'chromium-browser-official',
-        destination + '.hashes',
+        tarball_name + '.hashes',
         args=['-a', 'public-read'])
   finally:
     api.file.rmtree('rmtree temp dir', temp_dir)
@@ -353,11 +353,11 @@ def export_lite_tarball(api, source_dir, version):
         # Verbose output helps avoid a buildbot timeout when no output
         # is produced for a long time.
         [
-            '--remove-nonessential-files',
-            'chromium-%s' % version, '--verbose', '--progress', '--version',
-            version, '--src-dir', dest_dir
+            '--remove-nonessential-files', '--basename',
+            'chromium-%s' % version,
+            'chromium-%s-lite' % version, '--verbose', '--progress',
+            '--version', version, '--src-dir', dest_dir
         ],
-        'chromium-%s.tar.xz' % version,
         'chromium-%s-lite.tar.xz' % version,
         'lite')
 
@@ -382,11 +382,11 @@ def export_nacl_tarball(api, source_dir, version):
         # Verbose output helps avoid a buildbot timeout when no output
         # is produced for a long time.
         [
-            '--remove-nonessential-files',
-            'chromium-%s' % version, '--verbose', '--progress', '--version',
-            version, '--src-dir', dest_dir
+            '--remove-nonessential-files', '--basename',
+            'chromium-%s' % version,
+            'chromium-%s-nacl' % version, '--verbose', '--progress',
+            '--version', version, '--src-dir', dest_dir
         ],
-        'chromium-%s.tar.xz' % version,
         'chromium-%s-nacl.tar.xz' % version,
         'nacl')
 
@@ -622,7 +622,6 @@ def publish_tarball(api):
               version, '--src-dir', source_dir
           ],
           'chromium-%s.tar.xz' % version,
-          'chromium-%s.tar.xz' % version,
           'full')
 
       # Trigger a tarball build now that the full tarball has been uploaded.
@@ -640,11 +639,11 @@ def publish_tarball(api):
           # Verbose output helps avoid a buildbot timeout when no output
           # is produced for a long time.
           [
-              '--test-data',
-              'chromium-%s' % version, '--verbose', '--progress', '--version',
-              version, '--src-dir', source_dir
+              '--test-data', '--basename',
+              'chromium-%s' % version,
+              'chromium-%s-testdata' % version, '--verbose', '--progress',
+              '--version', version, '--src-dir', source_dir
           ],
-          'chromium-%s.tar.xz' % version,
           'chromium-%s-testdata.tar.xz' % version,
           'testdata')
 
