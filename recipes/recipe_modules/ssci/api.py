@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import dataclasses
 import os
 import pathlib
@@ -25,6 +26,7 @@ class CIPDPkg:
   pkg_path: str
   tool_path: str | None = None
   resolved_version: str | None = None
+  previous_ensure_version: str | None = None
 
 
 class SsciAPI(recipe_api.RecipeApi):
@@ -56,6 +58,38 @@ class SsciAPI(recipe_api.RecipeApi):
     self.ssci_uploader = CIPDPkg(
         ensure_version=props.ssci_uploader_version or "latest",
         pkg_path="infra_internal/tools/security/ssci_uploader/${platform}")
+
+    self.ssci_tools = [
+        self.depbot, self.bqupload, self.partybot, self.ssci_tool,
+        self.ssci_uploader
+    ]
+
+  @contextlib.contextmanager
+  def custom_tool_versions(self, versions):
+    """
+    Temporarily overrides the versions of specified SSCI tools.
+
+    Args:
+        versions: A dict of (package_path: version) specifying the desired versions.
+    """
+
+    tool_lookup = {t.pkg_path: t for t in self.ssci_tools}
+
+    try:
+      # Use provided versions.
+      for pkg_path, version in versions.items():
+        tool = tool_lookup.get(pkg_path)
+        if tool:
+          tool.previous_ensure_version = tool.ensure_version
+          tool.ensure_version = version
+      yield
+    finally:
+      # Reset the tool versions.
+      for pkg_path, version in versions.items():
+        tool = tool_lookup.get(pkg_path)
+        if tool:
+          tool.ensure_version = tool.previous_ensure_version
+          tool.previous_ensure_version = None
 
   def _get_product_version(self, chrome_version):
     """
@@ -324,10 +358,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
     with self.m.step.nest('SSCI collection'):
       self.execution_id = f"luci-{self.m.buildbucket.build.id}"
-      self._setup_ssci_tools(tools=[
-          self.depbot, self.bqupload, self.partybot, self.ssci_tool,
-          self.ssci_uploader
-      ])
+      self._setup_ssci_tools(tools=self.ssci_tools)
 
       # prepare outputs.
       depbot_json_output_dir = self.m.path.mkdtemp()
