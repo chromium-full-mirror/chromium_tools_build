@@ -6,8 +6,7 @@ import re
 
 from recipe_engine import post_process
 from recipe_engine.config_types import Path
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from PB.recipe_engine.result import RawResult
+from PB.recipes.build.compile_size_trybot import InputProperties
 
 DEPS = [
     'binary_size',
@@ -21,11 +20,15 @@ DEPS = [
     'recipe_engine/step',
 ]
 
+PROPERTIES = InputProperties
+
 BEFORE_LINE_RE = re.compile('Before: .* \((.*)\)')
 DELTA_LINE_RE = re.compile('Delta: .* \((.*)\)')
 
+DEFAULT_SIZE_THRESHOLD_MIB = 500
 
-def RunSteps(api):
+
+def RunSteps(api, properties):
 
   def create_diffs(
       author,
@@ -50,21 +53,35 @@ def RunSteps(api):
       delta_matches = DELTA_LINE_RE.match(lines[2])
       before = int(before_matches.group(1))
       delta = int(delta_matches.group(1))
-      summary = '\n'.join(lines[:4])
+      # Make the stats a markdown list.
+      summary = '\n'.join(f'* {line}' for line in lines[:4])
     except (ValueError, IndexError, AttributeError) as e:
       raise api.step.InfraFailure(
           f'Failed to parse compile size delta report: {e}')
+    status_code = 0
+    size_threshold_mib = api.properties.get('size_threshold_mib',
+                                            DEFAULT_SIZE_THRESHOLD_MIB)
+    if delta >= size_threshold_mib * 1024 * 1024:
+      status_code = 1
+      summary = (
+          f'Compile size check failed! Delta ({delta / 1024 / 1024:.2f} MiB) ' +
+          f'exceeds threshold ({size_threshold_mib:.2f} MiB)\n\n{summary}\n\n' +
+          'See the following document for more information:\n' +
+          'https://chromium.googlesource.com/chromium/src/+/main/docs/speed/binary_size/compile_size_builder.md'
+      )
     write_results = api.file.write_json(
-        'Write size results',
-        results_path,
-        {
+        'Write size results', results_path, {
             'archive_filenames': [],
             'links': [],
-            # TODO: crbug.com/40190002 - set status once deciding the threshold.
-            'status_code': 0,
+            'status_code': status_code,
             'summary': summary,
             'uncompressed': delta
         })
+    if status_code:
+      # We want to draw attention to this step so that people can find the
+      # TU breakdown log. This would be better as a warning, i.e. with
+      # crbug.com/40581344.
+      write_results.presentation.status = api.step.FAILURE
     write_results.presentation.logs['compile_size_deltas.txt'] = lines
     write_results.presentation.properties['compile_size'] = {
         'before': before,

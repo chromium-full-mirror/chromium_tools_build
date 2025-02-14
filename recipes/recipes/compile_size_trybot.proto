@@ -1,0 +1,12 @@
+// Copyright 2025 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.compile_size_trybot;
+
+message InputProperties {
+  // Size of compiler input size delta in MiB at which to fail the build.
+  int64 size_threshold_mib = 1;
+}
