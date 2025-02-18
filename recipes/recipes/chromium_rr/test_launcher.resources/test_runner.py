@@ -148,7 +148,7 @@ def main(args):
       result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../../')
       if result == 0:
         # Add the request id to the trace
-        request_id_directory = os.path.join(source_path, 'files.pernosco')
+        request_id_directory = os.path.join(TRACE_PATH, 'files.pernosco')
         os.makedirs(request_id_directory, exist_ok=True)
         with open(
             pathlib.Path(request_id_directory) / 'request-id',
