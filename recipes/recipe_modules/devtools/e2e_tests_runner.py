@@ -45,6 +45,20 @@ class E2ETests(ExonerableTests):
     return super().trigger_exoneration(test_names)
 
 
+class E2ENonHostedTests(E2ETests):
+
+  def commands(self):
+    return [self.run_tests_command('test/e2e_non_hosted')]
+
+  @property
+  def test_type_tag(self):
+    return 'e2e_non_hosted_tests'
+
+  def skip(self):
+    return super().skip() or not self.api.path.exists(
+        self.source_dir.joinpath('test', 'e2e_non_hosted'))
+
+
 class RepeatE2EShuffledTests(E2ETests):
 
   def trigger_exoneration(self, test_names):
