@@ -529,15 +529,22 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/ninja/ninja",
+      "[CACHE]/builder/dawn/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f",
-      "-j",
-      "160",
       "default",
       "dawn_unittests",
       "tint_unittests"
     ],
+    "cwd": "[CACHE]/builder/dawn",
     "env": {
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
@@ -558,7 +565,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile default targets with ninja"
+    "name": "compile default targets with siso"
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile default targets with siso@@@"
+    ]
   },
   {
     "cmd": [],
@@ -819,12 +833,12 @@
       }
     },
     "name": "postprocess for reclient.upload RBE metrics to BigQuery",
-    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:21.500Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:23Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:21.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:23Z\",@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
@@ -903,7 +917,7 @@
       "--reclient-log-dir",
       "[CLEANUP]/reclient_log_tmp_1",
       "--output-gzip-path",
-      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -932,8 +946,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -951,7 +965,7 @@
     "name": "postprocess for reclient.gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125324.00000000-0000-0000-0000-00000000133a.gz@@@"
     ]
   },
   {
@@ -1034,7 +1048,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1052,7 +1066,7 @@
     "name": "postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
@@ -1094,7 +1108,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a/reproxy.INFO"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1112,7 +1126,7 @@
     "name": "postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a/reproxy.INFO@@@"
     ]
   },
   {
@@ -1154,7 +1168,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1172,7 +1186,7 @@
     "name": "postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log@@@"
     ]
   },
   {
@@ -1184,7 +1198,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1213,8 +1227,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1232,7 +1246,7 @@
     "name": "postprocess for reclient.upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125324.00000000-0000-0000-0000-00000000133a.tar.gz@@@"
     ]
   },
   {
@@ -1559,13 +1573,20 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/ninja/ninja",
+      "[CACHE]/builder/dawn/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]/builder/dawn/out/7b37738bcc5c0c3f0936d3af45a221b0f2238c24",
-      "-j",
-      "160",
       "fuzzers"
     ],
+    "cwd": "[CACHE]/builder/dawn",
     "env": {
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
@@ -1586,7 +1607,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile fuzzer targets with ninja"
+    "name": "compile fuzzer targets with siso"
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (2)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile fuzzer targets with siso@@@"
+    ]
   },
   {
     "cmd": [],
@@ -1768,12 +1796,12 @@
       }
     },
     "name": "postprocess for reclient (2).upload RBE metrics to BigQuery",
-    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:24.500Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:27.500Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:24.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:27.500Z\",@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
@@ -1852,7 +1880,7 @@
       "--reclient-log-dir",
       "[CLEANUP]/reclient_log_tmp_2",
       "--output-gzip-path",
-      "[TMP_BASE]/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001340.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1881,8 +1909,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001340.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001340.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1900,7 +1928,7 @@
     "name": "postprocess for reclient (2).gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001340.gz@@@"
     ]
   },
   {
@@ -1983,7 +2011,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2001,7 +2029,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
@@ -2043,7 +2071,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_2/reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340/reproxy.INFO"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2061,7 +2089,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340/reproxy.INFO@@@"
     ]
   },
   {
@@ -2103,7 +2131,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_2/reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340/reproxy_stderr.log"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2121,7 +2149,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340/reproxy_stderr.log@@@"
     ]
   },
   {
@@ -2133,7 +2161,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2162,8 +2190,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2181,7 +2209,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001340.tar.gz@@@"
     ]
   },
   {
@@ -2508,13 +2536,20 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/ninja/ninja",
+      "[CACHE]/builder/dawn/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
-      "-j",
-      "160",
       "dawn_end2end_tests"
     ],
+    "cwd": "[CACHE]/builder/dawn",
     "env": {
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
@@ -2535,7 +2570,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile component build with Swiftshader with ninja"
+    "name": "compile component build with Swiftshader with siso"
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (3)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile component build with Swiftshader with siso@@@"
+    ]
   },
   {
     "cmd": [],
@@ -2717,12 +2759,12 @@
       }
     },
     "name": "postprocess for reclient (3).upload RBE metrics to BigQuery",
-    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:27.500Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:32Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:27.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:32Z\",@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
@@ -2801,7 +2843,7 @@
       "--reclient-log-dir",
       "[CLEANUP]/reclient_log_tmp_3",
       "--output-gzip-path",
-      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125333.00000000-0000-0000-0000-000000001346.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2830,8 +2872,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125333.00000000-0000-0000-0000-000000001346.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125333.00000000-0000-0000-0000-000000001346.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2849,7 +2891,7 @@
     "name": "postprocess for reclient (3).gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125333.00000000-0000-0000-0000-000000001346.gz@@@"
     ]
   },
   {
@@ -2932,7 +2974,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_3/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2950,7 +2992,7 @@
     "name": "postprocess for reclient (3).upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
@@ -2992,7 +3034,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_3/reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346/reproxy.INFO"
     ],
     "infra_step": true,
     "luci_context": {
@@ -3010,7 +3052,7 @@
     "name": "postprocess for reclient (3).upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346/reproxy.INFO@@@"
     ]
   },
   {
@@ -3052,7 +3094,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_3/reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346/reproxy_stderr.log"
     ],
     "infra_step": true,
     "luci_context": {
@@ -3070,7 +3112,7 @@
     "name": "postprocess for reclient (3).upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346/reproxy_stderr.log@@@"
     ]
   },
   {
@@ -3082,7 +3124,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -3111,8 +3153,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -3130,7 +3172,7 @@
     "name": "postprocess for reclient (3).upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125333.00000000-0000-0000-0000-000000001346.tar.gz@@@"
     ]
   },
   {
