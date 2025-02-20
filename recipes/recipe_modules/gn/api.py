@@ -231,7 +231,11 @@ class GnApi(recipe_api.RecipeApi):
     output = step_result.stdout
     return set(output.splitlines())
 
-  def gen(self, build_dir, step_name='gn gen', args=None):
+  def gen(self,
+          build_dir,
+          step_name='gn gen',
+          args=None,
+          write_ide_json_filename=None):
     """Runs gn gen to generate build files with existing or new gn args
 
     See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_gen for
@@ -242,11 +246,16 @@ class GnApi(recipe_api.RecipeApi):
       build_dir: Path to build output directory.
       step_name: Optional recipe step name to give to the "gn gen" command.
       args: Optional args to pass `gn gen`.
+      write_ide_json_filename: Optionally generates a JSON file in the
+        build_dir containing target information for an IDE.
     """
     with self.m.context(cwd=build_dir):
       cmd = ['gen']
       if args is not None:
         cmd.append('--args=' + args)
+      if write_ide_json_filename is not None:
+        cmd.append('--ide=json')
+        cmd.append('--json-file-name=' + write_ide_json_filename)
       cmd.append(build_dir)
       self._gn_cmd(step_name, cmd)
 
