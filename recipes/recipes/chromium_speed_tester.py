@@ -11,6 +11,7 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/json',
     'recipe_engine/platform',
+    'recipe_engine/properties',
     'recipe_engine/step',
 ]
 NO_SUFFIX = ''
@@ -114,5 +115,108 @@ def GenTests(api):
           builder_group='chromium.perf',
           builder='mac-intel-perf',
           parent_buildername='mac-builder-perf'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tester_does_not_trigger_processor',
+      api.properties(
+          swarm_hashes={'fake_test': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},),
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake_group',
+          builder='fake_triggered_tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake_group': {
+                  'fake_builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake_triggered_tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          parent_buildername='fake_builder',
+                          execution_mode=ctbc.TEST,
+                      ),
+              }
+          })),
+      api.chromium_tests.read_targets_spec(
+          'fake_group', {
+              'fake_triggered_tester': {
+                  'isolated_scripts': [{
+                      'name': 'fake_test',
+                      'merge': {
+                          'args': ['--foo', '--bar'],
+                          'script': '//path/to/script.py',
+                      },
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Ubuntu-22.04',
+                          },
+                      },
+                  }],
+              }
+          }),
+      api.post_process(post_process.MustRun, 'fake_test on Ubuntu-22.04'),
+      api.post_process(post_process.DoesNotRun, 'trigger'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tester_pass_trigger_properties_to_processor',
+      api.properties(
+          swarm_hashes={'fake_test': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},),
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake_group',
+          builder='fake_triggered_tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake_group': {
+                  'fake_builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake_triggered_tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          parent_buildername='fake_builder',
+                          execution_mode=ctbc.TEST,
+                      ),
+                  'fake_triggered_processor':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          parent_buildername='fake_triggered_tester',
+                          execution_mode=ctbc.TEST,
+                      ),
+              }
+          })),
+      api.chromium_tests.read_targets_spec(
+          'fake_group', {
+              'fake_triggered_tester': {
+                  'isolated_scripts': [{
+                      'name': 'fake_test',
+                      'merge': {
+                          'args': ['--foo', '--bar'],
+                          'script': '//path/to/script.py',
+                      },
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Ubuntu-22.04',
+                          },
+                      },
+                  }],
+              }
+          }),
+      api.post_process(post_process.MustRun, 'fake_test on Ubuntu-22.04'),
+      api.post_process(post_process.MustRun, 'trigger'),
+      api.post_process(post_process.LogContains, 'trigger', 'input', [
+          'buildername', 'buildnumber', 'perf_dashboard_machine_group',
+          'got_revision_cp', 'got_v8_revision', 'got_webrtc_revision'
+      ]),
       api.post_process(post_process.DropExpectation),
   )
