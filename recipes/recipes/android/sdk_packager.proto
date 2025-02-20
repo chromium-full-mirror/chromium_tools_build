@@ -12,6 +12,10 @@ message SdkCipdPackage {
   string cipd_yaml = 2;
   // Release channel to check. Default to STABLE if not present.
   optional SdkChannel sdk_channel = 3;
+  // Target OS that is different from the host machine.
+  optional TargetOs target_os = 4;
+  // Target arch that is different from the host machine.
+  optional TargetArch target_arch = 5;
 }
 
 enum SdkChannel {
@@ -19,6 +23,20 @@ enum SdkChannel {
   BETA = 1;
   DEV = 2;
   CANARY = 3;
+}
+
+// The target OS for a package.
+// See https://developer.android.com/tools/variables#repo_os_override for more.
+enum TargetOs {
+  linux = 0;  // default value
+  mac = 1;
+  windows = 2;
+}
+
+// The target arch for a package.
+enum TargetArch {
+  x86_64 = 0;  // default value
+  arm64 = 1;
 }
 
 message InputProperties {

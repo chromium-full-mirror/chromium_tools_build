@@ -4,6 +4,7 @@
 
 """Packages Android SDK packages as CIPD packages."""
 
+from collections import defaultdict
 import textwrap
 
 from recipe_engine import post_process
@@ -18,6 +19,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -28,6 +30,21 @@ DEPS = [
 
 PROPERTIES = sdk_packager.InputProperties
 
+# The sdk root we use to install the packages
+SDK_ROOT = ('third_party', 'android_sdk', 'public')
+
+# Mapping of OS & arch values, from proto to one that's accepted by sdkmanager.
+# The proto values are more aligned with the name scheme on the src side.
+OS_MAPPING = {
+    'linux': 'linux',
+    'mac': 'macosx',
+    'windows': 'windows',
+}
+ARCH_MAPPING = {
+    'x86_64': 'x86_64',
+    'arm64': 'aarch64',
+}
+
 
 def RunSteps(api, properties):
   api.gclient.set_config('chromium')
@@ -35,58 +52,99 @@ def RunSteps(api, properties):
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
 
-  sdk_manager = source_dir.joinpath('third_party', 'android_sdk', 'public',
-                                    'cmdline-tools', 'latest', 'bin',
-                                    'sdkmanager')
-  jdk_path = source_dir.joinpath('third_party', 'jdk', 'current')
-
+  cmdline_tools = source_dir.joinpath(*SDK_ROOT, 'cmdline-tools', 'latest')
+  sdk_manager = cmdline_tools.joinpath('bin', 'sdkmanager')
   if not api.path.exists(sdk_manager):
     summary_markdown = (
         'Unable to find sdkmanager at path `%s`' % str(sdk_manager))
     return result_pb.RawResult(
         status=common_pb.INFRA_FAILURE,
         summary_markdown=summary_markdown)
+  # Copy cmdline-tools to a temp place to avoid it being uninstalled.
+  temp_dir = api.path.mkdtemp('tmp')
+  temp_cmdline_tools = temp_dir.joinpath('cmdline-tools')
+  api.file.copytree('copy cmdline-tools', cmdline_tools, temp_cmdline_tools)
 
-  sdk_channels = set()
+  # Use dict to keep the insertion order.
+  package_dict = defaultdict(list)
   for package in properties.packages:
-    sdk_channels.add(package.sdk_channel)
+    key_tuple = (sdk_packager.SdkChannel.Name(package.sdk_channel),
+                 sdk_packager.TargetOs.Name(package.target_os),
+                 sdk_packager.TargetArch.Name(package.target_arch))
+    package_dict[key_tuple].append(package)
+
+  for key_tuple, packages in package_dict.items():
+    channel, target_os, target_arch = key_tuple
+    step_name = 'Process %s channel for %s %s' % (channel, target_os,
+                                                  target_arch)
+    with api.step.nest(step_name) as p_step:
+      p_step.logs['packages'] = '%r' % packages
+      result = _process_packages(api, temp_cmdline_tools, source_dir, packages,
+                                 channel, target_os, target_arch)
+      if result:
+        return result
+
+
+def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
+                      target_os, target_arch):
+  """Process packages from a given list.
+
+  Including use sdkmanager to fetch the package versions, and install packages
+  with given channel and target_os, and upload to CIPD with related tags.
+
+  Args:
+    api - The recipe API object.
+    cmdline_tools_dir - The directory of cmdline-tools. Should be a different
+      copy than the chromium src, otherwise it may delete itself during update.
+    source_dir - The directory of chromium src checkout. We use this to locate
+      the jdk path, and cipd yaml file path.
+    packages - A list of package names to install.
+    channel - The channel of the packages, i.e. STABLE, BETA, DEV, CANARY.
+    target_os - The target os for the packages, i.e. linux, mac, windows.
+    target_arch - The target arch for the packages, i.e. x86_64, arm64.
+  """
+  # Setup the extra environment variables for sdkmanager
+  env = {
+      # Use the JDK from chromium repo to avoid out-of-date JDK on bot.
+      'JAVA_HOME': str(source_dir.joinpath('third_party', 'jdk', 'current')),
+      # See https://developer.android.com/tools/variables#repo_os_override
+      'REPO_OS_OVERRIDE': OS_MAPPING[target_os],
+      # sdkmanager reads the JVM property "os.arch" to set the arch.
+      # Override it via SDKMANAGER_OPTS. See https://bit.ly/3Qp7DzD
+      'SDKMANAGER_OPTS': '-Dos.arch=%s' % ARCH_MAPPING[target_arch],
+  }
+  sdk_manager = cmdline_tools_dir.joinpath('bin', 'sdkmanager')
+  sdk_root = source_dir.joinpath(*SDK_ROOT)
+  channel_value = sdk_packager.SdkChannel.Value(channel)
 
   packages_by_name = {}
-  for sdk_channel in sdk_channels:
-    step_name = 'package versions in %s channel' % (
-        sdk_packager.SdkChannel.Name(sdk_channel))
-    with api.step.nest(step_name):
-      list_cmd = [
-          sdk_manager,
-          '--list',
-          '--verbose',
-          '--channel=%d' % sdk_channel
-      ]
-      # The sdkmanager script requires a JDK newer than 1.8, and on the bot the
-      # default JDK is 1.8, so we use the one bundled in Chromium (1.17).
-      with api.context(env={'JAVA_HOME': str(jdk_path)}):
-        list_output = api.step(
-            'list', list_cmd, stdout=api.raw_io.output_text()).stdout
+  with api.step.nest('package versions'):
+    list_cmd = [
+        sdk_manager, '--list', '--verbose',
+        '--sdk_root=%s' % sdk_root,
+        '--channel=%d' % channel_value
+    ]
+    with api.context(env=env):
+      list_output = api.step(
+          'list', list_cmd, stdout=api.raw_io.output_text()).stdout
 
-      parse_result = api.step('parse', [
-          'python3',
-          api.resource('parse_sdkmanager_list.py'),
-          '--raw-input',
-          api.raw_io.input_text(list_output),
-          '--json-output',
-          api.json.output(),
-      ])
-      if not parse_result.json.output:
-        return result_pb.RawResult(
-            status=common_pb.INFRA_FAILURE,
-            summary_markdown='Unable to parse sdkmanager output.')
-      packages_by_name[sdk_channel] = {
-          p['name']: p
-          for p in parse_result.json.output.get('available', [])
-      }
+    parse_result = api.step('parse', [
+        'python3',
+        api.resource('parse_sdkmanager_list.py'),
+        '--raw-input',
+        api.raw_io.input_text(list_output),
+        '--json-output',
+        api.json.output(),
+    ])
+    if not parse_result.json.output:
+      return result_pb.RawResult(
+          status=common_pb.INFRA_FAILURE,
+          summary_markdown='Unable to parse sdkmanager output.')
+    for p in parse_result.json.output.get('available', []):
+      packages_by_name[p['name']] = p
 
-  for package in properties.packages:
-    cipd_yaml = source_dir / package.cipd_yaml
+  for package in packages:
+    cipd_yaml = source_dir.joinpath(package.cipd_yaml)
     if not api.path.exists(cipd_yaml):
       summary_markdown = (
           'Unable to find yaml file for %s at path `%s`' % (
@@ -96,91 +154,137 @@ def RunSteps(api, properties):
           status=common_pb.INFRA_FAILURE,
           summary_markdown=summary_markdown)
 
-    sdk_channel_name = sdk_packager.SdkChannel.Name(package.sdk_channel)
-    step_name = '%s in %s channel' % (package.sdk_package_name,
-                                      sdk_channel_name)
-    with api.step.nest(step_name):
+    with api.step.nest(package.sdk_package_name):
+      # Uninstall first to remove potential installation from previous attempt.
+      uninstall_cmd = [
+          sdk_manager,
+          '--uninstall',
+          '--verbose',
+          '--sdk_root=%s' % sdk_root,
+          '--channel=%d' % channel_value,
+          package.sdk_package_name,
+      ]
+      with api.context(env=env):
+        api.step('cleanup', uninstall_cmd)
+
       install_cmd = [
           sdk_manager,
           '--install',
-          '--channel=%d' % package.sdk_channel,
+          '--verbose',
+          '--sdk_root=%s' % sdk_root,
+          '--channel=%d' % channel_value,
           package.sdk_package_name,
       ]
-      with api.context(env={'JAVA_HOME': str(jdk_path)}):
+      with api.context(env=env):
         api.step(
             'install',
             install_cmd,
             # Accept the license agreement, if necessary.
             stdin=api.raw_io.input_text('y'))
-      tags = {}
-      tags['channel'] = sdk_channel_name
-      package_version = packages_by_name[package.sdk_channel].get(
-          package.sdk_package_name, {}).get('version')
+      tags = {
+          'channel': channel,
+          'target_os': target_os,
+          'target_arch': target_arch,
+      }
+      package_version = (
+          packages_by_name.get(package.sdk_package_name, {}).get('version'))
       if package_version:
         tags['version'] = package_version
       api.cipd.create_from_yaml(cipd_yaml, tags=tags, refs=['latest'])
 
 
-def GenTests(api):
-  emulator_package_properties = (
-      api.properties(
-          packages=[
-              {
-                  'sdk_package_name': 'emulator',
-                  'cipd_yaml': 'third_party/android_sdk/public/emulator.yaml',
-              },
-              {
-                  'sdk_package_name': 'emulator',
-                  'cipd_yaml': 'third_party/android_sdk/public/emulator.yaml',
-                  'sdk_channel': 'BETA',
-              }
-          ])
-  )
 
-  def package_version_steps():
-    return (
-        api.override_step_data(
-            'package versions in STABLE channel.list',
-            stdout=api.raw_io.output_text(
-                textwrap.dedent('''\
-                    Available Packages:
-                    -------------------
-                    emulator
-                        Description: Android Emulator
-                        Version:     29.0.11
-                    '''))) +
-        api.override_step_data(
-            'package versions in STABLE channel.parse',
-            api.json.output({
-                'available': [{
-                    'name': 'emulator',
-                    'description': 'Android Emulator',
-                    'version': '29.0.11',
-                    'installed location': None,
-                },],
-                'installed': [],
-            })) +
-        api.override_step_data(
-            'package versions in BETA channel.list',
-            stdout=api.raw_io.output_text(
-                textwrap.dedent('''\
-                    Available Packages:
-                    -------------------
-                    emulator
-                        Description: Android Emulator
-                        Version:     31.0.15
-                    '''))) +
-        api.override_step_data(
-            'package versions in BETA channel.parse',
-            api.json.output({
-                'available': [{
-                    'name': 'emulator',
-                    'description': 'Android Emulator',
-                    'version': '31.0.15',
-                    'installed location': None,
-                },],
-                'installed': [],
-            })))
+def GenTests(api):
+  emulator_package_properties = api.properties(packages=[
+      {
+          'sdk_package_name': 'emulator',
+          'cipd_yaml': 'third_party/android_sdk/public/emulator.yaml',
+      },
+      {
+          'sdk_package_name': 'emulator',
+          'cipd_yaml': 'third_party/android_sdk/public/emulator.yaml',
+          'sdk_channel': 'BETA',
+      },
+      {
+          'sdk_package_name': 'emulator',
+          'cipd_yaml': 'third_party/android_sdk/public/mac/emulator.yaml',
+          'sdk_channel': 'CANARY',
+          'target_os': 'mac',
+          'target_arch': 'arm64',
+      },
+  ])
+
+  def package_version_stable_steps():
+    data = api.override_step_data(
+        'Process STABLE channel for linux x86_64.package versions.list',
+        stdout=api.raw_io.output_text(
+            textwrap.dedent('''\
+                Available Packages:
+                -------------------
+                emulator
+                    Description: Android Emulator
+                    Version:     29.0.11
+                ''')))
+    data += api.override_step_data(
+        'Process STABLE channel for linux x86_64.package versions.parse',
+        api.json.output({
+            'available': [{
+                'name': 'emulator',
+                'description': 'Android Emulator',
+                'version': '29.0.11',
+                'installed location': None,
+            },],
+            'installed': [],
+        }))
+    return data
+
+  def package_version_beta_steps():
+    data = api.override_step_data(
+        'Process BETA channel for linux x86_64.package versions.list',
+        stdout=api.raw_io.output_text(
+            textwrap.dedent('''\
+                Available Packages:
+                -------------------
+                emulator
+                    Description: Android Emulator
+                    Version:     31.0.15
+                ''')))
+    data += api.override_step_data(
+        'Process BETA channel for linux x86_64.package versions.parse',
+        api.json.output({
+            'available': [{
+                'name': 'emulator',
+                'description': 'Android Emulator',
+                'version': '31.0.15',
+                'installed location': None,
+            },],
+            'installed': [],
+        }))
+    return data
+
+  def package_version_canary_steps():
+    data = api.override_step_data(
+        'Process CANARY channel for mac arm64.package versions.list',
+        stdout=api.raw_io.output_text(
+            textwrap.dedent('''\
+                Available Packages:
+                -------------------
+                emulator
+                    Description: Android Emulator
+                    Version:     32.0.15
+                ''')))
+    data += api.override_step_data(
+        'Process CANARY channel for mac arm64.package versions.parse',
+        api.json.output({
+            'available': [{
+                'name': 'emulator',
+                'description': 'Android Emulator',
+                'version': '32.0.15',
+                'installed location': None,
+            },],
+            'installed': [],
+        }))
+    return data
 
   yield api.test(
       'basic',
@@ -188,22 +292,46 @@ def GenTests(api):
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-sdk-packager'),
+      api.post_process(post_process.MustRun, 'copy cmdline-tools'),
       emulator_package_properties,
       api.path.exists(
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
                                          'cmdline-tools', 'latest', 'bin',
                                          'sdkmanager'),
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
-                                         'emulator.yaml')),
-      package_version_steps(),
+                                         'emulator.yaml'),
+          api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
+                                         'mac', 'emulator.yaml')),
+      package_version_stable_steps(),
+      api.post_process(
+          post_process.MustRun,
+          'Process STABLE channel for linux x86_64.emulator.cleanup'),
+      api.post_process(
+          post_process.MustRun,
+          'Process STABLE channel for linux x86_64.emulator.install'),
+      api.post_process(
+          post_process.MustRun,
+          'Process STABLE channel for linux x86_64.emulator.create emulator.yaml'
+      ),
+      package_version_beta_steps(),
+      api.post_process(
+          post_process.MustRun,
+          'Process BETA channel for linux x86_64.emulator.cleanup'),
+      api.post_process(
+          post_process.MustRun,
+          'Process BETA channel for linux x86_64.emulator.install'),
+      api.post_process(
+          post_process.MustRun,
+          'Process BETA channel for linux x86_64.emulator.create emulator.yaml'
+      ),
+      package_version_canary_steps(),
       api.post_process(post_process.MustRun,
-                       'emulator in STABLE channel.install'),
+                       'Process CANARY channel for mac arm64.emulator.cleanup'),
       api.post_process(post_process.MustRun,
-                       'emulator in STABLE channel.create emulator.yaml'),
-      api.post_process(post_process.MustRun,
-                       'emulator in BETA channel.install'),
-      api.post_process(post_process.MustRun,
-                       'emulator in BETA channel.create emulator.yaml'),
+                       'Process CANARY channel for mac arm64.emulator.install'),
+      api.post_process(
+          post_process.MustRun,
+          'Process CANARY channel for mac arm64.emulator.create emulator.yaml'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -230,7 +358,7 @@ def GenTests(api):
                                          'cmdline-tools', 'latest', 'bin',
                                          'sdkmanager')),
       api.override_step_data(
-          'package versions in STABLE channel.list',
+          'Process STABLE channel for linux x86_64.package versions.list',
           stdout=api.raw_io.output_text(
               textwrap.dedent('''\
               [UNPARSEABLE]
@@ -252,7 +380,7 @@ def GenTests(api):
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
                                          'cmdline-tools', 'latest', 'bin',
                                          'sdkmanager')),
-      package_version_steps(),
+      package_version_stable_steps(),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.SummaryMarkdownRE,
                        'Unable to find yaml file'),
