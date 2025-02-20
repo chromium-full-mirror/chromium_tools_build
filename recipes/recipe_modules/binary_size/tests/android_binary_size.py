@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.binary_size import constants
@@ -73,7 +75,7 @@ def GenTests(api):
 
   def has_expected_supersize_link(check,
                                   steps,
-                                  bucket=constants.NDJSON_GS_BUCKET):
+                                  bucket=constants.RESULTS_GS_BUCKET):
     expected_url = 'https://foo.com/{}'.format(
         constants.ARCHIVED_URL_FMT.format(
             bucket=bucket,
@@ -85,7 +87,7 @@ def GenTests(api):
 
   def has_expected_binary_size_url(check,
                                    steps,
-                                   bucket=constants.NDJSON_GS_BUCKET):
+                                   bucket=constants.RESULTS_GS_BUCKET):
     expected_url = constants.ARCHIVED_URL_FMT.format(
         bucket=bucket,
         dest='{}/{}/{}/result.txt'.format(constants.TEST_BUILDER,
@@ -360,5 +362,38 @@ def GenTests(api):
       api.post_check(has_expected_binary_size_url),
       api.post_check(final_step_is_not_nested),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  results_json = copy.deepcopy(constants.TEST_RESULT_JSON)
+  results_json['gerrit_plugin_details']['listings'].append({
+      'name': 'arm64 size',
+      'delta': '500 bytes',
+      'allowed': False,
+      'log_name': 'resource_sizes_64_log',
+  })
+  yield api.test(
+      'arm64_supersize_compile_fail',
+      api.binary_size.build(override_commit_log=True),
+      api.binary_size.properties(
+          arm64_size_config_json='fake-arm64-config.json'),
+      api.override_step_data(constants.RESULT_JSON_STEP_NAME,
+                             api.file.read_json(results_json)),
+      api.override_step_data('compile (with patch arm64)', retcode=1),
+      api.post_process(post_process.StepFailure, 'compile (with patch arm64)'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'arm64_supersize_normal',
+      api.binary_size.build(override_commit_log=True),
+      api.binary_size.properties(
+          arm64_size_config_json='fake-arm64-config.json'),
+      api.override_step_data(constants.RESULT_JSON_STEP_NAME,
+                             api.file.read_json(results_json)),
+      api.post_process(post_process.MustRun, 'compile (with patch arm64)'),
+      api.post_process(post_process.MustRun,
+                       constants.RESULT_JSON_STEP_NAME + ' (2)'),
       api.post_process(post_process.DropExpectation),
   )
