@@ -68,7 +68,7 @@ def GenTests(api):
 
   def has_expected_supersize_link(check,
                                   steps,
-                                  bucket=constants.RESULTS_GS_BUCKET):
+                                  bucket=constants.NDJSON_GS_BUCKET):
     expected_url = 'https://foo.com/{}'.format(
         constants.ARCHIVED_URL_FMT.format(
             bucket=bucket,
@@ -80,7 +80,7 @@ def GenTests(api):
 
   def has_expected_binary_size_url(check,
                                    steps,
-                                   bucket=constants.RESULTS_GS_BUCKET):
+                                   bucket=constants.NDJSON_GS_BUCKET):
     expected_url = constants.ARCHIVED_URL_FMT.format(
         bucket=bucket,
         dest='{}/{}/{}/result.txt'.format(constants.TEST_BUILDER,

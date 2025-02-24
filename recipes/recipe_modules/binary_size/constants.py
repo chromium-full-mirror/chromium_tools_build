@@ -18,7 +18,7 @@ EXPECTATIONS_STEP_NAME = 'Checking for expectation failures'
 
 PATCH_FIXED_BUILD_STEP_NAME = (
     'Not measuring binary size because build is broken without patch.')
-RESULTS_GS_BUCKET = 'chromium-binary-size-trybot-results'
+NDJSON_GS_BUCKET = 'chromium-binary-size-trybot-results'
 ARCHIVED_URL_FMT = ('https://storage.googleapis.com/{bucket}/{dest}')
 
 RESULT_JSON_STEP_NAME = 'Read diff results'
