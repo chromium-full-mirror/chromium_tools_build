@@ -35,6 +35,7 @@ def RunSteps(api, properties):
       review_subject,
       review_url,
       source_dir: Path,
+      size_config_json_name,
       before_dir,
       after_dir,
       results_path,
