@@ -76,7 +76,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     self._size_config_json = (
         properties.size_config_json or constants.DEFAULT_SIZE_CONFIG_JSON)
 
-    self._arm64_size_config_json = properties.arm64_size_config_json
+    self.arm64_size_config_json = properties.arm64_size_config_json
 
   def get_first_committed_ancestor_position(self,
                                             url,
@@ -364,7 +364,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
             analysis_warning_statuses)
 
         try:
-          if self._arm64_size_config_json and gerrit_plugin_details:
+          if self.arm64_size_config_json and gerrit_plugin_details:
             arm32_okay = True
             arm64_okay = True
             for listing in gerrit_plugin_details['listings']:
@@ -402,7 +402,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
                   review_subject,
                   review_url,
                   source_dir,
-                  os.path.basename(self._arm64_size_config_json),
+                  os.path.basename(self.arm64_size_config_json),
                   without_results_dir,
                   with_results_dir,
                   size_results_path,
@@ -463,7 +463,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     generator_script = (
         source_dir / 'tools/binary_size/generate_commit_size_analysis.py')
     cmd = [generator_script]
-    cmd += ['--size-config-json', build_dir / self._arm64_size_config_json]
+    cmd += ['--size-config-json', build_dir / self.arm64_size_config_json]
     cmd += ['--staging-dir', staging_dir]
     cmd += ['--chromium-output-directory', build_dir]
     self.m.step(name='Generate commit size analysis files (arm64)', cmd=cmd)
