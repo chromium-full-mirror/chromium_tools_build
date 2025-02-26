@@ -7,6 +7,8 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'recipe_engine/file',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/json',
@@ -19,10 +21,20 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 PROPERTIES = InputProperties
 
 
+def read_processor_spec(api, file_path):
+  """Reads the contents of a json file from given file_path."""
+  content = api.m.file.read_json(
+      'read processor spec file (%s)' % api.m.path.basename(file_path),
+      file_path,
+      test_data={})
+  return content
+
+
 def RunSteps(api, properties):
   with api.chromium.chromium_layout():
     # 1. update the bot to have latest scripts
-    _, builder_config = api.chromium_tests_builder_config.lookup_builder()
+    builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
+    )
     execution_mode = builder_config.execution_mode
     if execution_mode != ctbc.TEST:
       api.step.empty(
@@ -39,11 +51,19 @@ def RunSteps(api, properties):
     tester_properties = api.json.loads(properties.tester_properties)
 
     source_dir = update_result.source_root.path
+    # TODO(crbug.com/399205632): Hide the processor spec file into build config
+    processor_spec = read_processor_spec(
+        api,
+        file_path=source_dir.joinpath('tools', 'perf',
+                                      'chromium.perf.processors.json'))
+    merge_setting = processor_spec.get(builder_id.builder, {}).get('merge', {})
+    merge_script = source_dir.joinpath(merge_setting.get('script', ''))
+    merge_arguments = merge_setting.get('args', [])
+
     for group_name, task_ids in task_groups.items():
       collect_task_args = api.chromium_swarming.get_collect_task_args(
-          merge_script=source_dir.joinpath('tools', 'perf',
-                                           'process_perf_results.py'),
-          merge_arguments=['--lightweight'],
+          merge_script=merge_script,
+          merge_arguments=merge_arguments,
           build_properties=tester_properties,
           requests_json=task_ids)
 
@@ -52,6 +72,8 @@ def RunSteps(api, properties):
 
       step_result.presentation.step_text = 'merging...'
       step_result.presentation.logs['Merge script log'] = [
+          f'merge-script: {str(merge_script)}',
+          f'merge-script-arguments: {str(merge_arguments)}',
           step_result.raw_io.output
       ]
 
@@ -59,7 +81,7 @@ def RunSteps(api, properties):
 MOCK_TASK_GROUPS = """
                     {
                       "performance_test_suite":
-                      { 
+                      {
                         "tasks": [ { "task_id": "4b9894c1f295c310" }]
                       }
                     }
@@ -82,23 +104,83 @@ MOCK_PROR_JSON_STRING = """
                         """
 
 def GenTests(api):
+  builder_db = ctbc.BuilderDatabase.create({
+      'fake_group': {
+          'fake_builder':
+              ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+              ),
+          'fake_triggered_tester':
+              ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+                  parent_buildername='fake_builder',
+                  execution_mode=ctbc.TEST,
+              ),
+          'fake_triggered_processor':
+              ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+                  parent_buildername='fake_triggered_tester',
+                  execution_mode=ctbc.TEST,
+              ),
+      }
+  })
+  processor_spec = {
+      'fake_triggered_processor': {
+          'merge': {
+              'args': ['--foo', '--bar'],
+              'script': '//tools/perf/merge_script.py'
+          }
+      }
+  }
+
   yield api.test(
       'recipe-coverage',
       api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.perf',
-          builder='linux-perf',
-          parent_buildername='linux-builder-perf'),
+          builder_group='fake_group',
+          builder='fake_triggered_processor',
+          builder_db=builder_db),
       api.properties(
           InputProperties(
               tasks_groups=MOCK_TASK_GROUPS,
               tester_properties=MOCK_PROR_JSON_STRING)),
+      api.post_process(post_process.DoesNotRun, 'trigger'),
+      api.post_process(post_process.MustRun, 'performance_test_suite'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'builder-coverage',
       api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.perf', builder='linux-builder-perf'),
+          builder_group='fake_group',
+          builder='fake_builder',
+          builder_db=builder_db),
       api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'retrieve_merge_script_from_processor_spec',
+      api.properties(
+          InputProperties(
+              tasks_groups=MOCK_TASK_GROUPS,
+              tester_properties=MOCK_PROR_JSON_STRING),
+          swarm_hashes={'fake_test': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},
+      ),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake_group',
+          builder='fake_triggered_processor',
+          builder_db=builder_db),
+      api.step_data('read processor spec file (chromium.perf.processors.json)',
+                    api.file.read_json(processor_spec)),
+      api.post_process(post_process.DoesNotRun, 'trigger'),
+      api.post_process(
+          post_process.LogContains, 'performance_test_suite',
+          'Merge script log', [
+              'merge-script', '[CACHE]/builder/src/tools/perf/merge_script.py',
+              'merge-script-arguments', '--foo', '--bar'
+          ]),
       api.post_process(post_process.DropExpectation),
   )
