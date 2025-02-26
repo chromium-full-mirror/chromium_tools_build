@@ -53,6 +53,7 @@ WEB_TEST_EXTRA_ARGS = [
 ]
 RUNNER_PACKAGE_PATH = 'rr_tool_runner'
 PERNOSCO_REPO_PATH = 'pernosco'
+PERNOSCO_TOPIC = 'projects/chrome-pernosco/topics/pernosco-data'
 UPLOAD_BUCKET = 'chromium-rr-traces'
 TRACE_FILE = 'trace.tar'
 
@@ -164,6 +165,13 @@ def _isolate(api, tests, source_dir, build_dir, builder_config):
   )
 
 
+def _generate_request_id(api, test_info):
+  # The request id for Pernosco service to track the test trace.
+  # The format is: 'ci|{buildbucket_id}|{test_name}|{test_suite}|{bug_id}'
+  return (f'ci|{api.buildbucket.build.id}|{test_info.test_name}|'
+          f'{test_info.test_suite}|{test_info.bug_id}')
+
+
 def _create_tasks_and_test_infos(api, target_test_infos, tests):
   cipd_packages = [
       chromium_swarming.CipdPackage.create(
@@ -183,10 +191,7 @@ def _create_tasks_and_test_infos(api, target_test_infos, tests):
     if test_info.test_suite not in test_suite_to_tests:
       continue
     test = test_suite_to_tests[test_info.test_suite]
-    # The request id for Pernosco service to track the test trace.
-    # The format is: 'ci|{buildbucket_id}|{test_name}|{test_suite}|{bug_id}'
-    request_id = (f'ci|{api.buildbucket.build.id}|{test_info.test_name}|'
-                  f'{test_info.test_suite}|{test_info.bug_id}')
+    request_id = _generate_request_id(api, test_info)
 
     # Construct test cmd, trigger reproducing job in swarming.
     command = [
@@ -288,6 +293,18 @@ def _process_task_results(api, task_results_and_test_infos):
           cloud_folder_name,
           args=['-r'],
           link_name='Test rr traces')
+      attribute = (f'request_id={_generate_request_id(api, test_info)},'
+                   f'dest=gs://{UPLOAD_BUCKET}/{cloud_folder_name}')
+      cmd = [
+          'gcloud',
+          'pubsub',
+          'topics',
+          'publish',
+          PERNOSCO_TOPIC,
+          '--message=ci_pubsub',
+          f'--attribute={attribute}',
+      ]
+      api.step('gce pubsub', cmd, infra_step=True)
 
     api.file.rmtree('rmtree %s' % download_dir, download_dir)
 
