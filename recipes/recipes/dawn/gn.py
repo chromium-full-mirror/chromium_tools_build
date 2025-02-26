@@ -83,10 +83,6 @@ def _gn_build(source_dir, flavor, api, **kwargs):
 
   if use_remoteexec:
     gn_args.append('use_remoteexec=true')
-    if api.platform.is_win:
-      # We need to ensure that DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT
-      # is still under the exec root.
-      gn_args.append('rbe_exec_root="' + str(api.path.cache_dir) + '"')
 
   # We run the end2end tests with SwiftShader, but the D3D12 backend,
   # though it would run zero tests, crashes on Windows 7.
@@ -183,76 +179,66 @@ def _generate_fuzz_corpus(api, source_dir, **kwargs):
 
 
 def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
-  env = {}
-  if api.platform.is_win:
-    env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path.cache_dir / 'win_toolchain')
+  update_result = _checkout_steps(api)
+  source_dir = update_result.source_root.path
+  if gen_fuzz_corpus:
+    _generate_fuzz_corpus(
+        api, source_dir, target_cpu=target_cpu, is_debug=debug, is_clang=clang)
+    return
 
-  with api.context(env=env):
-    update_result = _checkout_steps(api)
-    source_dir = update_result.source_root.path
-    if gen_fuzz_corpus:
-      _generate_fuzz_corpus(
-          api,
-          source_dir,
-          target_cpu=target_cpu,
-          is_debug=debug,
-          is_clang=clang)
-      return
+  with api.osx_sdk('mac'):
+    # Win/MSVC builds need this GN arg set to false in order for MSVC
+    # builds to work. See the discussion on
+    # https://dawn-review.googlesource.com/c/dawn/+/222337 for more context.
+    extra_gn_args = {}
+    if api.platform.is_win and not clang:
+      extra_gn_args['use_custom_libcxx'] = False
 
-    with api.osx_sdk('mac'):
-      # Win/MSVC builds need this GN arg set to false in order for MSVC
-      # builds to work. See the discussion on
-      # https://dawn-review.googlesource.com/c/dawn/+/222337 for more context.
-      extra_gn_args = {}
-      if api.platform.is_win and not clang:
-        extra_gn_args['use_custom_libcxx'] = False
+    with _gn_build(
+        source_dir,
+        'default targets',
+        api,
+        target_cpu=target_cpu,
+        is_debug=debug,
+        is_clang=clang,
+        is_component_build=False,
+        dawn_use_swiftshader=False,
+        **extra_gn_args,
+    ) as build:
+      # Build default targets, and specifically the unittest binaries.
+      (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
+                                                  'tint_unittests')
 
+    if not api.platform.is_win:
       with _gn_build(
           source_dir,
-          'default targets',
+          'fuzzer targets',
           api,
           target_cpu=target_cpu,
           is_debug=debug,
           is_clang=clang,
           is_component_build=False,
           dawn_use_swiftshader=False,
+          use_libfuzzer=True,
           **extra_gn_args,
       ) as build:
-        # Build default targets, and specifically the unittest binaries.
-        (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
-                                                    'tint_unittests')
+        build('fuzzers')
 
-      if not api.platform.is_win:
-        with _gn_build(
-            source_dir,
-            'fuzzer targets',
-            api,
-            target_cpu=target_cpu,
-            is_debug=debug,
-            is_clang=clang,
-            is_component_build=False,
-            dawn_use_swiftshader=False,
-            use_libfuzzer=True,
-            **extra_gn_args,
-        ) as build:
-          build('fuzzers')
-
-      # Component build and run dawn_end2end_tests with SwiftShader
-      # When using SwiftShader a component build should be used.
-      # See anglebug.com/4396.
-      with _gn_build(
-          source_dir,
-          'component build with Swiftshader',
-          api,
-          target_cpu=target_cpu,
-          is_debug=debug,
-          is_clang=clang,
-          is_component_build=True,
-          dawn_use_swiftshader=True,
-          **extra_gn_args,
-      ) as build:
-        (dawn_end2end_tests,) = build('dawn_end2end_tests')
+    # Component build and run dawn_end2end_tests with SwiftShader
+    # When using SwiftShader a component build should be used.
+    # See anglebug.com/4396.
+    with _gn_build(
+        source_dir,
+        'component build with Swiftshader',
+        api,
+        target_cpu=target_cpu,
+        is_debug=debug,
+        is_clang=clang,
+        is_component_build=True,
+        dawn_use_swiftshader=True,
+        **extra_gn_args,
+    ) as build:
+      (dawn_end2end_tests,) = build('dawn_end2end_tests')
 
   api.step('Run the Dawn unittests', [dawn_unittests])
   api.step('Run the Dawn unittests with the wire',

@@ -11,9 +11,6 @@
       "0o777",
       "[CACHE]\\builder"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -52,7 +49,6 @@
     "cwd": "[CACHE]\\builder",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -131,8 +127,7 @@
     ],
     "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -160,12 +155,9 @@
       "--root=[CACHE]\\builder\\dawn",
       "gen",
       "//out/0b56882cfeaad2236fa7b8dfd92e4768d3c325fe",
-      "--args=is_debug=false is_clang=true is_component_build=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true rbe_exec_root=\"[CACHE]\""
+      "--args=is_debug=false is_clang=true is_component_build=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -195,9 +187,6 @@
       "[CACHE]\\builder\\dawn\\buildtools\\reclient_cfgs",
       "--recursive"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -231,9 +220,6 @@
       "0o777",
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -262,9 +248,6 @@
       "listdir",
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -298,9 +281,6 @@
       "--pid-file",
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -334,9 +314,6 @@
       "--pid-file",
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -370,9 +347,6 @@
       "--pid-file",
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -397,7 +371,6 @@
       "[CACHE]\\builder\\dawn\\buildtools\\reclient\\bootstrap.exe"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_automatic_auth": "false",
@@ -461,9 +434,6 @@
       "[CACHE]\\builder\\dawn\\buildtools\\reclient\\bootstrap.exe",
       "--version"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -494,7 +464,6 @@
       "tint_unittests"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
@@ -526,7 +495,6 @@
       "-shutdown"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_automatic_auth": "false",
@@ -579,9 +547,6 @@
       "--killed-pid-file",
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -608,9 +573,6 @@
       "--killed-pid-file",
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -637,9 +599,6 @@
       "--killed-pid-file",
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -669,9 +628,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\rbe_metrics.pb",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -709,9 +665,6 @@
       "0o777",
       "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -743,9 +696,6 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -780,9 +730,6 @@
       "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8\\bqupload",
       "goma-logs.rbe_metrics.builds"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -883,9 +830,6 @@
       "--output-gzip-path",
       "[TMP_BASE]\\reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -916,9 +860,6 @@
       "[TMP_BASE]\\reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -948,9 +889,6 @@
       "listdir",
       "[CLEANUP]\\reclient_log_tmp_1"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -993,9 +931,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1026,9 +961,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1059,9 +991,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1092,9 +1021,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1125,9 +1051,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1158,9 +1081,6 @@
       "[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1191,9 +1111,6 @@
       "fake tar contents",
       "[TMP_BASE]\\reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1224,9 +1141,6 @@
       "[TMP_BASE]\\reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1255,9 +1169,6 @@
       "--build-exit-status",
       "-1"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1286,9 +1197,6 @@
       "rmtree",
       "[CLEANUP]\\reclient_log_tmp_1"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1314,12 +1222,9 @@
       "--root=[CACHE]\\builder\\dawn",
       "gen",
       "//out/49ffbfb8c952db98e8eec8d6a6bbff4a3636ad62",
-      "--args=is_debug=false is_clang=true is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true rbe_exec_root=\"[CACHE]\" dawn_enable_d3d12=false"
+      "--args=is_debug=false is_clang=true is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -1349,9 +1254,6 @@
       "[CACHE]\\builder\\dawn\\buildtools\\reclient_cfgs",
       "--recursive"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1385,9 +1287,6 @@
       "0o777",
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1416,9 +1315,6 @@
       "listdir",
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1452,9 +1348,6 @@
       "--pid-file",
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1488,9 +1381,6 @@
       "--pid-file",
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1524,9 +1414,6 @@
       "--pid-file",
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1551,7 +1438,6 @@
       "[CACHE]\\builder\\dawn\\buildtools\\reclient\\bootstrap.exe"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_automatic_auth": "false",
@@ -1615,9 +1501,6 @@
       "[CACHE]\\builder\\dawn\\buildtools\\reclient\\bootstrap.exe",
       "--version"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1646,7 +1529,6 @@
       "dawn_end2end_tests"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
       "RBE_exec_strategy": "remote_local_fallback",
@@ -1678,7 +1560,6 @@
       "-shutdown"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_automatic_auth": "false",
@@ -1731,9 +1612,6 @@
       "--killed-pid-file",
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1760,9 +1638,6 @@
       "--killed-pid-file",
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1789,9 +1664,6 @@
       "--killed-pid-file",
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1821,9 +1693,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\rbe_metrics.pb",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1847,9 +1716,6 @@
       "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8\\bqupload",
       "goma-logs.rbe_metrics.builds"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1950,9 +1816,6 @@
       "--output-gzip-path",
       "[TMP_BASE]\\reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1983,9 +1846,6 @@
       "[TMP_BASE]\\reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2015,9 +1875,6 @@
       "listdir",
       "[CLEANUP]\\reclient_log_tmp_2"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2060,9 +1917,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2093,9 +1947,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/[CLEANUP]\\reclient_log_tmp_2\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2126,9 +1977,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\reproxy.INFO",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2159,9 +2007,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\reproxy.INFO",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/[CLEANUP]\\reclient_log_tmp_2\\reproxy.INFO"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2192,9 +2037,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\reproxy_stderr.log",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2225,9 +2067,6 @@
       "[CLEANUP]\\reclient_log_tmp_2\\reproxy_stderr.log",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/[CLEANUP]\\reclient_log_tmp_2\\reproxy_stderr.log"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2258,9 +2097,6 @@
       "fake tar contents",
       "[TMP_BASE]\\reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2291,9 +2127,6 @@
       "[TMP_BASE]\\reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2322,9 +2155,6 @@
       "--build-exit-status",
       "-1"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2353,9 +2183,6 @@
       "rmtree",
       "[CLEANUP]\\reclient_log_tmp_2"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {

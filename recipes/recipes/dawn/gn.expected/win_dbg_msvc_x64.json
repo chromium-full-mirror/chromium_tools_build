@@ -11,9 +11,6 @@
       "0o777",
       "[CACHE]\\builder"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -52,7 +49,6 @@
     "cwd": "[CACHE]\\builder",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -131,8 +127,7 @@
     ],
     "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -163,9 +158,6 @@
       "--args=is_debug=true is_clang=false is_component_build=false dawn_use_swiftshader=false use_custom_libcxx=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -189,9 +181,6 @@
       "dawn_unittests",
       "tint_unittests"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -216,9 +205,6 @@
       "--args=is_debug=true is_clang=false is_component_build=true dawn_use_swiftshader=true use_custom_libcxx=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -240,9 +226,6 @@
       "[CACHE]\\builder\\dawn\\out\\54d999e6bed3cfb16e030d88844addbb13fc4f0a",
       "dawn_end2end_tests"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
