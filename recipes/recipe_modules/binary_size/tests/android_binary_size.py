@@ -221,7 +221,7 @@ def GenTests(api):
       api.binary_size.build(
           override_commit_log=True,
           extra_footers={
-              constants.SKIP_EXPECTATIONS_FOOTER_KEY: "Reasons to skip"
+              constants.SKIP_EXPECTATIONS_FOOTER_KEY: ["Reasons to skip"]
           }),
       api.override_step_data('bot_update', retcode=1),
       override_expectation_to_fail(with_patch=True),
@@ -370,21 +370,9 @@ def GenTests(api):
       'name': 'arm64 size',
       'delta': '500 bytes',
       'allowed': False,
+      'large_improvement': False,
       'log_name': 'resource_sizes_64_log',
   })
-  yield api.test(
-      'arm64_supersize_compile_fail',
-      api.binary_size.build(override_commit_log=True),
-      api.binary_size.properties(
-          arm64_size_config_json='fake-arm64-config.json'),
-      api.override_step_data(constants.RESULT_JSON_STEP_NAME,
-                             api.file.read_json(results_json)),
-      api.override_step_data('compile (with patch arm64)', retcode=1),
-      api.post_process(post_process.StepFailure, 'compile (with patch arm64)'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
   yield api.test(
       'arm64_supersize_normal',
       api.binary_size.build(override_commit_log=True),
@@ -392,8 +380,46 @@ def GenTests(api):
           arm64_size_config_json='fake-arm64-config.json'),
       api.override_step_data(constants.RESULT_JSON_STEP_NAME,
                              api.file.read_json(results_json)),
+      api.post_process(post_process.DoesNotRun, 'compile (with patch arm64)'),
+      api.post_process(post_process.MustRun,
+                       constants.RESULT_JSON_STEP_NAME + ' (2)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  # Test CreateArm64SizeReport footer as well as not using gs bucket results.
+  results_json['gerrit_plugin_details']['listings'][-1]['allowed'] = True
+  yield api.test(
+      'arm64_supersize_footer_and_no_gsutil',
+      api.binary_size.build(
+          recent_upload_cp=12345,
+          patch_parent_cp=12350,
+          extra_footers={'CreateArm64SizeReport': ['true']},
+          override_commit_log=True),
+      api.binary_size.properties(
+          arm64_size_config_json='fake-arm64-config.json'),
+      api.override_step_data(constants.RESULT_JSON_STEP_NAME,
+                             api.file.read_json(results_json)),
+      api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
       api.post_process(post_process.MustRun, 'compile (with patch arm64)'),
       api.post_process(post_process.MustRun,
                        constants.RESULT_JSON_STEP_NAME + ' (2)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'arm64_supersize_compile_fail',
+      api.binary_size.build(
+          recent_upload_cp=12345,
+          patch_parent_cp=12350,
+          extra_footers={'CreateArm64SizeReport': ['true']},
+          override_commit_log=True),
+      api.binary_size.properties(
+          arm64_size_config_json='fake-arm64-config.json'),
+      api.override_step_data(constants.RESULT_JSON_STEP_NAME,
+                             api.file.read_json(results_json)),
+      api.override_step_data('compile (with patch arm64)', retcode=1),
+      api.post_process(post_process.DoesNotRun,
+                       constants.RESULT_JSON_STEP_NAME + ' (2)'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

@@ -203,7 +203,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     # looks like 'chromium-m86'
     is_trunk_builder = (
         self.m.buildbucket.build.builder.project == 'chromium' and
-        self.m.buildbucket.build.builder.bucket == 'try')
+        self.m.buildbucket.build.builder.bucket in ('try', 'try.shadow'))
 
     # Subrepos like V8 may use call builders that use this recipe. Since
     # a CI builder is only set up for chromium/src, if the project is
@@ -364,6 +364,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
             analysis_warning_statuses)
 
         try:
+          measure_arm64 = False
           if self.arm64_size_config_json and gerrit_plugin_details:
             arm32_okay = True
             arm64_okay = True
@@ -373,16 +374,27 @@ class BinarySizeApi(recipe_api.RecipeApi):
               elif listing.get('log_name') == 'resource_sizes_64_log':
                 arm64_okay = (
                     listing['allowed'] and not listing['large_improvement'])
-
-            if ((arm32_okay and not arm64_okay) or
-                commit_footers.get('CreateArm64SizeReport')):
-              # Create a supersize report for arm64.
-              # The output directory already contains the without-patch files at
-              # this point, so we need to:
-              # 1) Create a .size file
-              # 2) Re-build the with-patch artifacts
-              # 3) Create a .size file
-              # 4) Perform the diff
+            measure_arm64 = ((arm32_okay and not arm64_okay) or
+                             'CreateArm64SizeReport' in commit_footers)
+          if measure_arm64:
+            # Create a supersize report for arm64.
+            # If gs_zip_path was used:
+            #   The output directory contains the with-patch files.
+            #   1) Create the with-patch arm64 .size file
+            #   2) Perform the diff
+            # If gs_zip_path was not used:
+            #   The output directory contains the without-patch files (but src in sync'ed to "with patch")
+            #   1) Create the without-patch arm64 .size file
+            #   2) Re-build the with-patch artifacts
+            #   3) Create the with-patch arm64 .size file
+            #   4) Perform the diff
+            if gs_zip_path:
+              with_results_dir = staging_dir / 'with_patch_arm64'
+              self.m.file.ensure_directory('mkdir with_patch_arm64',
+                                           with_results_dir)
+              self.android_size_analysis_arm64(source_dir, build_dir,
+                                               with_results_dir)
+            else:
               without_results_dir = staging_dir / 'without_patch_arm64'
               self.m.file.ensure_directory('mkdir without_patch_arm64',
                                            without_results_dir)
@@ -395,32 +407,33 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
               if raw_result and raw_result.status != common_pb.SUCCESS:
                 return raw_result
-              size_results_path = staging_dir / 'size_results64.json'
 
-              diff_func(
-                  author,
-                  review_subject,
-                  review_url,
-                  source_dir,
-                  os.path.basename(self.arm64_size_config_json),
-                  without_results_dir,
-                  with_results_dir,
-                  size_results_path,
-                  staging_dir,
-              )
+            size_results_path = staging_dir / 'size_results64.json'
 
-              _, gerrit_plugin_details_arm64 = self._check_for_undocumented_increase(
-                  size_results_path, staging_dir, allow_size_regressions,
-                  analysis_warning_statuses)
-              extras = gerrit_plugin_details_arm64['extras']
-              # Prevent extras with the same name as non-arm64 ones.
-              # E.g. "APK Breakdown" -> "APK Breakdown (arm64)"
-              for extra in extras:
-                extra['text'] += ' (arm64)'
+            diff_func(
+                author,
+                review_subject,
+                review_url,
+                source_dir,
+                os.path.basename(self.arm64_size_config_json),
+                without_results_dir,
+                with_results_dir,
+                size_results_path,
+                staging_dir,
+            )
 
-              gerrit_plugin_details['extras'] += extras
-              gerrit_plugin_details['listings'] += (
-                  gerrit_plugin_details_arm64['listings'])
+            _, gerrit_plugin_details_arm64 = self._check_for_undocumented_increase(
+                size_results_path, staging_dir, allow_size_regressions,
+                analysis_warning_statuses)
+            extras = gerrit_plugin_details_arm64['extras']
+            # Prevent extras with the same name as non-arm64 ones.
+            # E.g. "APK Breakdown" -> "APK Breakdown (arm64)"
+            for extra in extras:
+              extra['text'] += ' (arm64)'
+
+            gerrit_plugin_details['extras'] += extras
+            gerrit_plugin_details['listings'] += (
+                gerrit_plugin_details_arm64['listings'])
         finally:
           if gerrit_plugin_details:
             self.m.step.active_result.presentation.properties[
