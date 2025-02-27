@@ -10,6 +10,7 @@ from PB.recipe_modules.build.archive import properties as archive_properties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests import steps
 
 DEPS = [
     'chromium',
@@ -483,10 +484,44 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  def check_gs_url_equals(check, steps, dest, expected):
+  yield api.test(
+      'ci_only_test_failure',
+      api.platform('linux', 64),
+      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      },
+                      'ci_only': True,
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', failures=['Test.One']),
+      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          ('some of the failing tests are only run in CI,'
+           f" to run them on try builders add '{steps.INCLUDE_CI_FOOTER}: true'"
+           ' to the CL footers')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def check_gs_url_equals(check, steps_dict, dest, expected):
     step_name = 'Generic Archiving Steps.gsutil upload %s' % dest
-    check(step_name in steps)
-    check(expected == steps[step_name].cmd[-1])
+    check(step_name in steps_dict)
+    check(expected == steps_dict[step_name].cmd[-1])
 
   input_properties = archive_properties.InputProperties()
   archive_data = archive_properties.ArchiveData()

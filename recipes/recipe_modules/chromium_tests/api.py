@@ -2386,6 +2386,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       size_limit = self._test_data.get('change_size_limit', 200)
       failure_limit = size_limit / 100
 
+    # TODO: crbug.com/399661337 - When the Include-Ci-Only footer supports
+    # specifying tests, the summary should provide information for enabling the
+    # specific tests
+    if (not self.m.tryserver.is_tryserver and
+        any(t.is_ci_only for t in unrecoverable_test_suites)):
+      test_summary_lines.append(
+          'some of the failing tests are only run in CI,'
+          f" to run them on try builders add '{steps.INCLUDE_CI_FOOTER}: true'"
+          ' to the CL footers')
+
     current_size = 0
     for index, suite in enumerate(unrecoverable_test_suites):
       test_suite_header = '**%s** failed.' % suite.name

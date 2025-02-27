@@ -348,6 +348,16 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
+  def is_ci_only(self) -> bool:
+    """Whether the test is ci_only or not.
+
+    If failures are present in ci_only tests, additional information will be
+    added to the build's summary to indicate how to run them on the try builder.
+    """
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
   def canonical_name(self) -> str:
     """Canonical name of the test, no suffix attached."""
     raise NotImplementedError()  # pragma: no cover
@@ -916,6 +926,10 @@ class Test(AbstractTest):
     return False
 
   @property
+  def is_ci_only(self) -> bool:
+    return False
+
+  @property
   def option_flags(self) -> TestOptionFlags:
     return _DEFAULT_OPTION_FLAGS
 
@@ -1408,6 +1422,10 @@ class CiOnlyTest(TestWrapper):
     self._disabled = self._compute_disabled()
 
   @property
+  def is_ci_only(self) -> bool:
+    return True
+
+  @property
   def check_flakiness_for_new_tests(self) -> bool:
     # There isn't sufficient result history data for tests that are normally
     # CI-only.
@@ -1442,7 +1460,8 @@ class CiOnlyTest(TestWrapper):
     if self.api.m.tryserver.is_tryserver:
       return ('This test is being run due to the'
               f' {INCLUDE_CI_FOOTER} gerrit footer')
-    return 'This test will not be run on try builders'
+    return ('This test will not be run on try builders by default,'
+            f" add '{INCLUDE_CI_FOOTER}: true' to override")
 
 
 class SuccessReuseTestSpec(TestWrapperSpec):
