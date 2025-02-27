@@ -11,9 +11,6 @@
       "0o777",
       "[CACHE]\\uncached"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -52,7 +49,6 @@
     "cwd": "[CACHE]\\uncached",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -131,8 +127,7 @@
     ],
     "cwd": "[CACHE]\\uncached",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -166,9 +161,6 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -212,9 +204,6 @@
       "[CACHE]\\uncached\\dawn\\build\\win_toolchain.json",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\builder\\clang\\bin",
@@ -262,9 +251,6 @@
       "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\SetEnv.x64.json",
       "/path/to/tmp/"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\builder\\clang\\bin",
@@ -354,7 +340,6 @@
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -400,7 +385,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -453,7 +437,6 @@
       "--recursive"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -508,7 +491,6 @@
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -558,7 +540,6 @@
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -613,7 +594,6 @@
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -668,7 +648,6 @@
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -723,7 +702,6 @@
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -768,7 +746,6 @@
       "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "PLATFORM": "windows",
@@ -852,7 +829,6 @@
       "--version"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -901,7 +877,6 @@
       "all"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
@@ -957,7 +932,6 @@
       "-shutdown"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "PLATFORM": "windows",
@@ -1030,7 +1004,6 @@
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1078,7 +1051,6 @@
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1126,7 +1098,6 @@
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1177,7 +1148,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1236,7 +1206,6 @@
       "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1289,7 +1258,6 @@
       "/path/to/tmp/json"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1345,7 +1313,6 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1467,7 +1434,6 @@
       "[TMP_BASE]\\reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1519,7 +1485,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1570,7 +1535,6 @@
       "[CLEANUP]\\reclient_log_tmp_1"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1634,7 +1598,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1686,7 +1649,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1738,7 +1700,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1790,7 +1751,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1842,7 +1802,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1894,7 +1853,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1946,7 +1904,6 @@
       "[TMP_BASE]\\reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1998,7 +1955,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2048,7 +2004,6 @@
       "-1"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2098,7 +2053,6 @@
       "[CLEANUP]\\reclient_log_tmp_1"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2173,7 +2127,6 @@
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -2219,7 +2172,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -2272,7 +2224,6 @@
       "--recursive"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2327,7 +2278,6 @@
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2377,7 +2327,6 @@
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2432,7 +2381,6 @@
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2487,7 +2435,6 @@
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2542,7 +2489,6 @@
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2587,7 +2533,6 @@
       "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "PLATFORM": "windows",
@@ -2671,7 +2616,6 @@
       "--version"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2720,7 +2664,6 @@
       "dawn.node"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
@@ -2776,7 +2719,6 @@
       "-shutdown"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "PLATFORM": "windows",
@@ -2849,7 +2791,6 @@
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2897,7 +2838,6 @@
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2945,7 +2885,6 @@
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2996,7 +2935,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3041,7 +2979,6 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3163,7 +3100,6 @@
       "[TMP_BASE]\\reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3215,7 +3151,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3266,7 +3201,6 @@
       "[CLEANUP]\\reclient_log_tmp_2"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3330,7 +3264,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3382,7 +3315,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/[CLEANUP]\\reclient_log_tmp_2\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3434,7 +3366,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3486,7 +3417,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/[CLEANUP]\\reclient_log_tmp_2\\reproxy.INFO"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3538,7 +3468,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3590,7 +3519,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/[CLEANUP]\\reclient_log_tmp_2\\reproxy_stderr.log"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3642,7 +3570,6 @@
       "[TMP_BASE]\\reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3694,7 +3621,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3744,7 +3670,6 @@
       "-1"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3794,7 +3719,6 @@
       "[CLEANUP]\\reclient_log_tmp_2"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3838,7 +3762,6 @@
       "[CACHE]\\uncached\\dawn\\cmake-build\\tint_unittests"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -3878,7 +3801,6 @@
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -3922,7 +3844,6 @@
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -3988,7 +3909,6 @@
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -4034,7 +3954,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
@@ -4087,7 +4006,6 @@
       "--recursive"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4142,7 +4060,6 @@
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4192,7 +4109,6 @@
       "[CACHE]\\builder\\reclient\\deps\\win"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4247,7 +4163,6 @@
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4302,7 +4217,6 @@
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4357,7 +4271,6 @@
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4402,7 +4315,6 @@
       "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "PLATFORM": "windows",
@@ -4486,7 +4398,6 @@
       "--version"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4535,7 +4446,6 @@
       "tint_cmd_tint_cmd"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "true",
       "RBE_correlated_invocations_id": "8945511751514863184",
@@ -4591,7 +4501,6 @@
       "-shutdown"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "PLATFORM": "windows",
@@ -4664,7 +4573,6 @@
       "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4712,7 +4620,6 @@
       "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4760,7 +4667,6 @@
       "[TMP_BASE]\\cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4811,7 +4717,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4856,7 +4761,6 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4978,7 +4882,6 @@
       "[TMP_BASE]\\reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5030,7 +4933,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5081,7 +4983,6 @@
       "[CLEANUP]\\reclient_log_tmp_3"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5145,7 +5046,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5197,7 +5097,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5249,7 +5148,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5301,7 +5199,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5353,7 +5250,6 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5405,7 +5301,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5457,7 +5352,6 @@
       "[TMP_BASE]\\reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5509,7 +5403,6 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5559,7 +5452,6 @@
       "-1"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5609,7 +5501,6 @@
       "[CLEANUP]\\reclient_log_tmp_3"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "PLATFORM": "windows",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5656,9 +5547,6 @@
       "/im",
       "mspdbsrv.exe"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\builder\\clang\\bin",

@@ -406,9 +406,6 @@ def RunSteps(api,
              ubsan: bool,
              enable_remoteexec: bool = False):
   env = {}
-  if api.platform.is_win:
-    env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path.cache_dir / 'win_toolchain')
   if asan:
     # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
     # See https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow#false-positives
