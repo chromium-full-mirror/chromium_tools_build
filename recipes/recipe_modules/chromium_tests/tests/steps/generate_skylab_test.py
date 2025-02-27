@@ -80,7 +80,7 @@ def GenTests(api):
                   target_name=TAST_TARGET,
                   should_read_isolate=True,
                   experiment_percentage=None,
-                  ci_only_tests=True,
+                  ci_only_tests=False,
                   tester='',
                   shards=1,
                   retries=0):
@@ -519,7 +519,9 @@ def GenTests(api):
   yield api.test(
       'ci_only_test_on_ci_builder',
       boilerplate(
-          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
+          'chrome-test-builds',
+          tast_expr='("group:mainline" && "dep:lacros")',
+          ci_only_tests=True),
       api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT', [
           'This test will not be run on try builders',
@@ -534,7 +536,8 @@ def GenTests(api):
           'chrome-test-builds',
           tast_expr='dummy_tast',
           is_ci_build=False,
-          isolate_file_exists=False),
+          isolate_file_exists=False,
+          ci_only_tests=True),
       api.post_process(
           post_process.StepCommandEmpty,
           'basic_EVE_TOT (with patch)',
@@ -551,7 +554,10 @@ def GenTests(api):
   yield api.test(
       'ci_only_test_on_trybot_bypass',
       boilerplate(
-          'chrome-test-builds', tast_expr='dummy_tast', is_ci_build=False),
+          'chrome-test-builds',
+          tast_expr='dummy_tast',
+          is_ci_build=False,
+          ci_only_tests=True),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
       api.skylab.mock_wait_on_suites('basic_EVE_TOT (with patch)', 1),
