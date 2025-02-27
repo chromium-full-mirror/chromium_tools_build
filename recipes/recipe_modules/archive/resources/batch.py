@@ -12,7 +12,6 @@ This wrapper batch the step operations to background.
 
 import argparse
 import os
-import shutil
 import sys
 
 
@@ -29,8 +28,8 @@ def copy(base_dir, des_dir, input_file_list):
         os.makedirs(dst_file_dir, 0o777)
         print(f'Created {dst_file_dir}.')
 
-      print(f'Copy {base_path} to {dst_path}')
-      shutil.copy(base_path, dst_path)
+      print(f'Hard-linking {base_path} to {dst_path}')
+      os.link(base_path, dst_path)
 
 
 def main(args):
@@ -40,8 +39,8 @@ def main(args):
   # Subcommand: copy
   subparser = subparsers.add_parser(
       'copy',
-      help=('Copy a list of files to the destination folder, '
-            'while keeping the relative path.'))
+      help=('Copy (actually hardlink) the files in the list to the destination '
+            'folder, while keeping the relative path.'))
   subparser.add_argument(
       '-d',
       '--des-dir',
