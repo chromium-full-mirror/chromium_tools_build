@@ -239,6 +239,7 @@ def _collect_task_results(api, swarming_tasks_and_test_infos):
 
 
 def _process_task_results(api, task_results_and_test_infos):
+  request_ids_to_fetch = []
   for i, (task_result, test_info) in enumerate(task_results_and_test_infos):
     shard_result = task_result.chromium_swarming.summary['shards'][0]
     # TODO(jiesheng): Update fetch_rdb_results in test_utils api to use
@@ -293,7 +294,8 @@ def _process_task_results(api, task_results_and_test_infos):
           cloud_folder_name,
           args=['-r'],
           link_name='Test rr traces')
-      attribute = (f'request_id={_generate_request_id(api, test_info)},'
+      request_id = _generate_request_id(api, test_info)
+      attribute = (f'request_id={request_id},'
                    f'dest=gs://{UPLOAD_BUCKET}/{cloud_folder_name}')
       cmd = [
           'gcloud',
@@ -305,8 +307,18 @@ def _process_task_results(api, task_results_and_test_infos):
           f'--attribute={attribute}',
       ]
       api.step('gce pubsub', cmd, infra_step=True)
+      request_ids_to_fetch.append(request_id)
 
     api.file.rmtree('rmtree %s' % download_dir, download_dir)
+
+  cmd = [
+      'vpython3',
+      api.resource('pernosco_result_fetch.py'), '--output-json',
+      api.json.output()
+  ]
+  for request_id in request_ids_to_fetch:
+    cmd = cmd + ['--request_ids', request_id]
+  api.step('fetch test request', cmd)
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
