@@ -51,25 +51,11 @@ def GenTests(api):
   })
 
   def common_test_data(test_spec):
-    t = api.chromium_tests.read_targets_spec('test-group', {
+    return api.chromium_tests.read_targets_spec('test-group', {
         'test-builder': {
             'gtest_tests': [test_spec],
         },
     })
-
-    test_name = test_spec['test']
-
-    step_filter = post_process.Filter()
-    # Any step with the test name in it
-    step_filter = step_filter.include_re(
-        r'.*\b{}\b'.format(test_name), at_least=0)
-    # Any errors resulting from generating the test
-    step_filter = step_filter.include_re(r'.*\berror$', at_least=0)
-    # The final result of the recipe
-    step_filter = step_filter.include_re(r'\$result$', at_least=0)
-    t += api.post_process(step_filter)
-
-    return t
 
   def ci_build(test_spec, **kwargs):
     t = api.chromium_tests_builder_config.ci_build(
