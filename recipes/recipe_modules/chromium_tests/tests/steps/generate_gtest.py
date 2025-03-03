@@ -10,11 +10,6 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'filter',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cq',
-    'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/swarming',
 ]
@@ -23,8 +18,6 @@ def RunSteps(api):
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
-  if api.tryserver.is_tryserver:
-    return api.chromium_tests.trybot_steps(builder_id, builder_config)
   build_result, _ = api.chromium_tests.main_waterfall_steps(
       builder_id, builder_config)
   return build_result
@@ -37,15 +30,6 @@ def GenTests(api):
               ctbc.BuilderSpec.create(
                   chromium_config='chromium',
                   gclient_config='chromium',
-              ),
-      }
-  })
-  try_db = ctbc.TryDatabase.create({
-      'test-try-group': {
-          'test-try-builder':
-              ctbc.TrySpec.create_for_single_mirror(
-                  builder_group='test-group',
-                  buildername='test-builder',
               ),
       }
   })
@@ -62,16 +46,6 @@ def GenTests(api):
         builder_group='test-group',
         builder='test-builder',
         builder_db=builder_db,
-        **kwargs)
-    t += common_test_data(test_spec)
-    return t
-
-  def try_build(test_spec, **kwargs):
-    t = api.chromium_tests_builder_config.try_build(
-        builder_group='test-group',
-        builder='test-builder',
-        builder_db=builder_db,
-        try_db=try_db,
         **kwargs)
     t += common_test_data(test_spec)
     return t
@@ -492,19 +466,6 @@ def GenTests(api):
       api.expect_status('FAILURE'),
   )
 
-  yield api.test(
-      'experimental',
-      ci_build(test_spec={
-          'experiment_percentage': '100',
-          'swarming': {},
-          'test': 'base_unittests',
-      }),
-      api.override_step_data(
-          'base_unittests (experimental)',
-          api.chromium_swarming.canned_summary_output(None, retcode=1)),
-      api.post_process(post_process.DropExpectation),
-  )
-
   def NotIdempotent(check, step_odict, step):
     check('Idempotent flag unexpected',
           '--idempotent' not in step_odict[step].cmd)
@@ -518,161 +479,5 @@ def GenTests(api):
           'test': 'base_unittests',
       }),
       api.post_process(NotIdempotent, 'test_pre_run.[trigger] base_unittests'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test_suite_with_decription_on_tryserver',
-      try_build(test_spec={
-          'test': 'gtest_test',
-          'description': 'This is a description.'
-      }),
-      api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test_suite_with_decription_on_ci_builder',
-      ci_build(test_spec={
-          'test': 'gtest_test',
-          'description': 'This is a description.'
-      }),
-      api.post_process(post_process.StepTextContains, 'gtest_test',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_test_on_tryserver',
-      try_build(test_spec={
-          'ci_only': True,
-          'test': 'gtest_test',
-      }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'gtest_test (with patch)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'gtest_test (with patch)',
-          [("This test is not being run because it is marked 'ci_only'. "
-            "Use 'Include-Ci-Only-Tests: true' to override.")],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_only_test_on_mega_cq_build',
-      try_build(
-          test_spec={
-              'ci_only': True,
-              'test': 'gtest_test',
-              'swarming': {},
-          },
-          tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
-      ),
-      api.cq(run_mode='CQ_MODE_MEGA_DRY_RUN'),
-      api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
-      api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
-                       [('This test is being run on Mega CQ runs')]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_only_test_on_tryserver',
-      try_build(test_spec={
-          'ci_only': True,
-          'test': 'gtest_test',
-          'swarming': {},
-      }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'gtest_test (with patch)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'gtest_test (with patch)',
-          ["This test is not being run because it is marked 'ci_only'"],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_only_test_on_tryserver_with_bypass',
-      try_build(test_spec={
-          'ci_only': True,
-          'test': 'gtest_test',
-          'swarming': {},
-      }),
-      api.step_data('parse description',
-                    api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
-      api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
-                       [('This test is being run due to the'
-                         ' Include-Ci-Only-Tests gerrit footer')]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_test_on_tryserver_with_bypass',
-      try_build(test_spec={
-          'ci_only': True,
-          'test': 'gtest_test',
-      }),
-      api.step_data('parse description',
-                    api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
-      api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
-                       [('This test is being run due to the'
-                         ' Include-Ci-Only-Tests gerrit footer')]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_test_on_ci_builder',
-      ci_build(test_spec={
-          'ci_only': True,
-          'test': 'gtest_test',
-      }),
-      api.post_process(post_process.MustRun, 'gtest_test'),
-      api.post_process(post_process.StepTextContains, 'gtest_test',
-                       ['This test will not be run on try builders']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_only_test_on_ci_builder',
-      ci_build(test_spec={
-          'ci_only': True,
-          'test': 'gtest_test',
-          'swarming': {},
-      }),
-      api.post_process(post_process.MustRun, 'gtest_test'),
-      api.post_process(post_process.StepTextContains, 'gtest_test',
-                       ['This test will not be run on try builders']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'experimental_test_experiment_off',
-      ci_build(test_spec={
-          'test': 'gtest_test',
-          'experiment_percentage': '0',
-      }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'gtest_test (experimental)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'gtest_test (experimental)',
-          ['This test was not selected for its experiment in this build'],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'experimental_test_experiment_on',
-      ci_build(test_spec={
-          'test': 'gtest_test',
-          'experiment_percentage': '100',
-      }),
-      api.override_step_data('gtest_test (experimental)', retcode=1),
       api.post_process(post_process.DropExpectation),
   )

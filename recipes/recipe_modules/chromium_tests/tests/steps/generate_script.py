@@ -9,7 +9,6 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
-    'filter',
     'depot_tools/tryserver',
     'recipe_engine/json',
 ]
@@ -118,81 +117,5 @@ def GenTests(api):
               api.json.dumps(['common-arg', 'try-arg']),
           ],
       ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test_suite_with_decription_on_tryserver',
-      try_build(
-          test_spec={
-              'name': 'base_unittests',
-              'test': 'gtest_test',
-              'script': 'gtest_test.py',
-              'description': 'This is a description.'
-          }),
-      api.post_process(post_process.StepTextContains,
-                       'base_unittests (with patch)',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test_suite_with_decription_on_ci_builder',
-      ci_build(
-          test_spec={
-              'name': 'base_unittests',
-              'test': 'gtest_test',
-              'script': 'gtest_test.py',
-              'description': 'This is a description.'
-          }),
-      api.post_process(post_process.StepTextContains, 'base_unittests',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_on_ci_builder',
-      ci_build(test_spec={
-          'name': 'base_unittests',
-          'ci_only': True,
-          'script': 'gtest_test.py',
-      }),
-      api.post_process(post_process.MustRun, 'base_unittests'),
-      api.post_process(post_process.StepTextContains, 'base_unittests',
-                       ['This test will not be run on try builders']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_on_try_builder',
-      try_build(test_spec={
-          'name': 'base_unittests',
-          'ci_only': True,
-          'script': 'gtest_test.py',
-      }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'base_unittests (with patch)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'base_unittests (with patch)',
-          ["This test is not being run because it is marked 'ci_only'"],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_on_try_builder_bypass',
-      try_build(test_spec={
-          'name': 'base_unittests',
-          'ci_only': True,
-          'script': 'gtest_test.py',
-      }),
-      api.step_data('parse description',
-                    api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
-      api.post_process(post_process.StepTextContains,
-                       'base_unittests (with patch)',
-                       [('This test is being run due to the'
-                         ' Include-Ci-Only-Tests gerrit footer')]),
       api.post_process(post_process.DropExpectation),
   )

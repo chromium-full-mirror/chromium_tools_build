@@ -10,10 +10,7 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'filter',
     'depot_tools/tryserver',
-    'recipe_engine/json',
-    'recipe_engine/properties',
     'recipe_engine/swarming',
 ]
 
@@ -260,33 +257,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'test_suite_with_decription_on_tryserver',
-      try_build(
-          test_spec={
-              'name': 'base_unittests',
-              'test': 'gtest_test',
-              'description': 'This is a description.'
-          }),
-      api.post_process(post_process.StepTextContains,
-                       'base_unittests (with patch)',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test_suite_with_decription_on_ci_builder',
-      ci_build(
-          test_spec={
-              'name': 'base_unittests',
-              'test': 'gtest_test',
-              'description': 'This is a description.'
-          }),
-      api.post_process(post_process.StepTextContains, 'base_unittests',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'spec_error',
       ci_build(
           test_spec={
@@ -392,128 +362,5 @@ def GenTests(api):
               '-cipd-package',
               '../../cipd/package/location:cipd/package/name=version:1.0',
           ]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'experimental',
-      ci_build(
-          test_spec={
-              'experiment_percentage': '100',
-              'name': 'base_unittests',
-              'test': 'base_unittests_run',
-          }),
-      api.step_data('base_unittests (experimental)', retcode=1),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'experimental_off',
-      ci_build(
-          test_spec={
-              'experiment_percentage': '0',
-              'name': 'base_unittests',
-              'test': 'base_unittests_run',
-          }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'base_unittests (experimental)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'base_unittests (experimental)',
-          ['This test was not selected for its experiment in this build'],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_test_on_ci_builder',
-      ci_build(test_spec={
-          'name': 'script_test',
-          'ci_only': True,
-      }),
-      api.post_process(post_process.MustRun, 'script_test'),
-      api.post_process(post_process.StepTextContains, 'script_test',
-                       ['This test will not be run on try builders']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_test_on_ci_builder',
-      ci_build(test_spec={
-          'name': 'script_test',
-          'ci_only': True,
-          'swarming': {},
-      }),
-      api.post_process(post_process.MustRun, 'script_test'),
-      api.post_process(post_process.StepTextContains, 'script_test',
-                       ['This test will not be run on try builders']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_test_on_try_builder',
-      try_build(test_spec={
-          'name': 'script_test',
-          'ci_only': True,
-      }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'script_test (with patch)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'script_test (with patch)',
-          [("This test is not being run because it is marked 'ci_only'. "
-            "Use 'Include-Ci-Only-Tests: true' to override.")],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_test_on_try_builder',
-      try_build(test_spec={
-          'name': 'script_test',
-          'ci_only': True,
-          'swarming': {},
-      }),
-      api.post_process(post_process.StepCommandEmpty,
-                       'script_test (with patch)'),
-      api.post_process(
-          post_process.StepTextContains,
-          'script_test (with patch)',
-          [("This test is not being run because it is marked 'ci_only'. "
-            "Use 'Include-Ci-Only-Tests: true' to override.")],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_test_on_try_builder_with_bypass',
-      try_build(test_spec={
-          'name': 'script_test',
-          'ci_only': True,
-      }),
-      api.step_data('parse description',
-                    api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.MustRun, 'script_test (with patch)'),
-      api.post_process(post_process.StepTextContains,
-                       'script_test (with patch)',
-                       [('This test is being run due to the'
-                         ' Include-Ci-Only-Tests gerrit footer')]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarmed_ci_test_on_try_builder_with_bypass',
-      try_build(test_spec={
-          'name': 'script_test',
-          'ci_only': True,
-          'swarming': {},
-      }),
-      api.step_data('parse description',
-                    api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.MustRun, 'script_test (with patch)'),
-      api.post_process(post_process.StepTextContains,
-                       'script_test (with patch)',
-                       [('This test is being run due to the'
-                         ' Include-Ci-Only-Tests gerrit footer')]),
       api.post_process(post_process.DropExpectation),
   )

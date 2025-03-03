@@ -9,20 +9,16 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process
 
 DEPS = [
-    'chromium',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'filter',
     'skylab',
     'test_utils',
     'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/json',
     'recipe_engine/raw_io',
-    'recipe_engine/step',
     'siso',
 ]
 
@@ -79,7 +75,6 @@ def GenTests(api):
                   is_ci_build=True,
                   target_name=TAST_TARGET,
                   should_read_isolate=True,
-                  experiment_percentage=None,
                   ci_only_tests=False,
                   tester='',
                   shards=1,
@@ -135,13 +130,10 @@ def GenTests(api):
         'resultdb': {
             'enable': True,
         },
-        'description': 'This is a description.',
         'timeout_sec': 7200,
         'shards': shards,
         'retries': retries,
     }
-    if experiment_percentage is not None:
-      test_spec['experiment_percentage'] = experiment_percentage
 
     steps = sum([
         build_gen,
@@ -506,78 +498,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'test_suite_with_decription_on_ci_builder',
-      boilerplate(
-          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
-      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
-      api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
-                       ['This is a description.']),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'ci_only_test_on_ci_builder',
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
-          ci_only_tests=True),
-      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
-      api.post_process(post_process.StepTextContains, 'basic_EVE_TOT', [
-          'This test will not be run on try builders',
-      ]),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'ci_only_test_on_trybot',
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='dummy_tast',
-          is_ci_build=False,
-          isolate_file_exists=False,
-          ci_only_tests=True),
-      api.post_process(
-          post_process.StepCommandEmpty,
-          'basic_EVE_TOT (with patch)',
-      ),
-      api.post_process(
-          post_process.StepTextContains,
-          'basic_EVE_TOT (with patch)',
-          [("This test is not being run because it is marked 'ci_only'. "
-            "Use 'Include-Ci-Only-Tests: true' to override.")],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'ci_only_test_on_trybot_bypass',
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='dummy_tast',
-          is_ci_build=False,
-          ci_only_tests=True),
-      api.step_data('parse description',
-                    api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.skylab.mock_wait_on_suites('basic_EVE_TOT (with patch)', 1),
-      api.override_step_data(
-          'basic_EVE_TOT results',
-          stdout=api.raw_io.output_text(
-              api.test_utils.rdb_results(
-                  'basic_EVE_TOT', passing_tests=['Test.One']))),
-      api.post_process(
-          post_process.MustRun,
-          'basic_EVE_TOT (with patch)',
-      ),
-      api.post_process(post_process.StepTextContains,
-                       'basic_EVE_TOT (with patch)',
-                       [('This test is being run due to the'
-                         ' Include-Ci-Only-Tests gerrit footer')]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'basic for telemetry test',
       boilerplate(
           'chrome-test-builds', benchmark='speedometer2', target_name='chrome'),
@@ -599,10 +519,7 @@ def GenTests(api):
   yield api.test(
       'retry_without_patch',
       boilerplate(
-          'chrome-test-builds',
-          is_ci_build=False,
-          target_name=GTEST_TARGET,
-          ci_only_tests=False),
+          'chrome-test-builds', is_ci_build=False, target_name=GTEST_TARGET),
       api.step_data(
           'prepare skylab tests (2).'
           'collect runtime deps for %s.read isolate file' % GTEST_TARGET,
@@ -620,38 +537,6 @@ def GenTests(api):
       api.skylab.mock_wait_on_suites('basic_EVE_TOT (without patch)', 1),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'experimental test experiment on',
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='dummy_tast',
-          experiment_percentage='100'),
-      api.post_process(
-          post_process.MustRun,
-          'basic_EVE_TOT (experimental)',
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'experimental test experiment off',
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='dummy_tast',
-          experiment_percentage='0',
-          isolate_file_exists=False),
-      api.post_process(
-          post_process.StepCommandEmpty,
-          'basic_EVE_TOT (experimental)',
-      ),
-      api.post_process(
-          post_process.StepTextContains,
-          'basic_EVE_TOT (experimental)',
-          ['This test was not selected for its experiment in this build'],
-      ),
-      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -734,7 +619,6 @@ def GenTests(api):
                       'resultdb': {
                           'enable': True,
                       },
-                      'description': 'This is a description.',
                       'timeout_sec': 7200,
                   }],
               },
@@ -800,6 +684,23 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           f'prepare skylab tests.collect runtime deps for {GTEST_TARGET}.fetch RBE artifacts from CAS'
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  # This isn't testing ci_only specifically, just covering the skylab-specific
+  # bits of code that are executed for disabled tests
+  yield api.test(
+      'disabled-test',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='dummy_tast',
+          is_ci_build=False,
+          isolate_file_exists=False,
+          ci_only_tests=True),
+      api.post_process(
+          post_process.StepCommandEmpty,
+          'basic_EVE_TOT (with patch)',
       ),
       api.post_process(post_process.DropExpectation),
   )
