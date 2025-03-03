@@ -140,7 +140,7 @@ def use_reclient(api, gn_args):
 
 def get_target_cpu(api, gn_args):
   args = api.gn.parse_gn_args(gn_args)
-  return args.get('target_cpu')
+  return str(args.get('target_cpu')).replace('"', '')
 
 
 def RunSteps(api, properties):
