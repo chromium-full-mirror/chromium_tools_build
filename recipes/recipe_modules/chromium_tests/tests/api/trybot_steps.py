@@ -1025,7 +1025,7 @@ def GenTests(api):
           'chromium.test', {
               'chromium-rel': {
                   'gtest_tests': [{
-                      'test': 'browser_tests',
+                      'test': 'base_unittests',
                       'swarming': {},
                   }],
               },
@@ -1033,10 +1033,10 @@ def GenTests(api):
       api.step_data(
           'find rts command lines (with patch)',
           api.json.output({
-              'browser_tests': [
-                  './%s' % 'browser_tests', '--fake-without-patch-flag',
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
                   '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
-                  '-filter=browser_tests.filter'
+                  '-filter=base_unittests.filter'
               ]
           })),
       api.post_process(post_process.MustRun, 'rts options'),
@@ -1072,7 +1072,7 @@ def GenTests(api):
           'chromium.test', {
               'chromium-rel': {
                   'gtest_tests': [{
-                      'test': 'browser_tests',
+                      'test': 'base_unittests',
                       'swarming': {},
                   }],
               },
@@ -1080,10 +1080,10 @@ def GenTests(api):
       api.step_data(
           'find rts command lines (with patch)',
           api.json.output({
-              'browser_tests': [
-                  './%s' % 'browser_tests', '--fake-without-patch-flag',
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
                   '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
-                  '-filter=browser_tests.filter'
+                  '-filter=base_unittests.filter'
               ]
           })),
       api.post_process(post_process.MustRun, 'rts options'),
@@ -1117,7 +1117,7 @@ def GenTests(api):
               'chromium-rel': {
                   'gtest_tests': [{
                       'test':
-                          'browser_tests',
+                          'base_unittests',
                       'swarming': {},
                       'args': [
                           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter',
@@ -1128,10 +1128,10 @@ def GenTests(api):
       api.step_data(
           'find rts command lines (with patch)',
           api.json.output({
-              'browser_tests': [
-                  './%s' % 'browser_tests', '--fake-without-patch-flag',
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
                   '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
-                  '--test-launcher-filter-file=browser_tests.filter'
+                  '--test-launcher-filter-file=base_unittests.filter'
               ]
           })),
       api.step_data(api.json.output(
@@ -1157,21 +1157,21 @@ def GenTests(api):
         ])),
       api.post_check(
           api.swarming.check_triggered_request,
-          'test_pre_run (with patch).[trigger] browser_tests (with patch)',
+          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
           lambda check, req: check(
-              '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter;browser_tests.filter'
+              '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter;base_unittests.filter'
               in req[0].command)),
       api.post_check(
           api.swarming.check_triggered_request,
-          'test_pre_run (with patch).[trigger] browser_tests (with patch)',
+          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
           lambda check, req: check(
               '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter'
               not in req[0].command)),
       api.post_check(
           api.swarming.check_triggered_request,
-          'test_pre_run (with patch).[trigger] browser_tests (with patch)',
+          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
           lambda check, req: check(
-              '--test-launcher-filter-file=browser_tests.filter' \
+              '--test-launcher-filter-file=base_unittests.filter' \
                 not in req[0].command)),
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.MustRun, 'RTS was used'),
@@ -1203,7 +1203,7 @@ def GenTests(api):
           'chromium.test', {
               'chromium-rel': {
                   'gtest_tests': [{
-                      'test': 'browser_tests',
+                      'test': 'base_unittests',
                       'swarming': {},
                   }],
               },
@@ -1237,7 +1237,7 @@ def GenTests(api):
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': [{
-                  'test': 'browser_tests',
+                  'test': 'base_unittests',
               }],
           },
       }),

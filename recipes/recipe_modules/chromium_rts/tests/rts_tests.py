@@ -22,19 +22,16 @@ _COMPILATOR_BUILD_ID = 5678
 
 
 def RunSteps(api):
-  test_target = api.properties.get('test_target', 'browser_tests')
   tests = [
-      steps.MockTestSpec.create(test_target,
+      steps.MockTestSpec.create('MockTest',
                                 supports_rts=True).get_test(api.chromium_tests),
   ]
   api.m.chromium_rts.rts_model = 'smart-test-selection'
 
   api.m.chromium_rts.setup_tests(tests)
   api.m.chromium_rts.trigger_test_selection(tests)
-  if test_target == 'browser_tests':
-    assert (tests[0].is_rts)
-  else:
-    assert not (tests[0].is_rts)
+  assert (tests[0].is_rts)
+
   api.m.chromium_rts.setup_tests(tests)
 
   mb_args = api.m.chromium_rts.mb_args()
@@ -51,18 +48,7 @@ def GenTests(api):
           experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection for browser_tests'
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
-      'rts_basic_not_browser_tests',
-      api.chromium.try_build(
-          experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
-      api.properties(test_target='unit_tests'),
-      api.post_process(
-          post_process.DoesNotRun,
-          'fetch api key and trigger test selection.Trigger test selection for unit_tests'
+          'fetch api key and trigger test selection.Trigger test selection for MockTest'
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -79,7 +65,7 @@ def GenTests(api):
                   builder_group='fake-try-group'))),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection for browser_tests'
+          'fetch api key and trigger test selection.Trigger test selection for MockTest'
       ),
       api.post_process(
           post_process.MustRun,
@@ -99,7 +85,7 @@ def GenTests(api):
       api.swarming.properties(task_id='some-task-id'),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection for browser_tests'
+          'fetch api key and trigger test selection.Trigger test selection for MockTest'
       ),
       api.post_process(post_process.DropExpectation),
   )
