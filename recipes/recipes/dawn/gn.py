@@ -20,6 +20,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/time',
+    'siso',
 ]
 
 import hashlib
@@ -106,20 +107,18 @@ def _gn_build(source_dir, flavor, api, **kwargs):
     ])
 
   build_path = source_dir.joinpath('out', out_dir)
-  ninja_path = source_dir.joinpath('third_party', 'ninja', 'ninja')
-  base_ninja_cmd = [ninja_path, '-C', build_path]
-  if use_remoteexec:
-    base_ninja_cmd.extend(['-j', api.reclient.jobs])
+  base_ninja_cmd = ['ninja', '-C', build_path]
 
   def build(*targets):
     ninja_cmd = base_ninja_cmd.copy()
     ninja_cmd.extend(targets)
-    desc = 'compile {} with ninja'.format(flavor)
+    desc = 'compile {} with siso'.format(flavor)
+
     if use_remoteexec:
       with api.reclient.process(desc, '', source_dir):
-        api.step(desc, ninja_cmd)
+        api.siso.run_ninja(source_dir, ninja_cmd, name=desc)
     else:
-      api.step(desc, ninja_cmd)
+      api.siso.run_ninja(source_dir, ninja_cmd, name=desc)
 
     return tuple(build_path / t for t in targets)
 
@@ -265,6 +264,7 @@ def GenTests(api):
   yield api.test(
       'linux',
       api.reclient.properties(),
+      api.siso.properties(),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='linux', git_repo=DAWN_REPO),
@@ -273,12 +273,14 @@ def GenTests(api):
       'linux_gcc',
       api.platform('linux', 64),
       api.properties(clang=False),
+      api.siso.properties(),
       api.buildbucket.ci_build(
           project='dawn', builder='linux', git_repo=DAWN_REPO),
   )
   yield api.test(
       'mac',
       api.reclient.properties(),
+      api.siso.properties(),
       api.platform('mac', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='mac', git_repo=DAWN_REPO),
@@ -286,6 +288,7 @@ def GenTests(api):
   yield api.test(
       'win',
       api.reclient.properties(),
+      api.siso.properties(),
       api.platform('win', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='win', git_repo=DAWN_REPO),
@@ -293,6 +296,7 @@ def GenTests(api):
   yield api.test(
       'win_clang',
       api.reclient.properties(),
+      api.siso.properties(),
       api.platform('win', 64),
       api.properties(clang=True),
       api.buildbucket.ci_build(
@@ -300,6 +304,7 @@ def GenTests(api):
   )
   yield api.test(
       'win_rel_msvc_x86',
+      api.siso.properties(),
       api.platform('win', 64),
       api.properties(clang=False, debug=False, target_cpu='x86'),
       api.buildbucket.ci_build(
@@ -307,6 +312,7 @@ def GenTests(api):
   )
   yield api.test(
       'win_dbg_msvc_x64',
+      api.siso.properties(),
       api.platform('win', 64),
       api.properties(clang=False, debug=True),
       api.buildbucket.ci_build(
@@ -315,6 +321,7 @@ def GenTests(api):
   yield api.test(
       'linux_gen_fuzz_corpus',
       api.reclient.properties(),
+      api.siso.properties(),
       api.platform('linux', 64),
       api.properties(gen_fuzz_corpus=True),
       api.buildbucket.ci_build(
