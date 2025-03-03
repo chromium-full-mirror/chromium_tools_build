@@ -366,16 +366,12 @@ class BinarySizeApi(recipe_api.RecipeApi):
         try:
           measure_arm64 = False
           if self.arm64_size_config_json and gerrit_plugin_details:
-            arm32_okay = True
-            arm64_okay = True
             for listing in gerrit_plugin_details['listings']:
-              if listing.get('log_name') == 'resource_sizes_log':
-                arm32_okay = listing['allowed']
-              elif listing.get('log_name') == 'resource_sizes_64_log':
-                arm64_okay = (
-                    listing['allowed'] and not listing['large_improvement'])
-            measure_arm64 = ((arm32_okay and not arm64_okay) or
-                             'CreateArm64SizeReport' in commit_footers)
+              if listing.get('log_name') == 'resource_sizes_64_log':
+                measure_arm64 = (not listing['allowed'] or
+                                 listing['large_improvement'])
+                break
+            measure_arm64 = measure_arm64 or 'CreateArm64SizeReport' in commit_footers
           if measure_arm64:
             # Create a supersize report for arm64.
             # If gs_zip_path was used:
