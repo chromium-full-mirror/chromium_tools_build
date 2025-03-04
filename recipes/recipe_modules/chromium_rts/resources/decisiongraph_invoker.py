@@ -118,7 +118,7 @@ if __name__ == "__main__":
               'id': STAGE_ID,
               'name': STAGE_NAME,
           },
-          'parent_outputs': [{
+          'input': [{
               'checks': [{
                   'identifier': {
                       'luci_test': {
