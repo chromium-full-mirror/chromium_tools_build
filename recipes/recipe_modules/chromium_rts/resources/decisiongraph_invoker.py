@@ -9,7 +9,7 @@ import sys
 TIMEOUT_SECONDS = 300
 API_URL = 'https://decisiongraph-pa.googleapis.com/v1/rundecisiongraph'
 DECISION_GRAPH_NAME = 'smart_test_selection_graph_chrome'
-STAGE_ID = 'compilator_kickoff_smart_test_selection'
+STAGE_ID = 'test_selection_for_%s_%d_%d'
 STAGE_NAME = 'smart_test_selection_stage'
 PROJECT = 'chromium/src'
 BRANCH = 'main'
@@ -98,8 +98,10 @@ if __name__ == "__main__":
               DECISION_GRAPH_NAME,
           'stages': [{
               'stage': {
-                  'id': STAGE_ID,
-                  'name': STAGE_NAME,
+                  'id':
+                      STAGE_ID % (args.test_target, args.change, args.patchset),
+                  'name':
+                      STAGE_NAME,
               },
               'execution_options': {
                   'location': LOCATION_ENUM,
@@ -115,7 +117,7 @@ if __name__ == "__main__":
       },
       'input': [{
           'stage': {
-              'id': STAGE_ID,
+              'id': STAGE_ID % (args.test_target, args.change, args.patchset),
               'name': STAGE_NAME,
           },
           'input': [{
