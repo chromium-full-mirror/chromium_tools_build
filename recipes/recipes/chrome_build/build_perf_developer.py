@@ -393,7 +393,7 @@ def RunSteps(api):
 
   # Build target: chrome or chrome_public_apk
   target = 'chrome'
-  if builder_config.chromium_config == 'android':
+  if builder_config.android_config:
     target = 'chrome_public_apk'
 
   # Enable Reclient racing feature.
@@ -518,6 +518,7 @@ def GenTests(api):
                   gclient_config='chromium',
                   gclient_apply_config=['android'],
                   chromium_config='android',
+                  android_config='main_builder',
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
