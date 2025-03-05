@@ -101,6 +101,8 @@ if __name__ == "__main__":
       args.test_targets[i:i + BATCH_SIZE]
       for i in range(0, len(args.test_targets), BATCH_SIZE)
   ]
+
+  return_status = 0
   for batch_idx, test_target_batch in enumerate(test_target_batches):
     checks = []
     print("batch num = %d" % batch_idx)
@@ -173,7 +175,8 @@ if __name__ == "__main__":
     if response_data:
       print("API Response:")
       print(response_data)
-      sys.exit(0)  # Return 0 if everything works fine
     else:
       print("Failed to fetch data from the API.")
-      sys.exit(1)  # Return a non-zero code if there is an error
+      return_status = 1
+
+  sys.exit(return_status)
