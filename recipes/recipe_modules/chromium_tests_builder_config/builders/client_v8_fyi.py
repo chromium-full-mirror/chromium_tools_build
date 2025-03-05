@@ -44,7 +44,7 @@ SPEC = {
         ),
     'V8 Android GN (dbg)':
         _client_v8_fyi_spec(
-            chromium_config='android',
+            chromium_config='main_builder',
             chromium_apply_config=['mb'],
             gclient_config='chromium',
             gclient_apply_config=[
@@ -220,7 +220,7 @@ SPEC = {
         ),
     'Android V8 FYI Release':
         _client_v8_fyi_spec(
-            chromium_config='android',
+            chromium_config='arm64_builder_rel_mb',
             chromium_apply_config=[],
             gclient_config='chromium',
             gclient_apply_config=[

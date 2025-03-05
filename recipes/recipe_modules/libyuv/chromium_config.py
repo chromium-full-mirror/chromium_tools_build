@@ -28,13 +28,6 @@ def libyuv_msvc(c):
   c.gn_args.append('use_lld=false')
   c.gn_args.append('use_custom_libcxx=false')
 
-
-@CONFIG_CTX(includes=['android'])
-def libyuv_android(c):
-  _libyuv_common(c)
-  if c.TARGET_ARCH == 'intel' and c.TARGET_BITS == 32:
-    c.gn_args.append('android_full_debug=true')
-
 @CONFIG_CTX(includes=['chromium'])
 def libyuv_ios(c):
   if c.HOST_PLATFORM != 'mac':

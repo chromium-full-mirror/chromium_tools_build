@@ -901,7 +901,7 @@ def GenTests(api):
               builder='fake-builder',
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
-                  chromium_config='chromium',
+                  chromium_config='main_builder_mb',
                   chromium_config_kwargs={
                       'TARGET_PLATFORM': 'android',
                   },

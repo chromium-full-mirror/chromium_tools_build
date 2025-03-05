@@ -10,7 +10,7 @@ SPEC = {
         builder_spec.BuilderSpec.create(
             android_config='base_config',
             chromium_apply_config=['dcheck', 'mb', 'android'],
-            chromium_config='chromium',
+            chromium_config='base_config',
             chromium_config_kwargs={
                 'BUILD_CONFIG': 'Release',
                 'TARGET_ARCH': 'arm',

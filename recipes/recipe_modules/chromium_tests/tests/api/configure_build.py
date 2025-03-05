@@ -47,7 +47,7 @@ def GenTests(api):
                   'fake-builder':
                       ctbc.BuilderSpec.create(
                           android_config='main_builder_mb',
-                          chromium_config='chromium',
+                          chromium_config='main_builder_mb',
                           gclient_config='chromium',
                           android_apply_config=['use_devil_provision'],
                       ),

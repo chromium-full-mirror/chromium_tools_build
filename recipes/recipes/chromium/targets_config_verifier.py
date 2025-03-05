@@ -251,17 +251,8 @@ def _verify_target_configs(
     if builder_config.targets_spec_directory:
       return success("builder is already using tests in starlark")
 
-    # The chromium_tests code calls chromium_android.configure_from_properties
-    # after calling chromium.set_config if android_config is set;
-    # chromium_android.configure_from_properties calls chromium.set_config with
-    # the provided config, so the chromium_config value ends up ignored
-    # TODO: crbug.com/374819553 - Once chromium_android configs do not imply a
-    # chromium config, don't check/use android_config
-    if builder_config.android_config:
-      chromium_config = api.chromium.make_config(
-          builder_config.android_config, optional=True)
-    else:
-      chromium_config = api.chromium.make_config(builder_config.chromium_config)
+    chromium_config = api.chromium.make_config(
+        builder_config.chromium_config, **builder_config.chromium_config_kwargs)
     for c in builder_config.chromium_apply_config:
       api.chromium.apply_config(c, chromium_config)
 
@@ -849,22 +840,6 @@ def GenTests(api):
           non_existent_tester_group='fake-tester-group',
       ),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'android',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-builder-group',
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='android',
-              chromium_apply_config=['android'],
-              android_config='base_config',
-          ),
-      ),
       api.post_process(post_process.DropExpectation),
   )
 

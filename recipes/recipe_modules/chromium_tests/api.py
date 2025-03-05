@@ -202,11 +202,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       report_target_platform - Whether or not reporting the "target_platform"
         to the build output properties.
     """
+    # Configure chromium module
     test_only = test_only or builder_config.execution_mode == ctbc.TEST
     self.m.chromium.set_config(
         builder_config.chromium_config,
         TEST_ONLY=test_only,
         **builder_config.chromium_config_kwargs)
+    for c in builder_config.chromium_apply_config:
+      self.m.chromium.apply_config(c)
+
     # TODO(crbug.com/356461014): Switch to ResultDB after its RPC call supports
     # updating invocation-level tags.
     if report_target_platform:
@@ -214,16 +218,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       step_result.presentation.properties['target_platform'] = (
           self.m.chromium.c.TARGET_PLATFORM)
 
+    # Configure gclient module
     self.m.gclient.set_config(builder_config.gclient_config)
-
-    if builder_config.android_config:
-      self.m.chromium_android.configure_from_properties(
-          builder_config.android_config,
-          **builder_config.chromium_config_kwargs)
-
-    for c in builder_config.chromium_apply_config:
-      self.m.chromium.apply_config(c)
-
     for c in builder_config.gclient_apply_config:
       self.m.gclient.apply_config(c)
 
@@ -237,8 +233,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         gclient_solution.custom_vars['cros_boards'] = (
             self.m.chromium.c.TARGET_CROS_BOARDS)
 
-    for c in builder_config.android_apply_config:
-      self.m.chromium_android.apply_config(c)
+    # Configure chromium_android module
+    if builder_config.android_config:
+      # TODO: crbug.com/374819553 - Investigate using chromium.c.BUILD_CONFIG
+      # consistently within chromium_android rather than having duplicate
+      # BUILD_CONFIG value so that passing the kwars won't be necessary
+      self.m.chromium_android.set_config(
+          builder_config.android_config,
+          **builder_config.chromium_config_kwargs)
+      for c in builder_config.android_apply_config:
+        self.m.chromium_android.apply_config(c)
 
   _COMPUTE_PRECOMMIT_DETAILS = object()
 

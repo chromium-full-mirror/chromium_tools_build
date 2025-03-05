@@ -31,13 +31,13 @@ BUILDERS = ctbc.BuilderDatabase.create({
         'Test Version':
             ctbc.BuilderSpec.create(
                 android_config='main_builder_mb',
-                chromium_config='chromium',
+                chromium_config='main_builder_mb',
                 gclient_config='chromium',
                 android_version='chrome/Version',
             ),
         'Cronet':
             ctbc.BuilderSpec.create(
-                chromium_config='android',
+                chromium_config='main_builder',
                 chromium_apply_config=['cronet_builder'],
                 gclient_apply_config=['android'],
                 gclient_config='chromium',
