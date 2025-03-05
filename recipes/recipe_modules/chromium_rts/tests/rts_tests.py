@@ -48,8 +48,7 @@ def GenTests(api):
           experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection for MockTest'
-      ),
+          'fetch api key and trigger test selection.Trigger test selection'),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -65,8 +64,7 @@ def GenTests(api):
                   builder_group='fake-try-group'))),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection for MockTest'
-      ),
+          'fetch api key and trigger test selection.Trigger test selection'),
       api.post_process(
           post_process.MustRun,
           'fetch api key and trigger test selection.Get orchestrator build'),
@@ -85,7 +83,6 @@ def GenTests(api):
       api.swarming.properties(task_id='some-task-id'),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection for MockTest'
-      ),
+          'fetch api key and trigger test selection.Trigger test selection'),
       api.post_process(post_process.DropExpectation),
   )

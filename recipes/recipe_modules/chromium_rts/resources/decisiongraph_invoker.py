@@ -3,13 +3,14 @@
 # found in the LICENSE file.
 
 import argparse
+import pprint
 import requests
 import sys
 
 TIMEOUT_SECONDS = 300
 API_URL = 'https://decisiongraph-pa.googleapis.com/v1/rundecisiongraph'
 DECISION_GRAPH_NAME = 'smart_test_selection_graph_chrome'
-STAGE_ID = 'test_selection_for_%s_%d_%d'
+STAGE_ID = 'test_selection_for_%d_%d_%d'
 STAGE_NAME = 'smart_test_selection_stage'
 PROJECT = 'chromium/src'
 BRANCH = 'main'
@@ -20,6 +21,7 @@ MAX_DURATION_SECONDS = 180
 MAX_ATTEMPTS = 3
 BLOCKING_ENUM = 2
 
+BATCH_SIZE = 20
 
 def read_api_key(file_path):
   """
@@ -50,6 +52,8 @@ def fetch_api_data(url, json=None):
   try:
     response = requests.post(url, json=json, timeout=TIMEOUT_SECONDS)
     print(response.text)
+    print(response.status_code)
+    print(response.json)
     response.raise_for_status(
     )  # Raise an HTTPError for bad responses (4xx and 5xx)
     return response.json()
@@ -62,10 +66,11 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(
       description="Fetch data from an API with query parameters.")
   parser.add_argument(
-      "--test-target",
+      "--test-targets",
       required=True,
+      nargs='+',
       type=str,
-      help="Name of the test target e.g. browser_tests.")
+      help="Name of the test targets e.g. browser_tests.")
   parser.add_argument(
       "--build_id",
       required=True,
@@ -92,70 +97,83 @@ if __name__ == "__main__":
   if args.builder.endswith('-test-selection'):
     canonical_builder = args.builder[:args.builder.rfind("-test-selection")]
 
-  payload = {
-      'graph': {
-          'name':
-              DECISION_GRAPH_NAME,
-          'stages': [{
-              'stage': {
-                  'id':
-                      STAGE_ID % (args.test_target, args.change, args.patchset),
-                  'name':
-                      STAGE_NAME,
-              },
-              'execution_options': {
-                  'location': LOCATION_ENUM,
-                  'address': STAGE_SERVICE_GSLB,
-                  'prepare': True,
-                  'max_duration': {
-                      'seconds': MAX_DURATION_SECONDS
-                  },
-                  'max_attempts': MAX_ATTEMPTS,
-                  'blocking': BLOCKING_ENUM,
-              },
-          }],
-      },
-      'input': [{
-          'stage': {
-              'id': STAGE_ID % (args.test_target, args.change, args.patchset),
-              'name': STAGE_NAME,
+  test_target_batches = [
+      args.test_targets[i:i + BATCH_SIZE]
+      for i in range(0, len(args.test_targets), BATCH_SIZE)
+  ]
+  for batch_idx, test_target_batch in enumerate(test_target_batches):
+    checks = []
+    print("batch num = %d" % batch_idx)
+    for test_target in test_target_batch:
+      check = {
+          'identifier': {
+              'luci_test': {
+                  'project': PROJECT,
+                  'branch': BRANCH,
+                  'builder': canonical_builder,
+                  'test_suite': test_target,
+              }
           },
-          'input': [{
-              'checks': [{
-                  'identifier': {
-                      'luci_test': {
-                          'project': PROJECT,
-                          'branch': BRANCH,
-                          'builder': canonical_builder,
-                          'test_suite': args.test_target,
-                      }
-                  },
-                  'run': {
-                      'luci_test': {
-                          'build_id': args.build_id
-                      }
-                  },
-              }],
-          }],
-          'changes': {
-              'changes': [{
-                  'hostname': HOSTNAME,
-                  'change_number': args.change,
-                  'patchset': args.patchset,
-              }],
+          'run': {
+              'luci_test': {
+                  'build_id': args.build_id
+              }
           },
-      }]
-  }
-  # Read the API key from the specified file
-  api_key = read_api_key(args.api_key_file)
+      }
+      checks.append(check)
 
-  request_with_key = '%s?key=%s' % (API_URL, api_key)
-  response_data = fetch_api_data(url=request_with_key, json=payload)
+    # See http://google3/google/internal/android/treehugger/decisiongraph/proto/decision_graph.proto
+    # to know request proto structure
+    payload = {
+        'graph': {
+            'name':
+                DECISION_GRAPH_NAME,
+            'stages': [{
+                'stage': {
+                    'id': STAGE_ID % (args.change, args.patchset, batch_idx),
+                    'name': STAGE_NAME,
+                },
+                'execution_options': {
+                    'location': LOCATION_ENUM,
+                    'address': STAGE_SERVICE_GSLB,
+                    'prepare': True,
+                    'max_duration': {
+                        'seconds': MAX_DURATION_SECONDS
+                    },
+                    'max_attempts': MAX_ATTEMPTS,
+                    'blocking': BLOCKING_ENUM,
+                },
+            }],
+        },
+        'input': [{
+            'stage': {
+                'id': STAGE_ID % (args.change, args.patchset, batch_idx),
+                'name': STAGE_NAME,
+            },
+            'input': [{
+                'checks': checks,
+            }],
+            'changes': {
+                'changes': [{
+                    'hostname': HOSTNAME,
+                    'change_number': args.change,
+                    'patchset': args.patchset,
+                }],
+            },
+        }]
+    }
+    print("payload = ")
+    pprint.pprint(payload)
+    # Read the API key from the specified file
+    api_key = read_api_key(args.api_key_file)
 
-  if response_data:
-    print("API Response:")
-    print(response_data)
-    sys.exit(0)  # Return 0 if everything works fine
-  else:
-    print("Failed to fetch data from the API.")
-    sys.exit(1)  # Return a non-zero code if there is an error
+    request_with_key = '%s?key=%s' % (API_URL, api_key)
+    response_data = fetch_api_data(url=request_with_key, json=payload)
+
+    if response_data:
+      print("API Response:")
+      print(response_data)
+      sys.exit(0)  # Return 0 if everything works fine
+    else:
+      print("Failed to fetch data from the API.")
+      sys.exit(1)  # Return a non-zero code if there is an error
