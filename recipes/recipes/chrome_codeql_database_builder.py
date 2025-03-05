@@ -29,7 +29,6 @@ DEPS = [
     'recipe_engine/time',
     'recipe_engine/step',
     'infra/zip',
-    'reclient',
 ]
 
 PROPERTIES = InputProperties
@@ -42,7 +41,6 @@ def RunSteps(api, properties):
     raise api.step.StepFailure('No CodeQL version provided')
   api.gclient.set_config('chromium')
   api.chromium.set_config()
-  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   update_result = api.bot_update.ensure_checkout()
   source_dir = update_result.source_root.path
   api.gclient.runhooks()

@@ -30,7 +30,6 @@ DEPS = [
     'recipe_engine/time',
     'recipe_engine/step',
     'infra/zip',
-    'reclient',
 ]
 
 DOWNLOAD_BUCKET = 'chrome-codeql-databases'
@@ -63,7 +62,6 @@ def checkout_chromium(api):
   # Fetches Chromium source and returns the location.
   api.gclient.set_config('chromium')
   api.chromium.set_config()
-  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   update_result = api.bot_update.ensure_checkout()
   source_dir = update_result.source_root.path
   api.gclient.runhooks()
