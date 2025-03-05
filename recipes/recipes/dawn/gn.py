@@ -10,7 +10,6 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/gsutil',
     'depot_tools/osx_sdk',
-    'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -51,8 +50,8 @@ def _checkout_steps(api):
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'dawn' on bots here:
     api.gclient.c.solutions[0].custom_vars = {'dawn_root': 'dawn'}
-    if api.reclient.instance:
-      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+    if api.siso.enabled:
+      api.siso.enable_download_remoteexec_cfg_hook()
     update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
   return update_result
@@ -84,6 +83,7 @@ def _gn_build(source_dir, flavor, api, **kwargs):
 
   if use_remoteexec:
     gn_args.append('use_remoteexec=true')
+    gn_args.append('use_reclient=false')
 
   # We run the end2end tests with SwiftShader, but the D3D12 backend,
   # though it would run zero tests, crashes on Windows 7.
@@ -113,12 +113,7 @@ def _gn_build(source_dir, flavor, api, **kwargs):
     ninja_cmd = base_ninja_cmd.copy()
     ninja_cmd.extend(targets)
     desc = 'compile {} with siso'.format(flavor)
-
-    if use_remoteexec:
-      with api.reclient.process(desc, '', source_dir):
-        api.siso.run_ninja(source_dir, ninja_cmd, name=desc)
-    else:
-      api.siso.run_ninja(source_dir, ninja_cmd, name=desc)
+    api.siso.run_ninja(source_dir, ninja_cmd, name=desc)
 
     return tuple(build_path / t for t in targets)
 
@@ -263,7 +258,6 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
 def GenTests(api):
   yield api.test(
       'linux',
-      api.reclient.properties(),
       api.siso.properties(),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
@@ -279,7 +273,6 @@ def GenTests(api):
   )
   yield api.test(
       'mac',
-      api.reclient.properties(),
       api.siso.properties(),
       api.platform('mac', 64),
       api.buildbucket.ci_build(
@@ -287,7 +280,6 @@ def GenTests(api):
   )
   yield api.test(
       'win',
-      api.reclient.properties(),
       api.siso.properties(),
       api.platform('win', 64),
       api.buildbucket.ci_build(
@@ -295,7 +287,6 @@ def GenTests(api):
   )
   yield api.test(
       'win_clang',
-      api.reclient.properties(),
       api.siso.properties(),
       api.platform('win', 64),
       api.properties(clang=True),
@@ -320,7 +311,6 @@ def GenTests(api):
   )
   yield api.test(
       'linux_gen_fuzz_corpus',
-      api.reclient.properties(),
       api.siso.properties(),
       api.platform('linux', 64),
       api.properties(gen_fuzz_corpus=True),
