@@ -6,6 +6,7 @@ import attr
 import collections
 from collections.abc import Iterable
 import contextlib
+from functools import reduce
 import itertools
 import time
 import traceback
@@ -36,6 +37,7 @@ from . import targets_config as targets_config_module
 AUTOROLLER_ACCOUNT_IDS = (1302611, 1274527)
 
 ALL_TEST_BINARIES_ISOLATE_NAME = 'all_test_binaries'
+UNIFIED_RUNTIME_DEPS_TARGET = 'unified_runtime_deps'
 
 REPOSITORY_MAPPING = {
     'chromium': 'chromium',
@@ -2978,8 +2980,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           archive_type=arch_prop.ArchiveData.ARCHIVE_TYPE_TAR_ZSTD,
           tar_zstd_params=arch_prop.TarZstdParams(compression_level=4,),
           base_dir='src',
-          files=[v for v in runtime_deps.values() if is_file(v)],
-          dirs=[v for v in runtime_deps.values() if is_dir(v)],
+          files=[v for v in runtime_deps if is_file(v)],
+          dirs=[v for v in runtime_deps if is_dir(v)],
           root_permission_override='755',
       )
       self.m.archive.generic_archive(
@@ -3021,25 +3023,24 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           t: self._gen_runtime_dict_for_skylab(source_dir, build_dir, t)
           for t in sorted(tests_by_target)
       }
-      gcs_path_by_target = {
-          t:
-              self._upload_runtime_deps_for_skylab(
-                  checkout_dir,
-                  source_dir,
-                  build_dir,
-                  builder_config.skylab_gs_bucket,
-                  gcs_path,
-                  t,
-                  r,
-              ) for t, r in runtime_dict_by_target.items()
-      }
+
+      # Put all runtime dep files into a list without duplication.
+      runtime_deps = reduce(
+          lambda a, b: a | b,
+          [set(v.values()) for v in runtime_dict_by_target.values()])
+
+      # Generate one unified runtime dep archive file.
+      runtime_deps_gcs_path = self._upload_runtime_deps_for_skylab(
+          checkout_dir, source_dir, build_dir, builder_config.skylab_gs_bucket,
+          gcs_path, UNIFIED_RUNTIME_DEPS_TARGET, runtime_deps)
+
       for target, tests_for_target in tests_by_target.items():
         for t in tests_for_target:
           exe = 'bin/run_%s' % t.target_name
           if t.is_tast_test or t.is_GPU_test:
             exe = './chrome'
           t.exe_rel_path = runtime_dict_by_target.get(target).get(exe)
-          t.lacros_gcs_path = gcs_path_by_target.get(target)
+          t.lacros_gcs_path = runtime_deps_gcs_path
           t.tast_expr_file = runtime_dict_by_target.get(target).get(
               'bin/%s.filter' % t.target_name)
 
