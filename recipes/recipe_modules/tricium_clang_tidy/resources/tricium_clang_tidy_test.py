@@ -467,7 +467,7 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_only_generates_up_to_n_actions_per_src(self):
     self._silence_logs()
 
-    def parse_ninja_deps(_):
+    def parse_ninja_deps(out_dir, base_path):
       return [
           ('foo.o', ['/foo.h', '/foo.cc']),
           ('bar.o', ['/foo.h', '/bar.cc']),
@@ -506,8 +506,9 @@ class Tests(unittest.TestCase):
     for max_actions, expected_actions in test_cases:
       actions, _ = tidy._generate_tidy_actions(
           out_dir='/out',
+          base_path='/foo',
           only_src_files=['/foo.h'],
-          run_ninja=lambda out_dir, object_targets: (),
+          run_ninja=lambda out_dir, base_path, object_targets: (),
           gn_desc=tidy._GnDesc(
               per_target_srcs={
                   '//rule': ['/foo.h', '/foo.cc', '/bar.cc'],
@@ -540,7 +541,7 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_works_with_cc_files(self):
     self._silence_logs()
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       self.assertEqual(out_dir, '/out')
       self.assertEqual(object_targets, ['bar.o', 'foo.o'])
       return ()
@@ -566,10 +567,11 @@ class Tests(unittest.TestCase):
 
     actions, failed = tidy._generate_tidy_actions(
         out_dir='/out',
+        base_path='/foo',
         only_src_files=['/foo.cc', '/bar.cc'],
         run_ninja=run_ninja,
         gn_desc=tidy._GnDesc({}, {}),
-        parse_ninja_deps=lambda _: (),
+        parse_ninja_deps=lambda out_dir, base_path: (),
         compile_commands=compile_commands)
     self.assertEqual(failed, [])
     self.assertEqual(
@@ -593,7 +595,7 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_includes_headers_in_output(self):
     self._silence_logs()
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       self.assertEqual(out_dir, '/out')
       self.assertEqual(object_targets, ['bar.o', 'foo.o'])
       return ()
@@ -617,7 +619,7 @@ class Tests(unittest.TestCase):
         ),
     ]
 
-    def parse_ninja_deps(_):
+    def parse_ninja_deps(out_dir, base_path):
       return [
           ('foo.o', ['/foo.h', '/foo.cc']),
           ('bar.o', ['/bar.cc']),
@@ -625,6 +627,7 @@ class Tests(unittest.TestCase):
 
     actions, failed = tidy._generate_tidy_actions(
         out_dir='/out',
+        base_path='/foo',
         only_src_files=['/foo.cc', '/foo.h', '/bar.cc'],
         run_ninja=run_ninja,
         gn_desc=tidy._GnDesc(
@@ -655,16 +658,17 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_ignores_nonexistent_files(self):
     self._silence_logs()
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       self.assertEqual(object_targets, ['foo.cc.o'])
       return ()
 
     actions, failed = tidy._generate_tidy_actions(
         out_dir='/out',
+        base_path='/foo',
         only_src_files=['/foo.cc', '/bar.cc'],
         run_ninja=run_ninja,
         gn_desc=tidy._GnDesc({}, {}),
-        parse_ninja_deps=lambda _: (),
+        parse_ninja_deps=lambda out_dir, base_path: (),
         compile_commands=[
             tidy._CompileCommand(
                 target_name='foo.cc.o',
@@ -690,16 +694,17 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_functions_with_no_src_file_filter(self):
     self._silence_logs()
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       self.assertEqual(out_dir, '/out')
       self.assertEqual(object_targets, ['foo.cc.o'])
       return ()
 
     actions, failed = tidy._generate_tidy_actions(
         out_dir='/out',
+        base_path='/foo',
         only_src_files=None,
         run_ninja=run_ninja,
-        parse_ninja_deps=lambda _: (),
+        parse_ninja_deps=lambda out_dir, base_path: (),
         gn_desc=tidy._GnDesc({}, {}),
         compile_commands=[
             tidy._CompileCommand(
@@ -727,14 +732,15 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_reports_failures(self):
     self._silence_logs()
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       return list(object_targets)
 
     actions, failed = tidy._generate_tidy_actions(
         out_dir='/out',
+        base_path='/foo',
         only_src_files=None,
         run_ninja=run_ninja,
-        parse_ninja_deps=lambda _: (),
+        parse_ninja_deps=lambda out_dir, base_path: (),
         gn_desc=tidy._GnDesc({}, {}),
         compile_commands={
             tidy._CompileCommand(
@@ -1264,14 +1270,16 @@ class Tests(unittest.TestCase):
         '/bar.cc': ['bar.o'],
     }
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       self.assertEqual(sorted(object_targets), ['bar.o', 'foo.o'])
       return ()
 
     tidy._perform_build(
         out_dir='/out',
+        base_path='/foo',
         run_ninja=run_ninja,
-        parse_ninja_deps=lambda _: [('foo.o', ['/foo.cc', '/foo.h'])],
+        parse_ninja_deps=lambda out_dir, base_path: [('foo.o',
+                                                      ['/foo.cc', '/foo.h'])],
         cc_to_target_map=cc_to_target_map,
         gn_desc=tidy._GnDesc(
             per_target_srcs={
@@ -1294,14 +1302,15 @@ class Tests(unittest.TestCase):
 
     built_objects = []
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       built_objects.append(object_targets)
       return ()
 
     tidy._perform_build(
         out_dir='/out',
+        base_path='/foo',
         run_ninja=run_ninja,
-        parse_ninja_deps=lambda _: [('foo.o', ['/foo.cc'])],
+        parse_ninja_deps=lambda out_dir, base_path: [('foo.o', ['/foo.cc'])],
         cc_to_target_map=cc_to_target_map,
         gn_desc=tidy._GnDesc(
             per_target_srcs={
@@ -1328,8 +1337,9 @@ class Tests(unittest.TestCase):
 
     src_file_to_target_map, _ = tidy._perform_build(
         out_dir='/out',
-        run_ninja=lambda out_dir, object_targets: (),
-        parse_ninja_deps=lambda _: [
+        base_path='/foo',
+        run_ninja=lambda out_dir, base_path, object_targets: (),
+        parse_ninja_deps=lambda out_dir, base_path: [
             ('foo.o', ['/foo.cc', '/foo.h']),
             ('bar.o', ['/bar.cc', '/foo.h']),
             ('baz.o', ['/baz.cc']),
@@ -1365,14 +1375,15 @@ class Tests(unittest.TestCase):
 
     built_objects = []
 
-    def run_ninja(out_dir, object_targets):
+    def run_ninja(out_dir, base_path, object_targets):
       built_objects.append(object_targets)
       return ()
 
     tidy._perform_build(
         out_dir='/out',
+        base_path='/foo',
         run_ninja=run_ninja,
-        parse_ninja_deps=lambda _: [('foo.o', ['/foo.cc'])],
+        parse_ninja_deps=lambda out_dir, base_path: [('foo.o', ['/foo.cc'])],
         cc_to_target_map=cc_to_target_map,
         gn_desc=tidy._GnDesc(
             per_target_srcs={
@@ -1411,7 +1422,7 @@ class Tests(unittest.TestCase):
   def test_generate_tidy_actions_copes_with_unknown_objects(self):
     self._silence_logs()
 
-    def parse_ninja_deps(_):
+    def parse_ninja_deps(out_dir, base_path):
       # foo_pnacl.o not being present in `compile_commands` broke us before;
       # crbug.com/1067271
       return [
@@ -1420,8 +1431,9 @@ class Tests(unittest.TestCase):
 
     actions, _ = tidy._generate_tidy_actions(
         out_dir='/out',
+        base_path='/foo',
         only_src_files=['/foo.h'],
-        run_ninja=lambda out_dir, object_targets: (),
+        run_ninja=lambda out_dir, base_path, object_targets: (),
         gn_desc=tidy._GnDesc(
             {
                 '//rule': ['/foo.h', '/foo.cc'],

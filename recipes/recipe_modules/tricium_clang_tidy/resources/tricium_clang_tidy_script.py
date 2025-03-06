@@ -34,6 +34,7 @@ import multiprocessing.pool
 import os
 import os.path
 import pipes
+import platform
 import re
 import shlex
 import signal
@@ -87,6 +88,7 @@ def _generate_compile_commands(out_dir: str, gn: str) -> str:
 
 
 def _run_ninja(out_dir: str,
+               base_path: str,
                object_targets: List[str],
                jobs: Optional[int] = None,
                max_targets_per_invocation: int = 500,
@@ -95,6 +97,8 @@ def _run_ninja(out_dir: str,
 
   Args:
     out_dir: The directory to perform the build in.
+    base_path: The base path to the Chromium checkout. All output paths will
+      be made relative to this. Any paths outside of it will be discarded.
     object_targets: Object files to build. Errors in building these will be
       reported to the caller.
     jobs: How many jobs to use. If None, lets `ninja` pick a value.
@@ -122,9 +126,16 @@ def _run_ninja(out_dir: str,
   # 500 targets per invocation is arbitrary, but we start hitting OS argv size
   # limits around 1K in my experience.
   def make_ninja_command(targets):
-    ninja_cmd = ['autoninja', '-k', '1000000']
+    if platform.system() == 'Windows':
+      autoninja_path = os.path.join(
+          base_path,
+          'third_party\\depot_tools\\autoninja.py').replace('/', '\\')
+      autoninja_cmd = ['vpython3', autoninja_path]
+    else:
+      autoninja_cmd = ['autoninja']
+    ninja_cmd = autoninja_cmd + ['-k', '1000000']
     if jobs is not None:
-      ninja_cmd.append('-j%d' % jobs)
+      ninja_cmd.extend(['-j', str(jobs)])
 
     ninja_cmd.append('--')
     ninja_cmd += targets
@@ -665,8 +676,10 @@ def _parse_ninja_deps_output(input_stream: IO[str], cwd: str
     yield current_target, all_deps
 
 
-def _parse_ninja_deps(out_dir: str
-                     ) -> Generator[Tuple[str, List[str]], None, None]:
+def _parse_ninja_deps(
+    out_dir: str,
+    base_path: str,
+) -> Generator[Tuple[str, List[str]], None, None]:
   """Runs and parses the output of `ninja -t deps`.
 
   Yields successive tuples of (object_file, [file_it_depends_on]). Ignores any
@@ -675,9 +688,20 @@ def _parse_ninja_deps(out_dir: str
   `object_file`s are all relative to out_dir; all `file_it_depends_on`s are
   absolute.
   """
-  command = ['autoninja', '-t', 'deps']
+  if platform.system() == 'Windows':
+    autoninja_path = os.path.join(
+        base_path, 'third_party\\depot_tools\\autoninja.py').replace('/', '\\')
+    autoninja_cmd = ['vpython3', autoninja_path]
+  else:
+    autoninja_cmd = ['autoninja']
+  command = autoninja_cmd + ['-t', 'deps']
   ninja = subprocess.Popen(
-      command, cwd=out_dir, stdout=subprocess.PIPE, encoding='utf-8')
+      command,
+      cwd=out_dir,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      encoding='utf-8')
+
   try:
     assert ninja.stdout is not None
     for val in _parse_ninja_deps_output(ninja.stdout, out_dir):
@@ -932,22 +956,30 @@ def _determine_rdeps_to_build_for(
   return sorted(target for _, target in target_scores)
 
 
-def _perform_build(out_dir: str, run_ninja: Any, parse_ninja_deps: Callable[
-    [str], Generator[Tuple[str, List[str]], None, None]],
-                   cc_to_target_map: Dict[str, List[str]], gn_desc: _GnDesc,
-                   potential_src_cc_file_deps: Dict[str, List[str]]
-                  ) -> Tuple[Dict[str, List[str]], List[str]]:
+def _perform_build(
+    out_dir: str,
+    base_path: str,
+    run_ninja: Any,
+    parse_ninja_deps: Callable[[str, str], Generator[Tuple[str, List[str]],
+                                                     None, None]],
+    cc_to_target_map: Dict[str, List[str]],
+    gn_desc: _GnDesc,
+    potential_src_cc_file_deps: Dict[str, List[str]],
+) -> Tuple[Dict[str, List[str]], List[str]]:
   """Performs a build, collecting info pertinent to clang-tidy's interests.
 
   Args:
     out_dir: the out/ directory for us to target with the build.
+    base_path: The base path to the Chromium checkout. All output paths will
+      be made relative to this. Any paths outside of it will be discarded.
     run_ninja: a function that runs `ninja` on the given targets. Takes three
       kwargs:
         out_dir: the out dir mentioned above.
         object_targets: a list of file-backed ninja targets to build.
       Builds them all, returns a best-effort subset of `object_targets` that
       failed.
-    parse_ninja_deps: given an out_dir, yields non-stale ninja deps.
+    parse_ninja_deps: given an out_dir and base_path,
+      yields non-stale ninja deps.
     cc_to_target_map: a mapping of cc_files -> [targets_built_by_it].
     potential_src_cc_file_deps: A mapping of
       {src_files_to_generate_build_artifacts_for:
@@ -966,7 +998,7 @@ def _perform_build(out_dir: str, run_ninja: Any, parse_ninja_deps: Callable[
   def parse_deps(only_targets, interesting_src_files):
     logging.info('Parsing deps...')
     src_file_to_target_map = collections.defaultdict(set)
-    for target, src_files in parse_ninja_deps(out_dir):
+    for target, src_files in parse_ninja_deps(out_dir, base_path):
       if only_targets is not None and target not in only_targets:
         continue
 
@@ -993,7 +1025,7 @@ def _perform_build(out_dir: str, run_ninja: Any, parse_ninja_deps: Callable[
   # len(object_targets) is, say, <1.5K files, which should be the
   # overwhelmingly common case.
   failed_targets = run_ninja(
-      out_dir=out_dir, object_targets=sorted(all_targets))
+      out_dir=out_dir, base_path=base_path, object_targets=sorted(all_targets))
 
   src_file_to_target_map = parse_deps(
       only_targets=all_targets,
@@ -1042,7 +1074,10 @@ def _perform_build(out_dir: str, run_ninja: Any, parse_ninja_deps: Callable[
     # It's also not super easy (and probably not very valuable?) to associate
     # failures here with targets. If any source files fail, let them fail
     # silently.
-    run_ninja(out_dir=out_dir, object_targets=sorted(all_targets))
+    run_ninja(
+        out_dir=out_dir,
+        base_path=base_path,
+        object_targets=sorted(all_targets))
 
     missing_deps = parse_deps(
         only_targets=None, interesting_src_files=still_missing)
@@ -1056,25 +1091,27 @@ def _perform_build(out_dir: str, run_ninja: Any, parse_ninja_deps: Callable[
   return src_file_to_target_map, failed_targets
 
 
-def _generate_tidy_actions(
-    out_dir: str,
-    only_src_files: Optional[List[str]],
-    run_ninja: Any,
-    parse_ninja_deps: Callable[[str],
-                               Generator[Tuple[str, List[str]], None, None]],
-    gn_desc: _GnDesc,
-    compile_commands: List[_CompileCommand],
-    max_tidy_actions_per_file: int = 16) -> Any:
+def _generate_tidy_actions(out_dir: str,
+                           base_path: str,
+                           only_src_files: Optional[List[str]],
+                           run_ninja: Any,
+                           parse_ninja_deps: Callable[[str, str], Generator[
+                               Tuple[str, List[str]], None, None]],
+                           gn_desc: _GnDesc,
+                           compile_commands: List[_CompileCommand],
+                           max_tidy_actions_per_file: int = 16) -> Any:
   """Figures out how to lint `only_src_files` and builds their dependencies.
 
   Args:
     out_dir: the out/ directory for us to interrogate.
+    base_path: The base path to the Chromium checkout. All output paths will
+      be made relative to this. Any paths outside of it will be discarded.
     only_src_files: a list of C++ files to look at. If None, we pretend you
       passed in every C/C++ file in compile_commands, ignoring generated
       targets.
     run_ninja: forwarded to _perform_build; please see comments there.
-    parse_ninja_deps: a function that, given an out_dir, yields non-stale ninja
-      deps.
+    parse_ninja_deps: a function that, given out_dir and base_path, yields
+      non-stale ninja deps.
     gn_desc: a _GnDesc object describing our world.
     compile_commands: a list of `_CompileCommand`s.
     max_tidy_actions_per_file: the maximum number of `_TidyAction`s to emit
@@ -1111,8 +1148,8 @@ def _generate_tidy_actions(
   }
 
   src_file_to_target_map, failed_targets = _perform_build(
-      out_dir, run_ninja, parse_ninja_deps, cc_to_target_map, gn_desc,
-      potential_src_cc_file_deps)
+      out_dir, base_path, run_ninja, parse_ninja_deps, cc_to_target_map,
+      gn_desc, potential_src_cc_file_deps)
 
   actions = collections.defaultdict(list)
   for src_file in only_src_files:
@@ -1549,9 +1586,10 @@ def main():
 
   compile_commands_location = _generate_compile_commands(out_dir, gn)
 
-  def run_ninja(out_dir, object_targets):
+  def run_ninja(out_dir, base_path, object_targets):
     return _run_ninja(
         out_dir,
+        base_path,
         object_targets,
         jobs=args.ninja_jobs,
         force_clean=args.clean)
@@ -1559,6 +1597,7 @@ def main():
   with open(compile_commands_location, encoding='utf-8') as f:
     tidy_actions, failed_actions = _generate_tidy_actions(
         out_dir,
+        base_path,
         only_src_files,
         run_ninja,
         _parse_ninja_deps,
