@@ -5,7 +5,6 @@
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
@@ -64,16 +63,6 @@ def RunSteps(api):
     builder_id = chromium.BuilderId.create_for_group(*perf_builder)
     _, builder_config = api.chromium_tests_builder_config.lookup_builder(
         builder_id, use_try_db=False)
-
-    # crbug/1291250: We cannot simply add the old tester config back, as builder
-    # on perf waterfall will try to trigger them and failed. We hacked there to
-    # only add them on pinpoint context, by:
-    #  - load the spec mapping of 'chromium.perf' from builder_config
-    #  - add the old testers to the mapping, and regenerate the builder config.
-    builder_dict = dict(builder_config.builder_db.builders_by_group)
-    new_builder_db = ctbc.builder_db.BuilderDatabase.create(builder_dict)
-    _, builder_config = api.chromium_tests_builder_config.lookup_builder(
-        builder_id, builder_db=new_builder_db, use_try_db=False)
 
     api.chromium_tests.configure_build(builder_config)
     for key, value in api.gclient.c.repo_path_map.items():
