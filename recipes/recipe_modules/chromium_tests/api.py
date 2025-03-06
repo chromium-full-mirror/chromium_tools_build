@@ -236,12 +236,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     # Configure chromium_android module
     if builder_config.android_config:
-      # TODO: crbug.com/374819553 - Investigate using chromium.c.BUILD_CONFIG
-      # consistently within chromium_android rather than having duplicate
-      # BUILD_CONFIG value so that passing the kwars won't be necessary
-      self.m.chromium_android.set_config(
-          builder_config.android_config,
-          **builder_config.chromium_config_kwargs)
+      self.m.chromium_android.set_config(builder_config.android_config)
       for c in builder_config.android_apply_config:
         self.m.chromium_android.apply_config(c)
 

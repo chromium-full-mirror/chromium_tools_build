@@ -7,12 +7,10 @@ from recipe_engine.config import Dict, List, Single, Static
 
 
 def BaseConfig(INTERNAL=False,
-               BUILD_CONFIG='Debug',
                asan_symbolize=False,
                **_kwargs):  # pylint: disable=redefined-outer-name
   return ConfigGroup(
       INTERNAL=Static(INTERNAL),
-      BUILD_CONFIG=Static(BUILD_CONFIG),
       cs_base_url=Single(
           str, required=False, empty_val='http://cs.chromium.org'),
       results_bucket=Single(

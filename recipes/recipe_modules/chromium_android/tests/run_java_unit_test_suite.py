@@ -20,8 +20,8 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('chromium')
   api.gclient.apply_config('android')
-  api.chromium.set_config('chromium')
-  api.chromium_android.set_config('main_builder', BUILD_CONFIG='Release')
+  api.chromium.set_config('chromium', BUILD_CONFIG='Release')
+  api.chromium_android.set_config('main_builder')
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
   build_dir = source_dir / 'out/Release'

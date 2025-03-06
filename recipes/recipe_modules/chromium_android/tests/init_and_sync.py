@@ -5,12 +5,14 @@
 from recipe_engine.post_process import DropExpectation, StepSuccess
 
 DEPS = [
-  'chromium_android',
+    'chromium',
+    'chromium_android',
 ]
 
 
 def RunSteps(api):
   api.chromium_android.set_config('main_builder')
+  api.chromium.set_config('chromium')
   api.chromium_android.init_and_sync()
 
 

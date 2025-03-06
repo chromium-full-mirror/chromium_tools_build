@@ -122,7 +122,7 @@ class AndroidApi(recipe_api.RecipeApi):
     return result
 
   def clean_local_files(self, source_dir: Path):
-    target = self.c.BUILD_CONFIG
+    target = self.m.chromium.c.BUILD_CONFIG
     debug_info_dumps = source_dir / f'out/{target}/debug_info_dumps'
     test_logs = source_dir / f'out/{target}/test_logs'
     build_product = source_dir / 'out/build_product.zip'
@@ -580,7 +580,7 @@ class AndroidApi(recipe_api.RecipeApi):
         '--denylist-file',
         self.denylist_file(source_dir),
     ]
-    with self.m.context(env={'BUILDTYPE': self.c.BUILD_CONFIG}):
+    with self.m.context(env={'BUILDTYPE': self.m.chromium.c.BUILD_CONFIG}):
       return self.test_runner(
           source_dir, build_dir, 'Monkey Test', args=args, **kwargs)
 
@@ -884,7 +884,7 @@ class AndroidApi(recipe_api.RecipeApi):
     args = []
     if verbose:
       args.append('--verbose')
-    if self.c.BUILD_CONFIG == 'Release':
+    if self.m.chromium.c.BUILD_CONFIG == 'Release':
       args.append('--release')
     if json_results_file:
       args.extend(['--json-results-file', json_results_file])
