@@ -54,6 +54,13 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     return disabled
 
   def _invoke_smart_test_selection(self, tests):
+    # TODO(b/396675456): Currently Prepare() is being invoked AFTER compilation
+    # where as Select() is being invoked before. This is WRONG! The order of
+    # API invocation should be opposite. Fix this ASAP
+    target_set = {test.canonical_name for test in tests if test.is_rts}
+    if not target_set:
+      self.m.step.empty('No candidate test targets for smart test selection')
+      return
     gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
     with self.m.secret_manager.fetch(
         project=_API_KEY_HOLDER_PROJECT,
@@ -66,7 +73,6 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
           text_data=api_key,
           include_log=False)
       build = self.test_executor_build
-      target_set = {test.canonical_name for test in tests if test.is_rts}
       cmd = ['vpython3', self.resource('decisiongraph_invoker.py')]
       cmd.append('--test-targets')
       cmd.extend(target_set)

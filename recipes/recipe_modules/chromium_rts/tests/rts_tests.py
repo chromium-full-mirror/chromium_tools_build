@@ -22,15 +22,17 @@ _COMPILATOR_BUILD_ID = 5678
 
 
 def RunSteps(api):
+  supports_rts = api.properties.get('supports_rts', True)
   tests = [
-      steps.MockTestSpec.create('MockTest',
-                                supports_rts=True).get_test(api.chromium_tests),
+      steps.MockTestSpec.create('MockTest', supports_rts=supports_rts).get_test(
+          api.chromium_tests),
   ]
   api.m.chromium_rts.rts_model = 'smart-test-selection'
 
   api.m.chromium_rts.setup_tests(tests)
   api.m.chromium_rts.trigger_test_selection(tests)
-  assert (tests[0].is_rts)
+  if supports_rts:
+    assert (tests[0].is_rts)
 
   api.m.chromium_rts.setup_tests(tests)
 
@@ -84,5 +86,15 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'fetch api key and trigger test selection.Trigger test selection'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'skip_test_selection',
+      api.chromium.try_build(
+          experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
+      api.properties(supports_rts=False),
+      api.post_process(post_process.MustRun,
+                       'No candidate test targets for smart test selection'),
       api.post_process(post_process.DropExpectation),
   )
