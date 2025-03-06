@@ -50,11 +50,11 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
 from RECIPE_MODULES.build import chromium_swarming
-from RECIPE_MODULES.build.test_utils import util
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
                                              mapping, sequence)
-from RECIPE_MODULES.build.skylab.test_runner import TestRunner
 from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_instruction
+from RECIPE_MODULES.build.skylab.test_runner import TestRunner
+from RECIPE_MODULES.build.test_utils import util
 
 # Pylint doesn't understand an abstract class hierarchy where a subclass will
 # override some of the abstract methods of its base and remain abstract itself.
@@ -1439,16 +1439,34 @@ class CiOnlyTest(TestWrapper):
         self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES):
       return False
 
-    footer_vals = self.api.m.tryserver.get_footer(INCLUDE_CI_FOOTER)
-    if not footer_vals:
-      return True
+    enabled_tests_by_builder = self.api.get_footer_enabled_ci_only_tests()
 
-    return footer_vals[-1].lower() != 'true'
+    def test_is_enabled_for_builder(builder):
+      tests_for_builder = enabled_tests_by_builder.get(builder, set())
+      return ('*' in tests_for_builder or
+              self.canonical_name in tests_for_builder)
+
+    if test_is_enabled_for_builder('*'):
+      return False
+
+    if test_is_enabled_for_builder(self._builder_id):
+      return False
+
+    return True
+
+  @property
+  def _builder_id(self) -> str:
+    spec = self._test.spec
+    return f'{spec.waterfall_builder_group}:{spec.waterfall_buildername}'
+
+  @property
+  def _footer_to_enable(self) -> str:
+    return f'{INCLUDE_CI_FOOTER}: {self._builder_id}|{self.canonical_name}'
 
   @property
   def _disabled_message(self):
     return (("This test is not being run because it is marked 'ci_only'."
-             f" Use '{INCLUDE_CI_FOOTER}: true' to override.")
+             f" Add '{self._footer_to_enable}' to CL footers to override.")
             if self._disabled else '')
 
   @property
@@ -1461,7 +1479,7 @@ class CiOnlyTest(TestWrapper):
       return ('This test is being run due to the'
               f' {INCLUDE_CI_FOOTER} gerrit footer')
     return ('This test will not be run on try builders by default,'
-            f" add '{INCLUDE_CI_FOOTER}: true' to override")
+            f" add '{self._footer_to_enable}' to CL footers to override")
 
 
 class SuccessReuseTestSpec(TestWrapperSpec):

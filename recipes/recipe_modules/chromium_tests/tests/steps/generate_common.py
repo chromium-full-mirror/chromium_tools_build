@@ -125,14 +125,15 @@ def GenTests(api):
       api.post_process(
           post_process.StepTextContains,
           'fake-test (with patch)',
-          [("This test is not being run because it is marked 'ci_only'. "
-            "Use 'Include-Ci-Only-Tests: true' to override.")],
+          [("This test is not being run because it is marked 'ci_only'."
+            " Add 'Include-Ci-Only-Tests: fake-group:fake-builder|fake-test'"
+            " to CL footers to override.")],
       ),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'ci_only-try-with-bypass',
+      'ci_only-try-with-global-bypass',
       try_build(test_spec={
           'name': 'fake-test',
           'ci_only': True,
@@ -143,6 +144,178 @@ def GenTests(api):
       api.post_process(post_process.StepTextContains, 'fake-test (with patch)',
                        [('This test is being run due to the'
                          ' Include-Ci-Only-Tests gerrit footer')]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ci_only-try-with-builder-specific-test-wildcard-bypass',
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group',
+          {
+              'fake-builder': {
+                  'isolated_scripts': [
+                      {
+                          'name': 'fake-test',
+                          'ci_only': True,
+                      },
+                      {
+                          'name': 'fake-test2',
+                          'ci_only': True,
+                      },
+                  ],
+              },
+          },
+      ),
+      api.step_data(
+          'parse description',
+          api.json.output({
+              'Include-Ci-Only-Tests': [
+                  ('other-group:other-builder,fake-group:fake-builder,'
+                   'other-group:other-builder2|*')
+              ]
+          })),
+      api.post_process(post_process.StepTextContains, 'fake-test (with patch)',
+                       [('This test is being run due to the'
+                         ' Include-Ci-Only-Tests gerrit footer')]),
+      api.post_process(post_process.StepTextContains, 'fake-test2 (with patch)',
+                       [('This test is being run due to the'
+                         ' Include-Ci-Only-Tests gerrit footer')]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ci_only-try-with-builder-wildcard-test-specific-bypass',
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group',
+          {
+              'fake-builder': {
+                  'isolated_scripts': [
+                      {
+                          'name': 'fake-test',
+                          'ci_only': True,
+                      },
+                      {
+                          'name': 'fake-test2',
+                          'ci_only': True,
+                      },
+                  ],
+              },
+          },
+      ),
+      api.step_data(
+          'parse description',
+          api.json.output({
+              'Include-Ci-Only-Tests': ['*|other-test,fake-test,other-test2']
+          })),
+      api.post_process(post_process.StepTextContains, 'fake-test (with patch)',
+                       [('This test is being run due to the'
+                         ' Include-Ci-Only-Tests gerrit footer')]),
+      api.post_process(post_process.StepCommandEmpty,
+                       'fake-test2 (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ci_only-try-with-non-matching-bypass',
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      'name': 'fake-test',
+                      'ci_only': True,
+                  }],
+              },
+          }),
+      api.step_data(
+          'parse description',
+          api.json.output({
+              'Include-Ci-Only-Tests': ['other-group:other-builder|fake-test']
+          })),
+      api.post_process(post_process.StepCommandEmpty, 'fake-test (with patch)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'fake-test (with patch)',
+          [("This test is not being run because it is marked 'ci_only'."
+            " Add 'Include-Ci-Only-Tests: fake-group:fake-builder|fake-test'"
+            " to CL footers to override.")],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ci_only-bad-bypass',
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      'name': 'fake-test',
+                      'ci_only': True,
+                  }],
+              },
+          }),
+      api.step_data('parse description',
+                    api.json.output({'Include-Ci-Only-Tests': ['bad-footer']})),
+      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          "invalid format for Include-Ci-Only-Tests footer: 'bad-footer'"),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ci_only-bad-builder-in-bypass',
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      'name': 'fake-test',
+                      'ci_only': True,
+                  }],
+              },
+          }),
+      api.step_data(
+          'parse description',
+          api.json.output({'Include-Ci-Only-Tests': ['bad-builder|fake-test']
+                          })),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.SummaryMarkdownRE,
+                       ("invalid format for builder 'bad-builder'"
+                        ' in Include-Ci-Only-Tests footer')),
       api.post_process(post_process.DropExpectation),
   )
 

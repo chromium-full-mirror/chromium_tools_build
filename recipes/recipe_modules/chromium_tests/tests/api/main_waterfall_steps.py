@@ -513,8 +513,9 @@ def GenTests(api):
       api.post_process(
           post_process.SummaryMarkdownRE,
           ('some of the failing tests are only run in CI,'
-           f" to run them on try builders add '{steps.INCLUDE_CI_FOOTER}: true'"
-           ' to the CL footers')),
+           ' add the following CL footers to enable them on try builders\n\n'
+           f'{steps.INCLUDE_CI_FOOTER}: fake-group:fake-builder|base_unittests'
+          )),
       api.post_process(post_process.DropExpectation),
   )
 

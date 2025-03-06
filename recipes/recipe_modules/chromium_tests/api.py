@@ -4,7 +4,7 @@
 
 import attr
 import collections
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable, Mapping
 import contextlib
 import itertools
 import time
@@ -13,6 +13,7 @@ import traceback
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
+from recipe_engine.engine_types import freeze
 
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.archive import properties as arch_prop
@@ -170,6 +171,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self._enable_snoopy = input_properties.enable_snoopy
 
+    self._enabled_ci_only_tests_enabled_by_builder = None
+
   def initialize(self):
     # TODO: crbug.com/1421068 - Once parent relationship is propagated through
     # scheduler, this can be removed
@@ -272,6 +275,48 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         presentation.step_text = (
             'builder cache is absent, expect a slow build')
+
+  def get_footer_enabled_ci_only_tests(self) -> Mapping[str, Collection[str]]:
+    """Compute the ci_only tests that are enabled by a footer.
+
+    Returns:
+      A mapping with the string chromium builder ID (builder-group:builder) as
+      keys and the collection of tests enabled for the corresponding CI builder
+      as the values. A wildcard can appear as either a builder ID or a test. A
+      wildcard for builder indicates the corresponding tests are enabled for all
+      builders. A wildcard for a test indicates all tests are enabled for the
+      corresponding builder.
+    """
+    if self._enabled_ci_only_tests_enabled_by_builder is None:
+      footer_vals = self.m.tryserver.get_footer(steps.INCLUDE_CI_FOOTER)
+      enabled_tests_by_builder = {}
+
+      for f in footer_vals:
+        if f.lower() == 'true':
+          enabled_tests_by_builder = {'*': {'*'}}
+          break
+
+        footer_pieces = f.split('|')
+        if len(footer_pieces) != 2:
+          # TODO: crbug.com/399661337 - Provide reference to documentation on
+          # format
+          raise self.m.step.StepFailure(
+              f"invalid format for {steps.INCLUDE_CI_FOOTER} footer: '{f}'")
+        builders = footer_pieces[0].split(',')
+        tests = footer_pieces[1].split(',')
+        for b in builders:
+          if b != '*' and len(b.split(':')) != 2:
+            # TODO: crbug.com/399661337 - Provide reference to documentation on
+            # format
+            raise self.m.step.StepFailure(
+                f"invalid format for builder '{b}'"
+                f' in {steps.INCLUDE_CI_FOOTER} footer')
+          enabled_tests_by_builder.setdefault(b, set()).update(tests)
+
+      self._enabled_ci_only_tests_enabled_by_builder = freeze(
+          enabled_tests_by_builder)
+
+    return self._enabled_ci_only_tests_enabled_by_builder
 
   def create_targets_config(self,
                             builder_config,
@@ -2390,15 +2435,21 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       size_limit = self._test_data.get('change_size_limit', 200)
       failure_limit = size_limit / 100
 
-    # TODO: crbug.com/399661337 - When the Include-Ci-Only footer supports
-    # specifying tests, the summary should provide information for enabling the
-    # specific tests
-    if (not self.m.tryserver.is_tryserver and
-        any(t.is_ci_only for t in unrecoverable_test_suites)):
-      test_summary_lines.append(
-          'some of the failing tests are only run in CI,'
-          f" to run them on try builders add '{steps.INCLUDE_CI_FOOTER}: true'"
-          ' to the CL footers')
+    if not self.m.tryserver.is_tryserver:
+      failed_tests_by_builder_id = {}
+      for t in unrecoverable_test_suites:
+        if t.is_ci_only:
+          builder_id = (
+              f'{t.spec.waterfall_builder_group}:{t.spec.waterfall_buildername}'
+          )
+          failed_tests_by_builder_id.setdefault(builder_id, []).append(t.name)
+      if failed_tests_by_builder_id:
+        test_summary_lines.append(
+            'some of the failing tests are only run in CI,'
+            ' add the following CL footers to enable them on try builders')
+        for builder_id, tests in failed_tests_by_builder_id.items():
+          test_summary_lines.append(
+              f'{steps.INCLUDE_CI_FOOTER}: {builder_id}|{",".join(tests)}')
 
     current_size = 0
     for index, suite in enumerate(unrecoverable_test_suites):
