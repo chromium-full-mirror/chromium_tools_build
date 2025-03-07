@@ -197,6 +197,8 @@ def RunSteps(api, properties):
       # of the main Chromium binary, so let's build that too.
       if properties.collect_fuzz_coverage:
         all_fuzzers.add("chrome")
+        if properties.fuzz_engine == 'centipede':
+          all_fuzzers.add("centipede")
       targets = sorted(all_fuzzers - no_clusterfuzz)
 
       api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
@@ -578,6 +580,24 @@ def GenTests(api):
           })),
       api.platform.name('linux'),
       generate_test(is_coverage=True, engine='fuzzilli'),
+  )
+
+  yield api.test(
+      'centipede-coverage',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      generate_test(is_coverage=True, engine='centipede'),
   )
 
   yield api.test(
