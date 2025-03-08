@@ -878,6 +878,22 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           t for t in targets_config.compile_only_targets if t in test_names
       ]
 
+    def _matches_multiple_tests(filter_arg):
+      """Returns True if the given filter arg matches just a single test case.
+
+      Currently, gtests's and isolated-script-tests's filter arg API use the
+      same format to specify multiple tests in one filter. Namely "*" and ":"
+      characters. See:
+      https://google.github.io/googletest/advanced.html#running-a-subset-of-the-tests
+      https://chromium.googlesource.com/chromium/src/+/main/docs/testing/test_executable_api.md#Filtering-which-tests-to-run
+
+      So we simply use those the presence of those characters to determine if
+      the filter matches one or more tests. Note that there's no guarantee
+      that a new test type won't be introduced that uses some other format for
+      filtering. So this is only best-effort, and might be very fragile.
+      """
+      return ('*' in filter_arg or ':' in filter_arg)
+
     for test in tests:
       # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
       # ci builders that would point to gcs dirs that devs do not have access
@@ -895,6 +911,17 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         test.spec = attr.evolve(
             test.spec,
             args=test.spec.args + tuple(properties.additional_test_args))
+        # Running a single test case of a suite with multiple shards will lead
+        # to all but one shard being a no-op. This has lead to some confusion
+        # among users. So we try to detect such a case and set shard count to
+        # one.
+        filters = []
+        for arg in properties.additional_test_args:
+          if arg.startswith(test.option_flags.filter_flag):
+            filters.append(arg)
+        if len(filters) == 1 and not _matches_multiple_tests(filters[0]):
+          if test.runs_on_swarming:
+            test.spec = attr.evolve(test.spec, shards=1)
 
     if properties.reuse_swarming_task:
       self.reuse_swarming_task(properties.reuse_swarming_task, tests)

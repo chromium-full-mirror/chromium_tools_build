@@ -1026,3 +1026,57 @@ target_os=[]
 """)),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'single_test_case_filter',
+      boilerplate(
+          test_names=['browser_tests'],
+          additional_test_args=['--gtest_filter=Foo.Bar'],
+          target_spec={
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                          'shards': 20,
+                      },
+                  }],
+              },
+          }),
+      # Single test case filter should trigger one shard.
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.DoesNotRun,
+                       'test_pre_run.[trigger] browser_tests (2)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'many_test_case_filter',
+      boilerplate(
+          test_names=['browser_tests'],
+          additional_test_args=['--gtest_filter=Foo.*'],
+          target_spec={
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                          'shards': 20,
+                      },
+                  }],
+              },
+          }),
+      # Wildcard test case filter should trigger multiple shards.
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests (2)'),
+      api.post_process(post_process.DropExpectation),
+  )
