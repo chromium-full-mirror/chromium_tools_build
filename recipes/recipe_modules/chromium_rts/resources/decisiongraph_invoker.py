@@ -21,7 +21,7 @@ MAX_DURATION_SECONDS = 180
 MAX_ATTEMPTS = 3
 BLOCKING_ENUM = 2
 
-BATCH_SIZE = 20
+BATCH_SIZE = 5
 
 def read_api_key(file_path):
   """
