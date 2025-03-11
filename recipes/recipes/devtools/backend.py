@@ -47,6 +47,12 @@ PROPERTIES = {
     'builder_config':
         Property(
             kind=str, default='Debug', help='The build configuration name'),
+    'clobber':
+        Property(
+            kind=bool,
+            help='Should the builder clean up the extensions/cxx_debugging/build/'
+            ' folder before building',
+            default=False),
     'upload_dwarf_binary':
         Property(
             kind=bool,
@@ -55,12 +61,16 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, e2e_builder, builder_config, upload_dwarf_binary):
+def RunSteps(api, e2e_builder, builder_config, clobber, upload_dwarf_binary):
   _configure(api)
   cwd = get_checkout_path(api, 'builder')
   with api.context(cwd=cwd):
     api.bot_update.ensure_checkout()
     api.gclient.runhooks()
+
+  if clobber:
+    path_to_clean = _repo_path(api).joinpath('build')
+    api.file.rmtree('clean outdir', path_to_clean)
 
   if e2e_builder:
     with dwarf_ext_context(api, 'builder'):
@@ -269,7 +279,7 @@ def GenTests(api):
           git_repo=REPO_URL,
           change_number=91827,
           patch_set=1),
-      api.properties(e2e_builder=True),
+      api.properties(e2e_builder=True, clobber=True),
       status='SUCCESS',
   )
 

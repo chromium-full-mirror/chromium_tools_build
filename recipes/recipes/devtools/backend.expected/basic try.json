@@ -242,20 +242,36 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "rmtree",
+      "[START_DIR]/builder/devtools-frontend/extensions/cxx_debugging/build"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "clean outdir"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
       "[START_DIR]/builder"
     ],
-    "cwd": "[START_DIR]/builder/devtools-frontend/extensions/cxx_debugging",
-    "env_prefixes": {
-      "PATH": [
-        "[START_DIR]/builder/devtools-frontend/third_party/cmake/bin",
-        "[START_DIR]/builder/devtools-frontend/extensions/cxx_debugging/third_party/llvm-build/Release+Asserts/bin",
-        "[START_DIR]/builder/devtools-frontend/third_party/node/linux/node-linux-x64/bin",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -306,6 +322,42 @@
       }
     },
     "name": "Ensure checkout dir for [START_DIR]/builder exists (4)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/builder"
+    ],
+    "cwd": "[START_DIR]/builder/devtools-frontend/extensions/cxx_debugging",
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/builder/devtools-frontend/third_party/cmake/bin",
+        "[START_DIR]/builder/devtools-frontend/extensions/cxx_debugging/third_party/llvm-build/Release+Asserts/bin",
+        "[START_DIR]/builder/devtools-frontend/third_party/node/linux/node-linux-x64/bin",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Ensure checkout dir for [START_DIR]/builder exists (5)"
   },
   {
     "cmd": [
@@ -374,7 +426,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Ensure checkout dir for [START_DIR]/builder exists (5)"
+    "name": "Ensure checkout dir for [START_DIR]/builder exists (6)"
   },
   {
     "cmd": [
@@ -410,7 +462,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Ensure checkout dir for [START_DIR]/builder exists (6)"
+    "name": "Ensure checkout dir for [START_DIR]/builder exists (7)"
   },
   {
     "cmd": [
