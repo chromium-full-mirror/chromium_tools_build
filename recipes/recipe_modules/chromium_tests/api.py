@@ -271,6 +271,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         presentation.step_text = (
             'builder cache is absent, expect a slow build')
 
+  _DOC_REF = ('see Options section in //docs/infra/cq.md'
+              ' in chromium/src for more information')
+
   def get_footer_enabled_ci_only_tests(self) -> Mapping[str, Collection[str]]:
     """Compute the ci_only tests that are enabled by a footer.
 
@@ -293,19 +296,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
         footer_pieces = f.split('|')
         if len(footer_pieces) != 2:
-          # TODO: crbug.com/399661337 - Provide reference to documentation on
-          # format
           raise self.m.step.StepFailure(
-              f"invalid format for {steps.INCLUDE_CI_FOOTER} footer: '{f}'")
+              f"invalid format for {steps.INCLUDE_CI_FOOTER} footer: '{f}',"
+              f' {self._DOC_REF}')
         builders = footer_pieces[0].split(',')
         tests = footer_pieces[1].split(',')
         for b in builders:
           if b != '*' and len(b.split(':')) != 2:
-            # TODO: crbug.com/399661337 - Provide reference to documentation on
-            # format
             raise self.m.step.StepFailure(
                 f"invalid format for builder '{b}'"
-                f' in {steps.INCLUDE_CI_FOOTER} footer')
+                f' in {steps.INCLUDE_CI_FOOTER} footer, {self._DOC_REF}')
           enabled_tests_by_builder.setdefault(b, set()).update(tests)
 
       self._enabled_ci_only_tests_enabled_by_builder = freeze(
