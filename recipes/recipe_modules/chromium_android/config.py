@@ -6,9 +6,7 @@ from recipe_engine.config import config_item_context, ConfigGroup
 from recipe_engine.config import Dict, List, Single, Static
 
 
-def BaseConfig(INTERNAL=False,
-               asan_symbolize=False,
-               **_kwargs):  # pylint: disable=redefined-outer-name
+def BaseConfig(INTERNAL=False, asan_symbolize=False):  # pylint: disable=redefined-outer-name
   return ConfigGroup(
       INTERNAL=Static(INTERNAL),
       cs_base_url=Single(

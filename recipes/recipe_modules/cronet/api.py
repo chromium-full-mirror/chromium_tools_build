@@ -8,15 +8,21 @@ from recipe_engine.config_types import Path
 
 class CronetApi(recipe_api.RecipeApi):
 
-  def init_and_sync(self, recipe_config, kwargs, chromium_apply_config=None):
-    default_kwargs = {'INTERNAL': False, 'BUILD_CONFIG': 'Debug'}
-    droid = self.m.chromium_android
-    default_kwargs.update(kwargs)
-    droid.configure_from_properties(recipe_config, **default_kwargs)
-    droid.apply_config('use_devil_provision')
+  def init_and_sync(self,
+                    recipe_config,
+                    chromium_config_kwargs,
+                    chromium_apply_config=None):
+    kwargs = {'BUILD_CONFIG': 'Debug'}
+    kwargs.update(chromium_config_kwargs)
+    self.m.chromium.set_config(recipe_config, **kwargs)
     self.m.chromium.apply_config('cronet_builder')
     for c in chromium_apply_config or []:
       self.m.chromium.apply_config(c)
+
+    droid = self.m.chromium_android
+    droid.set_config(recipe_config, INTERNAL=False)
+    droid.apply_config('use_devil_provision')
+
     return droid.init_and_sync()
 
   def build(self, source_dir: Path, *, targets=None, use_reclient=True):

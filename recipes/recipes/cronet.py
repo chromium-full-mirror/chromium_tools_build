@@ -19,7 +19,7 @@ DEPS = [
 BUILDERS = freeze({
     'local_test': {
         'recipe_config': 'main_builder_mb',
-        'kwargs': {
+        'chromium_config_kwargs': {
             'BUILD_CONFIG': 'Debug',
         },
         'use_reclient': False,
@@ -30,13 +30,13 @@ BUILDERS = freeze({
 def RunSteps(api):
   builder_config = BUILDERS.get(api.buildbucket.builder_name, {})
   recipe_config = builder_config['recipe_config']
-  kwargs = builder_config.get('kwargs', {})
+  chromium_config_kwargs = builder_config.get('chromium_config_kwargs', {})
 
   use_reclient = builder_config.get('use_reclient', True)
 
   update_result = api.cronet.init_and_sync(
       recipe_config,
-      kwargs,
+      chromium_config_kwargs,
       chromium_apply_config=builder_config.get('chromium_apply_config'))
   source_dir = update_result.source_root.path
 

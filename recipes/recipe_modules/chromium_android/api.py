@@ -54,10 +54,6 @@ class AndroidApi(recipe_api.RecipeApi):
           self.m.path.mkdtemp('coverage').joinpath('file_changes.json'))
     return self._file_changes_path
 
-  def configure_from_properties(self, config_name, **kwargs):
-    self.set_config(config_name, **kwargs)
-    self.m.chromium.set_config(config_name, optional=True, **kwargs)
-
   def make_zip_archive(self,
                        step_name,
                        archive_name,

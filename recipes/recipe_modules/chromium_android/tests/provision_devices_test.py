@@ -6,13 +6,15 @@ from recipe_engine.post_process import (DropExpectation, StepException,
                                         StepWarning, SummaryMarkdown)
 
 DEPS = [
-    'recipe_engine/path',
+    'chromium',
     'chromium_android',
+    'recipe_engine/path',
 ]
 
 def RunSteps(api):
   source_dir = api.path.cache_dir / 'builder/src'
-  api.chromium_android.configure_from_properties('base_config')
+  api.chromium.set_config('base_config')
+  api.chromium_android.set_config('base_config')
   api.chromium_android.provision_devices(source_dir)
 
 def GenTests(api):

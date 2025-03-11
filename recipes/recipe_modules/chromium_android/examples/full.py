@@ -75,9 +75,9 @@ BUILDERS = freeze({
 def RunSteps(api):
   config = BUILDERS[api.buildbucket.builder_name]
 
-  api.chromium_android.configure_from_properties(
-      'base_config', INTERNAL=True, BUILD_CONFIG='Release')
+  api.chromium.set_config('base_config', BUILD_CONFIG='Release')
 
+  api.chromium_android.set_config('base_config', INTERNAL=True)
   api.chromium_android.c.get_app_manifest_vars = True
   api.chromium_android.c.logcat_bucket = None
 

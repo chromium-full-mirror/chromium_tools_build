@@ -83,7 +83,7 @@ DETERMINISTIC_BUILDERS = freeze({
         'compare_local': True,
     },
     'Deterministic Android': {
-        'chromium_config': 'android',
+        'chromium_config': 'main_builder',
         'android_config': 'main_builder',
         'gclient_config': 'chromium',
         'gclient_apply_config': ['android'],
@@ -96,7 +96,7 @@ DETERMINISTIC_BUILDERS = freeze({
         'targets': ['all'],
     },
     'Deterministic Android (dbg)': {
-        'chromium_config': 'android',
+        'chromium_config': 'main_builder',
         'android_config': 'main_builder',
         'gclient_config': 'chromium',
         'gclient_apply_config': ['android'],
@@ -145,9 +145,7 @@ def ConfigureChromiumBuilder(api, recipe_config):
     api.gclient.apply_config(c)
 
   if recipe_config.get('android_config'):
-    api.chromium_android.configure_from_properties(
-        recipe_config.get('android_config'),
-        **recipe_config.get('chromium_config_kwargs', {}))
+    api.chromium_android.set_config(recipe_config.get('android_config'))
 
   api.siso.enable_download_remoteexec_cfg_hook()
 
