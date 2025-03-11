@@ -444,6 +444,11 @@ def checkout_copybara(c):
 
 
 @CONFIG_CTX()
+def checkout_mutter(c):
+  c.solutions[0].custom_vars['checkout_mutter'] = 'True'
+
+
+@CONFIG_CTX()
 def checkout_bazel(c):
   c.solutions[0].custom_vars['checkout_bazel'] = 'True'
 

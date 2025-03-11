@@ -89,6 +89,11 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+      'checkout_mutter',
+      api.properties(apply_gclient_config='checkout_mutter'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'clang_tidy',
       api.properties(apply_gclient_config='use_clang_tidy'),
       api.post_process(post_process.DropExpectation),
