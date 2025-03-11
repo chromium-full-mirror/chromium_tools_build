@@ -139,6 +139,10 @@ def RunSteps(api):
       script_path,
       '--output-file',
       autoshard_exceptions_path,
+      '--ignore-cl-owner',
+      # TODO(crbug.com/1275620): Replace with
+      # service_account.default().get_email()
+      'chromium-autosharder@chops-service-accounts.iam.gserviceaccount.com',
       '-v',
   ]
   api.step('which bq', ['which', 'bq'])
