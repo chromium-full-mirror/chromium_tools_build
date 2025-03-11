@@ -59,9 +59,8 @@ class ANGLEApi(recipe_api.RecipeApi):
     solution_path = self.m.path.cache_dir / 'builder'
     self.m.file.ensure_directory('init cache if not exists', solution_path)
     with self.m.context(cwd=solution_path):
-      if self.m.reclient.instance:
-        self.m.reclient.use_download_remoteexec_cfg_hook(
-            self.m.gclient.c.solutions[0])
+      if self.m.siso.enabled:
+        self.m.siso.enable_download_remoteexec_cfg_hook()
       update_result = self.m.bot_update.ensure_checkout()
       # Many methods on the chromium_tests API require the chromium_checkout
       # paths set
