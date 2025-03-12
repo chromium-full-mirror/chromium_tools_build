@@ -24,7 +24,7 @@ def _checkout_steps(api):
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
-    api.gclient.set_config('ytdevinfra_github')
+    api.gclient.set_config('ytdevinfra')
     update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
   return update_result
