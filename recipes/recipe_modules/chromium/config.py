@@ -30,8 +30,7 @@ def check(val, potentials):
 # chromium/api.py:get_config_defaults().
 def BaseConfig(HOST_PLATFORM, DEFAULT_HOST_PLATFORM, HOST_ARCH, HOST_BITS,
                TARGET_PLATFORM, TARGET_ARCH, TARGET_BITS, BUILD_CONFIG,
-               TARGET_CROS_BOARDS, CROS_BOARDS_WITH_QEMU_IMAGES, TEST_ONLY,
-               **_kwargs):
+               TARGET_CROS_BOARDS, CROS_BOARDS_WITH_QEMU_IMAGES, TEST_ONLY):
   equal_fn = lambda tup: ('%s=%s' % (tup[0], pipes.quote(str(tup[1]))))
   return ConfigGroup(
       compile_py=ConfigGroup(
