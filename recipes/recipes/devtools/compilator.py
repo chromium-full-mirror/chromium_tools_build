@@ -14,21 +14,20 @@ build:
 """
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb
 from PB.recipe_engine import result as result_pb2
 
 from recipe_engine.post_process import DropExpectation, SummaryMarkdown, MustRun, DoesNotRun
 from recipe_engine.recipe_api import Property
 
+from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import read_test_list
 
 DEPS = [
-    'chromium',
-    'devtools',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
+    'chromium', 'devtools', 'recipe_engine/buildbucket', 'recipe_engine/file',
+    'recipe_engine/json', 'recipe_engine/properties', 'recipe_engine/resultdb',
+    'recipe_engine/runtime', 'recipe_engine/step', 'chromium_checkout'
 ]
 
 PROPERTIES = {
@@ -64,7 +63,9 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     api.devtools.configure(builder_config, is_official_build,
                            devtools_skip_typecheck)
     update_result = api.devtools.update()
-
+    update_result.out_commit.position = 1
+    api.chromium_checkout.update_rdb_source_spec_invocation(
+        gitiles_commit=update_result.out_commit)
     source_dir = update_result.source_root.path
     build_dir = api.chromium.default_build_dir(source_dir)
     with api.devtools.depot_on_path(source_dir):
@@ -96,7 +97,6 @@ def emit_compilator_properties(api, cas_digest, e2e_tests_list):
   properties_step.presentation.properties['compilator_properties'] = properties
   properties_step.presentation.logs['compilator_properties'] = api.json.dumps(
       properties, indent=2)
-
 
 def GenTests(api):
 
