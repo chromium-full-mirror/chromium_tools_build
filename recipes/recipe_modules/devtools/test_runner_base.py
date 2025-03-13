@@ -119,10 +119,63 @@ class DevToolsTests(ABC):
     """
 
   def trigger_exoneration(self, test_names):
-    pass
+    """Triggers a rerun of specific tests identified as potentially flaky.
+
+    This method is called during the exoneration phase to re-run tests that
+    failed in the initial run. It filters the provided `test_names` to
+    include only those relevant to the current test type, and then triggers
+    a new swarming task to re-run them.
+
+    Args:
+      test_names: A dictionary where keys are test type tags (e.g.,
+        'e2e_tests', 'unit_tests') and values are sets of test names
+        (strings) that failed in the initial run.
+    """
 
   def process_exoneration_results(self, test_names):
-    pass
+    """Processes the results of the exoneration rerun.
+
+      This method is called after the exoneration rerun has completed. An
+      implementation should handle cases where the rerun was skipped
+      (due to no relevant tests or too many initial failures) by adding the skip
+      result to the overall results. Otherwise, it processes the results of
+      the rerun as a normal test run.
+
+      Args:
+        test_names (dict): A dictionary where:
+          - keys are test type tags (e.g., 'e2e_tests', 'unit_tests').
+          - values are sets of test names (strings) that were initially
+            identified as failing.
+
+      Returns:
+        None
+      """
+
+  def trigger_flake_detection(self, test_names):
+    """Triggers a rerun of specific tests for flake detection.
+
+      This method is called during the flake detection phase to re-run tests
+      that have been recently added or modified. An implmentation should filter
+      the provided `test_names` to include only those relevant to the current
+      test type, and then triggers a new swarming task to re-run them.
+
+      Args:
+        test_names (list): A list of test names (strings) that are candidates
+          for flake detection.
+      """
+
+  def process_flake_detection_results(self, test_names):
+    """Processes the results of the flake detection rerun.
+
+    This method is called after the flake detection rerun has completed.
+    An implementation should handle cases where the rerun was skipped (due to
+    no relevant tests) by adding the skip result to the overall results.
+    Otherwise, it processes the results of the rerun as a normal test run.
+
+    Args:
+      test_names (list): A list of test names (strings) that were initially
+        identified as candidates for flake detection.
+    """
 
   def construct_env(self):
     return self.env

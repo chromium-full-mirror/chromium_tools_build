@@ -80,11 +80,7 @@ class ExonerationPhase(TestRunPhase):
     return sum((res.test_results for res in response.values()), [])
 
   def get_unique_result_values(self, proto_results):
-
-    def test_type(result):
-      return next(t for t in result.tags if t.key == 'test_type').value
-
-    return set((r.test_id, test_type(r), r.expected) for r in proto_results)
+    return set((r.test_id, get_test_type(r), r.expected) for r in proto_results)
 
   def get_tests_with_only_failures(self, unique_bare_results):
     passing_tests = set()
@@ -108,3 +104,33 @@ class ExonerationPhase(TestRunPhase):
     if self.unexpected_results():
       results.add_test_failure('Failed to exonerate some of the failing tests')
     return results
+
+
+def get_test_type(result):
+  return next(t for t in result.tags if t.key == 'test_type').value
+
+
+class FlakeDetectionPhase(TestRunPhase):
+
+  def __init__(self, api, source_dir):
+    super().__init__(api)
+    self.source_dir = source_dir
+    self.test_files = []
+
+  def init_phase(self):
+    with self.api.step.nest("find new tests"):
+      with self.api.context(cwd=self.source_dir):
+        self.test_files = [
+            file for file in self.api.v8.git_output('show', '--name-only',
+                                                    '--format=').split('\n')
+            if file.endswith('test.ts')
+        ]
+
+  def nesting_name(self):
+    return 'Detect flakes in new tests'
+
+  def trigger(self, runner):
+    runner.trigger_flake_detection(self.test_files)
+
+  def process_results(self, runner):
+    runner.process_flake_detection_results(self.test_files)

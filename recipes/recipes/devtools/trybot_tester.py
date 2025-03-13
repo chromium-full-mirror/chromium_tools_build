@@ -14,7 +14,7 @@ from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETests, E2ETestDivider, write_test_list
 from RECIPE_MODULES.build.devtools.interactions_tests_runner import InteractionsTests
-from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase
+from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase, FlakeDetectionPhase
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
 
@@ -33,6 +33,7 @@ DEPS = [
     'recipe_engine/resultdb',
     'recipe_engine/step',
     'v8_orchestrator',
+    'v8',
 ]
 
 PROPERTIES = {
@@ -104,6 +105,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
   FirstRunPhase(api).run_all(tests)
   results = ExonerationPhase(api).run_all(tests)
+  results += FlakeDetectionPhase(api, source_dir).run_all(tests)
   return results.raw_result()
 
 def GenTests(api):

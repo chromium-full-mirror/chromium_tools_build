@@ -2571,6 +2571,51 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Detect flakes in new tests"
+  },
+  {
+    "cmd": [],
+    "name": "Detect flakes in new tests.find new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show",
+      "--name-only",
+      "--format="
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Detect flakes in new tests.find new tests.git show",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Detect flakes in new tests.Trigger Tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

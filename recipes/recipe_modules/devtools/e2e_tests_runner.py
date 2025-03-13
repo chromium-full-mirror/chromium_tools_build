@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .commons import Results
 from .test_runner_base import ExonerableTests
 from functools import cached_property
 import re
@@ -47,7 +48,18 @@ class E2ETests(ExonerableTests):
 
 class E2ENonHostedTests(E2ETests):
 
+  def __init__(self, api, source_dir, trigger, builder_config, step_name,
+               divider):
+    super().__init__(api, source_dir, trigger, builder_config, step_name,
+                     divider)
+    self.skip_deflaking_result = None
+    # TODO(liviurau): Needed only for where this cannot be passed in grep
+    # pattern. To be removed once we have a ResultDB based solution.
+    self.owned_new_tests = []
+
   def commands(self):
+    if self.extra_args:
+      return [self.run_tests_command(*self.owned_new_tests)]
     return [self.run_tests_command('test/e2e_non_hosted')]
 
   @property
@@ -56,7 +68,35 @@ class E2ENonHostedTests(E2ETests):
 
   def skip(self):
     return super().skip() or not self.api.path.exists(
-        self.source_dir.joinpath('test', 'e2e_non_hosted'))
+        self.source_dir.joinpath('test', 'e2e'))
+
+  def trigger_flake_detection(self, test_names):
+    self.owned_new_tests = [
+        test for test in test_names if test.startswith('test/e2e_non_hosted')
+    ]
+    if not self.owned_new_tests:
+      self.skip_deflaking_result = Results()
+      return
+    # TODO(liviurau): Should also take care of  large swiping changes that
+    # touche a lot of tests, e.g. some refactoring. Add a maximum limit
+    # TODO(liviurau): The divider needs rework.  E.g. the rerun count could be
+    # used to divide. Instead of running 10 times on one shard you could run
+    # the same 5 times on 2 shares, etc.
+    self.divider = E2ETestDivider(
+        self.api, self.source_dir, self.builder_config, shard_count=1)
+    self.step_name += ' (flake detection)'
+    # TODO(liviurau): There must be a better way to prepare a limited run.
+    # Maybe pass the command function to the trigger function and have
+    # discrete commands for normal and limited runs.
+    self.extra_args = ['--repeat=10']
+    self.trigger('flake detection')
+
+  def process_flake_detection_results(self, test_names):
+    if self.skip_deflaking_result:
+      self.results += self.skip_deflaking_result
+      # Rerun was not triggered; nothing to preocess
+      return
+    self.process_results()
 
 
 class RepeatE2EShuffledTests(E2ETests):
