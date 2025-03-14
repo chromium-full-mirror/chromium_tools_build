@@ -1525,6 +1525,7 @@ def GenTests(api):
               'test new tests for flakiness.'
               'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
+      api.post_process(post_process.PropertyEquals, 'do_not_retry', True),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

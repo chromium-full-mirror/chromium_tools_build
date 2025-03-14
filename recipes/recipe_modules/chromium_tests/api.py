@@ -2538,7 +2538,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             test_objects_by_suffix,
             include_utr_instruction=True)
 
-    return self.m.flakiness.check_run_results(test_objects_by_suffix)
+    result = self.m.flakiness.check_run_results(test_objects_by_suffix)
+    if result and result.status == common_pb.FAILURE:
+      self.m.cv.set_do_not_retry_build()
+
+    return result
 
   def determine_compilation_targets(
       self,
