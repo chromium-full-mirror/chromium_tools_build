@@ -35,6 +35,8 @@ Optimal shard counts for test suites are calculated by querying recent
 runtimes.
 
 The build that created this CL was https://ci.chromium.org/b/{}
+
+Ignore-Freeze:True
 """
 
 
@@ -185,10 +187,12 @@ def RunSteps(api):
       '--bypass-hooks',
       '--enable-auto-submit',
       '-r',
-      'sshrimp@google.com',
+      'rubber-stamper@appspot.gserviceaccount.com',
       '--cc',
       ','.join([
           'gatong@google.com',
+          'sshrimp@google.com',
+          'chrome-dev-infra-auto+reviews@google.com',
       ]),
       '--send-email',
   ]
