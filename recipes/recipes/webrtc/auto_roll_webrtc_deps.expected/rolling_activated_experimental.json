@@ -288,7 +288,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://webrtc-review.googlesource.com",
       "--json_file",
@@ -300,7 +299,8 @@
       "-p",
       "owner=chromium-webrtc-autoroll@webrtc-ci.iam.gserviceaccount.com",
       "-p",
-      "status=open"
+      "status=open",
+      "--verbose"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

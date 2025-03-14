@@ -11,7 +11,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
@@ -23,7 +22,8 @@
       "-o",
       "ALL_REVISIONS",
       "-o",
-      "DOWNLOAD_COMMANDS"
+      "DOWNLOAD_COMMANDS",
+      "--verbose"
     ],
     "cwd": "[CACHE]/builder",
     "env": {

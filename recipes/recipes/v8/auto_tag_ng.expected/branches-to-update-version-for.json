@@ -247,7 +247,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
@@ -259,7 +258,8 @@
       "-p",
       "owner=v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com",
       "-p",
-      "status=open"
+      "status=open",
+      "--verbose"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -559,7 +559,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
@@ -571,7 +570,8 @@
       "-p",
       "owner=v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com",
       "-p",
-      "status=open"
+      "status=open",
+      "--verbose"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

@@ -82,7 +82,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
@@ -94,7 +93,8 @@
       "-p",
       "owner=libyuv-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com",
       "-p",
-      "status=open"
+      "status=open",
+      "--verbose"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

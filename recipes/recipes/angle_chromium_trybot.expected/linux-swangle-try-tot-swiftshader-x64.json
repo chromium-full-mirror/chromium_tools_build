@@ -186,7 +186,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://swiftshader-review.googlesource.com",
       "--json_file",
@@ -198,7 +197,8 @@
       "-o",
       "ALL_REVISIONS",
       "-o",
-      "DOWNLOAD_COMMANDS"
+      "DOWNLOAD_COMMANDS",
+      "--verbose"
     ],
     "env": {
       "CHROME_HEADLESS": "1",
@@ -242,7 +242,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://swiftshader-review.googlesource.com",
       "--json_file",
@@ -254,7 +253,8 @@
       "-o",
       "ALL_REVISIONS",
       "-o",
-      "ALL_COMMITS"
+      "ALL_COMMITS",
+      "--verbose"
     ],
     "env": {
       "CHROME_HEADLESS": "1",

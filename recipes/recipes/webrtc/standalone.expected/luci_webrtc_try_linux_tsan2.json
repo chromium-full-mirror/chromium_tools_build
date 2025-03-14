@@ -53,7 +53,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://webrtc-review.googlesource.com",
       "--json_file",
@@ -65,7 +64,8 @@
       "-o",
       "ALL_REVISIONS",
       "-o",
-      "DOWNLOAD_COMMANDS"
+      "DOWNLOAD_COMMANDS",
+      "--verbose"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -373,7 +373,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://webrtc-review.googlesource.com",
       "--json_file",
@@ -385,7 +384,8 @@
       "-o",
       "ALL_REVISIONS",
       "-o",
-      "ALL_COMMITS"
+      "ALL_COMMITS",
+      "--verbose"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"

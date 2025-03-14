@@ -8,7 +8,6 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://review.googlesource.com",
       "--json_file",
@@ -30,7 +29,8 @@
       "-o",
       "CURRENT_REVISION",
       "-o",
-      "DOWNLOAD_COMMANDS"
+      "DOWNLOAD_COMMANDS",
+      "--verbose"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"

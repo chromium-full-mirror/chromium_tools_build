@@ -5083,13 +5083,13 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
       "/path/to/tmp/json",
       "-p",
-      "commit=43ff"
+      "commit=43ff",
+      "--verbose"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -5181,13 +5181,13 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
-      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
       "/path/to/tmp/json",
       "-p",
-      "commit=cd12"
+      "commit=cd12",
+      "--verbose"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
