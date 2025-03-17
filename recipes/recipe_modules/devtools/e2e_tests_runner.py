@@ -36,8 +36,15 @@ class E2ETests(ExonerableTests):
         for test_list in self.divider.commands
     ]
 
+  @property
+  def grep_filter_pattern(self):
+    """This pattern is used to remove the prefix from the test name. Used by
+    exoneration logic.
+    """
+    return r'^e2e/[^:]*: '
+
   def test_name_to_grep_string(self, name):
-    name = re.sub(r'^e2e/[^:]*: ', '', name)
+    name = re.sub(self.grep_filter_pattern, '', name)
     return super().test_name_to_grep_string(name)
 
   def trigger_exoneration(self, test_names):
@@ -58,9 +65,14 @@ class E2ENonHostedTests(E2ETests):
     self.owned_new_tests = []
 
   def commands(self):
-    if self.extra_args:
+    is_flake_detection_attempt = '--grep' in self.extra_args
+    if is_flake_detection_attempt:
       return [self.run_tests_command(*self.owned_new_tests)]
     return [self.run_tests_command('test/e2e_non_hosted')]
+
+  @property
+  def grep_filter_pattern(self):
+    return r'^e2e_non_hosted/[^:]*: '
 
   @property
   def test_type_tag(self):

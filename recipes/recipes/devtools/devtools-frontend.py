@@ -403,7 +403,7 @@ def GenTests(api):
         step_name=step_name,
     )
 
-  def check_swarming_task_arg(check, steps, step, arg):
+  def check_swarming_task_args(check, steps, step, *args):
     """Check that `arg` is passed to the command of the swarming task of a
     step.
     """
@@ -430,7 +430,8 @@ def GenTests(api):
     check(command)
 
     # Ensure the argument is part of this command.
-    check(arg in command)
+    for arg in args:
+      check(arg in command)
 
   yield api.test(
       'failed parallel builder on E2E',
@@ -459,11 +460,11 @@ def GenTests(api):
           test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
       ),
       api.post_process(
-          check_swarming_task_arg,
+          check_swarming_task_args,
           ('Flake exonaration attempt.'
            'Trigger Tests.Trigger E2E Tests (rerun).'
-           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
-          '--grep="etest1.first \\?\\?|etest2.second \\(to: escape\\)"'),
+           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
+          '"etest1.first \\?\\?|etest2.second \\(to: escape\\)"'),
       api.step_data(
           'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
           api.raw_io.stream_output_text(

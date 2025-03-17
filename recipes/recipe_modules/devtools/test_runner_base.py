@@ -58,7 +58,8 @@ class DevToolsTests(ABC):
 
   def prepare_filtered_rerun(self, test_names):
     self.extra_args = [
-        f'--grep="{self.test_names_to_grep_string(test_names)}"',
+        '--grep',
+        f'"{self.test_names_to_grep_string(test_names)}"',
         '--retries=5',
     ]
     self.env['DEBUG'] = 'puppeteer:*'
