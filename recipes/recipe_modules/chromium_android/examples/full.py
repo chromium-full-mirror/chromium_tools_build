@@ -36,14 +36,6 @@ BUILDERS = freeze({
     'slow_tester': {
         'timeout_scale': 2,
     },
-    'downgrade_install_tester': {
-        'specific_install': True,
-        'downgrade': True,
-    },
-    'keep_data_install_tester': {
-        'specific_install': True,
-        'keep_data': True,
-    },
     'no_strict_mode_tester': {
         'strict_mode': 'off',
     },
@@ -92,8 +84,6 @@ def RunSteps(api):
   api.chromium_android.run_tree_truth(update_result, additional_repos=['foo'])
   assert 'MAJOR' in api.chromium.get_version(source_dir)
 
-  api.chromium_android.host_info(source_dir)
-
   if config.get('build', False):
     raw_result = api.chromium.compile(source_dir, build_dir)
     if raw_result.status != common_pb.SUCCESS:
@@ -108,26 +98,11 @@ def RunSteps(api):
     api.chromium_android.download_build(source_dir, 'build-bucket',
                                         'build_product.zip')
 
-  if config.get('specific_install'):
-    api.chromium_android.adb_install_apk(
-        source_dir,
-        'Chrome.apk',
-        devices=['abc123'],
-        allow_downgrade=config.get('downgrade', False),
-        keep_data=config.get('keep_data', False),
-    )
-
   api.adb.root_devices(api.chromium_android.adb_path(source_dir))
   api.chromium_android.spawn_logcat_monitor(source_dir)
 
   failure = False
   try:
-    # TODO(luqui): remove redundant cruft, need one consistent API.
-    api.chromium_android.device_status_check(source_dir)
-
-    api.path.mock_add_paths(api.chromium_android.known_devices_file)
-    api.chromium_android.device_status_check(source_dir)
-
     api.chromium_android.provision_devices(
         source_dir,
         skip_wipe=config.get('skip_wipe', False),
@@ -139,17 +114,12 @@ def RunSteps(api):
   except api.step.StepFailure as f:
     failure = f
 
-  api.chromium_android.monkey_test(source_dir, build_dir)
-
   api.chromium_android.run_test_suite(
       source_dir,
       build_dir,
       'unittests',
       result_details=config.get('result_details'),
       store_tombstones=config.get('store_tombstones'))
-  if not failure:
-    api.chromium_android.run_bisect_script(
-        source_dir, extra_src='test.py', path_to_config='test.py')
 
   api.chromium_android.logcat_dump(source_dir, build_dir)
   api.chromium_android.stack_tool_steps(source_dir)
@@ -225,12 +195,10 @@ def GenTests(api):
   )
 
   yield api.test(
-      'tester_failing_host_info',
+      'handle_error_exit_code',
       properties_for('tester'),
-      api.step_data(
-          'Host Info', api.json.output({
-              'failures': ['foo', 'bar']
-          }), retcode=1),
+      api.step_data('provision_devices', retcode=1),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(

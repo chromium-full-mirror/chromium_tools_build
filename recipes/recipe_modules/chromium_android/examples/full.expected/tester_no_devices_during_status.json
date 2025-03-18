@@ -323,76 +323,6 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/testing/scripts/host_info.py",
-      "--args",
-      "[\"--known-devices-file\", \"[HOME]/.android/known_devices.json\"]",
-      "run",
-      "--output",
-      "/path/to/tmp/json"
-    ],
-    "env": {
-      "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Host Info",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"_host_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"devices\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"adb_status\": \"device\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"battery\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"AC powered\": \"false\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"Max charging current\": \"500000\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"USB powered\": \"true\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"Wireless powered\": \"false\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"health\": \"2\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"level\": \"100\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"present\": \"true\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"scale\": \"100\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"status\": \"5\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"technology\": \"Li-ion\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"temperature\": \"240\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"voltage\": \"4302\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"denylisted\": null,@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"imei_slice\": \"\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"ro.build.fingerprint\": \"fingerprint\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"ro.build.id\": \"MDB08Q\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"ro.build.product\": \"bullhead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"serial\": \"00d0d567893340f4\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"usb_status\": true,@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"wifi_ip\": \"\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"free_disk_space\": \"free_disk_space\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"num_cpus\": \"num_cpus\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"os_release\": \"os_release\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"os_system\": \"os_system\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"processor\": \"processor\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"python_path\": \"python_path\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"python_version\": \"python_version\"@@@",
-      "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"failures\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"valid\": true@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "-u",
       "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
@@ -518,6 +448,146 @@
   {
     "cmd": [
       "vpython3",
+      "[START_DIR]/src/build/android/provision_devices.py",
+      "--adb-path",
+      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb",
+      "--denylist-file",
+      "[START_DIR]/src/out/bad_devices.json",
+      "--output-device-denylist",
+      "/path/to/tmp/json",
+      "-t",
+      "Release",
+      "-v",
+      "--reboot-timeout",
+      "1800"
+    ],
+    "env": {
+      "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "provision_devices"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[START_DIR]/src/build/symlink.py",
+      "-f",
+      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb",
+      "~/adb"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create adb symlink"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[build]/recipes/daemonizer.py",
+      "--",
+      "[START_DIR]/src/build/android/adb_logcat_monitor.py",
+      "[CLEANUP]/logcat",
+      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb"
+    ],
+    "env": {
+      "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "spawn_logcat_monitor (2)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[build]/recipes/daemonizer.py",
+      "--action",
+      "restart",
+      "--pid-file-path",
+      "/tmp/device_monitor.pid",
+      "--",
+      "[START_DIR]/src/third_party/catapult/devil/devil/android/tools/device_monitor.py",
+      "--adb-path",
+      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb",
+      "--denylist-file",
+      "[START_DIR]/src/out/bad_devices.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "spawn_device_monitor"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::chromium_android]/resources/authorize_adb_devices.py",
+      "--verbose",
+      "--adb-path",
+      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb"
+    ],
+    "env": {
+      "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "authorize_adb_devices"
+  },
+  {
+    "cmd": [
+      "vpython3",
       "[START_DIR]/src/third_party/catapult/devil/devil/android/tools/device_recovery.py",
       "--denylist-file",
       "[START_DIR]/src/out/bad_devices.json",
@@ -544,6 +614,39 @@
       }
     },
     "name": "device_recovery"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[START_DIR]/src/build/android/provision_devices.py",
+      "--adb-path",
+      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb",
+      "--denylist-file",
+      "[START_DIR]/src/out/bad_devices.json",
+      "--output-device-denylist",
+      "/path/to/tmp/json",
+      "-t",
+      "Release",
+      "-v",
+      "--skip-wipe"
+    ],
+    "env": {
+      "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "provision_devices (2)"
   },
   {
     "cmd": [
@@ -628,36 +731,6 @@
       "@@@STEP_LINK@report a bug@https://code.google.com/p/chromium/issues/entry?summary=Device+Offline+on+chromium.android+test_bot&comment=Buildbot%3A+tester%0A%28Please+do+not+change+any+labels%29&labels=Restrict-View-Google%2COS-Android%2CInfra%2CInfra-Labs@@@",
       "@@@STEP_EXCEPTION@@@"
     ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/src/build/android/test_runner.py",
-      "monkey",
-      "-v",
-      "--browser=chrome",
-      "--event-count=50000",
-      "--denylist-file",
-      "[START_DIR]/src/out/bad_devices.json",
-      "--adb-path",
-      "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb"
-    ],
-    "env": {
-      "BUILDTYPE": "Release",
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Monkey Test"
   },
   {
     "cmd": [

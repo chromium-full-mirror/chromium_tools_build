@@ -20,7 +20,6 @@ class AndroidApi(recipe_api.RecipeApi):
     super().__init__(**kwargs)
     self._adb_path: Path | None = None
     self._devices = None
-    self._file_changes_path = None
 
   @property
   def devices(self):
@@ -41,18 +40,6 @@ class AndroidApi(recipe_api.RecipeApi):
   def known_devices_file(self):
     return self.m.path.join(
         self.m.path.expanduser('~'), '.android', 'known_devices.json')
-
-  @property
-  def file_changes_path(self):
-    """Get or create the path to the file containing changes for this revision.
-
-    This file will contain a dict mapping file paths to lists of changed lines
-    for each file. This is used to generate incremental coverage reports.
-    """
-    if not self._file_changes_path:
-      self._file_changes_path = (
-          self.m.path.mkdtemp('coverage').joinpath('file_changes.json'))
-    return self._file_changes_path
 
   def make_zip_archive(self,
                        step_name,
@@ -297,75 +284,6 @@ class AndroidApi(recipe_api.RecipeApi):
                                                denylist_file)
     return [s for s in self.devices if s not in denylisted_devices]
 
-  def device_status_check(self, source_dir: Path):
-    self.device_recovery(source_dir)
-    return self.device_status(source_dir)
-
-  def host_info(self, source_dir: Path, *, args=None, **kwargs):
-    args = args or []
-    results = None
-    try:
-      with self.handle_exit_codes():
-        if self.known_devices_file:
-          known_devices_arg = ['--known-devices-file', self.known_devices_file]
-          args.extend(['--args', self.m.json.input(known_devices_arg)])
-        args.extend(['run', '--output', self.m.json.output()])
-        with self.m.context(env=self.m.chromium.get_env(source_dir)):
-          results = self.m.step(
-              'Host Info', [source_dir / 'testing/scripts/host_info.py'] + args,
-              infra_step=True,
-              step_test_data=lambda: self.m.json.test_api.output({
-                  'valid': True,
-                  'failures': [],
-                  '_host_info': {
-                      'os_system':
-                          'os_system',
-                      'os_release':
-                          'os_release',
-                      'processor':
-                          'processor',
-                      'num_cpus':
-                          'num_cpus',
-                      'free_disk_space':
-                          'free_disk_space',
-                      'python_version':
-                          'python_version',
-                      'python_path':
-                          'python_path',
-                      'devices': [{
-                          "usb_status": True,
-                          "denylisted": None,
-                          "ro.build.fingerprint": "fingerprint",
-                          "battery": {
-                              "status": "5",
-                              "scale": "100",
-                              "temperature": "240",
-                              "level": "100",
-                              "technology": "Li-ion",
-                              "AC powered": "false",
-                              "health": "2",
-                              "voltage": "4302",
-                              "Wireless powered": "false",
-                              "USB powered": "true",
-                              "Max charging current": "500000",
-                              "present": "true"
-                          },
-                          "adb_status": "device",
-                          "imei_slice": "",
-                          "ro.build.product": "bullhead",
-                          "ro.build.id": "MDB08Q",
-                          "serial": "00d0d567893340f4",
-                          "wifi_ip": ""
-                      }]
-                  }
-              }),
-              **kwargs)
-      return results
-    except self.m.step.InfraFailure as f:
-      for failure in f.result.json.output.get('failures', []):
-        f.result.presentation.logs[failure] = [failure]
-      f.result.presentation.status = self.m.step.EXCEPTION
-
   def device_recovery(self, source_dir: Path, **kwargs):
     cmd = [
         'vpython3',
@@ -537,48 +455,6 @@ class AndroidApi(recipe_api.RecipeApi):
     with self.m.context(env=self.m.chromium.get_env(source_dir)):
       with self.handle_exit_codes():
         return self.m.step('provision_devices', cmd, infra_step=True, **kwargs)
-
-  def adb_install_apk(self,
-                      source_dir: Path,
-                      apk,
-                      *,
-                      allow_downgrade=False,
-                      keep_data=False,
-                      devices=None):
-    install_cmd = [
-        source_dir / 'build/android/adb_install_apk.py',
-        apk,
-        '-v',
-        '--denylist-file',
-        self.denylist_file(source_dir),
-    ]
-    if int(self.m.chromium.get_version(source_dir).get('MAJOR', 0)) > 50:
-      install_cmd += ['--adb-path', self.adb_path(source_dir)]
-    if devices and isinstance(devices, list):
-      for d in devices:
-        install_cmd += ['-d', d]
-    if allow_downgrade:
-      install_cmd.append('--downgrade')
-    if keep_data:
-      install_cmd.append('--keep_data')
-    if self.m.chromium.c.BUILD_CONFIG == 'Release':
-      install_cmd.append('--release')
-    with self.m.context(env=self.m.chromium.get_env(source_dir)):
-      return self.m.step(
-          'install ' + self.m.path.basename(apk), install_cmd, infra_step=True)
-
-  def monkey_test(self, source_dir: Path, build_dir: Path, **kwargs):
-    args = [
-        'monkey',
-        '-v',
-        '--browser=%s' % self.c.channel,
-        '--event-count=50000',
-        '--denylist-file',
-        self.denylist_file(source_dir),
-    ]
-    with self.m.context(env={'BUILDTYPE': self.m.chromium.c.BUILD_CONFIG}):
-      return self.test_runner(
-          source_dir, build_dir, 'Monkey Test', args=args, **kwargs)
 
   def create_result_details(
       self,
@@ -796,27 +672,6 @@ class AndroidApi(recipe_api.RecipeApi):
         breakpad_binaries.append(binary_dir / 'libwebviewchromium.so')
       self.stackwalker(source_dir=source_dir, binary_paths=breakpad_binaries)
 
-  def run_bisect_script(self,
-                        source_dir: Path,
-                        *,
-                        extra_src='',
-                        path_to_config='',
-                        **kwargs):
-    self.m.step('prepare bisect perf regression', [
-        source_dir / 'tools/prepare-bisect-perf-regression.py', '-w',
-        self.m.path.start_dir
-    ])
-
-    args = []
-    if extra_src:
-      args = args + ['--extra_src', extra_src]
-    if path_to_config:
-      args = args + ['--path_to_config', path_to_config]
-    self.m.step('run bisect perf regression', [
-        source_dir / 'tools/run-bisect-perf-regression.py', '-w',
-        self.m.path.start_dir
-    ] + args, **kwargs)
-
   def run_test_suite(self,
                      source_dir: Path,
                      build_dir: Path,
@@ -866,101 +721,6 @@ class AndroidApi(recipe_api.RecipeApi):
           self.m.step.active_result.presentation.links[_RESULT_DETAILS_LINK] = (
               details_link)
 
-  def run_java_unit_test_suite(self,
-                               source_dir: Path,
-                               build_dir: Path,
-                               suite,
-                               *,
-                               target_name=None,
-                               verbose=True,
-                               json_results_file=None,
-                               suffix=None,
-                               additional_args=None,
-                               **kwargs):
-    args = []
-    if verbose:
-      args.append('--verbose')
-    if self.m.chromium.c.BUILD_CONFIG == 'Release':
-      args.append('--release')
-    if json_results_file:
-      args.extend(['--json-results-file', json_results_file])
-    if additional_args:
-      args.extend(additional_args)
-
-    with self.m.context(env=self.m.chromium.get_env(source_dir)):
-      return self.test_runner(
-          source_dir,
-          build_dir,
-          '%s%s' % (str(suite), ' (%s)' % suffix if suffix else ''),
-          args=args,
-          wrapper_script_suite_name=str(target_name or suite),
-          pass_adb_path=False,
-          **kwargs)
-
-  def get_changed_lines_for_revision(self, source_dir: Path):
-    """Saves a JSON file containing the files/lines requiring coverage analysis.
-
-    Saves a JSON object mapping file paths to lists of changed lines to the
-    coverage directory.
-    """
-    # Git provides this default value for the commit hash for staged files when
-    # the -l option is used with git blame.
-    blame_cached_revision = '0000000000000000000000000000000000000000'
-
-    file_changes = {}
-    new_files = self.staged_files_matching_filter(source_dir, 'A')
-    for new_file in new_files:
-      lines = self.m.file.read_text(
-          ('Finding lines changed in added file %s' % new_file),
-          new_file,
-          test_data='int n = 0;\nn++;\nfor (int i = 0; i < n; i++) {')
-      file_changes[new_file] = range(1, len(lines.splitlines()) + 1)
-
-    changed_files = self.staged_files_matching_filter(source_dir, 'M')
-    for changed_file in changed_files:
-      with self.m.context(cwd=source_dir):
-        blame = self.m.git(
-            'blame',
-            '-l',
-            '-s',
-            changed_file,
-            stdout=self.m.raw_io.output_text(),
-            name='Finding lines changed in modified file %s' % changed_file,
-            step_test_data=(lambda: self.m.raw_io.test_api.stream_output_text(
-                'int n = 0;\nn++;\nfor (int i = 0; i < n; i++) {')))
-      blame_lines = blame.stdout.splitlines()
-      file_changes[changed_file] = [
-          i + 1
-          for i, line in enumerate(blame_lines)
-          if line.startswith(blame_cached_revision)
-      ]
-
-    self.m.file.write_text('Saving changed lines for revision.',
-                           self.file_changes_path,
-                           self.m.json.dumps(file_changes))
-
-  def staged_files_matching_filter(self, source_dir: Path, diff_filter):
-    """Returns list of files changed matching the provided diff-filter.
-
-    Args:
-      diff_filter: A string to be used as the diff-filter.
-
-    Returns:
-      A list of file paths (strings) matching the provided |diff-filter|.
-    """
-    with self.m.context(cwd=source_dir):
-      diff = self.m.git(
-          'diff',
-          '--staged',
-          '--name-only',
-          '--diff-filter',
-          diff_filter,
-          stdout=self.m.raw_io.output_text(),
-          name='Finding changed files matching diff filter: %s' % diff_filter,
-          step_test_data=(lambda: self.m.raw_io.test_api.stream_output_text(
-              'fake/file1.java\nfake/file2.java\nfake/file3.java')))
-    return diff.stdout.splitlines()
-
   @contextlib.contextmanager
   def handle_exit_codes(self):
     """Handles exit codes emitted by the test runner and other scripts."""
@@ -991,7 +751,7 @@ class AndroidApi(recipe_api.RecipeApi):
       step_name,
       *,
       args=None,
-      wrapper_script_suite_name=None,
+      wrapper_script_suite_name,
       pass_adb_path=True,
       # TODO(crbug.com/1108016): Once resultdb is enabled globally,
       # makes resultdb as a required param.
@@ -1014,11 +774,7 @@ class AndroidApi(recipe_api.RecipeApi):
     with self.handle_exit_codes():
       script = source_dir / self.c.test_runner
       env = {}
-      if wrapper_script_suite_name:
-        script = build_dir / f'bin/run_{wrapper_script_suite_name}'
-      else:
-        env['CHROMIUM_OUTPUT_DIR'] = self.m.context.env.get(
-            'CHROMIUM_OUTPUT_DIR', build_dir)
+      script = build_dir / f'bin/run_{wrapper_script_suite_name}'
 
       with self.m.context(env=env):
         cmd = [script] + args
