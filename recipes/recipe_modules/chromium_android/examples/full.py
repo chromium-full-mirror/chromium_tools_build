@@ -55,9 +55,6 @@ BUILDERS = freeze({
     'use_devil_adb': {
         'android_apply_config': ['use_devil_adb'],
     },
-    'remove_system_vrcore': {
-        'android_apply_config': ['remove_system_vrcore'],
-    },
     'stackwalker': {
         'run_stackwalker': True,
     },

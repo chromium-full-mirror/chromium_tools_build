@@ -15,8 +15,6 @@ DEPS = [
 def RunSteps(api):
   api.chromium.set_config(
       api.properties.get('chromium_config', 'chromium'))
-  for config in api.properties.get('chromium_apply_config', []):
-    api.chromium.apply_config(config)
 
   api.chromium_android.set_config(
       api.properties.get('android_config', 'main_builder'))
@@ -34,18 +32,6 @@ def GenTests(api):
   yield api.test(
       'cronet_official',
       api.properties(chromium_config='cronet_official'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'non_device_wipe_provisioning',
-      api.properties(chromium_config='non_device_wipe_provisioning'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'errorprone',
-      api.properties(chromium_apply_config=['errorprone']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -86,18 +72,10 @@ def GenTests(api):
   )
 
   yield api.test(
-      'riscv64_builder_mb',
+      'riscv64_builder',
       api.properties(
-          android_apply_config=['riscv64_builder_mb'],
-          chromium_config='riscv64_builder_mb'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'mipsel_builder_mb',
-      api.properties(
-          android_apply_config=['mipsel_builder_mb'],
-          chromium_config='mipsel_builder_mb'),
+          android_apply_config=['riscv64_builder'],
+          chromium_config='riscv64_builder'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -128,14 +106,6 @@ def GenTests(api):
       api.properties(
           android_apply_config=['arm64_builder_rel_mb'],
           chromium_config='arm64_builder_rel_mb'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'incremental_coverage_builder_tests',
-      api.properties(
-          android_config='incremental_coverage_builder_tests',
-          chromium_config='incremental_coverage_builder_tests'),
       api.post_process(post_process.DropExpectation),
   )
 

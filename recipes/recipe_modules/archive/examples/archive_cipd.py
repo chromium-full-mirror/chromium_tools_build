@@ -343,7 +343,7 @@ def GenTests(api):
               builder='fake-builder',
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
-                  android_config='asan_symbolize',
+                  android_config='base_config',
                   chromium_config='clang_tot_android_asan',
                   chromium_config_kwargs={
                       'TARGET_BITS': 32,

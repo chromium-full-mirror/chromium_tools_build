@@ -6,14 +6,13 @@ from recipe_engine.config import config_item_context, ConfigGroup
 from recipe_engine.config import Dict, List, Single, Static
 
 
-def BaseConfig(INTERNAL=False, asan_symbolize=False):  # pylint: disable=redefined-outer-name
+def BaseConfig(INTERNAL=False):
   return ConfigGroup(
       INTERNAL=Static(INTERNAL),
       cs_base_url=Single(
           str, required=False, empty_val='http://cs.chromium.org'),
       results_bucket=Single(
           str, required=False, empty_val='chromium-result-details'),
-      asan_symbolize=Single(bool, required=False, empty_val=asan_symbolize),
       get_app_manifest_vars=Single(bool, required=False, empty_val=True),
       run_tree_truth=Single(bool, required=False, empty_val=True),
       internal_dir_name=Single(str, required=False),
@@ -24,7 +23,6 @@ def BaseConfig(INTERNAL=False, asan_symbolize=False):  # pylint: disable=redefin
       gclient_custom_deps=Dict(value_type=(str, type(None))),
       channel=Single(str, empty_val='chrome'),
       coverage=Single(bool, required=False, empty_val=False),
-      chrome_specific_wipe=Single(bool, required=False, empty_val=False),
       incremental_coverage=Single(bool, required=False, empty_val=False),
       use_devil_adb=Single(bool, required=False, empty_val=False),
       # TODO(crbug.com/708171): Remove this once everything has switched to
@@ -90,36 +88,6 @@ def riscv64_base(_):
 def riscv64_builder(_):
   pass
 
-
-@config_ctx(includes=['riscv64_builder'])
-def riscv64_builder_mb(_):
-  pass
-
-
-@config_ctx()
-def mipsel_base(_):
-  pass
-
-@config_ctx(includes=['mipsel_base'])
-def mipsel_builder(_):  # pragma: no cover
-  pass
-
-@config_ctx(includes=['mipsel_base'])
-def mipsel_builder_mb(_):
-  pass
-
-@config_ctx()
-def arm_l_builder(_):  # pragma: no cover
-  pass
-
-@config_ctx()
-def arm_l_builder_lto(_):  # pragma: no cover
-  pass
-
-@config_ctx()
-def arm_l_builder_rel(_):  # pragma: no cover
-  pass
-
 @config_ctx()
 def arm_v6_builder_rel(_):  # pragma: no cover
   pass
@@ -153,66 +121,6 @@ def arm64_builder_rel_mb(_):
   pass
 
 @config_ctx()
-def try_base(_):
-  pass  # pragma: no cover
-
-@config_ctx(includes=['try_base'])
-def try_builder(_):
-  pass  # pragma: no cover
-
-@config_ctx(includes=['x86_builder', 'try_builder'])
-def x86_try_builder(_):
-  pass  # pragma: no cover
-
-@config_ctx()
-def tests_base(_):  # pragma: no cover
-  pass
-
-@config_ctx(includes=['arm64_builder_rel'])
-def tests_arm64(_):  # pragma: no cover
-  pass
-
-@config_ctx(includes=['tests_base'])
-def instrumentation_tests(c):  # pragma: no cover
-  c.tests.append('smoke_instrumentation_tests')
-  c.tests.append('small_instrumentation_tests')
-  c.tests.append('medium_instrumentation_tests')
-  c.tests.append('large_instrumentation_tests')
-
-@config_ctx(includes=['instrumentation_tests'])
-def main_tests(_):
-  pass  # pragma: no cover
-
-@config_ctx(includes=['asan_symbolize', 'tests_base'])
-def clang_tests(c):  # pragma: no cover
-  c.tests.append('smoke_instrumentation_tests')
-
-@config_ctx(includes=['tests_base'])
-def enormous_tests(c):  # pragma: no cover
-  c.extra_deploy_opts = ['--await-internet']
-  c.tests.append('enormous_instrumentation_tests')
-
-@config_ctx(includes=['try_base', 'instrumentation_tests'])
-def try_instrumentation_tests(_):
-  pass  # pragma: no cover
-
-@config_ctx(includes=['x86_base', 'try_base', 'instrumentation_tests'])
-def x86_try_instrumentation_tests(c):
-  c.extra_deploy_opts.append('--non-rooted')  # pragma: no cover
-
-@config_ctx(includes=['main_builder'])
-def coverage_builder_tests(_):  # pragma: no cover
-  pass
-
-@config_ctx(includes=['main_builder'])
-def non_device_wipe_provisioning(c):
-  c.chrome_specific_wipe = True
-
-@config_ctx(includes=['main_builder'])
-def incremental_coverage_builder_tests(c):
-  c.incremental_coverage = True
-
-@config_ctx()
 def chromium_perf(_):
   pass
 
@@ -227,10 +135,6 @@ def use_devil_adb(c):
 @config_ctx()
 def use_devil_provision(c):
   c.use_devil_provision = True
-
-@config_ctx(includes=['use_devil_provision'])
-def remove_system_vrcore(c):
-  c.remove_system_packages.append('com.google.vr.vrcore')
 
 @config_ctx(includes=['use_devil_provision'])
 def remove_system_webview(c):
@@ -251,7 +155,3 @@ def remove_system_chrome(c):
     'remove_system_webview_shell'])
 def remove_all_system_webviews(_):
   pass
-
-@config_ctx()
-def asan_symbolize(c):  # pragma: no cover
-  c.asan_symbolize = True

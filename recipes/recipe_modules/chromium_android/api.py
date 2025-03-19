@@ -448,8 +448,6 @@ class AndroidApi(recipe_api.RecipeApi):
     if self.c and self.c.remove_system_packages:
       cmd.append('--remove-system-packages')
       cmd.extend(self.c.remove_system_packages)
-    if self.c and self.c.chrome_specific_wipe:
-      cmd.append('--chrome-specific-wipe')
     if emulators:
       cmd.append('--emulators')
     with self.m.context(env=self.m.chromium.get_env(source_dir)):

@@ -53,12 +53,6 @@ def riscv64_builder(c):
     raise recipe_config.BadConf('Cannot target riscv64 with TARGET_ARCH == %s' %
                                 c.TARGET_ARCH)
 
-
-@CONFIG_CTX(includes=['riscv64_builder', 'mb'])
-def riscv64_builder_mb(_):
-  pass
-
-
 @CONFIG_CTX(
     includes=['base_config', 'default_compiler'],
     config_vars={'TARGET_ARCH': 'intel'})
@@ -69,18 +63,6 @@ def x86_builder(c):
 
 @CONFIG_CTX(includes=['x86_builder', 'mb'])
 def x86_builder_mb(_):
-  pass
-
-
-@CONFIG_CTX(
-    includes=['base_config', 'default_compiler'],
-    config_vars={'TARGET_ARCH': 'mipsel'})
-def mipsel_builder(c):
-  if c.TARGET_ARCH != 'mipsel':  # pragma: no cover
-    raise recipe_config.BadConf('I dunno what to put in a mips builder!')
-
-@CONFIG_CTX(includes=['mipsel_builder', 'mb'])
-def mipsel_builder_mb(_):
   pass
 
 @CONFIG_CTX(includes=['clobber'])
@@ -121,20 +103,6 @@ def cronet_official(c):
 def arm_v6_builder_rel(c):  # pragma: no cover
   c.gn_args.append('arm_version=6')
 
-@CONFIG_CTX(includes=['main_builder'])
-def arm_l_builder(_):  # pragma: no cover
-  pass
-
-@CONFIG_CTX(includes=['arm_l_builder'])
-def arm_l_builder_lto(c):  # pragma: no cover
-  del c
-
-@CONFIG_CTX(includes=['arm_l_builder'],
-            config_vars={'BUILD_CONFIG': 'Release'})
-def arm_l_builder_rel(_):  # pragma: no cover
-  pass
-
-
 @CONFIG_CTX(
     includes=['base_config', 'default_compiler'],
     config_vars={
@@ -172,62 +140,9 @@ def arm64_builder_rel_mb(_):
   pass
 
 @CONFIG_CTX(includes=['main_builder'])
-def try_builder(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['x86_builder'])
-def x86_try_builder(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['base_config'])
-def tests_base(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['arm64_builder_rel'])
-def tests_arm64(_):  # pragma: no cover
-  pass
-
-@CONFIG_CTX(includes=['tests_base'])
-def main_tests(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['tests_base'])
-def clang_tests(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['tests_base'])
-def enormous_tests(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['tests_base'])
-def try_instrumentation_tests(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['x86_builder'])
-def x86_try_instrumentation_tests(_):
-  pass  # pragma: no cover
-
-@CONFIG_CTX(includes=['main_builder'],
-            config_vars={'BUILD_CONFIG': 'Debug'})
-def coverage_builder_tests(c):  # pragma: no cover
-  del c
-
-@CONFIG_CTX(includes=['main_builder'])
-def incremental_coverage_builder_tests(c):
-  del c
-
-@CONFIG_CTX(includes=['main_builder'])
-def non_device_wipe_provisioning(_):
-  pass
-
-@CONFIG_CTX(includes=['main_builder'])
 def cast_builder(c):
   del c
 
 @CONFIG_CTX()
 def disable_neon(c):  # pragma: no cover
   c.gn_args.append('arm_use_neon=false')
-
-@CONFIG_CTX()
-def errorprone(c):
-  del c
