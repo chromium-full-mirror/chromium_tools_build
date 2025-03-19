@@ -266,6 +266,8 @@ message BuilderConfig {
   optional bool retry_failed_shards = 7;
   // Whether or not failed test suites should be retried without patch
   optional bool retry_without_patch = 8;
+  // Whether or not infra failed shards of tests should be retried
+  optional bool retry_invalid_shards = 12;
 
   // Configuration for Regression Test Selection (RTS) execution.
   //

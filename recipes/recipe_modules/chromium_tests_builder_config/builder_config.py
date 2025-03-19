@@ -179,6 +179,8 @@ class BuilderConfig:
   additional_exclusions = attrib(sequence[str], default=())
   # Whether or not failed shards of tests should be retried
   retry_failed_shards = attrib(bool, default=True)
+  # Whether or not infra failed shards of tests should be retried
+  retry_invalid_shards = attrib(bool, default=False)
   # Whether or not failed test suites should be retried without patch
   retry_without_patch = attrib(bool, default=True)
   # Conditions where skipping a subset of tests is allowed

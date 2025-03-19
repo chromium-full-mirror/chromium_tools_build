@@ -277,6 +277,8 @@ def convert_builder_config(obj, default_retry_failed_shards=True):
       retry_failed_shards=(obj.retry_failed_shards
                            if obj.HasField('retry_failed_shards') else
                            default_retry_failed_shards),
+      retry_invalid_shards=(obj.retry_invalid_shards
+                            if obj.HasField('retry_invalid_shards') else False),
       retry_without_patch=(obj.retry_without_patch
                            if obj.HasField('retry_without_patch') else True),
       regression_test_selection=regression_test_selection,

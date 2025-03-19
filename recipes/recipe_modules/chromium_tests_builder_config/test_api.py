@@ -281,18 +281,25 @@ class _CiBuilderPropertiesAssembler:
 
 class _CiTesterPropertiesAssembler:
 
-  def __init__(self, props_assembler, tester_details, retry_failed_shards):
+  def __init__(self, props_assembler, tester_details, retry_failed_shards,
+               retry_invalid_shards):
     self._props_assembler = props_assembler
     self._tester_details = tester_details
     self._parent_details = None
     self._retry_failed_shards = retry_failed_shards
+    self._retry_invalid_shards = retry_invalid_shards
 
   @classmethod
-  def create(cls, *, retry_failed_shards=False, **kwargs):
+  def create(cls,
+             *,
+             retry_failed_shards=False,
+             retry_invalid_shards=False,
+             **kwargs):
     props_assembler = _PropertiesAssembler()
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(execution_mode=_ExecutionMode.TEST, **kwargs)
-    return cls(props_assembler, details, retry_failed_shards)
+    return cls(props_assembler, details, retry_failed_shards,
+               retry_invalid_shards)
 
   def with_parent(self, **kwargs):
     if self._parent_details is not None:
@@ -320,7 +327,8 @@ class _CiTesterPropertiesAssembler:
     if self._parent_details is None:
       raise TypeError('`with_parent` must be called before calling `assemble`')
     return self._props_assembler.assemble(
-        retry_failed_shards=self._retry_failed_shards,)
+        retry_failed_shards=self._retry_failed_shards,
+        retry_invalid_shards=self._retry_invalid_shards)
 
 
 _RTS_CONDITION_MAP = {

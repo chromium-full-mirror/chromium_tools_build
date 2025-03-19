@@ -3122,7 +3122,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         # If any tests export coverage data we want to retry invalid shards due
         # to an existing issue with occasional corruption of collected coverage
         # data.
-        retry_invalid_shards=any(
+        retry_invalid_shards=builder_config.retry_invalid_shards or any(
             t.runs_on_skylab or (t.runs_on_swarming and t.isolate_profile_data)
             for t in tests),
         include_utr_instruction=True,
