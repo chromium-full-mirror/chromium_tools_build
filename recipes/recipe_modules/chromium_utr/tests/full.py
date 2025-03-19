@@ -555,6 +555,7 @@ target_os=['os']
           ctbc_properties=gen_ctbc_properties(
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='ios',
+                  gclient_apply_config=['chromium_with_telemetry_dependencies'],
                   chromium_config='chromium',
               ),),
       ),
@@ -579,7 +580,7 @@ target_os=['os']
           '- rbe_instance has been set in the .gclient file\n'
           '- custom_var checkout_telemetry_dependencies has mismatched value '
           'in the local .gclient file. Set it to: '
-          '`"checkout_telemetry_dependencies": "False"`\n'
+          '`"checkout_telemetry_dependencies": "True"`\n'
           '- target_os in builder config `"[\'ios\']"` is not in the local '
           '.gclient file. Set it to: `target_os = ["os", "ios"]`'),
       api.post_process(post_process.StepCommandContains, 'read gclient',
