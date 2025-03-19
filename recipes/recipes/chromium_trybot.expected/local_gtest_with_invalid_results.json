@@ -3040,14 +3040,17 @@
   },
   {
     "cmd": [],
-    "name": "query LUCI Analysis for failure rates"
+    "name": "query LUCI Analysis for stability",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
     "cmd": [
       "prpc",
       "call",
       "analysis.api.luci.app",
-      "luci.analysis.v1.TestVariants.QueryFailureRate"
+      "luci.analysis.v1.TestVariants.QueryStability"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -3065,107 +3068,34 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "query LUCI Analysis for failure rates.rpc call",
-    "stdin": "{\"project\": \"chromium\", \"testVariants\": [{\"testId\": \"ninja://base_unittests/Test.One\", \"variantHash\": \"base_unittests_hash\"}]}",
+    "name": "query LUCI Analysis for stability.rpc call",
+    "stdin": "{\"project\": \"chromium\", \"testVariants\": [{\"sources\": {\"changelists\": [{\"change\": 456789, \"host\": \"chromium-review.googlesource.com\", \"patchset\": 12, \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"host\": \"fake.org\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/main\"}}, \"testId\": \"ninja://base_unittests/Test.One\", \"variantHash\": \"base_unittests_hash\"}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"intervals\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"endTime\": \"2022-12-01T18:49:23.160302198Z\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"intervalAge\": 1,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"startTime\": \"2022-11-30T18:49:23.160302198Z\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"endTime\": \"2022-11-30T18:49:23.160302198Z\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"intervalAge\": 2,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"startTime\": \"2022-11-29T18:49:23.160302198Z\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"endTime\": \"2022-11-29T18:49:23.160302198Z\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"intervalAge\": 3,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"startTime\": \"2022-11-28T18:49:23.160302198Z\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"endTime\": \"2022-11-28T18:49:23.160302198Z\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"intervalAge\": 4,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"startTime\": \"2022-11-25T18:49:23.160302198Z\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"endTime\": \"2022-11-25T18:49:23.160302198Z\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"intervalAge\": 5,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"startTime\": \"2022-11-24T18:49:23.160302198Z\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ],@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"testVariants\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"intervalStats\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"intervalAge\": 1,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"totalRunExpectedVerdicts\": 300,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"totalRunFlakyVerdicts\": 0,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"totalRunUnexpectedVerdicts\": 1@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"intervalAge\": 2,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"totalRunExpectedVerdicts\": 300,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"totalRunFlakyVerdicts\": 0,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"totalRunUnexpectedVerdicts\": 1@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      ],@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"recentVerdicts\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_0\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_1\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_2\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_3\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_4\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_5\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_6\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_7\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_8\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hasUnexpectedRuns\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"ingested_invocation_id\": \"invocation_id_9\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      ],@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"runFlakyVerdictExamples\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"testId\": \"ninja://base_unittests/Test.One\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"variantHash\": \"fake_variant_hash\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@Expecting value: line 1 column 1 (char 0)@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@",
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@  \"project\": \"chromium\",@@@",
       "@@@STEP_LOG_LINE@input@  \"testVariants\": [@@@",
       "@@@STEP_LOG_LINE@input@    {@@@",
+      "@@@STEP_LOG_LINE@input@      \"sources\": {@@@",
+      "@@@STEP_LOG_LINE@input@        \"changelists\": [@@@",
+      "@@@STEP_LOG_LINE@input@          {@@@",
+      "@@@STEP_LOG_LINE@input@            \"change\": 456789,@@@",
+      "@@@STEP_LOG_LINE@input@            \"host\": \"chromium-review.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@input@            \"patchset\": 12,@@@",
+      "@@@STEP_LOG_LINE@input@            \"project\": \"chromium/src\"@@@",
+      "@@@STEP_LOG_LINE@input@          }@@@",
+      "@@@STEP_LOG_LINE@input@        ],@@@",
+      "@@@STEP_LOG_LINE@input@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@input@          \"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\",@@@",
+      "@@@STEP_LOG_LINE@input@          \"host\": \"fake.org\",@@@",
+      "@@@STEP_LOG_LINE@input@          \"position\": 170242,@@@",
+      "@@@STEP_LOG_LINE@input@          \"project\": \"src\",@@@",
+      "@@@STEP_LOG_LINE@input@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@input@        }@@@",
+      "@@@STEP_LOG_LINE@input@      },@@@",
       "@@@STEP_LOG_LINE@input@      \"testId\": \"ninja://base_unittests/Test.One\",@@@",
       "@@@STEP_LOG_LINE@input@      \"variantHash\": \"base_unittests_hash\"@@@",
       "@@@STEP_LOG_LINE@input@    }@@@",
@@ -3176,13 +3106,10 @@
   },
   {
     "cmd": [],
-    "name": "query LUCI Analysis for flaky tests",
+    "name": "error querying LUCI Analysis for failure rates",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@{@@@",
-      "@@@STEP_LOG_LINE@stdout@  \"ninja://base_unittests/Test.One\": []@@@",
-      "@@@STEP_LOG_LINE@stdout@}@@@",
-      "@@@STEP_LOG_END@stdout@@@",
-      "@@@SET_BUILD_PROPERTY@luci_analysis_info@[{\"exonerated\": false, \"strongly_exonerated\": false, \"test_id\": \"ninja://base_unittests/Test.One\", \"total_flaky\": {\"1\": 0, \"5\": 0}, \"total_recent_unexpected\": 0, \"variant_hash\": \"fake_variant_hash\"}]@@@"
+      "@@@STEP_TEXT@Unexpected failure: unexpected response from RPC call@@@",
+      "@@@SET_BUILD_PROPERTY@luci_analysis_query_error@true@@@"
     ]
   },
   {
@@ -4387,7 +4314,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001343.gz"
+      "[TMP_BASE]/ninja_log.20120514-125326.00000000-0000-0000-0000-000000001343.gz"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -4423,8 +4350,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001343.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001343.gz"
+      "[TMP_BASE]/ninja_log.20120514-125326.00000000-0000-0000-0000-000000001343.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125326.00000000-0000-0000-0000-000000001343.gz"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -4451,8 +4378,8 @@
     },
     "name": "gsutil upload ninja_log (2)",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001343.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001343.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125326.00000000-0000-0000-0000-000000001343.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125326.00000000-0000-0000-0000-000000001343.gz@@@"
     ]
   },
   {
@@ -4693,12 +4620,12 @@
       }
     },
     "name": "postprocess for reclient (2).upload RBE metrics to BigQuery",
-    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:29Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:27.500Z\", \"stats\": {\"proxy_info\": [{\"bq_stats\": [{\"key\": \"failed_bq_uploads\", \"value\": 1}, {\"key\": \"success_bq_uploads\", \"value\": 42003}], \"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:29Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:27.500Z\",@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
       "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
@@ -4777,7 +4704,7 @@
       "--reclient-log-dir",
       "[CLEANUP]/reclient_log_tmp_2",
       "--output-gzip-path",
-      "[TMP_BASE]/reproxy_rpl.20120514-125330.00000000-0000-0000-0000-000000001346.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001346.gz"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -4810,8 +4737,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reproxy_rpl.20120514-125330.00000000-0000-0000-0000-000000001346.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125330.00000000-0000-0000-0000-000000001346.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001346.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001346.gz"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -4833,7 +4760,7 @@
     "name": "postprocess for reclient (2).gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125330.00000000-0000-0000-0000-000000001346.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-000000001346.gz@@@"
     ]
   },
   {
@@ -4924,7 +4851,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -4946,7 +4873,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
@@ -4992,7 +4919,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_2/reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346/reproxy.INFO"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346/reproxy.INFO"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -5014,7 +4941,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346/reproxy.INFO@@@"
     ]
   },
   {
@@ -5060,7 +4987,7 @@
       "----",
       "cp",
       "[CLEANUP]/reclient_log_tmp_2/reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346/reproxy_stderr.log"
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346/reproxy_stderr.log"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -5082,7 +5009,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346/reproxy_stderr.log@@@"
     ]
   },
   {
@@ -5094,7 +5021,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346.tar.gz"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -5127,8 +5054,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346.tar.gz"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -5150,7 +5077,7 @@
     "name": "postprocess for reclient (2).upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125330.00000000-0000-0000-0000-000000001346.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-000000001346.tar.gz@@@"
     ]
   },
   {

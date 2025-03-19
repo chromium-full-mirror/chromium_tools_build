@@ -1,11 +1,8 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2024 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 DEPS = [
-    'chromium',
-    'chromium_tests',
-    'test_utils',
     'recipe_engine/assertions',
     'recipe_engine/json',
     'recipe_engine/luci_analysis',
@@ -14,8 +11,13 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
+    'chromium',
+    'chromium_tests',
+    'test_utils',
 ]
 
+from google.protobuf import json_format
+from google.protobuf import timestamp_pb2
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
 
@@ -111,7 +113,7 @@ def GenTests(api):
           },
       }),
       api.override_step_data(
-          'query LUCI Analysis for failure rates.rpc call', retcode=1),
+          'query LUCI Analysis for stability.rpc call', retcode=1),
       api.post_process(post_process.MustRun,
                        'error querying LUCI Analysis for failure rates'),
       api.post_process(post_process.DropExpectation),
@@ -129,25 +131,11 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'query LUCI Analysis for failure rates.rpc call',
-          stdout=api.raw_io.output_text(api.json.dumps({'testVariants': []})),
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output({'testVariants': []}),
       ),
       api.post_process(post_process.MustRun,
                        'error querying LUCI Analysis for failure rates'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'immune to another ill-formed response',
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      api.properties(**{
-          '$build/test_utils': {
-              'should_exonerate_flaky_failures': True,
-          },
-      }),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -163,8 +151,8 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'query LUCI Analysis for failure rates.rpc call',
-          stdout=api.raw_io.output_text(api.json.dumps({})),
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output({}),
       ),
       api.post_process(post_process.MustRun,
                        'error querying LUCI Analysis for failure rates'),
@@ -185,7 +173,7 @@ def GenTests(api):
               },
           }),
       api.post_process(post_process.DoesNotRun,
-                       'query LUCI Analysis for failure rates'),
+                       'query LUCI Analysis for stability'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -207,71 +195,22 @@ def GenTests(api):
                   'should_exonerate_flaky_failures': True,
               },
           }),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA',
-              expected_count=10,
-              unexpected_count=0),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testB',
-              expected_count=10,
-              unexpected_count=0),
-      ]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  def CheckStepInput(check,
-                     step_odict,
-                     step_name,
-                     test_name,
-                     should_contain=True):
-    step = step_odict[step_name]
-    if should_contain:
-      check(test_name in step.stdin)
-    else:
-      check(test_name not in step.stdin)
-
-  yield api.test(
-      'part of the tests are marked as known flaky',
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      api.properties(
-          known_luci_analysis_flakes_expectations={
-              'failed_test': ['testA'],
-          },
-          weak_flaky_failures={
-              'failed_test': ['testA'],
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
-              },
-          }),
       api.override_step_data(
-          'collect tasks (with patch).failed_test results',
-          stdout=api.raw_io.output_text(
-              api.test_utils.rdb_results(
-                  'failed_test', failing_tests=['testA', 'testB']))),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA',
-              flaky_verdict_counts=[10],
-              examples_times=[60 * 60 * 12],
-          ),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testB'),
-      ]),
-      api.post_process(CheckStepInput, 'exonerate unrelated test failures',
-                       'testA'),
-      api.post_process(
-          CheckStepInput,
-          'exonerate unrelated test failures',
-          'testB',
-          should_contain=False),
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA'),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testB'),
+              ])),
+      ),
       api.post_process(post_process.DropExpectation),
   )
+
+  def CheckStepInput(check, step_odict, step_name, test_name):
+    step = step_odict[step_name]
+    check(test_name in step.stdin)
 
   yield api.test(
       'all tests were skipped',
@@ -296,6 +235,16 @@ def GenTests(api):
           api.luci_analysis.generate_analysis(
               test_id='ninja://failed_test/testA', flaky_verdict_counts=[10]),
       ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA',
+                      failure_rate_is_met=True,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.DoesNotRun,
                        'exonerate unrelated test failures'),
       api.post_process(post_process.MustRun,
@@ -323,17 +272,26 @@ def GenTests(api):
                   'should_exonerate_flaky_failures': True,
               },
           }),
-      api.time.seed(60 * 60 * 12),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA',
-              flaky_verdict_counts=[10],
-              examples_times=[60 * 60 * 12]),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testB',
-              flaky_verdict_counts=[10],
-              examples_times=[60 * 60 * 12]),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA',
+                      failure_rate_is_met=False,
+                      flake_rate_is_met=True,
+                      run_flaky_verdicts_1wd=1,
+                      run_flaky_verdicts_12h=1,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testB',
+                      failure_rate_is_met=False,
+                      flake_rate_is_met=True,
+                      run_flaky_verdicts_1wd=1,
+                      run_flaky_verdicts_12h=1,
+                  ),
+              ])),
+      ),
       api.post_process(CheckStepInput, 'exonerate unrelated test failures',
                        'testA'),
       api.post_process(CheckStepInput, 'exonerate unrelated test failures',
@@ -355,6 +313,11 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA']))),
+      api.override_step_data(
+          'collect tasks (with patch).failed_test results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'failed_test', failing_tests=['testA']))),
       api.properties(
           known_luci_analysis_flakes_expectations={
               'failed_test': ['testA'],
@@ -364,13 +327,16 @@ def GenTests(api):
                   'should_exonerate_flaky_failures': True,
               },
           }),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA',
-              expected_count=1,
-              unexpected_count=9,
-              examples_times=[60 * 60 * 12]),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA',
+                      failure_rate_is_met=True,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.PropertiesContain, 'luci_analysis_info'),
       api.post_process(post_process.DropExpectation),
   )
@@ -390,7 +356,7 @@ def GenTests(api):
               },
           }),
       api.post_process(post_process.DoesNotRun,
-                       'query LUCI Analysis for failure rates'),
+                       'query LUCI Analysis for stability'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -420,19 +386,29 @@ def GenTests(api):
                   'should_exonerate_flaky_failures': True,
               },
           }),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA', unexpected_count=10),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testB', unexpected_count=10),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA',
+                      failure_rate_is_met=True,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testB',
+                      failure_rate_is_met=True,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'retry_weak_weetbix_exonerations does not run strongly exonerated',
       api.chromium.generic_build(
-          builder_group='fake-group', builder='fake-builder'),
+          builder_group='fake-group',
+          builder='fake-builder',
+      ),
       api.properties(
           known_luci_analysis_flakes_expectations={
               'failed_test': ['testA', 'testB'],
@@ -442,22 +418,31 @@ def GenTests(api):
                   'should_exonerate_flaky_failures': True,
               },
           }),
-      api.time.seed(60 * 60 * 12),
       api.override_step_data(
           'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA',
-              flaky_verdict_counts=[10],
-              examples_times=[60 * 60 * 12]),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testB',
-              flaky_verdict_counts=[10],
-              examples_times=[60 * 60 * 12]),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                      run_flaky_verdicts_1wd=1,
+                      run_flaky_verdicts_12h=1,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testB',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                      run_flaky_verdicts_1wd=1,
+                      run_flaky_verdicts_12h=1,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.MustRun, 'failed_test (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'failed_test (retry shards with patch)'),
@@ -467,7 +452,9 @@ def GenTests(api):
   yield api.test(
       'retry_weak_weetbix_exonerations does run weakly exonerated',
       api.chromium.generic_build(
-          builder_group='fake-group', builder='fake-builder'),
+          builder_group='fake-group',
+          builder='fake-builder',
+      ),
       api.properties(
           known_luci_analysis_flakes_expectations={
               'failed_test': ['testA', 'testB'],
@@ -487,12 +474,26 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testA', flaky_verdict_counts=[10]),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://failed_test/testB', flaky_verdict_counts=[10]),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testA',
+                      failure_rate_is_met=False,
+                      flake_rate_is_met=True,
+                      run_flaky_verdicts_1wd=1,
+                      run_flaky_verdicts_12h=0,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://failed_test/testB',
+                      failure_rate_is_met=False,
+                      flake_rate_is_met=True,
+                      run_flaky_verdicts_1wd=1,
+                      run_flaky_verdicts_12h=0,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.MustRun, 'failed_test (with patch)'),
       api.post_process(post_process.MustRun,
                        'failed_test (retry shards with patch)'),
@@ -502,7 +503,9 @@ def GenTests(api):
   yield api.test(
       'does not exonerate over 100',
       api.chromium.generic_build(
-          builder_group='fake-group', builder='fake-builder'),
+          builder_group='fake-group',
+          builder='fake-builder',
+      ),
       api.properties(
           known_luci_analysis_flakes_expectations={
               'failed_test': [],
@@ -519,7 +522,7 @@ def GenTests(api):
                   'failed_test',
                   failing_tests=['test%d' % t for t in range(101)]))),
       api.post_process(post_process.DoesNotRun,
-                       'query LUCI Analysis for failure rates.rpc call'),
+                       'query LUCI Analysis for stability.rpc call'),
       api.post_process(post_process.StepTextContains,
                        'Skipping querying LUCI Analysis for failure rates',
                        ['101']),

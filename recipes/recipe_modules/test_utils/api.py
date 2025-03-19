@@ -13,9 +13,7 @@ from recipe_engine import util as recipe_util
 from recipe_engine.config_types import Path
 
 from .util import GTestResults, RDBPerSuiteResults, RDBResults
-from .util import (IndividualTestFailureRateAnalysis,
-                   FailureRateAnalysisPerSuite, IndividualTestStabilityAnalysis,
-                   StabilityAnalysisPerSuite)
+from .util import IndividualTestStabilityAnalysis, StabilityAnalysisPerSuite
 from google.protobuf import timestamp_pb2
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
@@ -614,173 +612,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
           step_text='Too many failed tests: %d' % total_failing_variants)
       return
 
-    if ('chromium.luci_analysis_v2'
-        in self.m.buildbucket.build.input.experiments):
-      self._query_stability_rate(tests_to_check)
-    else:
-      self._query_failure_rate(tests_to_check)
-
-  def _query_failure_rate(self, tests_to_check):
-    """Get flaky or deterministically failing tests by querying LUCI Analysis
-
-    Exoneration criteria:
-    - At least 3 flaky verdicts in the past 5 weekdays AND at least 1 flaky
-    verdict in the past 1 weekday.
-    OR
-    - At least 7 recent unexpected verdicts
-    (Flaky verdict means that in a single try build, the test failed the first
-    run and then passed in the next run (aka the "retry shard (with patch)")
-
-    If a suite has tests to be exonerated, the suite's
-    _known_luci_analysis_flaky_failures will be updated.
-
-    If a test is skipped, it will not be exonerated and therefore not included
-    in the suite's _known_luci_analysis_flaky_failures.
-
-    Args:
-      tests_to_check (List(Test)): List of failing test suites
-
-    """
-    test_variants_to_query = []
-    test_info_for_zip = []
-    for suite in tests_to_check:
-      rdb_results = suite.get_rdb_results('with patch')
-      failing_tests = rdb_results.unexpected_failing_tests
-      for failing_test in failing_tests:
-        test_variants_to_query.append({
-            'testId': failing_test.test_id,
-            'variantHash': rdb_results.variant_hash,
-        })
-        test_info_for_zip.append({
-            'test_name': failing_test.test_name,
-            'suite_name': suite.name,
-        })
-    failure_analysis_protos = []
-    query_failure_rate_step_error_msg = None
-    try:
-      failure_analysis_protos = self.m.luci_analysis.query_failure_rate(
-          test_variants_to_query)
-    except self.m.step.StepFailure as f:
-      # Don't fail the build if something's wrong with LUCI Analysis.
-      # We'll just not exonerate any failing tests and log that this happened.
-      query_failure_rate_step_error_msg = f.reason_message()
-
-    suite_to_per_suite_analysis = {}
-    assert len(test_info_for_zip) == len(failure_analysis_protos)
-    for test_info, failure_analysis in zip(test_info_for_zip,
-                                           failure_analysis_protos):
-      suite_name = test_info['suite_name']
-      indiv_failure_analysis = IndividualTestFailureRateAnalysis.create(
-          failure_analysis=failure_analysis,
-          suite_name=suite_name,
-          test_name=test_info['test_name'],
-      )
-
-      if suite_name not in suite_to_per_suite_analysis:
-        suite_to_per_suite_analysis[suite_name] = (
-            FailureRateAnalysisPerSuite.create(suite_name,
-                                               [indiv_failure_analysis]))
-      else:
-        suite_to_per_suite_analysis[suite_name].append_failure_analysis(
-            indiv_failure_analysis)
-
-    # Handles LUCI Analysis RPC server errors: 500s or response returned but no
-    # data
-    if not suite_to_per_suite_analysis:
-      if not query_failure_rate_step_error_msg:
-        query_failure_rate_step_error_msg = (
-            'Missing failure rates from LUCI Analysis')
-      log_step = self.m.step.empty(
-          'error querying LUCI Analysis for failure rates',
-          step_text=query_failure_rate_step_error_msg)
-      # Set an output property so this is easily queryable
-      log_step.presentation.properties['luci_analysis_query_error'] = True
-      return
-
-    flaky_verdict_example_log = {}
-    luci_analysis_build_output = []
-    for suite in tests_to_check:
-      failure_rate_analysis_per_suite = suite_to_per_suite_analysis.get(
-          suite.name)
-
-      # Set of test_names
-      tests_to_exonerate = set()
-      rdb_results = suite.get_rdb_results('with patch')
-      test_name_to_result = rdb_results.individual_unexpected_test_by_test_name
-      for analysis in failure_rate_analysis_per_suite.failure_analysis_list:
-        # Don't exonerate skipped tests
-        if (test_name_to_result[analysis.test_name] in
-            rdb_results.unexpected_skipped_tests):
-          continue
-
-        # Get the failures in the last 12 hours, up to 10
-        twelve_hours_ago = timestamp_pb2.Timestamp(
-            seconds=int(self.m.time.time() - (60 * 60 * 12)))
-
-        failure_in_last_12_hours = False
-        for example in analysis.run_flaky_verdict_examples:
-          partition_time = timestamp_pb2.Timestamp()
-          partition_time.FromJsonString(example['partitionTime'])
-
-          if partition_time.ToSeconds() > twelve_hours_ago.ToSeconds():
-            failure_in_last_12_hours = True
-            break
-
-        # Query over the last 5 weekdays and the last weekday
-        stats = {
-            'total_flaky':
-                analysis.get_flaky_verdict_counts([1, 5]),
-            'total_recent_unexpected':
-                analysis.get_unexpected_recent_verdict_count(),
-        }
-
-        # To be exonerated for being flaky, the failing test needs to be flaky
-        # in the last 12 hours AND the last 5 weekdays. Even if exonerated it
-        # must strongly meet these requirements to avoid a retry
-        strongly_meets_min_flakiness = (
-            failure_in_last_12_hours and stats['total_flaky'][5] >= 4)
-
-        # The "barely" meets criteria will exonerate but still launch a retry
-        # to avoid data cannibalization
-        barely_meets_min_flakiness = (
-            (stats['total_flaky'][5] >= 3 and stats['total_flaky'][1] >= 1) and
-            (stats['total_flaky'][5] == 3 or not failure_in_last_12_hours))
-
-        meets_min_recent_unexpected = stats['total_recent_unexpected'] >= 7
-        exonerated = False
-        strongly_exonerated = False
-
-        if meets_min_recent_unexpected or strongly_meets_min_flakiness:
-          tests_to_exonerate.add(analysis.test_name)
-          strongly_exonerated = True
-          exonerated = True
-        elif barely_meets_min_flakiness:
-          tests_to_exonerate.add(analysis.test_name)
-          exonerated = True
-
-        if not meets_min_recent_unexpected and barely_meets_min_flakiness:
-          suite.add_weak_luci_analysis_flaky_failure(analysis.test_name)
-
-        # This is to output LUCI Analysis information in the build output
-        # property and to add the flaky verdict examples as a log in a step
-        to_log = stats
-        to_log['variant_hash'] = analysis.variant_hash
-        to_log['exonerated'] = exonerated
-        to_log['strongly_exonerated'] = strongly_exonerated
-        to_log['test_id'] = analysis.test_id
-        luci_analysis_build_output.append(to_log)
-        flaky_verdict_example_log[analysis.test_id] = (
-            analysis.run_flaky_verdict_examples)
-
-      if tests_to_exonerate:
-        suite.add_known_luci_analysis_flaky_failures(tests_to_exonerate)
-
-    # Log this so that recent flaky verdicts are visible in build
-    query_luci_analysis_step = self.m.step.empty(
-        'query LUCI Analysis for flaky tests',
-        log_text=self.m.json.dumps(flaky_verdict_example_log, indent=2))
-    query_luci_analysis_step.presentation.properties['luci_analysis_info'] = (
-        luci_analysis_build_output)
+    self._query_stability_rate(tests_to_check)
 
   def _query_stability_rate(self, tests_to_check):
     """Get flaky or deterministically failing tests by querying LUCI Analysis
@@ -802,8 +634,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
     test_info_for_zip = []
     for suite in tests_to_check:
       rdb_results = suite.get_rdb_results('with patch')
-      failing_tests = rdb_results.unexpected_failing_tests
-      for failing_test in failing_tests:
+      # The tests are saved as a set but we need consistent order for mock data
+      for failing_test in sorted(rdb_results.unexpected_failing_tests):
         gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
         sources = {
             'gitilesCommit': {

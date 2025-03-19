@@ -1395,12 +1395,17 @@ def GenTests(api):
           'with patch',
           failures=['Test.Two'],
           successes=['Test.One']),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.Two',
-              expected_count=0,
-              unexpected_count=10),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.Two',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                  )
+              ])),
+      ),
       api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (retry shards with patch)'),
@@ -1513,17 +1518,18 @@ def GenTests(api):
           'base_unittests', 'with patch', failures=['Test.One', 'Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'retry shards with patch', failures=['Test.Two']),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.One',
-              expected_count=10,
-              unexpected_count=0),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.Two',
-              expected_count=10,
-              unexpected_count=0,
-              flaky_verdict_counts=[5, 20]),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.One'),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.Two',
+                      flake_rate_is_met=True,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
       api.post_process(post_process.MustRun,
                        'base_unittests (retry shards with patch)'),
@@ -1574,18 +1580,22 @@ def GenTests(api):
       }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One', 'Test.Two']),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.One',
-              expected_count=0,
-              unexpected_count=10,
-          ),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.Two',
-              expected_count=0,
-              unexpected_count=10,
-          ),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.One',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.Two',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (retry shards with patch)'),
@@ -1637,21 +1647,24 @@ def GenTests(api):
           'base_unittests',
           'retry shards with patch',
           failures=['Test.One', 'Test.Two', 'Test.Three']),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.One',
-              expected_count=10,
-              unexpected_count=0),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.Two',
-              expected_count=10,
-              unexpected_count=0,
-              flaky_verdict_counts=[5, 20]),
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/Test.Three',
-              expected_count=10,
-              unexpected_count=20),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.One'),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.Two',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/Test.Three',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                  ),
+              ])),
+      ),
       api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
       api.post_process(post_process.MustRun,
                        'base_unittests (retry shards with patch)'),
@@ -1741,13 +1754,19 @@ def GenTests(api):
           successes=['UrlTest.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'url_unittests', 'retry shards with patch', failures=['UrlTest.One']),
-      api.luci_analysis.query_failure_rate_results([
-          api.luci_analysis.generate_analysis(
-              test_id='ninja://base_unittests/BaseTest.One',
-              expected_count=10,
-              unexpected_count=0,
-              flaky_verdict_counts=[5, 25]),
-      ]),
+      api.override_step_data(
+          'query LUCI Analysis for stability.rpc call',
+          stdout=api.json.output(
+              api.luci_analysis.generate_stability_response([
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/BaseTest.One',
+                      failure_rate_is_met=True,
+                      flake_rate_is_met=True,
+                  ),
+                  api.luci_analysis.generate_stability_analysis(
+                      test_id='ninja://base_unittests/UrlTest.One'),
+              ])),
+      ),
       api.post_process(
           post_process.StepTextContains,
           'base_unittests (test results summary)',
