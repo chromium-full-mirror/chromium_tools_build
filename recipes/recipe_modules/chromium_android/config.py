@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.config import config_item_context, ConfigGroup
-from recipe_engine.config import Dict, List, Single, Static
+from recipe_engine.config import List, Single, Static
 
 
 def BaseConfig(INTERNAL=False):
@@ -13,17 +13,8 @@ def BaseConfig(INTERNAL=False):
           str, required=False, empty_val='http://cs.chromium.org'),
       results_bucket=Single(
           str, required=False, empty_val='chromium-result-details'),
-      get_app_manifest_vars=Single(bool, required=False, empty_val=True),
-      run_tree_truth=Single(bool, required=False, empty_val=True),
-      internal_dir_name=Single(str, required=False),
-      extra_deploy_opts=List(inner_type=str),
-      tests=List(inner_type=str),
       # Path to the test runner relative to the top level repo
       test_runner=Single(str),
-      gclient_custom_deps=Dict(value_type=(str, type(None))),
-      channel=Single(str, empty_val='chrome'),
-      coverage=Single(bool, required=False, empty_val=False),
-      incremental_coverage=Single(bool, required=False, empty_val=False),
       use_devil_adb=Single(bool, required=False, empty_val=False),
       # TODO(crbug.com/708171): Remove this once everything has switched to
       # devil provisioning.
@@ -39,7 +30,6 @@ config_ctx = config_item_context(BaseConfig)
 
 @config_ctx(is_root=True)
 def base_config(c):
-  c.internal_dir_name = 'clank'
   c.test_runner = 'build/android/test_runner.py'
 
 @config_ctx()

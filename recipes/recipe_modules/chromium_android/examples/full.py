@@ -67,7 +67,6 @@ def RunSteps(api):
   api.chromium.set_config('base_config', BUILD_CONFIG='Release')
 
   api.chromium_android.set_config('base_config', INTERNAL=True)
-  api.chromium_android.c.get_app_manifest_vars = True
   api.chromium_android.c.logcat_bucket = None
 
   for c in config.get('android_apply_config', []):
