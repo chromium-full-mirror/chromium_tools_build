@@ -17,7 +17,9 @@ BRANCH = 'main'
 HOSTNAME = 'chromium'  # Only the first word of gerrit host i.e. %s-review.googlesoure.com
 LOCATION_ENUM = 1
 STAGE_SERVICE_GSLB = 'blade:test-relevance-stage-service-prod-luci'
-MAX_DURATION_SECONDS = 180
+# TODO(b/405145095): Change this to a lower value after decisiongraph has moved
+# to spanner queues.
+MAX_DURATION_SECONDS = 900
 MAX_ATTEMPTS = 3
 BLOCKING_ENUM = 2
 
