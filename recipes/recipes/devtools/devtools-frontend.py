@@ -196,35 +196,38 @@ def publish_coverage_points(api, source_dir, skip):
   if api.tryserver.is_tryserver or skip:
     return
   with api.step.nest('Coverage'):
-    dimensions = ["lines", "statements", "functions", "branches"]
+    try:
+      dimensions = ["lines", "statements", "functions", "branches"]
 
-    report_file = source_dir / 'karma-coverage/coverage-summary.json'
-    summary = api.file.read_json(
-        'Coverage summary', report_file, test_data=test_cov_data())
-    totals = summary['total']
-    api.step.active_result.presentation.step_text = "".join([
-        "\n%s: %s%%" % (dim.capitalize(), totals[dim]['pct'])
-        for dim in dimensions
-    ])
+      report_file = source_dir / 'karma-coverage/coverage-summary.json'
 
-    with api.context(cwd=source_dir):
-      git_revision = api.bot_update.last_returned_properties['got_revision']
+      summary = api.file.read_json('Coverage summary', report_file)
+      totals = summary['total']
+      api.step.active_result.presentation.step_text = "".join([
+          "\n%s: %s%%" % (dim.capitalize(), totals[dim]['pct'])
+          for dim in dimensions
+      ])
 
-      commit_count = api.git(
-          'rev-list',
-          '--count',
-          git_revision,
-          name='Retrieve commit count',
-          stdout=api.raw_io.output_text(),
-          step_test_data=lambda: api.raw_io.test_api.stream_output_text('123\n')
-      ).stdout.strip()
+      with api.context(cwd=source_dir):
+        git_revision = api.bot_update.last_returned_properties['got_revision']
 
-    points = [
-        _point(api, dim, summary['total'], commit_count) for dim in dimensions
-    ]
-    #TODO(liviurau) find another way arroud 400 error "Invalid ID (revision) 1055;
-    #compared to previous ID 0, it was larger or smaller by too much."
-    api.perf_dashboard.add_point(points, halt_on_failure=False)
+        commit_count = api.git(
+            'rev-list',
+            '--count',
+            git_revision,
+            name='Retrieve commit count',
+            stdout=api.raw_io.output_text(),
+            step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+                '123\n')).stdout.strip()
+
+      points = [
+          _point(api, dim, summary['total'], commit_count) for dim in dimensions
+      ]
+      #TODO(liviurau) find another way arroud 400 error "Invalid ID (revision) 1055;
+      #compared to previous ID 0, it was larger or smaller by too much."
+      api.perf_dashboard.add_point(points, halt_on_failure=False)
+    except Exception:
+      api.step.empty('Coverage data not available')
 
 
 def _point(api, dimension, totals, commit_count):
@@ -275,9 +278,8 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(builder_config='Debug'),
-      api.path.exists(
-          api.path.cache_dir /
-          'builder/devtools-frontend/karma-coverage/coverage-summary.json',),
+      api.override_step_data('Coverage.Coverage summary',
+                             api.file.read_json(test_cov_data())),
   )
 
   yield api.test(
