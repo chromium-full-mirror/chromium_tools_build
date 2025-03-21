@@ -324,7 +324,7 @@
       "--root=[START_DIR]/src",
       "gen",
       "[START_DIR]/src/out/Debug",
-      "--args=is_cronet_build=true enable_websockets=false include_transport_security_state_preload_list=false use_platform_icu_alternatives=true use_partition_alloc=false use_hashed_jni_names=true default_min_sdk_version=23 clang_use_default_sample_profile=false media_use_ffmpeg=false use_thin_lto=false enable_resource_allowlist_generation=false is_debug=true target_os=\"android\" target_cpu=\"arm\" use_remoteexec=true"
+      "--args=is_cronet_build=true enable_websockets=false include_transport_security_state_preload_list=false use_platform_icu_alternatives=true use_partition_alloc=false use_hashed_jni_names=true default_min_sdk_version=23 clang_use_default_sample_profile=false use_thin_lto=false enable_resource_allowlist_generation=false is_debug=true target_os=\"android\" target_cpu=\"arm\" use_remoteexec=true"
     ],
     "cwd": "[START_DIR]/src",
     "env": {
