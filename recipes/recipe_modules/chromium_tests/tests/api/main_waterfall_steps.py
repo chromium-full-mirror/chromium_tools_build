@@ -399,6 +399,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'record test suite statuses'),
       api.post_process(post_process.PropertyEquals, 'test_status',
                        {'base_unittests': 'Success'}),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          '1 Test Suite(s) succeeded after retry.\n\n- base_unittests\n'),
       api.post_process(post_process.DropExpectation),
   )
 
