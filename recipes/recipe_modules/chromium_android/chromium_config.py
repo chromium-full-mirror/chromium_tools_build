@@ -75,7 +75,6 @@ def cronet_builder(c):
 
   # From //tools/mb/mb_config.pyl's "cronet_android":
   c.gn_args.append('use_partition_alloc=false')
-  c.gn_args.append('enable_reporting=true')
   c.gn_args.append('use_hashed_jni_names=true')
   c.gn_args.append('default_min_sdk_version=23')
   c.gn_args.append('clang_use_default_sample_profile=false')
