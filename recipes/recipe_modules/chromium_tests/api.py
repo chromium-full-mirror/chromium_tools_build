@@ -540,7 +540,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         tests_list = [tests]
 
       all_failed_tests = set()
-      retry_success_tests = set()
       for tl in tests_list:
         invalid_tests, failed_tests = self.m.test_utils.run_tests(
             checkout_dir,
@@ -553,12 +552,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             include_utr_instruction=include_utr_instruction)
         all_failed_tests = all_failed_tests.union(failed_tests, invalid_tests)
 
-        for test in tl:
-          if test not in failed_tests:
-            retry_suffix = self.m.test_utils.prepend_retry_shards(suffix)
-            if test.get_status(retry_suffix) == steps.SUCCESS_SUITE_STATUS:
-              retry_success_tests = retry_success_tests.union(tl)
-
       self.m.chromium_swarming.report_stats()
       if all_failed_tests:
         status = self.determine_build_status_from_tests(
@@ -570,13 +563,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             status=status,
             summary_markdown=self.format_unrecoverable_failures(
                 all_failed_tests, suffix))
-      # If we don't have any failed tests, surface any successful retried test suites to
-      # markdown summary
-      if retry_success_tests:
-        return result_pb2.RawResult(
-            status=common_pb.SUCCESS,
-            summary_markdown=self.format_success_retry_tests(
-                retry_success_tests))
 
     return test_runner
 
@@ -2418,24 +2404,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if not t.did_complete(suffix) and not t.did_complete(retry_suffix):
         return common_pb.INFRA_FAILURE  # Nothing should override INFRA_FAILURE
     return status
-
-  def format_success_retry_tests(
-      self,
-      success_retry_test_suites,
-  ):
-    """Creates list of tests succeeded after retry formatted using markdown.
-
-    Args:
-      success_retry_test_suites: Set of succeeded after retry Test
-
-    Returns:
-      String containing a markdown formatted list of tests succeeded after retry
-    """
-    success_retry_markdown = f'{len(success_retry_test_suites)} Test Suite(s) succeeded after retry.\n\n'
-    for suite in sorted(success_retry_test_suites):
-      success_retry_markdown += f'- {suite.name}\n'
-
-    return success_retry_markdown
 
   def format_unrecoverable_failures(self,
                                     unrecoverable_test_suites,
