@@ -750,21 +750,6 @@ class AbstractTest(abc.ABC):
     # Remove the tests that failed wo patch
     return True, test_failures - ignored_failures
 
-  def exceed_allowed_failure_rate(self, suffix: str) -> bool:
-    """A helper to check if test failures exceed suite's expectation.
-
-    Args:
-        suffix: string suffix designating test variant to pay attention to
-    Returns:
-        A boolean value indicating whether the number of test failures exceeds
-          the allowed failure rate.
-    """
-    if not self.spec.allowed_failure_percentage:
-      return True
-    return (len(self.deterministic_failures(suffix)) /
-            len(self.get_rdb_results(suffix).all_tests)
-           ) * 100 > self.spec.allowed_failure_percentage
-
 
 @attrs()
 class TestSpec(AbstractTestSpec):
@@ -787,9 +772,6 @@ class TestSpec(AbstractTestSpec):
     * test_id_prefix: A prefix to be added to the test Id for the test
       e.g.
       "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/".
-    * allowed_failure_percentage: Percentage in int to represent the
-      allowed failure rate of a suite. If a suite has fewer
-      test failures than this threshold, it will not fail the build.
     * retry_only_failed_tests: Whether to retry only the failed tests, with
       patch. The alternative is the status quo of retrying the entire shard.
   """
@@ -805,7 +787,6 @@ class TestSpec(AbstractTestSpec):
   test_id_prefix = attrib(str, default=None)
   check_flakiness_for_new_tests = attrib(bool, default=True)
   results_handler_name = attrib(str, default=None)
-  allowed_failure_percentage = attrib(int, default=0)
   retry_only_failed_tests = attrib(bool, default=False)
 
   @property

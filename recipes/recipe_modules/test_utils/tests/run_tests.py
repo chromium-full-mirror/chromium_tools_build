@@ -617,51 +617,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  def CheckTestTargetStatus(check, step_odict, test_target, expected):
-    target_status = post_process.GetBuildProperties(step_odict).get(
-        'test_status', '').get(test_target, '')
-    check(target_status == expected)
-
-  yield api.test(
-      'tests_with_allowed_failure_rates',
-      api.chromium.generic_build(builder='test_builder'),
-      api.properties(
-          test_name='base_unittests',
-          test_swarming=True,
-          swarm_hashes={
-              'base_unittests': '[dummy hash for base_unittests/size]',
-              'base_unittests_2': '[dummy hash for base_unittests_2/size]',
-          },
-          src_spec={
-              'base_unittests': {
-                  'allowed_failure_percentage': 60
-              },
-              'base_unittests_2': {
-                  'allowed_failure_percentage': 30
-              },
-          }),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests',
-          '',
-          failures=['test1'],
-          successes=['test2', 'test3']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests_2',
-          '',
-          failures=['test1'],
-          successes=['test2', 'test3']),
-      api.expect_status('FAILURE'),
-      # Test step still fails because of 'test1'.
-      api.post_process(post_process.StepFailure, 'base_unittests'),
-      api.post_process(post_process.StepFailure, 'base_unittests_2'),
-      # base_unittests_1 should not appear here, because it did not exceed
-      # the allowed failure rate.
-      api.post_process(post_process.SummaryMarkdown,
-                       'failed: base_unittests_2'),
-      api.post_process(CheckTestTargetStatus, 'base_unittests_2', 'Failure'),
-      api.post_process(post_process.DropExpectation),
-  )
-
   yield api.test(
       'tests_with_different_servers',
       api.chromium.generic_build(builder='test_builder'),

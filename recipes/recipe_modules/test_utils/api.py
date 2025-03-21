@@ -220,15 +220,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
       if not t.has_valid_results(suffix) or not t.did_complete(suffix):
         invalid_results.append(t)
       elif t.deterministic_failures(suffix) and t not in failed_test_suites:
-        if not t.exceed_allowed_failure_rate(suffix):
-          s = self.m.step.empty(f'Skip the failure of {t.name}')
-          step_text = ('Allowed failure percentage: '
-                       f'{t.spec.allowed_failure_percentage}%\n')
-          step_text += 'Deterministic failures: '
-          step_text += f'{len(t.deterministic_failures(suffix))}\n'
-          step_text += f'Total: {len(t.get_rdb_results(suffix).all_tests)}\n'
-          s.presentation.step_text = step_text
-          continue
         failed_test_suites.append(t)
     return invalid_results, failed_test_suites
 
@@ -386,10 +377,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
                         force_fetch_all_results=False):
     """Queries RDB for the given test's results.
 
-    If suite has allowed_failure_percentage configured, need to fetch all
-    results, in spite of the input force_fetch_all_results, to calculate the
-    failure rate.
-
     If Flake Endorser is enabled and the target result count is not too large
     (the limit is set in flakiness module), the method collects all results.
     Otherwise, the method collects only test results from variants that have
@@ -404,9 +391,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
       test_invocation_names: Test invocation names to fetch test results. If not
         provided, will use from invocation names from input test.
       force_fetch_all_results: If True, return all tests results. All results
-        will be returned regardless if the test has `allowed_failure_percentage`
-        specified or if Flake Endorser is enabled and the result sizes are below
-        a limit.
+        will be returned regardless if Flake Endorser is enabled and the result
+        sizes are below a limit.
     """
     if not test.is_enabled:
       res = RDBPerSuiteResults.create({},
@@ -432,7 +418,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
       test_stats = self.m.resultdb.query_test_result_statistics(
           invocations=invocation_names, step_name='%s stats' % test.name)
       variants_with_unexpected_results = True
-      if (force_fetch_all_results or test.spec.allowed_failure_percentage or
+      if (force_fetch_all_results or
           (self.m.flakiness and self.m.flakiness.check_for_flakiness and
            test_stats.total_test_results
            <= self.m.flakiness.PER_TEST_OBJECT_RESULT_LIMIT)):
@@ -927,12 +913,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
             sort_by_shard=sort_by_shard,
             include_utr_instruction=include_utr_instruction))
 
-    _allowed_failing_suites = {
-        x.name
-        for x in failed_test_suites
-        if not x.exceed_allowed_failure_rate(suffix)
-    }
-
     exonerated_suites_to_retry = []
     if suffix == 'with patch':
       failed_test_suites, exonerated_suites_to_retry = (
@@ -942,12 +922,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # the CL under test, inform RDB of these tests so it keeps a record.
     self._exonerate_unrelated_failures(test_suites, suffix)
 
-    _experimental_suites = {x.name for x in test_suites if x.is_experimental}
+    experimental_suites = {x.name for x in test_suites if x.is_experimental}
     if retry_failed_shards and self._should_abort_retry(
-        failed_test_suites,
-        suffix,
-        allowed_failing_suites=_allowed_failing_suites.union(
-            _experimental_suites)):
+        failed_test_suites, suffix, allowed_failing_suites=experimental_suites):
       return invalid_test_suites, invalid_test_suites + failed_test_suites
 
     failed_and_invalid_suites = list(
