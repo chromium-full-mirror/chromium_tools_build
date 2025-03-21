@@ -173,9 +173,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       ret = test_runner()
       if any(not t.has_valid_results('') and t.runs_on_swarming for t in tests):
         step_result = self.m.step.empty('print swarming tasks link')
-        step_result.presentation.logs[self.UTR_LOG_NAME] = [
-            f'https://chromium-swarm.appspot.com/tasklist?f=utr_invocation_uuid-tag%3A{invocation_uuid}',
-        ]
+        step_result.presentation.logs[self.UTR_LOG_NAME] = []
+        for s in {
+            t.spec.server if t.spec.server else self.m.swarming.current_server
+            for t in tests
+        }:
+          step_result.presentation.logs[self.UTR_LOG_NAME].append(
+              f'{s}/tasklist?f=utr_invocation_uuid-tag%3A{invocation_uuid}')
 
       failed_local_tests = [
           t for t in tests if t.runs_locally and t.failure_on_exit('')
