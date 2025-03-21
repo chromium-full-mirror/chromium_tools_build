@@ -3043,7 +3043,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           update_properties={},
           config=arch_prop.InputProperties(
               archive_datas=[browser_arch, metadata_arch]),
-          should_batch=True)
+          use_hardlink=True)
       return 'gs://{}{}/{}/{}'.format(
           gcs_bucket, '/experimental' if self.m.runtime.is_experimental else '',
           gcs_path, target)

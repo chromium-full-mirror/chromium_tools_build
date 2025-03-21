@@ -75,7 +75,7 @@ def RunSteps(api):
         update_properties=update_properties,
         custom_vars=custom_vars,
         report_artifacts=True,
-        should_batch=api.properties.get('should_batch', False),
+        use_hardlink=api.properties.get('use_hardlink', False),
         generate_sboms=True)
     api.archive.generic_archive_after_tests(
         checkout_dir=checkout_dir,
@@ -450,7 +450,7 @@ def GenTests(api):
                 'got_revision': TEST_HASH_MAIN,
                 'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
             },
-            should_batch=True,
+            use_hardlink=True,
             **{'$build/archive': input_properties}),
         api.post_process(post_process.LogContains,
                          'Generic Archiving Steps.Write file list to copy',

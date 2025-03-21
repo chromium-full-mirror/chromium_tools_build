@@ -889,7 +889,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                       custom_vars=None,
                       config=None,
                       report_artifacts=False,
-                      should_batch=False,
+                      use_hardlink=False,
                       generate_sboms=False):
     """Archives one or multiple packages to either google cloud storage or CIPD.
 
@@ -912,7 +912,9 @@ class ArchiveApi(recipe_api.RecipeApi):
               $build/archive.
       report_artifacts: A boolean flag to enable artifact reporting. This is
                         set by recipe that uses this module.
-      should_batch: A boolean for batching file operations via resource script,
+      use_hardlink: A boolean for creating hardlinks instead of copying files
+                    on preparing a temporary directory for archives. This flag
+                    also enables the batch file operations via resource script,
                     to avoid too many steps in the build.
       generate_sboms: A Boolean for enabling SBOM generation and reporting, set
                       by the recipe using this module.
@@ -956,7 +958,7 @@ class ArchiveApi(recipe_api.RecipeApi):
               custom_vars=custom_vars,
               generate_sboms=generate_sboms,
               report_artifacts=report_artifacts,
-              should_batch=should_batch)
+              use_hardlink=use_hardlink)
           upload_results['gcs'].append(gcs_uploads)
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
@@ -1053,7 +1055,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                   custom_vars=None,
                   generate_sboms=False,
                   report_artifacts=False,
-                  should_batch=False):
+                  use_hardlink=False):
     """Archives a single package to google cloud storage.
 
     The exact configuration of the archive is specified by InputProperties. See
@@ -1075,7 +1077,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       generate_sboms: A Boolean for enabling SBOM generation and reporting, set
                       by the recipe using this module.
       report_artifacts: A boolean flag to enable artifact reporting.
-      should_batch: See generic_archive().
+      use_hardlink: See generic_archive().
     """
 
     def _sanitize_gcs_path(gcs_path, file_path):
@@ -1119,7 +1121,7 @@ class ArchiveApi(recipe_api.RecipeApi):
           ],
           infra_step=True)
 
-    if should_batch:
+    if use_hardlink:
       self.batch_copy(base_path, temp_dir, expanded_files)
     else:
       created = set()
@@ -1141,7 +1143,8 @@ class ArchiveApi(recipe_api.RecipeApi):
           "Copy folder %s" % directory,
           self.m.path.join(base_path, directory),
           self.m.path.join(temp_dir, directory),
-          symlinks=True)
+          symlinks=True,
+          hardlink=use_hardlink)
 
     # Starting here, we will only need to care about the temporary folder
     # which holds the files. So reset the base_path to temp_dir.
