@@ -7,7 +7,6 @@ import pprint
 import requests
 import sys
 
-TIMEOUT_SECONDS = 300
 API_URL = 'https://decisiongraph-pa.googleapis.com/v1/rundecisiongraph'
 DECISION_GRAPH_NAME = 'smart_test_selection_graph_chrome'
 STAGE_ID = 'test_selection_for_%d_%d_%d'
@@ -20,6 +19,7 @@ STAGE_SERVICE_GSLB = 'blade:test-relevance-stage-service-prod-luci'
 # TODO(b/405145095): Change this to a lower value after decisiongraph has moved
 # to spanner queues.
 MAX_DURATION_SECONDS = 900
+TIMEOUT_SECONDS = MAX_DURATION_SECONDS + 60
 MAX_ATTEMPTS = 3
 BLOCKING_ENUM = 2
 
