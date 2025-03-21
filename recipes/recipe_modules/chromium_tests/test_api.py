@@ -114,7 +114,7 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
                 self.m.test_utils.rdb_results(
                     suite_name,
                     failing_tests=failures,
-                    passed_tests=successes,
+                    passing_tests=successes,
                     flaky_failing_tests=flaky_failing_tests,
                     expected_failing_tests=expected_failures,
                     skipped_tests=skips,

@@ -629,7 +629,7 @@ def GenTests(api):
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
-                  'basic_EVE_TOT', successful_tests=['Test.One']))),
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
       api.post_process(
           post_process.DoesNotRun,
           'prepare skylab tests.'
