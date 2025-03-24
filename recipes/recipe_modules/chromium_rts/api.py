@@ -41,6 +41,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
   def rts_model(self) -> str:
     return self._rts_model
 
+  @property
+  def enabled(self) -> bool:
+    return bool(self.rts_model)
+
   @rts_model.setter
   def rts_model(self, value: str) -> None:
     self._rts_model = value

@@ -27,7 +27,9 @@ def RunSteps(api):
       steps.MockTestSpec.create('MockTest', supports_rts=supports_rts).get_test(
           api.chromium_tests),
   ]
+  assert (not api.m.chromium_rts.enabled)
   api.m.chromium_rts.rts_model = 'smart-test-selection'
+  assert (api.m.chromium_rts.enabled)
 
   api.m.chromium_rts.setup_tests(tests)
   api.m.chromium_rts.trigger_test_selection(tests)
