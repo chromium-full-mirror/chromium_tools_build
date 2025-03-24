@@ -314,6 +314,9 @@ def GenTests(api):
       api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #2'),
       api.post_process(post_process.StepSuccess,
                        'basic_EVE_TOT (retry shards).shard: #2'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          '1 Test Suite(s) succeeded after retry.\n\n- basic_EVE_TOT\n'),
       api.post_process(post_process.DropExpectation),
   )
 
