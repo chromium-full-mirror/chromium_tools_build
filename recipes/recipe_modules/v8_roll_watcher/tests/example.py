@@ -179,7 +179,7 @@ def GenTests(api):
     return api.override_step_data(
         "Roller: 'test262'.Checking CL 123."
         "Read test262 status file",
-        api.file.read_text('\n[\n...\n\n]\n'),
+        api.file.read_text('\n[\n...\n###\n]\n'),
     )
 
   yield api.test(

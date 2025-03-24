@@ -389,7 +389,7 @@
       "@@@STEP_LOG_LINE@test262.status@@@@",
       "@@@STEP_LOG_LINE@test262.status@[@@@",
       "@@@STEP_LOG_LINE@test262.status@...@@@",
-      "@@@STEP_LOG_LINE@test262.status@@@@",
+      "@@@STEP_LOG_LINE@test262.status@###@@@",
       "@@@STEP_LOG_LINE@test262.status@]@@@",
       "@@@STEP_LOG_END@test262.status@@@"
     ]
@@ -402,7 +402,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "\n[\n...\n\n####\n# Roll-watcher patch\n[ALWAYS, {\n  'sometest1': [SKIP],\n  'sometest2': [SKIP],\n}],\n# End roll-watcher patch\n####\n\n]\n",
+      "\n[\n...\n###\n\n####\n# Roll-watcher patch\n[ALWAYS, {\n  'sometest1': [SKIP],\n  'sometest2': [SKIP],\n}],\n# End roll-watcher patch\n####\n]\n",
       "[CLEANUP]/tmp_tmp_1/test/test262/test262.status"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -421,6 +421,7 @@
       "@@@STEP_LOG_LINE@test262.status@@@@",
       "@@@STEP_LOG_LINE@test262.status@[@@@",
       "@@@STEP_LOG_LINE@test262.status@...@@@",
+      "@@@STEP_LOG_LINE@test262.status@###@@@",
       "@@@STEP_LOG_LINE@test262.status@@@@",
       "@@@STEP_LOG_LINE@test262.status@####@@@",
       "@@@STEP_LOG_LINE@test262.status@# Roll-watcher patch@@@",
@@ -430,7 +431,6 @@
       "@@@STEP_LOG_LINE@test262.status@}],@@@",
       "@@@STEP_LOG_LINE@test262.status@# End roll-watcher patch@@@",
       "@@@STEP_LOG_LINE@test262.status@####@@@",
-      "@@@STEP_LOG_LINE@test262.status@@@@",
       "@@@STEP_LOG_LINE@test262.status@]@@@",
       "@@@STEP_LOG_END@test262.status@@@"
     ]

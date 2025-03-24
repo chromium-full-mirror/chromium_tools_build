@@ -97,10 +97,10 @@ def update_test262_status_file(api, work_dir, new_status_lines):
   test262_status_path = work_dir.joinpath('test', 'test262', 'test262.status')
   status_file_lines = api.file.read_text('Read test262 status file',
                                          test262_status_path).splitlines()
-  status_lines_before_eof = status_file_lines[:-2]
-  eof_status_lines = status_file_lines[-2:]
-  assert eof_status_lines == ['', ']'], ('Unexpected status file eof.'
-                                         f' {eof_status_lines}')
+  status_lines_before_eof = status_file_lines[:-1]
+  eof_status_lines = status_file_lines[-1:]
+  assert eof_status_lines == [']'], ('Unexpected status file eof.'
+                                     f' {eof_status_lines}')
   eof_status_lines.append('')  # Adjusting for stripped empty line.
   api.file.write_text(
       'Write test262 status file',
