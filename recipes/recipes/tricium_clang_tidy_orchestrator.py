@@ -33,7 +33,7 @@ _CHILD_BUILDERS = (
     #'linux-lacros-clang-tidy-rel',
     #'fuchsia-clang-tidy-rel',
     #'ios-clang-tidy-rel',
-    #'mac-clang-tidy-rel',
+    'mac-clang-tidy-rel',
     #'win10-clang-tidy-rel',
 )
 
