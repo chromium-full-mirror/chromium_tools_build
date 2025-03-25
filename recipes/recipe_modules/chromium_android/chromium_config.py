@@ -95,11 +95,6 @@ def cronet_builder(c):
 def cronet_official(c):
   c.gn_args.append('is_official_build=true')
 
-@CONFIG_CTX(includes=['main_builder'],
-            config_vars={'BUILD_CONFIG': 'Release'})
-def arm_v6_builder_rel(c):  # pragma: no cover
-  c.gn_args.append('arm_version=6')
-
 @CONFIG_CTX(
     includes=['base_config', 'default_compiler'],
     config_vars={
