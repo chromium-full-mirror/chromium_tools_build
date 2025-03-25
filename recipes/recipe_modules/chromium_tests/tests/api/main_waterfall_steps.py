@@ -1152,3 +1152,43 @@ def GenTests(api):
       ),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'ci_retry_passed_summary',
+      api.platform('linux', 64),
+      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              retry_failed_shards=True,
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      },
+                  }],
+              },
+          }),
+      # If Test.One and Test.Two fail initially, and only Test.One passes on
+      # retry, make sure Test.One doesn't show up in the summary.
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', skips=['Test.One', 'Test.Two']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          'retry shards',
+          successes=['Test.One'],
+          failures=['Test.Two']),
+      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          'failed because of:\s+- Test.Two',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

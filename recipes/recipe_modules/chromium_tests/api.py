@@ -2452,17 +2452,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for index, suite in enumerate(unrecoverable_test_suites):
       test_suite_header = '**%s** failed.' % suite.name
 
-      if suffix:
-        is_valid, deterministic_failures = suite.failures_including_retry(
-            suffix)
+      is_valid, deterministic_failures = suite.failures_including_retry(suffix)
+      if is_valid and self.m.tryserver.is_tryserver:
+        is_valid, failures_to_ignore = suite.without_patch_failures_to_ignore()
         if is_valid:
-          is_valid, failures_to_ignore = suite.without_patch_failures_to_ignore(
-          )
-          if is_valid:
-            deterministic_failures = deterministic_failures - failures_to_ignore
-      else:
-        # All the failures on CI builders are unrecoverable.
-        deterministic_failures = suite.deterministic_failures(suffix)
+          deterministic_failures = deterministic_failures - failures_to_ignore
 
       deterministic_failures = deterministic_failures or set()
       retry_suffix = self.m.test_utils.prepend_retry_shards(suffix)
