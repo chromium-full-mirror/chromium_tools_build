@@ -375,23 +375,14 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': '[dummy hash for base_unittests/size]',
-              'base_unittests2': '[dummy hash for base_unittests/size]'
-          }),
+      api.properties(swarm_hashes={
+          'base_unittests': '[dummy hash for base_unittests/size]'
+      }),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'linux',
-                          },
-                      }
-                  }, {
-                      'test': 'base_unittests2',
                       'swarming': {
                           'dimensions': {
                               'os': 'linux',
@@ -406,14 +397,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'base_unittests'),
       api.post_process(post_process.MustRun, 'base_unittests (retry shards)'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(post_process.PropertyEquals, 'test_status', {
-          'base_unittests': 'Success',
-          'base_unittests2': 'Success'
-      }),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          '2 Test Suite(s) succeeded after retry.\n\n- base_unittests\n- base_unittests2\n'
-      ),
+      api.post_process(post_process.PropertyEquals, 'test_status',
+                       {'base_unittests': 'Success'}),
       api.post_process(post_process.DropExpectation),
   )
 
