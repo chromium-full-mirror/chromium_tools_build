@@ -85,25 +85,6 @@ class AndroidApi(recipe_api.RecipeApi):
 
     self.m.step(step_name, cmd, infra_step=True, **kwargs)
 
-
-  def init_and_sync(self,
-                    gclient_config='android_bare',
-                    with_branch_heads=False):
-    spec = self.m.gclient.make_config(gclient_config)
-    spec.target_os = ['android']
-
-    self.m.gclient.break_locks()
-    refs = self.m.properties.get('event.patchSet.ref')
-    if refs:
-      refs = [refs]
-    result = self.m.bot_update.ensure_checkout(
-        spec, refs=refs, with_branch_heads=with_branch_heads)
-    source_dir = result.source_root.path
-
-    self.clean_local_files(source_dir)
-
-    return result
-
   def clean_local_files(self, source_dir: Path):
     target = self.m.chromium.c.BUILD_CONFIG
     debug_info_dumps = source_dir / f'out/{target}/debug_info_dumps'

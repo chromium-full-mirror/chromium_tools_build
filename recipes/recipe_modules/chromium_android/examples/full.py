@@ -11,6 +11,8 @@ DEPS = [
     'build',
     'chromium',
     'chromium_android',
+    'depot_tools/bot_update',
+    'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -72,9 +74,14 @@ def RunSteps(api):
   for c in config.get('android_apply_config', []):
     api.chromium_android.apply_config(c)
 
-  update_result = api.chromium_android.init_and_sync()
+  gclient_cfg = api.gclient.make_config('android_bare')
+  gclient_cfg.target_os = ['android']
+
+  update_result = api.bot_update.ensure_checkout(gclient_cfg)
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
+
+  api.chromium_android.clean_local_files(source_dir)
 
   api.chromium.runhooks(source_dir, build_dir)
   api.chromium_android.run_tree_truth(update_result, additional_repos=['foo'])
@@ -208,19 +215,6 @@ def GenTests(api):
       'tester_offline_devices',
       properties_for('tester'),
       api.override_step_data('device_status', api.json.output([{}, {}])),
-  )
-
-  yield api.test(
-      'gerrit_refs',
-      api.chromium.try_build(
-          builder_group='tryserver.chromium.android',
-          builder='gerrit_try_builder',
-          change_number=123456789,
-          patch_set=1),
-      api.properties(
-          internal=True, **({
-              'event.patchSet.ref': 'refs/changes/50/176150/1'
-          })),
   )
 
   yield api.test(

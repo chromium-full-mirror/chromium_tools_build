@@ -8,8 +8,10 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 DEPS = [
     'chromium',
+    'chromium_android',
     'cronet',
     'depot_tools/bot_update',
+    'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/properties',
     'recipe_engine/runtime',
@@ -48,12 +50,23 @@ def RunSteps(api):
   builder_config = BUILDERS.get(api.buildbucket.builder_name, {})
   recipe_config = builder_config['recipe_config']
   kwargs = builder_config.get('kwargs', {})
-  chromium_apply_config = builder_config.get('chromium_apply_config')
+  chromium_apply_config = builder_config.get('chromium_apply_config', [])
+
+  gclient_cfg = api.gclient.make_config('android_bare')
+  gclient_cfg.target_os = ['android']
+
+  api.chromium.set_config(recipe_config, **kwargs)
+  api.chromium.apply_config('cronet_builder')
+  for c in chromium_apply_config:
+    api.chromium.apply_config(c)
+
+  api.chromium_android.set_config(recipe_config)
+  api.chromium_android.apply_config('use_devil_provision')
+
+  update_result = api.bot_update.ensure_checkout(gclient_cfg)
+  source_dir = update_result.source_root.path
 
   cronet = api.cronet
-  update_result = cronet.init_and_sync(
-      recipe_config, kwargs, chromium_apply_config=chromium_apply_config)
-  source_dir = update_result.source_root.path
   cronet.generate_changelist(source_dir)
 
   use_reclient = builder_config.get('use_reclient', True)
