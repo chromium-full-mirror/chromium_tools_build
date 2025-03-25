@@ -2283,11 +2283,40 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/tools_webrtc/iwyu/iwyu-verifier-filter_list.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read filter_list",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@iwyu-verifier-filter_list.json@{\"excluded_paths\": [\"skip.cc\"]}@@@",
+      "@@@STEP_LOG_END@iwyu-verifier-filter_list.json@@@"
+    ]
+  },
+  {
+    "cmd": [
       "rm",
       "-f",
       "out/iwyu_verifier/compile_commands.json"
     ],
-    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "webrtc:try"

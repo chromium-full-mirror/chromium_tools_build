@@ -20,6 +20,7 @@ DEPS = [
     'depot_tools/tryserver',
     'gn',
     'recipe_engine/platform',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
     'webrtc',
 ]
@@ -132,6 +133,9 @@ def GenTests(api):
   builder_id = chromium.BuilderId.create_for_group('tryserver.webrtc',
                                                    'iwyu_verifier')
   yield generate_builder(builder_id, fail_iwyu=True, suffix='_failing_iwyu')
+  yield generate_builder(
+      builder_id, suffix='_skip_file') + api.step_data(
+          'git diff to analyze patch (2)', api.raw_io.stream_output('skip.cc'))
   yield generate_builder(
       builder_id, suffix='_skipping_iwyu') + api.tryserver.get_footers(
           {'No-Iwyu': ['skip']})

@@ -2276,9 +2276,9 @@
     },
     "name": "git diff to analyze patch (2)",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
+      "@@@STEP_LOG_LINE@files@src/skip.cc@@@",
       "@@@STEP_LOG_END@files@@@",
-      "@@@SET_BUILD_PROPERTY@affected_files@{\"first_100\": [\"src/foo.cc\"], \"total_count\": 1}@@@"
+      "@@@SET_BUILD_PROPERTY@affected_files@{\"first_100\": [\"src/skip.cc\"], \"total_count\": 1}@@@"
     ]
   },
   {
@@ -2330,30 +2330,6 @@
       }
     },
     "name": "remove compile_commands.json"
-  },
-  {
-    "cmd": [
-      "tools_webrtc/iwyu/apply-include-cleaner",
-      "-r",
-      "-c",
-      "-w",
-      "out/iwyu_verifier",
-      "foo.cc"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "apply-include-cleaner foo.cc"
   },
   {
     "name": "$result"

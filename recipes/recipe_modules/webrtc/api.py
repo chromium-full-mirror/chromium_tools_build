@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import urllib
 
 from recipe_engine import recipe_api
@@ -55,6 +56,13 @@ def _is_triggering_perf_tests(builder_id, builder_config):
 def _is_cpp_file(file):
   return file.endswith('.cc') or file.endswith('.c') or file.endswith(
       '.cpp') or file.endswith('.h') or file.endswith('.hpp')
+
+
+def _skip_include_cleaner(file, filter_list):
+  for filtered_path in filter_list["excluded_paths"]:
+    if file.startswith(filtered_path):
+      return True
+  return False
 
 
 class WebRTCApi(recipe_api.RecipeApi):
@@ -320,6 +328,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def include_cleaner(self, source_dir: Path, builder_id):
     INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply-include-cleaner'
+    FILTER_LIST = 'tools_webrtc/iwyu/iwyu-verifier-filter_list.json'
     SKIP_FOOTER = 'No-Iwyu'
 
     result = result_pb.RawResult(status=common_pb.SUCCESS)
@@ -329,23 +338,28 @@ class WebRTCApi(recipe_api.RecipeApi):
     build_dir = 'out/' + builder_id.builder
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True)
-    with self.m.context(cwd=source_dir):
-      self.m.step('remove compile_commands.json',
-                  ['rm', '-f', build_dir + '/compile_commands.json'])
-      for f in affected_files:
-        if _is_cpp_file(f) and self.m.path.exists(source_dir / f):
-          # First call to apply-include-cleaner generates compile_commands.json.
-          step_result = self.m.step(
-              'apply-include-cleaner ' + f,
-              [INCLUDE_CLEANER, '-r', '-c', '-w', build_dir, f],
-              raise_on_failure=False)
-          if step_result.exc_result.retcode != 0:
-            result = result_pb.RawResult(
-                status=common_pb.FAILURE,
-                summary_markdown='Run "' + INCLUDE_CLEANER +
-                '" to fix this bot !<br>Add a "' + SKIP_FOOTER +
-                ': [reason]" footer in the commit description to skip this bot.'
-            )
+    filter_list = json.loads(
+        self.m.file.read_text(
+            'read filter_list',
+            self.m.path.join(source_dir, FILTER_LIST),
+            test_data='{"excluded_paths": ["skip.cc"]}'))
+    self.m.step('remove compile_commands.json',
+                ['rm', '-f', build_dir + '/compile_commands.json'])
+    for f in affected_files:
+      if not _is_cpp_file(f) or _skip_include_cleaner(f, filter_list):
+        continue
+      with self.m.context(cwd=source_dir):
+        # First call to apply-include-cleaner generates compile_commands.json.
+        step_result = self.m.step(
+            'apply-include-cleaner ' + f,
+            [INCLUDE_CLEANER, '-r', '-c', '-w', build_dir, f],
+            raise_on_failure=False)
+      if step_result.exc_result.retcode != 0:
+        result = result_pb.RawResult(
+            status=common_pb.FAILURE,
+            summary_markdown='Run "' + INCLUDE_CLEANER +
+            '" to fix this bot !<br>Add a "' + SKIP_FOOTER +
+            ': [reason]" footer in the commit description to skip this bot.')
     return result
 
   def build_with_reclient(self, step_name, source_dir: Path, cmd):
