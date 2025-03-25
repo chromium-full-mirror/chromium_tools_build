@@ -46,4 +46,7 @@ message InputProperties {
 
   // Command line arguments for the testrunner.py script.
   repeated string testrunner_args = 13;
+
+  // Base url to use for checkout.
+  string repo_root = 14;
 }

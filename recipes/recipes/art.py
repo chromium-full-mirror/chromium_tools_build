@@ -46,6 +46,7 @@ def RunSteps(api, props):
           heap_poisoning=props.heap_poisoning,
           gcstress=props.gcstress,
           on_virtual_machine=props.on_virtual_machine,
+          repo_root=props.repo_root,
           manifest_branch=manifest_branch or 'master-art')
   else:
     with api.context(cwd=api.path.cache_dir / 'art'):
@@ -58,26 +59,27 @@ def RunSteps(api, props):
           generational_cc=props.generational_cc,
           heap_poisoning=props.heap_poisoning,
           gcstress=props.gcstress,
+          repo_root=props.repo_root,
           manifest_branch=manifest_branch or 'master-art')
 
 
-def checkout(api, branch):
+def checkout(api, branch, repo_root):
   if 'art.superproject' in api.buildbucket.build.input.experiments:
     if api.path.exists(api.context.cwd.joinpath(".repo")):
       api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
-    checkout_git(api, branch)
+    checkout_git(api, branch, repo_root or "https://android.googlesource.com")
   else:
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
-    checkout_repo(api, branch)
+    checkout_repo(api, branch, repo_root or "https://android.googlesource.com")
 
 
-def checkout_git(api, branch):
+def checkout_git(api, branch, repo_root):
   with api.step.nest('checkout'):
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.git("fetch")
     else:
-      url = "https://android.googlesource.com/platform/superproject"
+      url = repo_root + "/platform/superproject"
       api.git("clone", url, ".")
 
     ref = 'origin/' + branch
@@ -108,13 +110,12 @@ def checkout_git(api, branch):
           api.git("cherry-pick", "FETCH_HEAD")
 
 
-def checkout_repo(api, manifest_branch):
+def checkout_repo(api, manifest_branch, repo_root):
   # (https://crbug.com/1153114): do not attempt to update repo when
   # 'repo sync' runs.
   env = {'DEPOT_TOOLS_UPDATE': '0'}
   with api.context(env=env):
-    api.repo.init('https://android.googlesource.com/platform/manifest', '-b',
-                  manifest_branch)
+    api.repo.init(repo_root + '/platform/manifest', '-b', manifest_branch)
     api.repo.sync('-c', '-j%d' % (REPO_SYNC_JOBS), "--no-tags")
 
     build_input = api.buildbucket.build.input
@@ -150,8 +151,9 @@ def setup_host_x86(api,
                    generational_cc=True,
                    heap_poisoning=False,
                    gcstress=False,
+                   repo_root=None,
                    manifest_branch="master-art"):
-  checkout(api, manifest_branch)
+  checkout(api, manifest_branch, repo_root)
   clobber(api)
 
   build_top_dir = api.context.cwd
@@ -291,6 +293,7 @@ def setup_target(api,
                  generational_cc=True,
                  heap_poisoning=False,
                  on_virtual_machine=False,
+                 repo_root=None,
                  manifest_branch="master-art"):
 
   build_top_dir = api.context.cwd
@@ -404,7 +407,7 @@ def setup_target(api,
 
   env.update({ 'ART_TEST_CHROOT' : chroot_dir })
 
-  checkout(api,manifest_branch)
+  checkout(api, manifest_branch, repo_root)
   clobber(api)
 
   gtest_env = env.copy()
