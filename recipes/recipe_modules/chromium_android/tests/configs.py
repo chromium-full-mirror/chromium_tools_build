@@ -13,8 +13,18 @@ DEPS = [
 
 
 def RunSteps(api):
+  chromium_config_kwargs = {
+      'BUILD_CONFIG': 'Debug',
+      'TARGET_ARCH': 'arm',
+      'TARGET_BITS': 32,
+      'TARGET_PLATFORM': 'android',
+  }
+  chromium_config_kwargs.update(
+      api.properties.get('chromium_config_kwargs', {}))
+
   api.chromium.set_config(
-      api.properties.get('chromium_config', 'chromium'))
+      api.properties.get('chromium_config', 'chromium'),
+      **chromium_config_kwargs)
 
   api.chromium_android.set_config(
       api.properties.get('android_config', 'main_builder'))
@@ -67,7 +77,10 @@ def GenTests(api):
       'x86_builder_mb',
       api.properties(
           android_apply_config=['x86_builder_mb'],
-          chromium_config='x86_builder_mb'),
+          chromium_config='x86_builder_mb',
+          chromium_config_kwargs={
+              'TARGET_ARCH': 'intel',
+          }),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -75,7 +88,11 @@ def GenTests(api):
       'riscv64_builder',
       api.properties(
           android_apply_config=['riscv64_builder'],
-          chromium_config='riscv64_builder'),
+          chromium_config='riscv64_builder',
+          chromium_config_kwargs={
+              'TARGET_ARCH': 'riscv64',
+              'TARGET_BITS': 64,
+          }),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -83,7 +100,11 @@ def GenTests(api):
       'x64_builder_mb',
       api.properties(
           android_apply_config=['x64_builder_mb'],
-          chromium_config='x64_builder_mb'),
+          chromium_config='x64_builder_mb',
+          chromium_config_kwargs={
+              'TARGET_ARCH': 'intel',
+              'TARGET_BITS': 64,
+          }),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -97,7 +118,10 @@ def GenTests(api):
       'arm64_builder_mb',
       api.properties(
           android_apply_config=['arm64_builder_mb'],
-          chromium_config='arm64_builder_mb'),
+          chromium_config='arm64_builder_mb',
+          chromium_config_kwargs={
+              'TARGET_BITS': 64,
+          }),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -105,7 +129,10 @@ def GenTests(api):
       'arm64_builder_rel_mb',
       api.properties(
           android_apply_config=['arm64_builder_rel_mb'],
-          chromium_config='arm64_builder_rel_mb'),
+          chromium_config='arm64_builder_rel_mb',
+          chromium_config_kwargs={
+              'TARGET_BITS': 64,
+          }),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -903,6 +903,9 @@ def GenTests(api):
                   gclient_config='chromium',
                   chromium_config='main_builder_mb',
                   chromium_config_kwargs={
+                      'BUILD_CONFIG': 'Debug',
+                      'TARGET_ARCH': 'arm',
+                      'TARGET_BITS': 32,
                       'TARGET_PLATFORM': 'android',
                   },
                   android_config='main_builder_mb',

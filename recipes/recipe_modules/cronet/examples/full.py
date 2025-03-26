@@ -24,6 +24,9 @@ BUILDERS = freeze({
         'upload_package': True,
         'kwargs': {
             'BUILD_CONFIG': 'Debug',
+            'TARGET_ARCH': 'arm',
+            'TARGET_BITS': 32,
+            'TARGET_PLATFORM': 'android',
         },
         'use_reclient': False,
     },
@@ -32,6 +35,9 @@ BUILDERS = freeze({
         'upload_package': True,
         'kwargs': {
             'BUILD_CONFIG': 'Debug',
+            'TARGET_ARCH': 'arm',
+            'TARGET_BITS': 32,
+            'TARGET_PLATFORM': 'android',
         },
         'chromium_apply_config': ['gn'],
     },
@@ -40,6 +46,9 @@ BUILDERS = freeze({
         'upload_package': True,
         'kwargs': {
             'BUILD_CONFIG': 'Release',
+            'TARGET_ARCH': 'arm',
+            'TARGET_BITS': 32,
+            'TARGET_PLATFORM': 'android',
         },
         'chromium_apply_config': ['mb'],
     },

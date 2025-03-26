@@ -115,6 +115,7 @@ COMPARISON_BUILDERS = freeze({
             'BUILD_CONFIG': 'Debug',
             'TARGET_BITS': 32,
             'TARGET_PLATFORM': 'android',
+            'TARGET_ARCH': 'arm',
         },
         'android_config': 'main_builder_mb',
         'simulation_platform': 'linux',

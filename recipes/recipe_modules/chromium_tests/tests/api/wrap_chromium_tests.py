@@ -64,6 +64,7 @@ def GenTests(api):
                   chromium_config='main_builder',
                   chromium_config_kwargs={
                       'BUILD_CONFIG': 'Release',
+                      'TARGET_ARCH': 'arm',
                       'TARGET_BITS': 32,
                       'TARGET_PLATFORM': 'android',
                   },

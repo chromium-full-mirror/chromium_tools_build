@@ -7,9 +7,8 @@ from recipe_engine import config as recipe_config
 
 from RECIPE_MODULES.build.chromium import CONFIG_CTX
 
-@CONFIG_CTX(includes=['android_common', 'ninja'],
-            config_vars={'TARGET_ARCH': 'arm', 'TARGET_BITS': 32,
-                         'TARGET_PLATFORM': 'android', 'BUILD_CONFIG': 'Debug'})
+
+@CONFIG_CTX(includes=['android_common', 'ninja'])
 def base_config(c):
   c.compile_py.default_targets=[]
 
@@ -27,8 +26,8 @@ def main_builder(c):
 def main_builder_mb(_):
   pass
 
-@CONFIG_CTX(includes=['main_builder_mb'],
-            config_vars={'BUILD_CONFIG': 'Release'})
+
+@CONFIG_CTX(includes=['main_builder_mb'])
 def main_builder_rel_mb(_):
   pass
 
@@ -42,20 +41,14 @@ def clang_builder_mb(_):
   pass
 
 
-@CONFIG_CTX(
-    includes=['base_config', 'default_compiler'],
-    config_vars={
-        'TARGET_ARCH': 'riscv64',
-        'TARGET_BITS': 64
-    })
+@CONFIG_CTX(includes=['base_config', 'default_compiler'])
 def riscv64_builder(c):
   if c.TARGET_ARCH != 'riscv64':  # pragma: no cover
     raise recipe_config.BadConf('Cannot target riscv64 with TARGET_ARCH == %s' %
                                 c.TARGET_ARCH)
 
-@CONFIG_CTX(
-    includes=['base_config', 'default_compiler'],
-    config_vars={'TARGET_ARCH': 'intel'})
+
+@CONFIG_CTX(includes=['base_config', 'default_compiler'])
 def x86_builder(c):
   if c.TARGET_ARCH != 'intel':  # pragma: no cover
     raise recipe_config.BadConf(
@@ -95,12 +88,8 @@ def cronet_builder(c):
 def cronet_official(c):
   c.gn_args.append('is_official_build=true')
 
-@CONFIG_CTX(
-    includes=['base_config', 'default_compiler'],
-    config_vars={
-        'TARGET_ARCH': 'intel',
-        'TARGET_BITS': 64
-    })
+
+@CONFIG_CTX(includes=['base_config', 'default_compiler'])
 def x64_builder(c):
   if c.TARGET_ARCH != 'intel' or c.TARGET_BITS != 64:
     raise recipe_config.BadConf(
@@ -112,9 +101,7 @@ def x64_builder_mb(_):
   pass
 
 
-@CONFIG_CTX(
-    includes=['base_config', 'default_compiler'],
-    config_vars={'TARGET_BITS': 64})
+@CONFIG_CTX(includes=['base_config', 'default_compiler'])
 def arm64_builder(_):
   pass
 
@@ -122,8 +109,8 @@ def arm64_builder(_):
 def arm64_builder_mb(_):
   pass
 
-@CONFIG_CTX(includes=['arm64_builder'],
-            config_vars={'BUILD_CONFIG': 'Release'})
+
+@CONFIG_CTX(includes=['arm64_builder'])
 def arm64_builder_rel(_):  # pragma: no cover
   pass
 

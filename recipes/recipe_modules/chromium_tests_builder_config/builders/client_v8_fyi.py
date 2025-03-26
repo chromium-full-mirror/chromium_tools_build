@@ -56,6 +56,7 @@ SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_PLATFORM': 'android',
                 'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
             },
             android_config='main_builder',
             simulation_platform='linux',
@@ -229,7 +230,10 @@ SPEC = {
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
                 'TARGET_PLATFORM': 'android',
+                'TARGET_BITS': 64,
+                'TARGET_ARCH': 'arm',
             },
             android_config='arm64_builder_rel_mb',
             simulation_platform='linux',
