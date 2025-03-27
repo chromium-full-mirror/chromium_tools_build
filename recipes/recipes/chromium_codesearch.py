@@ -36,7 +36,7 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
-    'reclient',
+    'siso',
 ]
 
 # Regular expression to identify a Git hash.
@@ -68,7 +68,8 @@ TRYBOT_SPEC = freeze({
 
 def _use_reclient(api, gn_args):
   args = api.gn.parse_gn_args(gn_args)
-  return args.get('use_remoteexec') == 'true'
+  return args.get('use_remoteexec') == 'true' and args.get(
+      'use_reclient') != 'false'
 
 
 def _get_revision(api):  # pragma: no cover
@@ -202,8 +203,8 @@ def RunSteps(api, properties):
   if internal:
     api.gclient.apply_config('chrome_internal')
 
-  if api.reclient.instance:
-    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+  if api.siso.enabled:
+    api.siso.enable_download_remoteexec_cfg_hook()
 
   checkout_dir = api.path.cache_dir / 'builder'
   with api.context(cwd=checkout_dir, env={'PACKFILE_OFFLOADING': 1}):
@@ -387,10 +388,7 @@ def GenTests(api):
             gen_repo_branch='main',
             gen_repo_out_dir='%s-Debug' % platform,
             internal=internal,
-        ),
-        **{'$build/reclient': {
-            'instance': 'fake-reclient-instance',
-        }})
+        )) + api.siso.properties()
 
   for platform in ('android', 'lacros', 'linux', 'fuchsia', 'chromiumos', 'mac',
                    'ios', 'win', 'webview'):
