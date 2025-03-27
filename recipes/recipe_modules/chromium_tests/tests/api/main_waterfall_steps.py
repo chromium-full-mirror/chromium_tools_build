@@ -35,6 +35,9 @@ DEPS = [
 PROPERTIES = {'fail_compile': Property(default=False, kind=bool)}
 
 
+def _long_test_name():
+  return 'a' * 701
+
 def _builder_spec(**kwargs):
   return ctbc.BuilderSpec.create(
       build_gs_bucket='chromium-example-archive', **kwargs)
@@ -375,9 +378,13 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': '[dummy hash for base_unittests/size]'
-      }),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': '[dummy hash for base_unittests/size]',
+              _long_test_name(): '[dummy hash for base_unittests/size]',
+              'base_unittests2': '[dummy hash for base_unittests/size]',
+              'base_unittests3': '[dummy hash for base_unittests/size]'
+          }),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-tester': {
@@ -388,17 +395,59 @@ def GenTests(api):
                               'os': 'linux',
                           },
                       }
+                  }, {
+                      'test': _long_test_name(),
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      }
+                  }, {
+                      'test': 'base_unittests2',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      }
+                  }, {
+                      'test': 'base_unittests3',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      }
                   }],
               },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', '', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          _long_test_name(), '', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests2', '', failures=['Test.One']),
       api.expect_status('SUCCESS'),
       api.post_process(post_process.MustRun, 'base_unittests'),
       api.post_process(post_process.MustRun, 'base_unittests (retry shards)'),
+      api.post_process(post_process.MustRun, _long_test_name()),
+      api.post_process(post_process.MustRun,
+                       _long_test_name() + ' (retry shards)'),
+      api.post_process(post_process.MustRun, 'base_unittests2'),
+      api.post_process(post_process.MustRun, 'base_unittests2 (retry shards)'),
+      api.post_process(post_process.MustRun, 'base_unittests3'),
+      api.post_process(post_process.DoesNotRun,
+                       'base_unittests3 (retry shards)'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(post_process.PropertyEquals, 'test_status',
-                       {'base_unittests': 'Success'}),
+      api.post_process(
+          post_process.PropertyEquals, 'test_status', {
+              'base_unittests': 'Success',
+              _long_test_name(): 'Success',
+              'base_unittests2': 'Success',
+              'base_unittests3': 'Success'
+          }),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          '3 Test Suite(s) succeeded after retry.\n\n- ' + _long_test_name() +
+          '\n- ...2 more failure(s)...\n'),
       api.post_process(post_process.DropExpectation),
   )
 
