@@ -19,6 +19,10 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (instruction as
                                                        instruction_pb)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb
 
+# Instruction content is limited to 10KB
+# https://chromium.googlesource.com/infra/luci/recipes-py/+/b44da3c0/recipe_proto/go.chromium.org/luci/resultdb/proto/v1/instruction.proto#109
+_TARGET_INSTRUCTIONS_LIMIT = 10240
+
 
 class ReproInstructionsApi(recipe_api.RecipeApi):
 
@@ -33,6 +37,11 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         key for key, value in self._instructions.items()
         if value.type == instruction_pb.InstructionType.STEP_INSTRUCTION
     ]
+
+  def _limit_content(self, instructions: str) -> str:
+    if not instructions or len(instructions) <= _TARGET_INSTRUCTIONS_LIMIT:
+      return instructions
+    return f'{instructions[:_TARGET_INSTRUCTIONS_LIMIT - 3]}...'
 
   def update_invocation_instructions(
       self, *, step_name: str = 'update invocation instructions') -> None:
@@ -87,6 +96,10 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
+    local_content = self._limit_content(local_content)
+    remote_content = self._limit_content(remote_content)
+    prebuilt_content = self._limit_content(prebuilt_content)
+
     local_instruction = None
     if local_content:
       local_instruction = instruction_pb.TargetedInstruction(
@@ -168,6 +181,10 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     Returns:
       A instruction_pb.Instruction that can be used in the invocation
     """
+    local_content = self._limit_content(local_content)
+    remote_content = self._limit_content(remote_content)
+    prebuilt_content = self._limit_content(prebuilt_content)
+
     local_instruction = instruction_pb.TargetedInstruction(
         content=local_content,
         targets=[

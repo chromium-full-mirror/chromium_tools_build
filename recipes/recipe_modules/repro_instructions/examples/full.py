@@ -54,7 +54,7 @@ def RunSteps(api):
       'custom description',
       local_content='foo',
       remote_content='bar',
-      prebuilt_content='baz',
+      prebuilt_content='baz' * 10240,
       local_dependency=dependency_step,
       remote_dependency=dependency_step)
 
