@@ -346,7 +346,8 @@ class WebRTCApi(recipe_api.RecipeApi):
     self.m.step('remove compile_commands.json',
                 ['rm', '-f', build_dir + '/compile_commands.json'])
     for f in affected_files:
-      if not _is_cpp_file(f) or _skip_include_cleaner(f, filter_list):
+      if not _is_cpp_file(f) or _skip_include_cleaner(
+          f, filter_list) or not self.m.path.exists(source_dir / f):
         continue
       with self.m.context(cwd=source_dir):
         # First call to apply-include-cleaner generates compile_commands.json.

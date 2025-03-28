@@ -61,6 +61,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
         self.m.platform(builder_config.simulation_platform or 'linux',
                         chromium_kwargs.get('TARGET_BITS', 64)),
         self.m.runtime(is_experimental=is_experimental),
+        self.m.path.files_exist(self.m.path.checkout_dir.joinpath('foo.cc')),
         status=status,
     )
 
