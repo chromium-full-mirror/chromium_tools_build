@@ -19,6 +19,7 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/platform',
     'recipe_engine/proto',
+    'recipe_engine/random',
     'recipe_engine/step',
     'recipe_engine/swarming',
 ]
@@ -36,6 +37,13 @@ _CHILD_BUILDERS = (
     #'mac-clang-tidy-rel',
     #'win10-clang-tidy-rel',
 )
+_CONDITIONAL_CHILD_BUILDERS = (
+    'mac-clang-tidy-rel',
+    'win10-clang-tidy-rel',
+)
+# Probability for including the conditional builder
+_CONDITIONAL_PROBABILITY = 0.20
+
 
 def _should_skip_linting(api):
   revision_info = api.gerrit.get_revision_info(
@@ -159,12 +167,16 @@ def RunSteps(api):
                                      3600)
 
   with api.step.nest('schedule tidy builds'):
+    builders_to_schedule = list(_CHILD_BUILDERS)
+    # Enables the builders in _CONDITIONAL_CHILD_BUILDERS for ~20% of the time.
+    if api.random.random() < _CONDITIONAL_PROBABILITY:
+      builders_to_schedule.extend(_CONDITIONAL_CHILD_BUILDERS)
     build_requests = [
         api.buildbucket.schedule_request(
             x,
             swarming_parent_run_id=api.swarming.task_id,
             tags=api.buildbucket.tags(**{'hide-in-gerrit': 'true'}),
-        ) for x in _CHILD_BUILDERS
+        ) for x in builders_to_schedule
     ]
 
     for req in build_requests:
@@ -190,7 +202,9 @@ def RunSteps(api):
       presentation.step_text = "%d/%d builds failed" % (num_failures,
                                                         len(builds))
 
-    builds = [(x, build_dict[i]) for x, i in zip(_CHILD_BUILDERS, build_ids)]
+    builds = [
+        (x, build_dict[i]) for x, i in zip(builders_to_schedule, build_ids)
+    ]
 
   with api.step.nest('analyze lints'):
     findings_by_builder = {}
@@ -203,7 +217,7 @@ def RunSteps(api):
       findings_by_builder[builder_name] = api.proto.decode(
           binary_encoded_findings, findings_pb.Findings, 'BINARY').findings
 
-    findings = _dedup_findings(api, _CHILD_BUILDERS, findings_by_builder)
+    findings = _dedup_findings(api, builders_to_schedule, findings_by_builder)
     if findings:
       for f in findings:
         _fixup_finding_paths(f)
@@ -228,10 +242,14 @@ def GenTests(api):
       change=12345,
       patchset=1)
 
-  def test_data(findings_by_builder=None,
+  def test_data(include_conditional=False,
+                findings_by_builder=None,
                 bot_status_overrides=None,
                 commit_message='foo'):
-
+    # Determine the full list of builders this test simulation should cover
+    simulated_builders = list(_CHILD_BUILDERS)
+    if include_conditional:
+      simulated_builders.extend(_CONDITIONAL_CHILD_BUILDERS)
     test_data = sum([
         api.chromium.try_build(
             builder_group='tryserver.chromium.linux',
@@ -267,16 +285,16 @@ def GenTests(api):
     # generated sequentially from this, and there're a few other recipes that
     # depend on this number directly.
     base_id = 8922054662172514000
-    build_ids = list(range(base_id, base_id + len(_CHILD_BUILDERS)))
+    build_ids = list(range(base_id, base_id + len(simulated_builders)))
     build_output = [
         api.buildbucket.try_build_message(
             build_id=i,
             status=bot_status_overrides.get(builder_name, 'SUCCESS'),
-        ) for i, builder_name in zip(build_ids, _CHILD_BUILDERS)
+        ) for i, builder_name in zip(build_ids, simulated_builders)
     ]
 
     if findings_by_builder:
-      builder_indices = {n: i for i, n in enumerate(_CHILD_BUILDERS)}
+      builder_indices = {n: i for i, n in enumerate(simulated_builders)}
       for builder_name, findings in findings_by_builder.items():
         if findings is not None:
           n = builder_indices[builder_name]
@@ -500,6 +518,30 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  all_builders_with_cond = list(_CHILD_BUILDERS) + list(
+      _CONDITIONAL_CHILD_BUILDERS)
+  expected_finding_with_cond = findings_pb.Finding()
+  expected_finding_with_cond.CopyFrom(finding)
+  _note_observed_on([_CHILD_BUILDERS[1]] + list(_CONDITIONAL_CHILD_BUILDERS),
+                    all_builders_with_cond, expected_finding_with_cond)
+  yield api.test(
+      'single_bot_failure_with_conditional',
+      api.random.seed(1),
+      test_data(
+          include_conditional=True,
+          bot_status_overrides={_CHILD_BUILDERS[0]: 'FAILURE'},
+          findings_by_builder={
+              _CHILD_BUILDERS[1]: [finding
+                                  ],  # Findings for successful base builder
+              # Assume conditional builders succeed and also find 'finding'
+              _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
+              _CONDITIONAL_CHILD_BUILDERS[1]: [finding],
+          }),
+      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+      api.post_process(_has_finding, expected_finding_with_cond),
+      api.post_process(post_process.DropExpectation),
+  )
+
   step_failure = 'FAILURE'
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
@@ -507,7 +549,9 @@ def GenTests(api):
                     expected_finding)
   yield api.test(
       'single_bot_failure',
+      api.random.seed(1234),
       test_data(
+          include_conditional=False,
           bot_status_overrides={
               _CHILD_BUILDERS[0]: step_failure,
           },
@@ -517,6 +561,27 @@ def GenTests(api):
           }),
       api.post_process(post_process.StepWarning, 'schedule tidy builds'),
       api.post_process(_has_finding, expected_finding),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  all_builders_with_cond_list = list(_CHILD_BUILDERS) + list(
+      _CONDITIONAL_CHILD_BUILDERS)
+  expected_finding = findings_pb.Finding()
+  expected_finding.CopyFrom(finding)
+  _note_observed_on([_CHILD_BUILDERS[0], _CONDITIONAL_CHILD_BUILDERS[0]],
+                    all_builders_with_cond_list, expected_finding)
+  yield api.test(
+      'success_with_conditional',
+      api.random.seed(1),
+      test_data(
+          include_conditional=True,
+          findings_by_builder={
+              _CHILD_BUILDERS[0]: [finding],
+              _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
+          }),
+      api.post_process(_has_finding, expected_finding),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.StepSuccess, 'schedule tidy builds'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -535,6 +600,25 @@ def GenTests(api):
       api.expect_status('FAILURE'),
       api.post_process(post_process.StepWarning, 'schedule tidy builds'),
       api.post_process(_has_finding, expected_finding),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'all_bot_failure_with_conditional',
+      api.random.seed(1),
+      test_data(
+          include_conditional=True,
+          bot_status_overrides={
+              builder: 'FAILURE'
+              for builder in (list(_CHILD_BUILDERS) +
+                              list(_CONDITIONAL_CHILD_BUILDERS))
+          },
+          findings_by_builder=None),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+      api.post_process(post_process.SummaryMarkdownRE,
+                       'All sub-linting tasks failed'),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
