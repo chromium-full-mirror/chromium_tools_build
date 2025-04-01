@@ -162,19 +162,6 @@ REQUESTS = [
         extra_browser_args=GPU_EXTRA_BROWSWER_ARGS,
     ),
     gen_skylab_test(
-        'm88_gtest_test_args',
-        tast_expr=None,
-        test_args=LACROS_GTEST_ARGS,
-        autotest_name='chromium',
-    ),
-    gen_skylab_test(
-        'm88_gtest_test_args_cbx',
-        tast_expr=None,
-        test_args=LACROS_GTEST_ARGS,
-        autotest_name='chromium',
-        cros_cbx=True,
-    ),
-    gen_skylab_test(
         'm88_gtest_test_args_strip',
         tast_expr=None,
         test_args=LACROS_GTEST_ARGS,
@@ -749,28 +736,10 @@ def GenTests(api):
   )
 
   yield api.test(
-      'enable-cft',
+      'strip-chrome',
       api.properties(requests=REQUESTS[6:7]),
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[6].name + '.schedule',
-                       '--run-cft'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'require-cbx',
-      api.properties(requests=REQUESTS[7:8]),
-      api.post_process(post_process.StepCommandContains,
-                       'schedule skylab test.' + REQUESTS[7].name + '.schedule',
-                       '--cbx'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'strip-chrome',
-      api.properties(requests=REQUESTS[8:9]),
-      api.post_process(post_process.StepCommandContains,
-                       'schedule skylab test.' + REQUESTS[8].name + '.schedule',
                        '--strip'),
       api.post_process(post_process.DropExpectation),
   )

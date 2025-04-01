@@ -150,9 +150,6 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.cros_model:
         cmd.extend(['--model', test.spec.cros_model])
 
-      if test.spec.cros_cbx:
-        cmd.extend(['--cbx'])
-
       if test.spec.bucket:
         cmd.extend(['--bucket', test.spec.bucket])
 
@@ -301,8 +298,6 @@ class SkylabApi(recipe_api.RecipeApi):
 
       cmd.extend(['--autotest-name', test.spec.autotest_name])
       cmd.extend(['--total-shards', test.spec.shards])
-
-      cmd.append('--run-cft')
 
       if test.spec.strip_chrome:
         cmd.append('--strip')

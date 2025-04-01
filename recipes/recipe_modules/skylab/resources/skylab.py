@@ -82,59 +82,47 @@ def schedule_skylab_tests(opts):
   # point for Skylab) from chromite. As the script lives in recipe repo,
   # it has to receive the chromium/src path from the input.
   # pylint: disable=import-outside-toplevel
-  from chromite.api.gen.test_platform import request_pb2 as ctp_request
+  from chromite.api.gen.chromiumos.test.api import ctp2_pb2 as ctpv2
 
-  def _scheduling_for_pool(pool):
-    mp = ctp_request.Request.Params.Scheduling.ManagedPool
-    if pool == 'DUT_POOL_QUOTA':
-      return ctp_request.Request.Params.Scheduling(
-          managed_pool=mp.MANAGED_POOL_QUOTA)
-    return ctp_request.Request.Params.Scheduling(unmanaged_pool=pool)
-
-  tagged_requests = {}
+  v2req = ctpv2.CTPv2Request()
   for i in opts.shard_indexes or range(opts.total_shards):
-    req = ctp_request.Request()
+    req = v2req.requests.add()
     _bucket = opts.bucket.replace('gs://', '').rstrip('/')
     gs_url = f'gs://{_bucket}/{opts.image}'
-    req.params.metadata.test_metadata_url = gs_url
-    req.params.metadata.debug_symbols_archive_url = gs_url
+    schedule_targets = req.schedule_targets.add().targets.add()
+    schedule_targets.sw_target.legacy_sw.gcs_path = gs_url
+    schedule_targets.hw_target.legacy_hw.board = opts.board
     if opts.bucket:
-      sw_dep = req.params.software_dependencies.add()
-      sw_dep.chromeos_build_gcs_bucket = _bucket
-    sw_dep = req.params.software_dependencies.add()
-    sw_dep.chromeos_build = opts.image
-    req.params.scheduling.CopyFrom(_scheduling_for_pool(opts.pool))
-    req.params.scheduling.qs_account = opts.qs_account
-    req.params.decorations.tags.append(f'label-board:{opts.board}')
-    req.params.decorations.tags.append(f'label-pool:{opts.pool}')
-    req.params.decorations.tags.append('label-flow:ash_builder')
+      sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+      sw_kv.key = "chromeos_build_gcs_bucket"
+      sw_kv.value = _bucket
+    sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+    sw_kv.key = "chromeos_build"
+    sw_kv.value = opts.image
+    req.pool = opts.pool
+    if opts.pool == 'DUT_POOL_QUOTA':
+      req.scheduler_info.scheduler = ctpv2.SchedulerInfo.SCHEDUKE
+    else:
+      req.scheduler_info.scheduler = ctpv2.SchedulerInfo.QSCHEDULER
+    req.scheduler_info.qs_account = opts.qs_account
+
     if opts.cbx:
-      req.params.decorations.tags.append('label-cbx:True')
-    # TODO(b/242007010): Known issues in CTP that mixes build_target and DUT board.
-    # Keep DUT board until issues is fixed.
-    req.params.software_attributes.build_target.name = opts.board
-    req.params.time.maximum_duration.seconds = opts.timeout_mins * 60
+      assert False, "Not supported in CTPv2's hw_target"
+    req.suite_request.maximum_duration.seconds = opts.timeout_mins * 60
 
     if opts.retry >= 0:
-      # Needs to be critical to enable retry.
-      req.params.test_execution_behavior = \
-          ctp_request.Request.Params.TestExecutionBehavior.CRITICAL
-      req.params.retry.allow = True
-      req.params.retry.max = opts.retry
+      req.suite_request.retry_count = opts.retry if opts.retry > 0 else 99999
 
     if opts.model:
-      req.params.hardware_attributes.model = opts.model
+      schedule_targets.hw_target.legacy_hw.model = opts.model
 
     _test_args = (f'{opts.test_args} '
                   f'lacros_gcs_path={opts.lacros_gcs_path} '
                   f'total_shards={opts.total_shards} '
-                  f'shard_index={i}')
+                  f'shard_index={i} '
+                  'is_cft=True')
 
     autotest_name = opts.autotest_name.replace('tauto.', '')
-    req.params.metadata.container_metadata_url = os.path.join(
-        gs_url, CONTAINER_METADATA_LOC)
-    req.params.run_via_cft = True
-    _test_args += ' is_cft=True'
     autotest_name = f'tauto.{autotest_name}'
 
     if opts.strip:
@@ -159,10 +147,13 @@ def schedule_skylab_tests(opts):
         _test_args += (' secondary_lacros_gcs_path'
                        f'={",".join(opts.secondary_lacros_gcs_path)}')
 
-    autotest = req.test_plan.test.add()
-    autotest.autotest.name = autotest_name
-    autotest.autotest.test_args = _test_args
-    tagged_requests[str(i)] = json_format.MessageToDict(req)
+    # TODO(b/407636890): use more meaningful name for suite/shard name.
+    req.suite_request.test_suite.name = f'{i}'
+    test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
+    test_case.value = autotest_name
+    # TODO(b/406664342): migrate to structured
+    # req.suite_request.test_suite.execution_metadata.args
+    req.suite_request.test_args = _test_args
 
   bb_request_data = {
       'builder': {
@@ -171,7 +162,7 @@ def schedule_skylab_tests(opts):
           'builder': opts.public_builder or 'cros_test_platform',
       },
       'properties': {
-          'requests': tagged_requests,
+          'ctpv2_request': json_format.MessageToDict(v2req),
       },
   }
   if opts.parent_build_id:
@@ -335,8 +326,6 @@ def main(args):
       type=str,
       default='',
       help='The test arguments to pass to the autotest wrapper.')
-  subparser.add_argument(
-      '--run-cft', action='store_true', help='Run the test on CFT.')
   subparser.add_argument(
       '--strip', action='store_true', help='Strip Chrome before deploy.')
   subparser.set_defaults(func=schedule_skylab_tests)
