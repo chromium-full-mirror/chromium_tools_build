@@ -39,7 +39,6 @@ _CHILD_BUILDERS = (
 )
 _CONDITIONAL_CHILD_BUILDERS = (
     'mac-clang-tidy-rel',
-    'win10-clang-tidy-rel',
 )
 # Probability for including the conditional builder
 _CONDITIONAL_PROBABILITY = 0.20
@@ -535,7 +534,6 @@ def GenTests(api):
                                   ],  # Findings for successful base builder
               # Assume conditional builders succeed and also find 'finding'
               _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
-              _CONDITIONAL_CHILD_BUILDERS[1]: [finding],
           }),
       api.post_process(post_process.StepWarning, 'schedule tidy builds'),
       api.post_process(_has_finding, expected_finding_with_cond),
