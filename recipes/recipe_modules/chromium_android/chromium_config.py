@@ -18,9 +18,7 @@ def base_config(c):
 
 @CONFIG_CTX(includes=['base_config', 'default_compiler'])
 def main_builder(c):
-  if c.TARGET_ARCH != 'arm':  # pragma: no cover
-    raise recipe_config.BadConf(
-      'Cannot target arm with TARGET_ARCH == %s' % c.TARGET_ARCH)
+  pass
 
 @CONFIG_CTX(includes=['main_builder', 'mb'])
 def main_builder_mb(_):
