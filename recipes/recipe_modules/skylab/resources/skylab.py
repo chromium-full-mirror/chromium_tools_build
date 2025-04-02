@@ -89,15 +89,16 @@ def schedule_skylab_tests(opts):
     req = v2req.requests.add()
     _bucket = opts.bucket.replace('gs://', '').rstrip('/')
     gs_url = f'gs://{_bucket}/{opts.image}'
-    schedule_targets = req.schedule_targets.add().targets.add()
+    root_schedule_targets = req.schedule_targets.add()
+    schedule_targets = root_schedule_targets.targets.add()
     schedule_targets.sw_target.legacy_sw.gcs_path = gs_url
     schedule_targets.hw_target.legacy_hw.board = opts.board
     if opts.bucket:
       sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
-      sw_kv.key = "chromeos_build_gcs_bucket"
+      sw_kv.key = 'chromeos_build_gcs_bucket'
       sw_kv.value = _bucket
     sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
-    sw_kv.key = "chromeos_build"
+    sw_kv.key = 'chromeos_build'
     sw_kv.value = opts.image
     req.pool = opts.pool
     if opts.pool == 'DUT_POOL_QUOTA':
@@ -136,12 +137,16 @@ def schedule_skylab_tests(opts):
               'require CrOS and Lacros provision.')
 
       for board, img in zip(opts.secondary_boards, opts.secondary_images):
-        secondary_device = req.params.secondary_devices.add()
-        secondary_sw_dep = secondary_device.software_dependencies.add()
-        secondary_sw_dep.chromeos_build = img
-        # TODO(b/242007010): Known issues in CTP that mixes build_target and DUT board.
-        # Keep DUT board until issues is fixed.
-        secondary_device.software_attributes.build_target.name = board
+        secondary_targets = root_schedule_targets.targets.add()
+        secondary_targets.hw_target.legacy_hw.board = board
+        secondary_targets.sw_target.legacy_sw.gcs_path = f'gs://{_bucket}/{img}'
+        if opts.bucket:
+          sw_kv = secondary_targets.sw_target.legacy_sw.key_values.add()
+          sw_kv.key = 'chromeos_build_gcs_bucket'
+          sw_kv.value = _bucket
+        sw_kv = secondary_targets.sw_target.legacy_sw.key_values.add()
+        sw_kv.key = 'chromeos_build'
+        sw_kv.value = img
 
       if any(opts.secondary_lacros_gcs_path):
         _test_args += (' secondary_lacros_gcs_path'
