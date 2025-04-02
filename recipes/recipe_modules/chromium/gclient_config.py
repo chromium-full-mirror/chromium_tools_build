@@ -444,6 +444,10 @@ def checkout_bazel(c):
 def checkout_src_internal_infra(c):
   c.solutions[0].custom_vars['checkout_src_internal_infra'] = 'True'
 
+  p = c.repo_path_map
+  p['https://chrome-internal.googlesource.com/chrome/src-internal'] = (
+      'src/internal', 'HEAD')
+
 
 @CONFIG_CTX()
 def use_clang_tidy(c):
