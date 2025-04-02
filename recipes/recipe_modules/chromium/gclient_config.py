@@ -441,6 +441,11 @@ def checkout_bazel(c):
 
 
 @CONFIG_CTX()
+def checkout_src_internal_infra(c):
+  c.solutions[0].custom_vars['checkout_src_internal_infra'] = 'True'
+
+
+@CONFIG_CTX()
 def use_clang_tidy(c):
   c.solutions[0].custom_vars['checkout_clang_tidy'] = 'True'
 
