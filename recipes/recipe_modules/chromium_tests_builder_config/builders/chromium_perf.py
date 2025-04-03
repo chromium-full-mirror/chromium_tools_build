@@ -229,6 +229,14 @@ _AddIsolatedTestSpec('android-pixel-fold-perf', 'android',
 _AddIsolatedTestSpec('android-pixel-tangor-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
+# Pixel 9
+_AddIsolatedTestSpec('android-pixel9-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel9-pro-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
     'android',

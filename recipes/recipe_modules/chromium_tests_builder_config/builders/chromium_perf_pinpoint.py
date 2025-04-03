@@ -225,6 +225,14 @@ _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
 _AddIsolatedTestSpec('android-pixel-fold-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
+# Pixel 9
+_AddIsolatedTestSpec('android-pixel9-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel9-pro-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
     'android',
@@ -273,6 +281,12 @@ _AddPinpointTestSpec('android-pixel4a_power-perf-pgo', 'android',
 _AddPinpointTestSpec('android-pixel6-perf-pgo', 'android',
                      'android_arm64_high_end-builder-perf-pgo')
 _AddPinpointTestSpec('android-pixel6-pro-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel9-perf', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel9-pro-perf', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel9-pro-xl-perf', 'android',
                      'android_arm64_high_end-builder-perf-pgo')
 _AddPinpointTestSpec('android-new-pixel-perf', 'android',
                      'android_arm64-builder-perf')
