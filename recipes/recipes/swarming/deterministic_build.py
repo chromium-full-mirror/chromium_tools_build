@@ -84,7 +84,7 @@ DETERMINISTIC_BUILDERS = freeze({
     },
     'Deterministic Android': {
         'chromium_config': 'main_builder',
-        'android_config': 'main_builder',
+        'android_config': 'base_config',
         'gclient_config': 'chromium',
         'gclient_apply_config': ['android'],
         'chromium_config_kwargs': {
@@ -98,7 +98,7 @@ DETERMINISTIC_BUILDERS = freeze({
     },
     'Deterministic Android (dbg)': {
         'chromium_config': 'main_builder',
-        'android_config': 'main_builder',
+        'android_config': 'base_config',
         'gclient_config': 'chromium',
         'gclient_apply_config': ['android'],
         'chromium_config_kwargs': {

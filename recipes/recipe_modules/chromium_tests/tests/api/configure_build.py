@@ -46,8 +46,9 @@ def GenTests(api):
               'fake-group': {
                   'fake-builder':
                       ctbc.BuilderSpec.create(
-                          android_config='main_builder_mb',
-                          chromium_config='main_builder_mb',
+                          android_config='base_config',
+                          chromium_config='main_builder',
+                          chromium_apply_config=['mb'],
                           chromium_config_kwargs={
                               'BUILD_CONFIG': 'Debug',
                               'TARGET_ARCH': 'arm',

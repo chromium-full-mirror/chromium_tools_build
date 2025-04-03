@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.config_types import Path
 from recipe_engine import config as recipe_config
 
 from RECIPE_MODULES.build.chromium import CONFIG_CTX
@@ -20,41 +19,10 @@ def base_config(c):
 def main_builder(c):
   pass
 
-@CONFIG_CTX(includes=['main_builder', 'mb'])
-def main_builder_mb(_):
-  pass
-
-
-@CONFIG_CTX(includes=['main_builder_mb'])
-def main_builder_rel_mb(_):
-  pass
-
 
 @CONFIG_CTX(includes=['base_config', 'clang'])
 def clang_builder(c):
   c.runtests.enable_asan = True
-
-@CONFIG_CTX(includes=['clang_builder', 'mb'])
-def clang_builder_mb(_):
-  pass
-
-
-@CONFIG_CTX(includes=['base_config', 'default_compiler'])
-def riscv64_builder(c):
-  if c.TARGET_ARCH != 'riscv64':  # pragma: no cover
-    raise recipe_config.BadConf('Cannot target riscv64 with TARGET_ARCH == %s' %
-                                c.TARGET_ARCH)
-
-
-@CONFIG_CTX(includes=['base_config', 'default_compiler'])
-def x86_builder(c):
-  if c.TARGET_ARCH != 'intel':  # pragma: no cover
-    raise recipe_config.BadConf(
-      'Cannot target x86 with TARGET_ARCH == %s' % c.TARGET_ARCH)
-
-@CONFIG_CTX(includes=['x86_builder', 'mb'])
-def x86_builder_mb(_):
-  pass
 
 @CONFIG_CTX(includes=['clobber'])
 def cronet_builder(c):
@@ -86,39 +54,6 @@ def cronet_builder(c):
 def cronet_official(c):
   c.gn_args.append('is_official_build=true')
 
-
-@CONFIG_CTX(includes=['base_config', 'default_compiler'])
-def x64_builder(c):
-  if c.TARGET_ARCH != 'intel' or c.TARGET_BITS != 64:
-    raise recipe_config.BadConf(
-      'Cannot target x64 with TARGET_ARCH == %s, TARGET_BITS == %d'
-       % (c.TARGET_ARCH, c.TARGET_BITS))  # pragma: no cover
-
-@CONFIG_CTX(includes=['x64_builder', 'mb'])
-def x64_builder_mb(_):
-  pass
-
-
-@CONFIG_CTX(includes=['base_config', 'default_compiler'])
-def arm64_builder(_):
-  pass
-
-@CONFIG_CTX(includes=['arm64_builder', 'mb'])
-def arm64_builder_mb(_):
-  pass
-
-
-@CONFIG_CTX(includes=['arm64_builder'])
-def arm64_builder_rel(_):  # pragma: no cover
-  pass
-
-@CONFIG_CTX(includes=['arm64_builder_rel', 'mb'])
-def arm64_builder_rel_mb(_):
-  pass
-
-@CONFIG_CTX(includes=['main_builder'])
-def cast_builder(c):
-  del c
 
 @CONFIG_CTX()
 def disable_neon(c):  # pragma: no cover
