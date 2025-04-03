@@ -153,7 +153,7 @@ def schedule_skylab_tests(opts):
                        f'={",".join(opts.secondary_lacros_gcs_path)}')
 
     # TODO(b/407636890): use more meaningful name for suite/shard name.
-    req.suite_request.test_suite.name = f'{i}'
+    req.suite_request.test_suite.name = f'{opts.chromium_suite_name}-shard-{i}'
     test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
     test_case.value = autotest_name
     # TODO(b/406664342): migrate to structured
@@ -324,6 +324,11 @@ def main(args):
       action='append',
       help='Shard index. May be repeated for multiple shards. If specified, '
       'total shards will be ignored and only invoke assigned shards.')
+  subparser.add_argument(
+      '--chromium-suite-name',
+      type=str,
+      default='',
+      help='Test suite name on Chromium config')
   subparser.add_argument(
       '--autotest-name', type=str, default='', help='Autotest wrapper name.')
   subparser.add_argument(

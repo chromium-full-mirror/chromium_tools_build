@@ -141,6 +141,8 @@ class SkylabApi(recipe_api.RecipeApi):
           '--json-outfile',
           self.m.json.output(),
           'request',
+          '--chromium-suite-name',
+          test.spec.name,
           '--parent-build-id',
           str(self.m.buildbucket.build.id),
       ]
@@ -350,7 +352,7 @@ class SkylabApi(recipe_api.RecipeApi):
         stderr=self.m.raw_io.output(),
         raise_on_failure=False,
         step_test_data=lambda: self.m.json.test_api.output({
-            '0': {
+            f'{test.spec.name}-shard-0': {
                 'url':
                     'https://ci.chromium.org/p/chromeos/builders/test_runner/'
                     f'test_runner/b{test.ctp_build_ids[suffix]}0',
@@ -363,6 +365,9 @@ class SkylabApi(recipe_api.RecipeApi):
     if (hasattr(step_result, 'json') and step_result.json.output):
       for shard, test_runner in step_result.json.output.items():
         if test_runner:
+          # TODO(b/406664261): We need a good way to handle both autotest
+          # wrapped tests and tast-first-class tests correctly.
+          shard = shard.removeprefix(f'{test.spec.name}-shard-')
           tr = TestRunner.create(test, shard=int(shard), **test_runner)
           test.test_runner_builds.setdefault(suffix, []).append(tr)
 
