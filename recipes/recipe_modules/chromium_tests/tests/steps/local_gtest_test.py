@@ -30,7 +30,7 @@ def RunSteps(api):
   api.chromium.set_config(
       'chromium',
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
-  api.chromium_android.set_config('base_config')
+  api.chromium_android.set_config('main_builder')
   update_result = api.bot_update.ensure_checkout()
 
   test = steps.LocalGTestTestSpec.create(

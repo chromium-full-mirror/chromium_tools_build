@@ -33,6 +33,92 @@ def base_config(c):
   c.test_runner = 'build/android/test_runner.py'
 
 @config_ctx()
+def main_builder(_):
+  pass
+
+@config_ctx()
+def main_builder_mb(_):
+  pass
+
+@config_ctx()
+def main_builder_rel_mb(_):
+  pass
+
+@config_ctx()
+def clang_builder(_):  # pragma: no cover
+  pass
+
+@config_ctx()
+def clang_builder_mb(_):
+  pass
+
+@config_ctx(includes=['x64_builder_mb'])
+def clang_builder_mb_x64(_):
+  pass
+
+@config_ctx()
+def x86_base(_):
+  pass
+
+@config_ctx(includes=['x86_base'])
+def x86_builder(_):
+  pass
+
+@config_ctx(includes=['x86_builder'])
+def x86_builder_mb(_):
+  pass
+
+
+@config_ctx()
+def riscv64_base(_):
+  pass
+
+
+@config_ctx(includes=['riscv64_base'])
+def riscv64_builder(_):
+  pass
+
+@config_ctx()
+def arm_v6_builder_rel(_):  # pragma: no cover
+  pass
+
+@config_ctx()
+def x64_base(_):
+  pass
+
+@config_ctx(includes=['x64_base'])
+def x64_builder(_):
+  pass
+
+@config_ctx(includes=['x64_builder'])
+def x64_builder_mb(_):
+  pass
+
+@config_ctx()
+def arm64_builder(_):
+  pass
+
+@config_ctx()
+def arm64_builder_mb(_):
+  pass
+
+@config_ctx()
+def arm64_builder_rel(_):  # pragma: no cover
+  pass
+
+@config_ctx()
+def arm64_builder_rel_mb(_):
+  pass
+
+@config_ctx()
+def chromium_perf(_):
+  pass
+
+@config_ctx()
+def cast_builder(_):
+  pass
+
+@config_ctx()
 def use_devil_adb(c):
   c.use_devil_adb = True
 

@@ -213,7 +213,7 @@ def GenTests(api):
               ),
           'fake-android-builder':
               ctbc.BuilderSpec.create(
-                  android_config='base_config',
+                  android_config='main_builder_mb',
                   chromium_config='android',
                   gclient_config='chromium',
                   gclient_apply_config=[

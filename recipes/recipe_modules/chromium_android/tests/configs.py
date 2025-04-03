@@ -23,12 +23,13 @@ def RunSteps(api):
       api.properties.get('chromium_config_kwargs', {}))
 
   api.chromium.set_config(
-      api.properties['chromium_config'],
-      BUILD_CONFIG='Debug',
-      TARGET_ARCH='arm',
-      TARGET_BITS=32,
-      TARGET_PLATFORM='android',
-  )
+      api.properties.get('chromium_config', 'chromium'),
+      **chromium_config_kwargs)
+
+  api.chromium_android.set_config(
+      api.properties.get('android_config', 'main_builder'))
+  for config in api.properties.get('android_apply_config', []):
+    api.chromium_android.apply_config(config)
 
 
 def GenTests(api):
@@ -45,13 +46,106 @@ def GenTests(api):
   )
 
   yield api.test(
-      'main_builder',
-      api.properties(chromium_config='main_builder'),
+      'main_builder_mb',
+      api.properties(android_apply_config=['main_builder_mb']),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'clang_builder',
-      api.properties(chromium_config='clang_builder'),
+      'main_builder_rel_mb',
+      api.properties(
+          android_apply_config=['main_builder_rel_mb'],
+          chromium_config='main_builder_rel_mb'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'clang_builder_mb',
+      api.properties(
+          android_apply_config=['clang_builder_mb'],
+          chromium_config='clang_builder_mb'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'clang_builder_mb_x64',
+      api.properties(android_apply_config=['clang_builder_mb_x64']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'x86_builder_mb',
+      api.properties(
+          android_apply_config=['x86_builder_mb'],
+          chromium_config='x86_builder_mb',
+          chromium_config_kwargs={
+              'TARGET_ARCH': 'intel',
+          }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'riscv64_builder',
+      api.properties(
+          android_apply_config=['riscv64_builder'],
+          chromium_config='riscv64_builder',
+          chromium_config_kwargs={
+              'TARGET_ARCH': 'riscv64',
+              'TARGET_BITS': 64,
+          }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'x64_builder_mb',
+      api.properties(
+          android_apply_config=['x64_builder_mb'],
+          chromium_config='x64_builder_mb',
+          chromium_config_kwargs={
+              'TARGET_ARCH': 'intel',
+              'TARGET_BITS': 64,
+          }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'arm64_builder',
+      api.properties(android_apply_config=['arm64_builder']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'arm64_builder_mb',
+      api.properties(
+          android_apply_config=['arm64_builder_mb'],
+          chromium_config='arm64_builder_mb',
+          chromium_config_kwargs={
+              'TARGET_BITS': 64,
+          }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'arm64_builder_rel_mb',
+      api.properties(
+          android_apply_config=['arm64_builder_rel_mb'],
+          chromium_config='arm64_builder_rel_mb',
+          chromium_config_kwargs={
+              'TARGET_BITS': 64,
+          }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'chromium_perf',
+      api.properties(android_apply_config=['chromium_perf']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cast_builder',
+      api.properties(
+          chromium_config='cast_builder',
+          android_apply_config=['cast_builder']),
       api.post_process(post_process.DropExpectation),
   )

@@ -57,7 +57,7 @@ def GenTests(api):
       'chromium.example': {
           'android-basic':
               ctbc.BuilderSpec.create(
-                  android_config='base_config',
+                  android_config='main_builder',
                   chromium_apply_config=[
                       'mb',
                   ],

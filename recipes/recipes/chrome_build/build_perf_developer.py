@@ -518,7 +518,7 @@ def GenTests(api):
                   gclient_config='chromium',
                   gclient_apply_config=['android'],
                   chromium_config='android',
-                  android_config='base_config',
+                  android_config='main_builder',
                   build_gs_bucket=None,
               ),
               **builder).assemble()),

@@ -901,15 +901,14 @@ def GenTests(api):
               builder='fake-builder',
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
-                  chromium_config='main_builder',
-                  chromium_apply_config=['mb'],
+                  chromium_config='main_builder_mb',
                   chromium_config_kwargs={
                       'BUILD_CONFIG': 'Debug',
                       'TARGET_ARCH': 'arm',
                       'TARGET_BITS': 32,
                       'TARGET_PLATFORM': 'android',
                   },
-                  android_config='base_config',
+                  android_config='main_builder_mb',
               ),
           ).assemble()),
       api.code_coverage(use_clang_coverage=True),

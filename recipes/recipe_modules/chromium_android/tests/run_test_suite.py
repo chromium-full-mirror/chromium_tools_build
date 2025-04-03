@@ -16,7 +16,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.chromium_android.set_config('base_config')
+  api.chromium_android.set_config('main_builder')
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = source_dir / 'out/Release'
   api.chromium_android.run_test_suite(

@@ -20,6 +20,8 @@ DEPS = [
 
 BUILDERS = freeze({
     'local_test': {
+        'recipe_config': 'main_builder',
+        'upload_package': True,
         'kwargs': {
             'BUILD_CONFIG': 'Debug',
             'TARGET_ARCH': 'arm',
@@ -29,6 +31,8 @@ BUILDERS = freeze({
         'use_reclient': False,
     },
     'gn_test': {
+        'recipe_config': 'main_builder',
+        'upload_package': True,
         'kwargs': {
             'BUILD_CONFIG': 'Debug',
             'TARGET_ARCH': 'arm',
@@ -38,6 +42,8 @@ BUILDERS = freeze({
         'chromium_apply_config': ['gn'],
     },
     'mb_test': {
+        'recipe_config': 'main_builder',
+        'upload_package': True,
         'kwargs': {
             'BUILD_CONFIG': 'Release',
             'TARGET_ARCH': 'arm',
@@ -51,18 +57,19 @@ BUILDERS = freeze({
 
 def RunSteps(api):
   builder_config = BUILDERS.get(api.buildbucket.builder_name, {})
+  recipe_config = builder_config['recipe_config']
   kwargs = builder_config.get('kwargs', {})
   chromium_apply_config = builder_config.get('chromium_apply_config', [])
 
   gclient_cfg = api.gclient.make_config('android_bare')
   gclient_cfg.target_os = ['android']
 
-  api.chromium.set_config('main_builder', **kwargs)
+  api.chromium.set_config(recipe_config, **kwargs)
   api.chromium.apply_config('cronet_builder')
   for c in chromium_apply_config:
     api.chromium.apply_config(c)
 
-  api.chromium_android.set_config('base_config')
+  api.chromium_android.set_config(recipe_config)
   api.chromium_android.apply_config('use_devil_provision')
 
   update_result = api.bot_update.ensure_checkout(gclient_cfg)
