@@ -30,6 +30,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/platform',
+    'recipe_engine/raw_io',
     'recipe_engine/resultdb',
     'recipe_engine/step',
     'v8_orchestrator',
@@ -145,6 +146,21 @@ def GenTests(api):
   yield test(
       'basic',
       subbuild_data(default_output_properties),
+      api.override_step_data(
+          'Detect flakes in new tests.find new tests.git show',
+          stdout=api.raw_io.output_text('\n'.join([
+              'test/e2e/helpers/datagrid-helpers.ts',
+              'test/e2e/helpers/performance-helpers.ts',
+              'test/e2e/helpers/sources-helpers.ts',
+              'test/e2e/helpers/visual-logging-helpers.ts',
+              'test/e2e/performance/selector-stats-tracing_test.ts',
+              'test/e2e_non_hosted/BUILD.gn',
+              'test/e2e_non_hosted/performance/BUILD.gn',
+              'test/e2e_non_hosted/performance/selector-stats-tracing_test.ts',
+              'test/e2e_non_hosted/shared/frontend-helper.ts',
+              'test/e2e_non_hosted/shared/page-wrapper.ts',
+              'test/shared/helper.ts',
+          ]))),
   )
 
   yield test(

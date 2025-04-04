@@ -118,13 +118,14 @@ class FlakeDetectionPhase(TestRunPhase):
     self.test_files = []
 
   def init_phase(self):
-    with self.api.step.nest("find new tests"):
+    with self.api.step.nest("find new tests") as presentation:
       with self.api.context(cwd=self.source_dir):
+        git_show = self.api.v8.git_output('show', '--name-only',
+                                          '--format=').splitlines()
         self.test_files = [
-            file for file in self.api.v8.git_output('show', '--name-only',
-                                                    '--format=').split('\n')
-            if file.endswith('test.ts')
+            file for file in git_show if file.endswith('test.ts')
         ]
+        presentation.logs['tests'] = self.test_files
 
   def nesting_name(self):
     return 'Detect flakes in new tests'

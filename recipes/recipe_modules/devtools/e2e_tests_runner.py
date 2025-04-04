@@ -65,7 +65,7 @@ class E2ENonHostedTests(E2ETests):
     self.owned_new_tests = []
 
   def commands(self):
-    is_flake_detection_attempt = '--grep' in self.extra_args
+    is_flake_detection_attempt = '--bail' in self.extra_args
     if is_flake_detection_attempt:
       return [self.run_tests_command(*self.owned_new_tests)]
     return [self.run_tests_command('test/e2e_non_hosted')]
@@ -77,10 +77,6 @@ class E2ENonHostedTests(E2ETests):
   @property
   def test_type_tag(self):
     return 'e2e_non_hosted_tests'
-
-  def skip(self):
-    return super().skip() or not self.api.path.exists(
-        self.source_dir.joinpath('test', 'e2e'))
 
   def trigger_flake_detection(self, test_names):
     self.owned_new_tests = [
@@ -100,7 +96,7 @@ class E2ENonHostedTests(E2ETests):
     # TODO(liviurau): There must be a better way to prepare a limited run.
     # Maybe pass the command function to the trigger function and have
     # discrete commands for normal and limited runs.
-    self.extra_args = ['--repeat=10']
+    self.extra_args = ['--repeat=10', '--bail']
     self.trigger('flake detection')
 
   def process_flake_detection_results(self, test_names):
