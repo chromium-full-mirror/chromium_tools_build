@@ -542,7 +542,7 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
-      "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=1@@@",
+      "@@@STEP_LINK@<span style=\"color: var(--failure-color, #d23a2d)\">shard #0 (failed) (1m 0s)</span>@https://example.swarmingserver.appspot.com/task?id=1@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -1067,7 +1067,7 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
-      "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=2@@@",
+      "@@@STEP_LINK@<span style=\"color: var(--failure-color, #d23a2d)\">shard #0 (failed) (1m 0s)</span>@https://example.swarmingserver.appspot.com/task?id=2@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -1143,7 +1143,7 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
-      "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=3@@@",
+      "@@@STEP_LINK@<span style=\"color: var(--failure-color, #d23a2d)\">shard #0 (failed) (1m 0s)</span>@https://example.swarmingserver.appspot.com/task?id=3@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -1219,7 +1219,7 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
-      "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=4@@@",
+      "@@@STEP_LINK@<span style=\"color: var(--failure-color, #d23a2d)\">shard #0 (failed) (1m 0s)</span>@https://example.swarmingserver.appspot.com/task?id=4@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },

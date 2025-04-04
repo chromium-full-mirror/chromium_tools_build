@@ -3796,7 +3796,7 @@
       "@@@STEP_LOG_LINE@step_metadata@}@@@",
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
-      "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@",
+      "@@@STEP_LINK@<span style=\"color: var(--failure-color, #d23a2d)\">shard #0 (failed) (1m 0s)</span>@https://example.swarmingserver.appspot.com/task?id=0@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },

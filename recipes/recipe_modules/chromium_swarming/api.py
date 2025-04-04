@@ -1658,6 +1658,11 @@ class SwarmingApi(recipe_api.RecipeApi):
               'https://luci-milo.appspot.com/ui/%s/test-results' % inv_name)
           links['shard #%d test results' % index] = shard_results_url
 
+      def highlight_error(text):
+        return f'<span style="color: var(--failure-color, #d23a2d)">{text}</span>'
+
+      if index in failed_shards:
+        display_text = highlight_error(display_text)
       if url and should_show_shard:
         links[display_text] = url
 
