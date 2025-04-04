@@ -35,7 +35,7 @@ def GenTests(api):
       'basic',
       api.chromium.ci_build(
           builder_group='chromium.perf',
-          builder='linux-perf',
+          builder='linux-r350-perf',
       ),
       api.post_process(StepCommandContains, 'sample script', [
           '--build-dir',
@@ -44,7 +44,7 @@ def GenTests(api):
           '{"checkout": "[CACHE]/builder/src"}',
           '--properties',
           ('{"bot_id": "fake-bot-id", '
-           '"buildername": "linux-perf", '
+           '"buildername": "linux-r350-perf", '
            '"buildnumber": 571, '
            '"mastername": "chromium.perf", '
            '"slavename": "fake-bot-id", '

@@ -96,7 +96,7 @@ def GenTests(api):
       'tester-coverage',
       api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.perf',
-          builder='linux-perf',
+          builder='linux-r350-perf',
           parent_buildername='linux-builder-perf'),
       api.post_process(post_process.DropExpectation),
   )

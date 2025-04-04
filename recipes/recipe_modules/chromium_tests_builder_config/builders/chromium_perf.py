@@ -270,13 +270,11 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec(
     'mac-m2-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
-_AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')
 
 
 # Perf result processors
-_AddIsolatedTestSpec('linux-processor-perf', 'linux', 'linux-perf')
 _AddIsolatedTestSpec('linux-r350-processor-perf', 'linux', 'linux-r350-perf')
 
 _AddIsolatedTestSpec('win-10-processor-perf', 'win', 'win-10-perf')
