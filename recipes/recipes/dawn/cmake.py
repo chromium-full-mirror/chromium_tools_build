@@ -37,6 +37,11 @@ PROPERTIES = {
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
+def should_build_dawn_node(api):
+  # TODO(crbug.com/408414686): Re-enable dawn.node build once deps are mirrored.
+  # Currently fails on Linux and Mac, but seems to work on Windows.
+  return api.platform.is_win
+
 def _checkout_steps(api):
   '''Checks out Dawn. After this, api.path.checkout_dir returns the dawn root.'''
   # Check out dawn into an un-cached directory in 'cache'. This seems weird,
@@ -56,7 +61,8 @@ def _checkout_steps(api):
     api.gclient.c.solutions[0].custom_vars = {
         'dawn_root': 'dawn',
         'fetch_cmake': 'True',  # Fetch cmake
-        'dawn_node': 'True',  # Fetch deps for dawn.node
+        'dawn_node': 'True' if should_build_dawn_node(api) else
+                     'False',  # Fetch deps for dawn.node
     }
     if api.reclient.instance:
       api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
@@ -472,14 +478,15 @@ def RunSteps(api,
       rel_build_path = str(api.path.relpath(build_path,
                                             source_dir)).replace('\\', '/')
 
-      _cmake_build(
-          'default targets with dawn.node enabled',
-          api,
-          source_dir,
-          cmake_fixed_args,
-          dawn_node=True,
-          build_fuzzers=build_fuzzers,
-          targets=['dawn.node'])
+      if should_build_dawn_node(api):
+        _cmake_build(
+            'default targets with dawn.node enabled',
+            api,
+            source_dir,
+            cmake_fixed_args,
+            dawn_node=True,
+            build_fuzzers=build_fuzzers,
+            targets=['dawn.node'])
 
       tint_unittests_cmd = [build_path / 'tint_unittests']
       if api.platform.is_win and debug:
