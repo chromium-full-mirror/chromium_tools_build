@@ -2649,6 +2649,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         'test_suite': [self.canonical_name],
         'waterfall_builder_group': [self.spec.waterfall_builder_group or ''],
         'waterfall_buildername': [self.spec.waterfall_buildername or ''],
+        'test_phase': [suffix or ''],
     }
     if add_one_test_shard_enabled:
       tags.update({
