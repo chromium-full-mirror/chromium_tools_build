@@ -13,7 +13,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.chromium_android.set_config('main_builder')
+  api.chromium_android.set_config('base_config')
   source_dir = api.path.cache_dir / 'builder/src'
 
   api.chromium_android.provision_devices(source_dir, emulators=True)

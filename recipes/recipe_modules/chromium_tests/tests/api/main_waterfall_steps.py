@@ -96,7 +96,7 @@ CUSTOM_BUILDERS = ctbc.BuilderDatabase.create({
             ),
         'Isolated Transfer: mixed BT, isolated tester (BT)':
             _builder_spec(
-                android_config='main_builder_mb',
+                android_config='base_config',
                 chromium_config='android',
                 chromium_config_kwargs={
                     'BUILD_CONFIG': 'Release',
@@ -108,7 +108,7 @@ CUSTOM_BUILDERS = ctbc.BuilderDatabase.create({
             ),
         'Isolated Transfer: mixed BT, isolated tester (tester)':
             _builder_spec(
-                android_config='main_builder_mb',
+                android_config='base_config',
                 execution_mode=ctbc.TEST,
                 chromium_config='android',
                 chromium_config_kwargs={
@@ -147,7 +147,7 @@ CUSTOM_BUILDERS = ctbc.BuilderDatabase.create({
             ),
         'Multiple Triggers: Builder':
             _builder_spec(
-                android_config='main_builder',
+                android_config='base_config',
                 chromium_apply_config=['mb'],
                 chromium_config='android',
                 chromium_config_kwargs={
@@ -161,7 +161,7 @@ CUSTOM_BUILDERS = ctbc.BuilderDatabase.create({
             ),
         'Multiple Triggers: Mixed':
             _builder_spec(
-                android_config='main_builder',
+                android_config='base_config',
                 execution_mode=ctbc.TEST,
                 chromium_apply_config=['mb'],
                 chromium_config='android',
@@ -177,7 +177,7 @@ CUSTOM_BUILDERS = ctbc.BuilderDatabase.create({
             ),
         'Multiple Triggers: Isolated':
             _builder_spec(
-                android_config='main_builder',
+                android_config='base_config',
                 execution_mode=ctbc.TEST,
                 chromium_apply_config=['mb'],
                 chromium_config='android',
@@ -808,7 +808,7 @@ def GenTests(api):
                   chromium_config_kwargs={
                       'TARGET_PLATFORM': 'android',
                   },
-                  android_config='main_builder_mb',
+                  android_config='base_config',
               ),
           ).assemble()),
       api.properties(swarm_hashes={

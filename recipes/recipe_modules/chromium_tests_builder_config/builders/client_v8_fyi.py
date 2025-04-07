@@ -58,7 +58,7 @@ SPEC = {
                 'TARGET_ARCH': 'arm',
                 'TARGET_BITS': 32,
             },
-            android_config='main_builder',
+            android_config='base_config',
             simulation_platform='linux',
         ),
     'V8 Blink Linux':
@@ -221,8 +221,8 @@ SPEC = {
         ),
     'Android V8 FYI Release':
         _client_v8_fyi_spec(
-            chromium_config='arm64_builder_rel_mb',
-            chromium_apply_config=[],
+            chromium_config='main_builder',
+            chromium_apply_config=["mb"],
             gclient_config='chromium',
             gclient_apply_config=[
                 'android',
@@ -235,7 +235,7 @@ SPEC = {
                 'TARGET_BITS': 64,
                 'TARGET_ARCH': 'arm',
             },
-            android_config='arm64_builder_rel_mb',
+            android_config='base_config',
             simulation_platform='linux',
         ),
 }

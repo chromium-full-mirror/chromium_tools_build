@@ -30,8 +30,9 @@ BUILDERS = ctbc.BuilderDatabase.create({
     'fake.group': {
         'Test Version':
             ctbc.BuilderSpec.create(
-                android_config='main_builder_mb',
-                chromium_config='main_builder_mb',
+                android_config='base_config',
+                chromium_config='main_builder',
+                chromium_apply_config=['mb'],
                 chromium_config_kwargs={
                     'BUILD_CONFIG': 'Debug',
                     'TARGET_ARCH': 'arm',
@@ -53,7 +54,7 @@ BUILDERS = ctbc.BuilderDatabase.create({
                     'TARGET_BITS': 32,
                     'TARGET_PLATFORM': 'android',
                 },
-                android_config='main_builder',
+                android_config='base_config',
                 execution_mode=builder_spec.COMPILE_AND_TEST,
                 simulation_platform='linux',
             )

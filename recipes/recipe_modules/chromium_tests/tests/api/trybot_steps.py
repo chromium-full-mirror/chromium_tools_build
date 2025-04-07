@@ -808,7 +808,7 @@ def GenTests(api):
               'orderfile-group': {
                   'orderfile-builder':
                       ctbc.BuilderSpec.create(
-                          android_config='main_builder',
+                          android_config='base_config',
                           chromium_config='android',
                           chromium_config_kwargs={
                               'BUILD_CONFIG': 'Release',
@@ -863,7 +863,7 @@ def GenTests(api):
               'pgo-group': {
                   'pgo-builder':
                       ctbc.BuilderSpec.create(
-                          android_config='main_builder',
+                          android_config='base_config',
                           chromium_config='android',
                           chromium_config_kwargs={
                               'BUILD_CONFIG': 'Release',
