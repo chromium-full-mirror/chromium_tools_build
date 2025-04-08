@@ -213,6 +213,43 @@
   },
   {
     "cmd": [
+      "[CACHE]\\builder\\dawn\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-C",
+      "[CACHE]\\builder\\dawn\\out\\a395509df8cede75353292f01c7dca646ec8abd3",
+      "dawn_end2end_tests"
+    ],
+    "cwd": "[CACHE]\\builder\\dawn",
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile default targets with siso (2)"
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (2)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile default targets with siso@@@"
+    ]
+  },
+  {
+    "cmd": [
       "python3",
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\dawn",
@@ -267,7 +304,7 @@
   },
   {
     "cmd": [],
-    "name": "upload siso reports (2)",
+    "name": "upload siso reports (3)",
     "~followup_annotations": [
       "@@@STEP_TEXT@compile component build with Swiftshader with siso@@@"
     ]
@@ -326,6 +363,25 @@
       }
     },
     "name": "Run the Tint unittests"
+  },
+  {
+    "cmd": [
+      "[CACHE]\\builder\\dawn\\out\\a395509df8cede75353292f01c7dca646ec8abd3\\dawn_end2end_tests",
+      "--adapter-vendor-id=0x1414"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run the Dawn end2end tests with WARP"
   },
   {
     "cmd": [

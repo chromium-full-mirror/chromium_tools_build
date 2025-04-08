@@ -121,13 +121,15 @@ def _gn_build(source_dir, flavor, api, **kwargs):
 
 
 def _generate_fuzz_corpus(api, source_dir, **kwargs):
+  # SwiftShader builds must be a component build
   kwargs.update({
       'is_component_build': True,
       'dawn_use_swiftshader': True,
   })
   with _gn_build(source_dir, 'dawn tests', api, **kwargs) as build:
-    (dawn_unittests, dawn_end2end_tests) = build('dawn_unittests',
-                                                 'dawn_end2end_tests')
+    (dawn_unittests,
+     dawn_end2end_tests_swiftshader) = build('dawn_unittests',
+                                             'dawn_end2end_tests')
   # Collect the traces in temporary directories.
   testcase_dir = api.path.tmp_base_dir / 'testcases'
   hashed_testcase_dir = api.path.tmp_base_dir / 'hashed_testcases'
@@ -141,8 +143,8 @@ def _generate_fuzz_corpus(api, source_dir, **kwargs):
   ])
 
   api.step('Trace the dawn_end2end_tests with SwiftShader', [
-      dawn_end2end_tests, '--adapter-vendor-id=0x1AE0', '--use-wire',
-      '--wire-trace-dir={}'.format(testcase_dir)
+      dawn_end2end_tests_swiftshader, '--adapter-vendor-id=0x1AE0',
+      '--use-wire', '--wire-trace-dir={}'.format(testcase_dir)
   ])
 
   testcases = api.file.listdir('listdir {}'.format(testcase_dir), testcase_dir)
@@ -202,6 +204,8 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
       # Build default targets, and specifically the unittest binaries.
       (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
                                                   'tint_unittests')
+      if api.platform.is_win and not debug:
+        (dawn_end2end_tests_warp,) = build('dawn_end2end_tests')
 
     if not api.platform.is_win:
       with _gn_build(
@@ -232,7 +236,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
         dawn_use_swiftshader=True,
         **extra_gn_args,
     ) as build:
-      (dawn_end2end_tests,) = build('dawn_end2end_tests')
+      (dawn_end2end_tests_swiftshader,) = build('dawn_end2end_tests')
 
   api.step('Run the Dawn unittests', [dawn_unittests])
   api.step('Run the Dawn unittests with the wire',
@@ -245,15 +249,21 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
     tint_unittests_cmd.append('--gtest_filter=-*DeathTest.*')
   api.step('Run the Tint unittests', tint_unittests_cmd)
 
+  if api.platform.is_win and not debug:
+    # dawn_end2end_tests on WARP is slow to run in Debug
+    # (20m to 40m in Debug, vs 5m in Release).
+    api.step('Run the Dawn end2end tests with WARP',
+             [dawn_end2end_tests_warp, '--adapter-vendor-id=0x1414'])
+
   api.step('Run the Dawn end2end tests with SwiftShader',
-           [dawn_end2end_tests, '--adapter-vendor-id=0x1AE0'])
+           [dawn_end2end_tests_swiftshader, '--adapter-vendor-id=0x1AE0'])
   api.step(
       'Run the Dawn end2end tests with ANGLE/SwiftShader on gles 3.1 and no extensions',
       [
-          dawn_end2end_tests, '--backend=opengles', '--use-angle=swiftshader',
+          dawn_end2end_tests_swiftshader, '--backend=opengles',
+          '--use-angle=swiftshader',
           '--enable-toggles=gl_force_es_31_and_no_extensions'
       ])
-
 
 def GenTests(api):
   yield api.test(
