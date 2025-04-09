@@ -51,14 +51,15 @@ def _base64_encode_args(args, skip_prefix=None):
   def encode_if_necessary(arg):
     a = arg.split('=', 1)
     if len(a) < 2:
-      return arg
+      # Assume boolean flag
+      return (arg, 'True')
     name, value = a
     if skip_prefix and name.startswith(skip_prefix):
-      return arg
+      return (name, value)
     if not find_unsafe(value):
-      return arg
+      return (name, value)
     b = _base64_encode_str(value)
-    return f'{name}_b64={b}'
+    return (f'{name}_b64', b)
 
   return [encode_if_necessary(arg) for arg in args]
 
@@ -221,66 +222,67 @@ class SkylabApi(recipe_api.RecipeApi):
 
       test_args = []
 
-      test_args.append('resultdb_settings=%s' % _base64_encode_str(rdb_str))
+      test_args.append(('resultdb_settings', _base64_encode_str(rdb_str)))
 
       if test.spec.tast_expr:
         # Due to crbug/1173329, skylab does not support arbitrary tast
         # expressions. As a workaround, we encode test argument which may
         # contain complicated patterns to base64.
-        test_args.append('tast_expr_b64=%s' %
-                         _base64_encode_str(test.spec.tast_expr))
+        test_args.append(
+            ('tast_expr_b64', _base64_encode_str(test.spec.tast_expr)))
 
       if test.spec.test_args:
         if test.is_tast_test:
           test_args.extend(
               _base64_encode_args(test.spec.test_args, TAST_VARS_PREFIX))
         else:
-          test_args.append('test_args_b64=%s' %
-                           _base64_encode_str(' '.join(test.spec.test_args)))
+          test_args.append(('test_args_b64',
+                            _base64_encode_str(' '.join(test.spec.test_args))))
 
       test_retries = '2'
       if test.spec.test_level_retries != None:
         test_retries = test.spec.test_level_retries
-      test_args.append('retries=%s' % test_retries)
+      test_args.append(('retries', test_retries))
 
       if test.spec.shard_level_retries_on_ctp >= 0:
         cmd.extend(['--retry', str(test.spec.shard_level_retries_on_ctp)])
 
       if test.exe_rel_path:
-        test_args.append('exe_rel_path=%s' % test.exe_rel_path)
+        test_args.append(('exe_rel_path', test.exe_rel_path))
 
       if test.tast_expr_file:
-        test_args.append('tast_expr_file=%s' % test.tast_expr_file)
+        test_args.append(('tast_expr_file', test.tast_expr_file))
         if test.spec.tast_expr_key:
-          test_args.append('tast_expr_key=%s' % test.spec.tast_expr_key)
+          test_args.append(('tast_expr_key', test.spec.tast_expr_key))
 
       if test.spec.extra_browser_args:
-        test_args.append('extra_browser_args_b64=%s' %
-                         _base64_encode_str(test.spec.extra_browser_args))
+        test_args.append(('extra_browser_args_b64',
+                          _base64_encode_str(test.spec.extra_browser_args)))
 
       if test.spec.benchmark:
-        test_args.append('benchmark=%s' % test.spec.benchmark)
+        test_args.append(('benchmark', test.spec.benchmark))
 
       if test.spec.results_label:
-        test_args.append('results_label=%s' % test.spec.results_label)
+        test_args.append(('results_label', test.spec.results_label))
 
       if test.spec.story_filter:
-        test_args.append('story_filter=%s' % test.spec.story_filter)
+        test_args.append(('story_filter', test.spec.story_filter))
 
       if test.spec.test_shard_map_filename:
-        test_args.append('test_shard_map_filename=%s' %
-                         test.spec.test_shard_map_filename)
+        test_args.append(
+            ('test_shard_map_filename', test.spec.test_shard_map_filename))
 
       if test.spec.max_run_sec:
-        test_args.append('max_run_sec=%s' % test.spec.max_run_sec)
+        test_args.append(('max_run_sec', str(test.spec.max_run_sec)))
 
       # TODO(crbug.com/1233676): Support chromium perf tests.
       # if test.telemetry_shard_index is not None:
-      #   test_args.append('test_shard_index=%s' % test.telemetry_shard_index)
+      #   test_args.append(('test_shard_index', str(test.telemetry_shard_index)))
 
       if test.spec.bucket and 'chromium' in test.spec.bucket:
-        test_args.append('run_private_tests=False')
-      cmd.extend(['--test-args', ' '.join(test_args)])
+        test_args.append(('run_private_tests', 'False'))
+      for test_arg_key, test_arg_value in test_args:
+        cmd.extend(['--test-arg', test_arg_key, test_arg_value])
 
       lacros_gcs_path = os.path.join(test.lacros_gcs_path,
                                      'skylab_runtime_deps.tar.zst')

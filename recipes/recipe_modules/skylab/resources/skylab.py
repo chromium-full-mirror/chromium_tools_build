@@ -117,17 +117,17 @@ def schedule_skylab_tests(opts):
     if opts.model:
       schedule_targets.hw_target.legacy_hw.model = opts.model
 
-    _test_args = (f'{opts.test_args} '
-                  f'lacros_gcs_path={opts.lacros_gcs_path} '
-                  f'total_shards={opts.total_shards} '
-                  f'shard_index={i} '
-                  'is_cft=True')
+    test_args = opts.test_arg[:]
+    test_args.append(['lacros_gcs_path', opts.lacros_gcs_path])
+    test_args.append(['total_shards', str(opts.total_shards)])
+    test_args.append(['shard_index', str(i)])
+    test_args.append(['is_cft', 'True'])
 
     autotest_name = opts.autotest_name.replace('tauto.', '')
     autotest_name = f'tauto.{autotest_name}'
 
     if opts.strip:
-      _test_args += ' chrome_deploy_strip=True'
+      test_args.append(('chrome_deploy_strip', 'True'))
 
     if opts.secondary_boards:
       assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
@@ -149,16 +149,19 @@ def schedule_skylab_tests(opts):
         sw_kv.value = img
 
       if any(opts.secondary_lacros_gcs_path):
-        _test_args += (' secondary_lacros_gcs_path'
-                       f'={",".join(opts.secondary_lacros_gcs_path)}')
+        test_args.append([
+            'secondary_lacros_gcs_path',
+            ','.join(opts.secondary_lacros_gcs_path)
+        ])
 
-    # TODO(b/407636890): use more meaningful name for suite/shard name.
     req.suite_request.test_suite.name = f'{opts.chromium_suite_name}-shard-{i}'
     test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
     test_case.value = autotest_name
-    # TODO(b/406664342): migrate to structured
-    # req.suite_request.test_suite.execution_metadata.args
-    req.suite_request.test_args = _test_args
+    for test_arg in test_args:
+      arg = req.suite_request.test_suite.execution_metadata.args.add()
+      arg.flag = test_arg[0]
+      arg.value = test_arg[1]
+
 
   bb_request_data = {
       'builder': {
@@ -332,10 +335,12 @@ def main(args):
   subparser.add_argument(
       '--autotest-name', type=str, default='', help='Autotest wrapper name.')
   subparser.add_argument(
-      '--test-args',
-      type=str,
-      default='',
-      help='The test arguments to pass to the autotest wrapper.')
+      '--test-arg',
+      nargs=2,
+      action='append',
+      metavar=('KEY', 'VALUE'),
+      help=('The test arguments to pass to the autotest wrapper. '
+            'Repeat multiple times for multiple test arguments.'))
   subparser.add_argument(
       '--strip', action='store_true', help='Strip Chrome before deploy.')
   subparser.set_defaults(func=schedule_skylab_tests)

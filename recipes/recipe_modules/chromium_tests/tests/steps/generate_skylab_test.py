@@ -167,9 +167,11 @@ def GenTests(api):
           api.file.read_text(isolate_content))
     return steps
 
-  def _check_test_args(check, step_odict, step, argument):
+  def _check_test_args(check, step_odict, step, argument, value):
     cmd = step_odict[step].cmd
-    check(argument in cmd[cmd.index('--test-args') + 1])
+    check(
+        any(cmd[i:i + 3] == ['--test-arg', argument, value]
+            for i in range(len(cmd) - 2)))
 
   def _check_link_equals(check, step_odict, step, link_name, link_value):
     check(f'link {link_name} for step {step} is {link_value}',
@@ -205,8 +207,8 @@ def GenTests(api):
            'write metadata.json') % TAST_TARGET,
       ),
       api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
-                       'tast_expr_file=out/Release/bin/%s.filter' %
-                       TAST_TARGET),
+                       'tast_expr_file',
+                       f'out/Release/bin/{TAST_TARGET}.filter'),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -374,7 +376,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),
       api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
-                       'exe_rel_path=out/Release/bin/run_%s' % GTEST_TARGET),
+                       'exe_rel_path', f'out/Release/bin/run_{GTEST_TARGET}'),
       api.post_process(
           post_process.StepCommandContains,
           'test_pre_run.basic_EVE_TOT.schedule', [
