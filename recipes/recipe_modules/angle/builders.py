@@ -90,9 +90,9 @@ _SPEC = {
         _create_android_builder_config('Debug', 64),
     'android-arm64-exp-pixel6':
         _create_android_tester_config(64, 'android-arm64-exp-test'),
-    'android-arm64-exp-s22':
-        _create_android_tester_config(64, 'android-arm64-exp-s22-test'),
-    'android-arm64-exp-s22-test':
+    'android-arm64-exp-s24':
+        _create_android_tester_config(64, 'android-arm64-exp-s24-test'),
+    'android-arm64-exp-s24-test':
         _create_android_builder_config('Release', 64),
     'android-arm64-exp-test':
         _create_android_builder_config('Release', 64),
