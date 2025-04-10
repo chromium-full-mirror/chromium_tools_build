@@ -112,9 +112,10 @@ def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
   ])
   command = ['bash', '-c', bash_command]
   task_request = (
-      api.swarming.task_request().
-      with_name('Flash %s (%s) to %s' % (bot_id, device_type, device_os)).
-      with_priority(0)  # Make sure the flash task is prior than test tasks
+      api.swarming.task_request().with_name(
+          'Flash %s (%s) to %s' %
+          (bot_id, device_type, device_os)).with_priority(
+              1)  # Make sure the flash task is prior than test tasks
   )
   task_request = task_request.with_slice(
       0, task_request[0].
