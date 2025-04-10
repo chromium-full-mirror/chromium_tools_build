@@ -313,7 +313,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android Debug':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -328,7 +328,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android Release':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -343,7 +343,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android ARM64 Debug':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -358,7 +358,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android32 x86 Debug':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -372,7 +372,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android32 MIPS Debug':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -386,7 +386,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android64 x64 Debug':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -400,7 +400,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android Tester ARM32 Debug (Nexus 5X)':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -417,7 +417,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android Tester ARM32 Release (Nexus 5X)':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -434,7 +434,7 @@ _CLIENT_LIBYUV_SPEC = {
         ),
     'Android Tester ARM64 Debug (Nexus 5X)':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -745,7 +745,7 @@ _TRYSERVER_LIBYUV_SPEC = {
         ),
     'android_x86':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={
@@ -759,7 +759,7 @@ _TRYSERVER_LIBYUV_SPEC = {
         ),
     'android_x64':
         LibYUVBuilderSpec.create(
-            chromium_config='libyuv',
+            chromium_config='libyuv_android',
             gclient_config='libyuv_android',
             android_config='libyuv',
             chromium_config_kwargs={

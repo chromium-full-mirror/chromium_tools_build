@@ -22,6 +22,11 @@ def libyuv_gcc(c):
 
 
 @CONFIG_CTX(includes=['ninja'])
+def libyuv_android(c):
+  _libyuv_common(c)
+  c.gn_args.append('android_static_analysis="off"')
+
+@CONFIG_CTX(includes=['ninja'])
 def libyuv_msvc(c):
   _libyuv_common(c)
   c.gn_args.append('is_clang=false')

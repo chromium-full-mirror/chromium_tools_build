@@ -136,7 +136,7 @@
       "--root=[CACHE]/builder/src",
       "gen",
       "[CACHE]/builder/src/out/Debug",
-      "--args=is_component_build=false is_debug=true target_os=\"android\" target_cpu=\"mipsel\" use_remoteexec=true"
+      "--args=is_component_build=false android_static_analysis=\"off\" is_debug=true target_os=\"android\" target_cpu=\"mipsel\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
