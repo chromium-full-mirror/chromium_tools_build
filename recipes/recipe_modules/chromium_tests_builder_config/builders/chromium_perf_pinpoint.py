@@ -266,6 +266,8 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec(
     'mac-m2-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
+_AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
+
 # Deprecated in perf waterfall. Needed for pinpoint when running Chrome
 # Health on old commits.
 _AddPinpointTestSpec('mac-10_12_laptop_low_end-perf', 'mac', 'mac-builder-perf')
