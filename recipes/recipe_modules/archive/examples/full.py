@@ -297,24 +297,24 @@ def GenTests(api):
       post_tests = []
       if include_dirs:
         post_tests.append(
-            api.post_process(
-                post_process.StepCommandContains,
-                "Generic Archiving Steps.Copy folder directory1", [
-                    "copytree", "--symlinks", "[CLEANUP]/tmp_tmp_1/directory1",
-                    "[CLEANUP]/tmp_tmp_2/directory1"
-                ]))
+            api.post_process(post_process.StepCommandContains,
+                             "Generic Archiving Steps.Copy folder directory1", [
+                                 "copytree", "--symlinks", "--allow-override",
+                                 "[CLEANUP]/tmp_tmp_1/directory1",
+                                 "[CLEANUP]/tmp_tmp_2/directory1"
+                             ]))
         post_tests.append(
-            api.post_process(
-                post_process.StepCommandContains,
-                "Generic Archiving Steps.Copy folder directory2", [
-                    "copytree", "--symlinks", "[CLEANUP]/tmp_tmp_1/directory2",
-                    "[CLEANUP]/tmp_tmp_2/directory2"
-                ]))
+            api.post_process(post_process.StepCommandContains,
+                             "Generic Archiving Steps.Copy folder directory2", [
+                                 "copytree", "--symlinks", "--allow-override",
+                                 "[CLEANUP]/tmp_tmp_1/directory2",
+                                 "[CLEANUP]/tmp_tmp_2/directory2"
+                             ]))
         post_tests.append(
             api.post_process(
                 post_process.StepCommandContains,
                 "Generic Archiving Steps.Copy folder path/to/directory3", [
-                    "copytree", "--symlinks",
+                    "copytree", "--symlinks", "--allow-override",
                     "[CLEANUP]/tmp_tmp_1/path/to/directory3",
                     "[CLEANUP]/tmp_tmp_2/path/to/directory3"
                 ]))

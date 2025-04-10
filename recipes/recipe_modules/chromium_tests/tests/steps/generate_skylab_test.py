@@ -38,6 +38,8 @@ def GenTests(api):
   TAST_TARGET = 'lacros_fyi_tast_tests'
   GTEST_TARGET = 'vaapi_unittest'
 
+  UNIFIED_RUNTIME_DEPS_NAME = 'unified_runtime_deps'
+
   GOOD_ISOLATE_TEXT = """
     {'variables': {'command': ['bin/run_lacros_smoke_tast_tests',
                             '--logs-dir=${ISOLATED_OUTDIR}'],
@@ -190,21 +192,23 @@ def GenTests(api):
       api.post_process(
           post_process.LogContains,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
-           'Generic Archiving Steps.Write file list to copy') % TAST_TARGET,
+           'Generic Archiving Steps.Write file list to copy') %
+          UNIFIED_RUNTIME_DEPS_NAME,
           'tmp_tmp_2',
           ['out/Release/chrome'],
       ),
       api.post_process(
           post_process.LogContains,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
-           'Generic Archiving Steps.Write file list to copy (2)') % TAST_TARGET,
+           'Generic Archiving Steps.Write file list to copy (2)') %
+          UNIFIED_RUNTIME_DEPS_NAME,
           'tmp_tmp_5',
           ['metadata.json'],
       ),
       api.post_process(
           post_process.MustRun,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
-           'write metadata.json') % TAST_TARGET,
+           'write metadata.json') % UNIFIED_RUNTIME_DEPS_NAME,
       ),
       api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
                        'tast_expr_file',
@@ -221,7 +225,7 @@ def GenTests(api):
           'test_pre_run.basic_EVE_TOT.schedule', [
               '--lacros-gcs-path',
               'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/'
-              f'{TAST_TARGET}/skylab_runtime_deps.tar.zst'
+              f'{UNIFIED_RUNTIME_DEPS_NAME}/skylab_runtime_deps.tar.zst'
           ]),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #0'),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
@@ -363,7 +367,7 @@ def GenTests(api):
           'prepare skylab tests.'
           'upload skylab runtime deps for {target}.'
           'Generic Archiving Steps.'
-          'Write file list to copy'.format(target=GTEST_TARGET),
+          'Write file list to copy'.format(target=UNIFIED_RUNTIME_DEPS_NAME),
           'tmp_tmp_2',
           [f'out/Release/bin/run_{GTEST_TARGET}'],
       ),
@@ -371,7 +375,7 @@ def GenTests(api):
           post_process.MustRun,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
            'Generic Archiving Steps.'
-           'Copy folder testing/buildbot/filters') % GTEST_TARGET,
+           'Copy folder testing/buildbot/filters') % UNIFIED_RUNTIME_DEPS_NAME,
       ),
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),
@@ -381,7 +385,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'test_pre_run.basic_EVE_TOT.schedule', [
               '--lacros-gcs-path', 'gs://chrome-test-builds/lacros/'
-              f'8945511751514863184_with_patch/{GTEST_TARGET}/'
+              f'8945511751514863184_with_patch/{UNIFIED_RUNTIME_DEPS_NAME}/'
               'skylab_runtime_deps.tar.zst'
           ]),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
@@ -553,13 +557,13 @@ def GenTests(api):
           'prepare skylab tests.'
           'upload skylab runtime deps for {target}.'
           'Generic Archiving Steps.'
-          'Write file list to copy'.format(target=GTEST_TARGET),
+          'Write file list to copy'.format(target=UNIFIED_RUNTIME_DEPS_NAME),
       ),
       api.post_process(
           post_process.MustRun,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
            'Generic Archiving Steps.'
-           'Copy folder testing/buildbot/filters') % GTEST_TARGET,
+           'Copy folder testing/buildbot/filters') % UNIFIED_RUNTIME_DEPS_NAME,
       ),
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),

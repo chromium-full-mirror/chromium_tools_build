@@ -1144,7 +1144,8 @@ class ArchiveApi(recipe_api.RecipeApi):
           self.m.path.join(base_path, directory),
           self.m.path.join(temp_dir, directory),
           symlinks=True,
-          hardlink=use_hardlink)
+          hardlink=use_hardlink,
+          allow_override=True)
 
     # Starting here, we will only need to care about the temporary folder
     # which holds the files. So reset the base_path to temp_dir.
