@@ -2,9 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import datetime
+import math
 from recipe_engine import post_process
+from recipe_engine import recipe_api
 
+from PB.recipes.build.chromium.autosharder import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 
@@ -39,8 +43,42 @@ The build that created this CL was https://ci.chromium.org/b/{}
 Ignore-Freeze:True
 """
 
+_CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 
-def RunSteps(api):
+# TODO(http://crbug.com/407846444): Move these to builder config
+# All suites triggered by the builder will not be autosharded.
+BUILDER_EXCLUDE_SET = set([
+    'mac-rel',
+    'mac14-arm64-rel',
+    'ios-simulator',
+    'ios-simulator-full-configs',
+    'android-arm64-rel',
+])
+
+# Test suites will not be autosharded on all builders that run the test suite.
+# Example: 'browser_tests' -> turns of browser_tests on linux-rel and win-rel
+TEST_SUITE_EXCLUDE_SET = set([
+    # 'chrome_all_tast_tests': crbug.com/1516971
+    'chrome_all_tast_tests',
+])
+
+# Test suite and try builder dicts that should not be autosharded any further.
+# Maps try builder to set of test suite
+# Example: {'linux-rel': {'browser_tests'}}
+BUILDER_TEST_SUITE_EXCLUDE_DICT = {}
+
+MIN_SAMPLE_SIZE = 1500
+
+# TODO(crbug.com/40281184): Replace with queried, per-suite overheads, once
+# infra is set up to support automated overhead measurements.
+# See go/nplus1shardsproposal
+DEFAULT_OVERHEAD_SEC = 60
+ANDROID_OVERHEAD_SEC = 60 * 2
+
+PROPERTIES = InputProperties
+
+
+def RunSteps(api, properties):
   """Creates a CL to update test suite shards in chromium/src
   """
   api.gclient.set_config('chromium')
@@ -133,26 +171,7 @@ def RunSteps(api):
         status=api.step.EXCEPTION,
         step_text='\n'.join(step_text))
 
-  script_path = api.chromium_checkout.source_dir.joinpath(
-      'testing', 'buildbot', 'query_optimal_shard_counts.py')
-
-  script_cmd = [
-      'vpython3',
-      script_path,
-      '--output-file',
-      autoshard_exceptions_path,
-      '--ignore-cl-owner',
-      # TODO(crbug.com/1275620): Replace with
-      # service_account.default().get_email()
-      'chromium-autosharder@chops-service-accounts.iam.gserviceaccount.com',
-      '--prune',
-      '-v',
-  ]
-  api.step('which bq', ['which', 'bq'])
-  api.step(
-      'query optimal shards',
-      script_cmd,
-  )
+  calculate_optimal_shards(api, properties.target_runtime)
 
   def step_test_data():
     autoshard_exceptions_rel_path = api.path.relpath(
@@ -207,6 +226,365 @@ def RunSteps(api):
     )
 
 
+def calculate_optimal_shards(api, target_runtime):
+  api.step('which bq', ['which', 'bq'])
+
+  today = api.time.utcnow()
+  start = today - datetime.timedelta(days=14)
+  lookback_start_date = start.strftime('%Y-%m-%d')
+  lookback_end_date = today.strftime('%Y-%m-%d')
+
+  durations = query_durations(
+      api,
+      target_runtime,
+      lookback_start_date,
+      lookback_end_date,
+  )
+
+  filtered_durations = []
+  for d in durations:
+    # Filter out durations that don't meet sample size
+    if int(d['sample_size']) < MIN_SAMPLE_SIZE:  # pragma: nocover
+      continue
+
+    builder_group = d['waterfall_builder_group']
+    builder_name = d['waterfall_builder_name']
+    test_suite = d['test_suite']
+
+    excluded_tests = BUILDER_TEST_SUITE_EXCLUDE_DICT.get(d['try_builder'])
+    if (test_suite in TEST_SUITE_EXCLUDE_SET or
+        (excluded_tests and test_suite in excluded_tests) or
+        d['try_builder'] in BUILDER_EXCLUDE_SET):  # pragma: nocover
+      continue
+
+    # Don't bother resharding suites that are running < 1 minute faster
+    # than desired.
+    if abs(float(d['percentile_duration_minutes']) - float(target_runtime)) < 1:
+      continue
+    filtered_durations.append(d)
+
+  overhead_dict = query_overheads(
+      api,
+      lookback_start_date,
+      lookback_end_date,
+  )
+
+  durations_with_optimal_shards = _calculate_and_filter_optimal_shard_counts(
+      overhead_dict, filtered_durations, target_runtime)
+
+  durations_with_optimal_shards_and_bot_hours = (
+      _calculate_estimated_bot_hour_cost(
+          api,
+          durations=durations_with_optimal_shards,
+          lookback_start_date=lookback_start_date,
+          lookback_end_date=lookback_end_date,
+      ))
+
+  exceptions_file = api.chromium_checkout.source_dir.joinpath(
+      'infra', 'config', 'targets', 'autoshard_exceptions.json')
+  data = api.m.file.read_json(
+      'read current exceptions file', exceptions_file, test_data={})
+
+  new_data = {}
+  for r in durations_with_optimal_shards_and_bot_hours:
+    builder_group = r['waterfall_builder_group']
+    builder_name = r['waterfall_builder_name']
+    test_suite = r['test_suite']
+    if not _meets_optimal_shard_count_and_simulated_duration_requirements(
+        r, data, target_runtime):
+      continue
+    shard_dict = {
+        test_suite: {
+            'shards': r['optimal_shard_count'],
+            'try_builder': r['try_builder'],
+        },
+    }
+    debug_dict = {
+        'avg_num_builds_per_peak_hour':
+            r['avg_num_builds_per_peak_hour'],
+        'estimated_bot_hour_delta':
+            r['estimated_bot_hour_cost'],
+        'prev_avg_pending_time_sec':
+            float(r['avg_pending_time_sec']),
+        'prev_p50_pending_time_sec':
+            float(r['p50_pending_time_sec']),
+        'prev_p90_pending_time_sec':
+            float(r['p90_pending_time_sec']),
+        'prev_percentile_duration_minutes':
+            float(r['percentile_duration_minutes']),
+        'prev_shard_count':
+            int(r['shard_count']),
+        'simulated_max_shard_duration':
+            r['simulated_max_shard_duration'],
+        'test_overhead_min':
+            r['test_overhead_min'],
+    }
+    shard_dict[r['test_suite']]['debug'] = debug_dict
+    data.setdefault(builder_group, {}).setdefault(builder_name,
+                                                  {}).update(shard_dict)
+    new_data.setdefault(builder_group, {}).setdefault(builder_name,
+                                                      {}).update(shard_dict)
+
+  _prune_builders(api, data)
+
+  api.file.write_json(
+      'write exceptions file',
+      exceptions_file,
+      data,
+      indent=4,
+  )
+
+
+def _meets_optimal_shard_count_and_simulated_duration_requirements(
+    row, data, desired_runtime):
+  builder_group = row['waterfall_builder_group']
+  builder_name = row['waterfall_builder_name']
+  test_suite = row['test_suite']
+
+  current_autoshard_val = data.get(builder_group,
+                                   {}).get(builder_name,
+                                           {}).get(test_suite, {}).get('shards')
+
+  # No autosharding needed.
+  if int(row['optimal_shard_count']) == int(row['shard_count']):
+    return False
+
+  # Throw out any attempt to shard to 1. This will lock the test suite
+  # and prevent go/nplus1shardsproposal from running new shardings
+  if int(row['optimal_shard_count']) == 1:
+    return False
+
+  # Don't bother resharding if the simulated runtime is greater than the
+  # desired runtime.
+  if float(
+      row['simulated_max_shard_duration']) > desired_runtime:  # pragma: nocover
+    return False
+
+  # Shard values may have changed over the lookback period, so the query
+  # results could have multiple rows for each builder+test_suite. Logic below
+  # skips the rows that are for outdated shard counts.
+
+  # First check if this suite has been autosharded before
+  # If it has been autosharded before, we should only look at the row
+  # containing a matching 'shard_count' with the current autoshard value.
+  if current_autoshard_val:
+    # If this row does not match, skip it. This row is for an old shard count
+    # that is no longer being used.
+    if int(current_autoshard_val) != int(row['shard_count']):
+      return False
+  else:
+    # Query suggests we should decrease shard count for suite that has
+    # never been autosharded
+    if int(row['optimal_shard_count']) < int(row['shard_count']):
+      # Only use lower shard count value if the suite was previously
+      # autosharded.
+      # This is because the suite could have been previously autosharded with
+      # more shards due to a test regression. If the regression is fixed, that
+      # suite should have those extra shards removed.
+      # There's many existing suites that already run pretty fast from
+      # previous manual shardings. Those technically can have fewer shards as
+      # well, but let's leave those alone until we have a good reason to
+      # change a bunch of suites at once.
+      return False
+  return True
+
+
+def _calculate_and_filter_optimal_shard_counts(overhead_dict, durations,
+                                               desired_runtime):
+  filtered_durations = []
+  for r in durations:
+    try_builder = r['try_builder']
+    test_suite = r['test_suite']
+    shard_count = int(r['shard_count'])
+
+    overhead = overhead_dict.get(try_builder, {}).get(test_suite,
+                                                      {}).get(shard_count)
+    if overhead:
+      # Suites can be in a bad sharding. Since we only use one set of shards
+      # (n and n+1) this can create a bad value for the overhead so clamp it
+      # to reasonable values. At the time of writing this the min and max are
+      # around 0.21 and 4.01. Ideally we could use more than one set of
+      # shardings to determine this overhead.
+      overhead = max(min(overhead, 4.0), 0.2)
+    else:
+      if 'android' in try_builder:
+        overhead = ANDROID_OVERHEAD_SEC / 60
+      else:
+        overhead = DEFAULT_OVERHEAD_SEC / 60
+    r['test_overhead_min'] = overhead
+
+    optimal_shard_count = math.ceil(
+        (float(r['percentile_duration_minutes']) * shard_count -
+         overhead * shard_count) / (desired_runtime - overhead))
+    if optimal_shard_count <= 0:
+      continue
+    r['optimal_shard_count'] = optimal_shard_count
+
+    overhead_change = (optimal_shard_count - shard_count) * overhead
+    simulated_max_shard_duration = round(
+        ((float(r['percentile_duration_minutes']) * shard_count +
+          overhead_change) / optimal_shard_count), 2)
+    r['simulated_max_shard_duration'] = simulated_max_shard_duration
+
+    filtered_durations.append(r)
+  return filtered_durations
+
+
+def _calculate_estimated_bot_hour_cost(api, durations, lookback_start_date,
+                                       lookback_end_date):
+  results = _query_avg_num_builds_per_hour(
+      api,
+      lookback_start_date=lookback_start_date,
+      lookback_end_date=lookback_end_date,
+  )
+  avg_num_builds_per_hour = {
+      r['try_builder']: int(math.ceil(float(r['avg_count']))) for r in results
+  }
+
+  updated_durations = []
+  # Add estimated_bot_hour_cost and avg_num_builds_per_peak_hour
+  for r in durations:
+    try_builder = r['try_builder']
+    shard_count = int(r['shard_count'])
+
+    r['estimated_bot_hour_cost'] = round(
+        (r['optimal_shard_count'] - shard_count) *
+        (r['test_overhead_min'] / 60) * avg_num_builds_per_hour[try_builder], 2)
+    r['avg_num_builds_per_peak_hour'] = avg_num_builds_per_hour[try_builder]
+    updated_durations.append(r)
+  return updated_durations
+
+
+def run_query(api, query):
+
+  result = api.step(
+      'query', [
+          'bq',
+          'query',
+          f'--project_id={_CLOUD_PROJECT_ID}',
+          '--format=json',
+          '--max_rows=100000',
+          '--nouse_legacy_sql',
+          str(query),
+      ],
+      step_test_data=lambda: api.raw_io.test_api.stream_output_text('[]'),
+      stdout=api.json.output())
+  result.presentation.logs['query'] = str(query)
+  return result.stdout
+
+
+def _query_avg_num_builds_per_hour(
+    api,
+    lookback_start_date,
+    lookback_end_date,
+):
+  with api.step.nest('query average builds per hour'):
+    query_tmpl = api.file.read_text(
+        'read_query',
+        api.resource('query_average_number_builds_per_hour.sql.tmpl'))
+    query = query_tmpl.format(
+        builds_project='cr-buildbucket',
+        builds_dataset='chromium',
+        lookback_start_date=lookback_start_date,
+        lookback_end_date=lookback_end_date,
+    )
+    return run_query(api, query)
+
+
+def query_overheads(
+    api,
+    lookback_start_date,
+    lookback_end_date,
+):
+
+  with api.step.nest('query overheads'):
+    query_tmpl = api.file.read_text(
+        'read_query', api.resource('query_test_overheads.sql.tmpl'))
+    query = query_tmpl.format(
+        builds_project='cr-buildbucket',
+        builds_dataset='chromium',
+        tasks_project='chromium-swarm',
+        tasks_dataset='swarming',
+        lookback_start_date=lookback_start_date,
+        lookback_end_date=lookback_end_date,
+    )
+    rows = run_query(api, query)
+    trybuilder_to_overheads = {}
+    for row in rows:
+      sharding = int(row['normally_assigned_shard_count'])
+      overhead = (float(row['p50_task_setup_duration_sec']) +
+                  float(row['p50_test_harness_overhead_sec'])) / 60
+      trybuilder_to_overheads.setdefault(row['try_builder'],
+                                         {}).setdefault(row['test_suite'],
+                                                        {})[sharding] = overhead
+    return trybuilder_to_overheads
+
+
+def query_durations(
+    api,
+    target_runtime,
+    lookback_start_date,
+    lookback_end_date,
+):
+
+  def _join_sql_collection(collection):
+    return ','.join([f'"{u}"' for u in collection] if collection else '""')
+
+  with api.step.nest('query durations'):
+    query_tmpl = api.file.read_text(
+        'read_query', api.resource('query_suite_durations.sql.tmpl'))
+    query = query_tmpl.format(
+        builds_project='cr-buildbucket',
+        builds_dataset='chromium',
+        tasks_project='chromium-swarm',
+        tasks_dataset='swarming',
+        lookback_start_date=lookback_start_date,
+        lookback_end_date=lookback_end_date,
+        percentile=80,
+        min_sample_size=MIN_SAMPLE_SIZE,
+        desired_runtime=target_runtime,
+        # TODO(crbug.com/1275620): Replace with
+        # service_account.default().get_email()
+        ignore_cl_owner=_join_sql_collection([
+            'chromium-autosharder@chops-service-accounts.iam.gserviceaccount.com'
+        ]),
+        exclude_test_suites=_join_sql_collection(TEST_SUITE_EXCLUDE_SET),
+        exclude_builders=_join_sql_collection(BUILDER_EXCLUDE_SET),
+        exclude_builder_suites=_join_sql_collection([
+            f'{builder}:{suite}'
+            for builder, suite in BUILDER_TEST_SUITE_EXCLUDE_DICT.items()
+        ]),
+    )
+    return run_query(api, query)
+
+
+def query_cq_builders(api):
+  with api.step.nest('query cq builders'):
+    query_tmpl = api.file.read_text('read_query',
+                                    api.resource('query_cq_builders.sql.tmpl'))
+    query = query_tmpl.format(
+        builders_project='chrome-trooper-analytics',
+        builders_dataset='metrics',
+    )
+    rows = run_query(api, query)
+    return [row['builder'] for row in rows]
+
+
+def _prune_builders(api, data):
+  cq_builders = query_cq_builders(api)
+  data_copy = copy.deepcopy(data)
+  for builder_group_name, builder_group in data_copy.items():
+    for ci_builder_name, ci_builder in builder_group.items():
+      for test_suite_name, test_suite in ci_builder.items():
+        try_builder = test_suite['try_builder']
+        if try_builder not in cq_builders:
+          del data[builder_group_name][ci_builder_name][test_suite_name]
+      if len(data[builder_group_name][ci_builder_name]) == 0:
+        del data[builder_group_name][ci_builder_name]
+    if len(data[builder_group_name]) == 0:
+      del data[builder_group_name]
+
+
 def GenTests(api):
   # Simulate running on a Monday
   current_timestamp = int(datetime.datetime(2023, 7, 3).timestamp())
@@ -214,26 +592,755 @@ def GenTests(api):
   autoshard_exceptions_json_path = api.path.cache_dir.joinpath(
       'builder', 'src', 'testing', 'buildbot', 'autoshard_exceptions.json')
 
+  def create_durations_entry(
+      waterfall_builder_group,
+      waterfall_builder_name,
+      try_builder,
+      test_suite,
+      **kwargs,
+  ):
+    return {
+        'waterfall_builder_group': waterfall_builder_group,
+        'waterfall_builder_name': waterfall_builder_name,
+        'try_builder': try_builder,
+        'test_suite': test_suite,
+        'shard_count': 10,
+        'p50_pending_time_sec': 1,
+        'p90_pending_time_sec': 231,
+        'avg_pending_time_sec': 65,
+        'avg_task_setup_overhead_sec': 27,
+        'percentile_duration_minutes': 20,
+        'sample_size': 9508,
+        **kwargs,
+    }
+
+  def create_overhead_entry(
+      waterfall_builder_group,
+      waterfall_builder_name,
+      try_builder,
+      test_suite,
+      **kwargs,
+  ):
+    return {
+        'test_suite': test_suite,
+        'try_builder': try_builder,
+        'waterfall_builder_group': waterfall_builder_group,
+        'waterfall_builder_name': waterfall_builder_name,
+        'p50_task_setup_duration_sec': 70,
+        'p50_test_harness_overhead_sec': 100,
+        'normally_assigned_shard_count': 10,
+        'experimental_shard_count': 11,
+        **kwargs,
+    }
+
+  def create_average_builds_per_hour(try_builder, avg_count=80):
+    return {
+        'try_builder': try_builder,
+        'avg_count': avg_count,
+    }
+
+  def create_cq_builder(try_builder):
+    return {
+        'builder': try_builder,
+    }
+
+  def boilerplate(durations,
+                  overheads,
+                  avg_builds_per_hour,
+                  cq_builders,
+                  current_exceptions=None):
+
+    test_data = [
+        api.properties(target_runtime=15.0),
+        api.override_step_data(
+            'gerrit get last merged change',
+            api.json.output([{
+                'subject':
+                    'Autosharder CL',
+                '_number':
+                    '12345',
+                'updated':
+                    datetime.datetime(2023, 7,
+                                      1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
+            }]),
+        ),
+        api.path.exists(autoshard_exceptions_json_path),
+        api.override_step_data(
+            'gerrit get active changes',
+            stdout=api.raw_io.output_text(''),
+        ),
+        api.time.seed(current_timestamp),
+    ]
+
+    test_data.append(
+        api.override_step_data(
+            'read current exceptions file',
+            api.file.read_json(
+                current_exceptions or {
+                    'chromium.builder_group': {
+                        'builder_name': {
+                            'fake_test_suite': {
+                                'try_builder': 'linux-rel',
+                                'shards': 4,
+                            }
+                        }
+                    },
+                })))
+
+    if durations:
+      test_data.append(
+          api.override_step_data(
+              'query durations.query',
+              stdout=api.raw_io.output_text(api.json.dumps(durations))))
+    if overheads:
+      test_data.append(
+          api.override_step_data(
+              'query overheads.query',
+              stdout=api.raw_io.output_text(api.json.dumps(overheads))))
+    if avg_builds_per_hour:
+      test_data.append(
+          api.override_step_data(
+              'query average builds per hour.query',
+              stdout=api.raw_io.output_text(
+                  api.json.dumps(avg_builds_per_hour))))
+    if cq_builders:
+      test_data.append(
+          api.override_step_data(
+              'query cq builders.query',
+              stdout=api.raw_io.output_text(api.json.dumps(cq_builders))))
+    return sum(test_data, api.empty_test_data())
+
+  def check_exceptions_file_debug(check, steps, builder_group, builder,
+                                  test_suite, key, value):
+    exceptions_json = api.json.loads(
+        steps['write exceptions file'].logs['autoshard_exceptions.json'])
+    check(exceptions_json[builder_group][builder][test_suite]['debug'][key] ==
+          value)
+
+  def check_exceptions_file(check, steps, builder_group, builder, test_suite,
+                            key, value):
+    # Checks that the sharding conclusions from the run match the
+    # provided sharding values.
+    exceptions_json = api.json.loads(
+        steps['write exceptions file'].logs['autoshard_exceptions.json'])
+    check(exceptions_json[builder_group][builder][test_suite][key] == value)
+
+  def check_sharding(check, steps, builder_group, builder, test_suite,
+                     sharding):
+    check_exceptions_file(check, steps, builder_group, builder, test_suite,
+                          'shards', sharding)
+
+  def check_not_sharded(check, steps, builder_group):
+    exceptions_json = api.json.loads(
+        steps['write exceptions file'].logs['autoshard_exceptions.json'])
+
+    check(builder_group not in exceptions_json)
+
   yield api.test(
       'basic',
-      api.time.seed(current_timestamp),
-      api.override_step_data(
-          'gerrit get last merged change',
-          api.json.output([{
-              'subject':
-                  'Autosharder CL',
-              '_number':
-                  '12345',
-              'updated':
-                  datetime.datetime(2023, 7,
-                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
-          }]),
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
       ),
-      api.post_process(post_process.MustRun, 'git cl status'),
-      api.post_process(post_process.DoesNotRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
-      api.post_process(post_process.DoesNotRun, 'git cl set-close'),
-      api.post_process(post_process.DoesNotRun, 'git cl upload'),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.MustRun, 'regenerate targets specs'),
+      api.post_process(post_process.MustRun, 'git cl upload'),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'browser_tests', 15),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'dont_shard_to_1',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  percentile_duration_minutes=5,
+                  shard_count=2,
+              )
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  normally_assigned_shard_count=2,
+                  experimental_shard_count=3,
+                  p50_test_harness_overhead_sec=1,
+              )
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 2,
+                          'try_builder': 'linux-rel',
+                      }
+                  }
+              }
+          }),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.MustRun, 'regenerate targets specs'),
+      api.post_process(post_process.MustRun, 'git cl upload'),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'browser_tests', 2),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'old_shard_in_loopback',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  shard_count=10,
+              ),
+              # This should be ignored because it is picking it up from
+              # a previous sharding. Not the latest
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  percentile_duration_minutes=1000,
+                  shard_count=5,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  normally_assigned_shard_count=10,
+                  experimental_shard_count=11,
+              ),
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  normally_assigned_shard_count=5,
+                  experimental_shard_count=6,
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 10,
+                          'try_builder': 'linux-rel',
+                      }
+                  }
+              }
+          }),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.MustRun, 'regenerate targets specs'),
+      api.post_process(post_process.MustRun, 'git cl upload'),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'browser_tests', 15),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'optimal_shards_less_than_zero',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  percentile_duration_minutes=3.0,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  p50_test_harness_overhead_sec=60 * 4),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+      ),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.MustRun, 'regenerate targets specs'),
+      api.post_process(post_process.MustRun, 'git cl upload'),
+      api.post_process(check_not_sharded, 'chromium.linux'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_multiple_builders_in_group',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              ),
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux GPU Tests',
+                  try_builder='linux-rel',
+                  test_suite='gpu_tests',
+                  shard_count=10,
+                  percentile_duration_minutes=30,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              ),
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux GPU Tests',
+                  try_builder='linux-rel',
+                  test_suite='gpu_tests',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+      ),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'browser_tests', 15),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux GPU Tests',
+                       'gpu_tests', 23),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_merge_existing_output_file',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  percentile_duration_minutes=30,
+                  shard_count=10,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+              create_cq_builder(try_builder='android-try'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 10,
+                          'try_builder': 'linux-rel',
+                      },
+                      'interactive_ui_tests': {
+                          'shards': 3,
+                          'try_builder': 'linux-rel',
+                      }
+                  },
+              },
+              'chromium.android': {
+                  'android-12-x64-rel': {
+                      'webview_instrumentation_test_apk': {
+                          'shards': 11,
+                          'try_builder': 'android-try',
+                      }
+                  }
+              }
+          }),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'browser_tests', 23),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'interactive_ui_tests', 3),
+      api.post_process(check_sharding, 'chromium.android', 'android-12-x64-rel',
+                       'webview_instrumentation_test_apk', 11),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_reduce_shards_already_autosharded',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+                  percentile_duration_minutes=10,
+                  shard_count=15,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+              create_cq_builder(try_builder='android-try'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 15,
+                          'try_builder': 'linux-rel',
+                      },
+                      'interactive_ui_tests': {
+                          'shards': 3,
+                          'try_builder': 'linux-rel',
+                      }
+                  },
+              },
+              'chromium.android': {
+                  'android-12-x64-rel': {
+                      'webview_instrumentation_test_apk': {
+                          'shards': 11,
+                          'try_builder': 'android-try',
+                      }
+                  }
+              }
+          }),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'browser_tests', 10),
+      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
+                       'interactive_ui_tests', 3),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_multiple_overhead_values',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  shard_count=20,
+                  percentile_duration_minutes=20,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  normally_assigned_shard_count=19,
+                  experimental_shard_count=20,
+                  p50_task_setup_duration_sec=30,
+                  p50_test_harness_overhead_sec=60,
+              ),
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  normally_assigned_shard_count=20,
+                  experimental_shard_count=21,
+                  p50_task_setup_duration_sec=30,
+                  p50_test_harness_overhead_sec=120,
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='android-12-x64-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='android-12-x64-rel'),
+          ]),
+      api.post_process(check_exceptions_file_debug, 'chromium.android',
+                       'android-12-x64-rel', 'webview_instrumentation_test_apk',
+                       'test_overhead_min', 2.5),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_reject_suggested_decrease_if_percentile_min_was_close_to_desired',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  shard_count=10,
+                  percentile_duration_minutes=14.5,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='android-12-x64-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='android-12-x64-rel'),
+          ],
+          current_exceptions={
+              'chromium.android': {
+                  'android-12-x64-rel': {
+                      'webview_instrumentation_test_apk': {
+                          'shards': 10,
+                          'try_builder': 'android-12-x64-rel',
+                      }
+                  }
+              }
+          }),
+      api.post_process(check_sharding, 'chromium.android', 'android-12-x64-rel',
+                       'webview_instrumentation_test_apk', 10),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_reject_suggested_decrease_if_simulated_is_too_high',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  shard_count=10,
+                  percentile_duration_minutes=14,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='android-12-x64-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='android-12-x64-rel'),
+          ],
+          current_exceptions={
+              'chromium.android': {
+                  'android-12-x64-rel': {
+                      'webview_instrumentation_test_apk': {
+                          'shards': 10,
+                          'try_builder': 'android-12-x64-rel',
+                      }
+                  }
+              }
+          }),
+      api.post_process(check_sharding, 'chromium.android', 'android-12-x64-rel',
+                       'webview_instrumentation_test_apk', 10),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_not_already_autosharded_decrease',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  shard_count=10,
+                  percentile_duration_minutes=9,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='android-12-x64-rel'),
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='android-12-x64-rel'),
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 10,
+                          'try_builder': 'linux-rel',
+                      }
+                  }
+              },
+          }),
+      api.post_process(check_not_sharded, 'chromium.android'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_not_already_autosharded_increase',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+                  shard_count=10,
+                  percentile_duration_minutes=20,
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.android',
+                  waterfall_builder_name='android-12-x64-rel',
+                  try_builder='android-12-x64-rel',
+                  test_suite='webview_instrumentation_test_apk',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='android-12-x64-rel'),
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='android-12-x64-rel'),
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 10,
+                          'try_builder': 'linux-rel',
+                      }
+                  }
+              },
+          }),
+      api.post_process(check_sharding, 'chromium.android', 'android-12-x64-rel',
+                       'webview_instrumentation_test_apk', 15),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_pruned',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.win',
+                  waterfall_builder_name='Win10 Tests x64',
+                  try_builder='win-rel',
+                  test_suite='browser_tests',
+              ),
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.win',
+                  waterfall_builder_name='Win10 Tests x64',
+                  try_builder='win-rel',
+                  test_suite='browser_tests',
+              ),
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='win-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+          current_exceptions={
+              'chromium.linux': {
+                  'Linux Tests': {
+                      'browser_tests': {
+                          'shards': 10,
+                          'try_builder': 'linux-rel',
+                      }
+                  }
+              },
+              'chromium.win': {
+                  'Win Tests': {
+                      'browser_tests': {
+                          'shards': 10,
+                          'try_builder': 'win-rel',
+                      }
+                  }
+              },
+          }),
+      api.post_process(check_not_sharded, 'chromium.win'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -261,7 +1368,7 @@ def GenTests(api):
           'git diff',
           stdout=api.raw_io.output_text(''),
       ),
-      api.post_process(post_process.MustRun, 'query optimal shards'),
+      api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
@@ -314,7 +1421,7 @@ def GenTests(api):
               '_number': '12347'
           }]),
       ),
-      api.post_process(post_process.DoesNotRun, 'query optimal shards'),
+      api.post_process(post_process.DoesNotRun, 'query durations'),
       api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
@@ -342,7 +1449,7 @@ def GenTests(api):
           'gerrit get active changes',
           stdout=api.raw_io.output_text(''),
       ),
-      api.post_process(post_process.MustRun, 'query optimal shards'),
+      api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.MustRun, 'git cl upload'),
@@ -385,7 +1492,7 @@ def GenTests(api):
           'git cl status',
           stdout=api.raw_io.output_text('dry-run'),
       ),
-      api.post_process(post_process.DoesNotRun, 'query optimal shards'),
+      api.post_process(post_process.DoesNotRun, 'query durations'),
       api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
@@ -420,7 +1527,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text('waiting'),
       ),
       api.post_process(post_process.MustRun, 'git cl set-close'),
-      api.post_process(post_process.MustRun, 'query optimal shards'),
+      api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.MustRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
@@ -452,7 +1559,7 @@ def GenTests(api):
           'git diff',
           stdout=api.raw_io.output_text(''),
       ),
-      api.post_process(post_process.MustRun, 'query optimal shards'),
+      api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
