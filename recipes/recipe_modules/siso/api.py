@@ -65,6 +65,14 @@ class SisoApi(recipe_api.RecipeApi):
     """True if siso is enabled."""
     return self._props.project and not self._disabled
 
+  @property
+  def project(self):
+    return self._props.project
+
+  @property
+  def reapi_instance(self):
+    return self._props.reapi_instance
+
   @contextlib.contextmanager
   def disable(self):
     """Disable Siso module during the context."""

@@ -25,6 +25,10 @@ def RunSteps(api):
   api.gclient.c = src_cfg
   env = {}
   if api.siso.enabled:
+    # for code coverage
+    _ = api.siso.project
+    _ = api.siso.reapi_instance
+
     api.siso.enable_download_remoteexec_cfg_hook()
     api.path.mock_add_paths(
         api.path.join('out', 'Release', 'siso_metrics.json'))
