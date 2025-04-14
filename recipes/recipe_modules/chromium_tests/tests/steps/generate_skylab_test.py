@@ -662,7 +662,7 @@ def GenTests(api):
           test_args='--test-launcher-filter-file=../../testing/buildbot/filter',
           target_name=GTEST_TARGET),
       api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
-      api.step_data('collect skylab results.wait', times_out_after=7201),
+      api.step_data('collect skylab results.wait', times_out_after=7201 + 600),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(

@@ -1374,6 +1374,8 @@ class SkylabGroup(TestGroup):
   def __init__(self, test_suites, result_db):
     super().__init__(test_suites, result_db)
     self.ctp_build_timeout_sec = 3600
+    # Overhead allowed for CTP in secs.
+    self.ctp_overhead_allowed_time_sec = 600
     self.ctp_build_ids = set()
 
   def pre_run(self, api, suffix, include_utr_instruction=False):
@@ -1397,7 +1399,11 @@ class SkylabGroup(TestGroup):
     try:
       api.buildbucket.collect_builds(
           list(self.ctp_build_ids),
-          timeout=self.ctp_build_timeout_sec,
+          # Collect CTP with slightly longer timeout.
+          # CTP cancels child testers with ctp_build_timeout_sec, we should
+          # allow some overhead for CTPs.
+          timeout=self.ctp_build_timeout_sec +
+          self.ctp_overhead_allowed_time_sec,
           step_name='collect skylab results')
     except api.step.StepFailure as err:
       # Perhaps some of the builds have completed, so continue
