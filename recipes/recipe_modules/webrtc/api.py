@@ -217,7 +217,6 @@ class WebRTCApi(recipe_api.RecipeApi):
         source_dir,
         build_dir,
         builder_id,
-        use_reclient=True,
         phase=phase,
         mb_path=source_dir.joinpath('tools_webrtc', 'mb'),
         mb_config_path=mb_config_path,

@@ -21,8 +21,7 @@ class CronetApi(recipe_api.RecipeApi):
       self.m.chromium.run_gn(
           source_dir, build_dir, use_reclient=use_reclient, gn_path=gn_path)
     elif self.m.chromium.c.project_generator.tool == 'mb':
-      self.m.chromium.mb_gen(
-          source_dir, build_dir, builder_id, use_reclient=use_reclient)
+      self.m.chromium.mb_gen(source_dir, build_dir, builder_id)
     return self.m.chromium.compile(
         source_dir, build_dir, targets=targets, use_reclient=use_reclient)
 

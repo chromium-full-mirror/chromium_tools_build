@@ -1390,7 +1390,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                 recursive=False,
                 chromium_config=None,
                 phase=None,
-                use_reclient=True,
                 android_version_code=None,
                 android_version_name=None,
                 gn_args_location=None,
@@ -1429,9 +1428,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     name = name or 'lookup GN args'
     additional_args = ['--recursive' if recursive else '--quiet']
-    lookup_test_data = 'target_cpu = "x86"\n'
-    if use_reclient:
-      lookup_test_data += 'use_remoteexec = true\n'
+    lookup_test_data = 'target_cpu = "x86"\nuse_remoteexec = true\n'
     result = self.run_mb_cmd(
         name,
         'lookup',
@@ -1467,7 +1464,6 @@ class ChromiumApi(recipe_api.RecipeApi):
              name=None,
              mb_path=None,
              mb_config_path=None,
-             use_reclient=True,
              isolated_targets=None,
              phase=None,
              android_version_code=None,
@@ -1517,7 +1513,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         mb_path=mb_path,
         mb_config_path=mb_config_path,
         phase=phase,
-        use_reclient=use_reclient,
         recursive=recursive_lookup,
         android_version_code=android_version_code,
         android_version_name=android_version_name,

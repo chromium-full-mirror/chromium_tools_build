@@ -25,7 +25,7 @@ def RunSteps(api):
       source_dir,
       chromium.BuilderId.create_for_group('test-group', 'test-builder'),
       recursive=api.properties.get('recursive', False),
-      use_reclient=True)
+  )
   expected_gn_args = api.properties.get('expected_gn_args')
   api.assertions.assertEqual(gn_args, expected_gn_args)
 
@@ -33,10 +33,9 @@ def GenTests(api):
   gn_args = '\n'.join((
       'target_cpu = "x86"',
       'target_sysroot = "//build/linux"',
-      'use_reclient = true',
   ))
   expected_step_text = [
-      '<br/>'.join(('target_cpu = "x86"', 'use_reclient = true')),
+      'target_cpu = "x86"',
       'target_sysroot = "//build/linux"',
   ]
 
