@@ -176,6 +176,8 @@ def _RunStepsInternal(api):
         'user.email=commit-bot@chromium.org',
         '-c',
         'user.name=The Commit Bot',
+        '-c',
+        'diff.ignoreSubmodules=all',
         'commit',
         '-a',
         '-m',
