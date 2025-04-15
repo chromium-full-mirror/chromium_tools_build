@@ -214,7 +214,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/boringssl/util/bot/cmake-linux64/bin/cmake",
+      "[CACHE]/builder/boringssl/util/bot/cmake/bin/cmake",
       "-GNinja",
       "-DANDROID_ABI=arm64-v8a",
       "-DANDROID_PLATFORM=android-21",

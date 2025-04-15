@@ -214,7 +214,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/boringssl/util/bot/cmake-linux64/bin/cmake",
+      "[CACHE]/builder/boringssl/util/bot/cmake/bin/cmake",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RelWithAsserts",
       "-DCMAKE_MAKE_PROGRAM=[CACHE]/builder/boringssl/util/bot/ninja/ninja",

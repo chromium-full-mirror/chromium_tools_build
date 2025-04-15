@@ -108,8 +108,6 @@ def _GetHostCMakeArgs(platform, bot_utils):
   if platform.is_win:
     args['CMAKE_ASM_NASM_COMPILER'] = _WindowsCMakeWorkaround(bot_utils /
                                                               'nasm-win32.exe')
-    args['PERL_EXECUTABLE'] = bot_utils.joinpath('perl-win32', 'perl', 'bin',
-                                                 'perl.exe')
   return args
 
 
@@ -283,11 +281,6 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
 
     # Build BoringSSL itself.
     cmake_dir = bot_utils.joinpath('cmake')
-    if not api.path.exists(cmake_dir):
-      # TODO(davidben): Remove this branch when BoringSSL is updated to put
-      # CMake in a platform-independent location.
-      cmake_dir = bot_utils.joinpath('cmake-' +
-                                     _GetHostToolSuffix(api.platform))
     cmake = cmake_dir.joinpath('bin', 'cmake' + _GetHostExeSuffix(api.platform))
     cmake_args = _GetHostCMakeArgs(api.platform, bot_utils)
     cmake_args.update(
@@ -299,12 +292,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir])
 
     with api.defer.context() as defer:
-      # The default Linux build may not depend on the C++ runtime. This is easy
-      # to check when building shared libraries.
-      #
-      # TODO(davidben): Remove the 'linux_shared' check when
-      # check_imported_libraries is set in the config instead.
-      if check_imported_libraries or config.buildername == 'linux_shared':
+      if check_imported_libraries:
         defer(api.step, 'check imported libraries', [
             'go', 'run',
             src.joinpath('util', 'check_imported_libraries.go'),
@@ -439,6 +427,7 @@ def GenTests(api):
           "cmake_args": {
               "BUILD_SHARED_LIBS": "1",
           },
+          "check_imported_libraries": True,
       }),
   ]
   for (buildername, host_platform, props) in tests:
@@ -449,16 +438,6 @@ def GenTests(api):
         mock_go_tests,
         api.properties(**props),
     )
-
-  yield api.test(
-      'new_cmake_location',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      mock_go_tests,
-      api.path.exists(
-          api.path.cache_dir.joinpath('builder', 'boringssl', 'util', 'bot',
-                                      'cmake')),
-  )
 
   yield api.test(
       'check_pregenerated_files',
@@ -519,7 +498,8 @@ def GenTests(api):
       api.platform('linux', 64),
       _CIBuild(api, 'linux_shared'),
       mock_go_tests,
-      api.properties(cmake_args={"BUILD_SHARED_LIBS": "1"}),
+      api.properties(
+          cmake_args={"BUILD_SHARED_LIBS": "1"}, check_imported_libraries=True),
       api.override_step_data('check imported libraries', retcode=1),
       api.expect_status('FAILURE'),
   )

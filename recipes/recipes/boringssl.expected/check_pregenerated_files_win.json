@@ -233,11 +233,10 @@
       "python3",
       "[CACHE]\\builder\\boringssl\\util\\bot\\vs_env.py",
       "x64",
-      "[CACHE]\\builder\\boringssl\\util\\bot\\cmake-win32\\bin\\cmake.exe",
+      "[CACHE]\\builder\\boringssl\\util\\bot\\cmake\\bin\\cmake.exe",
       "-GNinja",
       "-DCMAKE_ASM_NASM_COMPILER=[CACHE]/builder/boringssl/util/bot/nasm-win32.exe",
       "-DCMAKE_MAKE_PROGRAM=[CACHE]\\builder\\boringssl\\util\\bot\\ninja\\ninja",
-      "-DPERL_EXECUTABLE=[CACHE]\\builder\\boringssl\\util\\bot\\perl-win32\\perl\\bin\\perl.exe",
       "[CACHE]\\builder\\boringssl"
     ],
     "cwd": "[CACHE]\\builder\\boringssl\\build",
