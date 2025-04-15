@@ -73,6 +73,12 @@ class SisoApi(recipe_api.RecipeApi):
   def reapi_instance(self):
     return self._props.reapi_instance
 
+  @property
+  def remote_jobs(self):
+    if self._props.remote_jobs:
+      return self._props.remote_jobs
+    return min(20 * self.m.platform.cpu_count, 200)
+
   @contextlib.contextmanager
   def disable(self):
     """Disable Siso module during the context."""
@@ -139,6 +145,8 @@ class SisoApi(recipe_api.RecipeApi):
         self._props.project,
         '--job_id',
         self.m.buildbucket.build.id,
+        '--remote_jobs',
+        self.remote_jobs,
     ])
     if self._props.keep_going:
       cmd.extend(['-k', '0'])
@@ -192,11 +200,6 @@ class SisoApi(recipe_api.RecipeApi):
       cmd.extend([
           '--action_salt',
           self._props.action_salt,
-      ])
-    if self._props.remote_jobs:
-      cmd.extend([
-          '--remote_jobs',
-          self._props.remote_jobs,
       ])
     if self._props.output_local_strategy:
       cmd.extend([
