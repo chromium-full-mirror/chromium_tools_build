@@ -8,7 +8,7 @@ from recipe_engine.config_types import Path
 
 class CronetApi(recipe_api.RecipeApi):
 
-  def build(self, source_dir: Path, *, targets=None, use_reclient=True):
+  def build(self, source_dir: Path, *, targets=None, use_reclient=False):
     builder_id = self.m.chromium.get_builder_id()
     build_dir = self.m.chromium.default_build_dir(source_dir)
     self.m.chromium.runhooks(source_dir, build_dir)
