@@ -225,6 +225,9 @@ _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
 _AddIsolatedTestSpec('android-pixel-fold-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
+_AddIsolatedTestSpec('android-pixel-tangor-perf-cbb', 'android',
+                     'android_arm64_high_end-builder-perf')
+
 # Pixel 9
 _AddIsolatedTestSpec('android-pixel9-perf', 'android',
                      'android_arm64_high_end-builder-perf')
