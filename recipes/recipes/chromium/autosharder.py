@@ -83,75 +83,13 @@ def RunSteps(api, properties):
   """
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
+
   api.chromium_checkout.ensure_checkout()
+  maybe_result = check_run_conditions(api)
+  if maybe_result:
+    return maybe_result
 
-  # Check if it's been at least 7 days since the last merged reshard CL
-  last_merged_change_list = api.gerrit.get_changes(
-      name='get last merged change',
-      host='https://chromium-review.googlesource.com',
-      query_params=[('owner', 'chromium-autosharder'), ('status', 'merged')],
-      limit=1,
-  )
-  if last_merged_change_list:
-    last_merged_date = datetime.datetime.strptime(
-        last_merged_change_list[0]['updated'],
-        '%Y-%m-%d %H:%M:%S.%f000').date()
-    current_date = datetime.date.fromtimestamp(api.time.time())
-    # Only look up to Monday in order to maintain the same cadence when a CL
-    # isn't merged the first time
-    start_of_week = current_date - datetime.timedelta(
-        days=current_date.weekday() % 7)
-    if (last_merged_date >= start_of_week):
-      return result_pb2.RawResult(
-          status=common_pb.SUCCESS,
-          summary_markdown=(
-              'Skipping autosharder CL creation because it has been merged '
-              'this week.'),
-      )
-
-  # Check to see if there's already an active autosharder CL
-  changes = api.gerrit.get_changes(
-      name='get active changes',
-      host='https://chromium-review.googlesource.com',
-      query_params=[('uploader', 'chromium-autosharder'), ('status', 'open')],
-  )
-
-  if changes:
-    if len(changes) > 1:
-      return result_pb2.RawResult(
-          status=common_pb.INFRA_FAILURE,
-          summary_markdown=(
-              'More than one autosharder CL exists. There should only be a max '
-              'of one CL at any time.'),
-      )
-
-    issue_num = changes[0]['_number']
-    with api.context(cwd=api.chromium_checkout.source_dir):
-      status_step = api.git_cl(
-          'status', ['--issue', issue_num, '--field', 'status'],
-          name='git cl status',
-          stdout=api.raw_io.output_text(),
-          step_test_data=lambda: api.raw_io.test_api.stream_output_text(
-              'commit', stream='stdout'))
-      cl_status = status_step.stdout.strip()
-      status_step.presentation.step_text = cl_status
-    # Exit if currently open CL is running a CQ attempt
-    if cl_status in ['dry-run', 'commit']:
-      return result_pb2.RawResult(
-          status=common_pb.SUCCESS,
-          summary_markdown=(
-              'There is already a CL running a CQ attempt or ready '
-              'to submit.'),
-      )
-    # Close CL so we can upload a new one
-    with api.context(cwd=api.chromium_checkout.source_dir):
-      api.git_cl('set-close', ['--issue', issue_num], name='git cl set-close')
-
-  api.git('config', 'user.name', 'autosharder')
-  api.git('branch', '-D', 'autoshard', ok_ret='any')
-  api.git('restore', '--staged', '.')
-  with api.depot_tools.on_path():
-    api.git('new-branch', 'autoshard', '--upstream', 'origin/main')
+  setup_git(api)
 
   potential_autoshard_exceptions_paths = (
       api.chromium_checkout.source_dir.joinpath('infra', 'config', 'targets',
@@ -159,6 +97,7 @@ def RunSteps(api, properties):
       api.chromium_checkout.source_dir.joinpath('testing', 'buildbot',
                                                 'autoshard_exceptions.json'),
   )
+
   for autoshard_exceptions_path in potential_autoshard_exceptions_paths:
     if api.path.exists(autoshard_exceptions_path):
       break
@@ -583,6 +522,82 @@ def _prune_builders(api, data):
         del data[builder_group_name][ci_builder_name]
     if len(data[builder_group_name]) == 0:
       del data[builder_group_name]
+
+
+def check_run_conditions(api):
+  # Check if it's been at least 7 days since the last merged reshard CL
+  last_merged_change_list = api.gerrit.get_changes(
+      name='get last merged change',
+      host='https://chromium-review.googlesource.com',
+      query_params=[('owner', 'chromium-autosharder'), ('status', 'merged')],
+      limit=1,
+  )
+  # TODO(crbug.com/407846444): We need to verify that comments on CLs don't
+  # change the updated timestamp
+  if last_merged_change_list:
+    last_merged_date = datetime.datetime.strptime(
+        last_merged_change_list[0]['updated'],
+        '%Y-%m-%d %H:%M:%S.%f000').date()
+    current_date = datetime.date.fromtimestamp(api.time.time())
+    # Only look up to Monday in order to maintain the same cadence when a CL
+    # isn't merged the first time
+    start_of_week = current_date - datetime.timedelta(
+        days=current_date.weekday())
+    if last_merged_date >= start_of_week:
+      return result_pb2.RawResult(
+          status=common_pb.SUCCESS,
+          summary_markdown=(
+              'Skipping autosharder CL creation because it has been merged '
+              'this week.'),
+      )
+
+  # Check to see if there's already an active autosharder CL
+  changes = api.gerrit.get_changes(
+      name='get active changes',
+      host='https://chromium-review.googlesource.com',
+      query_params=[('uploader', 'chromium-autosharder'), ('status', 'open')],
+  )
+
+  if changes:
+    if len(changes) > 1:
+      return result_pb2.RawResult(
+          status=common_pb.INFRA_FAILURE,
+          summary_markdown=(
+              'More than one autosharder CL exists. There should only be a max '
+              'of one CL at any time.'),
+      )
+
+    issue_num = changes[0]['_number']
+    with api.context(cwd=api.chromium_checkout.source_dir):
+      status_step = api.git_cl(
+          'status', ['--issue', issue_num, '--field', 'status'],
+          name='git cl status',
+          stdout=api.raw_io.output_text(),
+          step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+              'commit', stream='stdout'))
+      cl_status = status_step.stdout.strip()
+      status_step.presentation.step_text = cl_status
+    # Exit if currently open CL is running a CQ attempt
+    if cl_status in ['dry-run', 'commit']:
+      return result_pb2.RawResult(
+          status=common_pb.SUCCESS,
+          summary_markdown=(
+              'There is already a CL running a CQ attempt or ready '
+              'to submit.'),
+      )
+    # Close CL so we can upload a new one
+    with api.context(cwd=api.chromium_checkout.source_dir):
+      api.git_cl('set-close', ['--issue', issue_num], name='git cl set-close')
+
+  return None
+
+
+def setup_git(api):
+  api.git('config', 'user.name', 'autosharder')
+  api.git('branch', '-D', 'autoshard', ok_ret='any')
+  api.git('restore', '--staged', '.')
+  with api.depot_tools.on_path():
+    api.git('new-branch', 'autoshard', '--upstream', 'origin/main')
 
 
 def GenTests(api):
