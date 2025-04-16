@@ -26,7 +26,7 @@ def RunSteps(api):
       source_dir,
       build_dir,
       gn_path=api.properties.get('gn_path'),
-      use_reclient=use_remoteexec)
+      use_remoteexec=use_remoteexec)
 
 
 def GenTests(api):
@@ -84,7 +84,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'reclient',
+      'remoteexec',
       api.properties(build_config='Debug', use_remoteexec=True),
       api.post_process(StepCommandContains, 'gn', [
           '[CACHE]/builder/src/out/Debug',

@@ -45,7 +45,7 @@ def RunSteps(api):
   if libyuv.should_build:
     with libyuv.ensure_sdk():
       api.chromium.run_gn(
-          source_dir, build_dir, use_reclient=libyuv.should_use_reclient)
+          source_dir, build_dir, use_remoteexec=libyuv.should_use_reclient)
       raw_result = api.chromium.compile(
           source_dir, build_dir, use_reclient=libyuv.should_use_reclient)
       if raw_result.status != common_pb.SUCCESS:

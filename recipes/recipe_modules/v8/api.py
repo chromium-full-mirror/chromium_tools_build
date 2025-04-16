@@ -862,7 +862,7 @@ class V8Api(recipe_api.RecipeApi):
         presentation.logs['gn_args'] = self.m.v8_tests.gn_args
       elif self.m.chromium.c.project_generator.tool == 'gn':
         self.m.chromium.run_gn(
-            source_dir, build_dir, use_reclient=self.use_remoteexec)
+            source_dir, build_dir, use_remoteexec=self.use_remoteexec)
 
       raw_result = self.m.chromium.compile(
           source_dir, build_dir, use_reclient=self.use_remoteexec, **kwargs)

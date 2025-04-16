@@ -19,7 +19,7 @@ class CronetApi(recipe_api.RecipeApi):
       if not self.m.path.exists(gn_path):
         gn_path = source_dir / 'third_party/gn/gn'
       self.m.chromium.run_gn(
-          source_dir, build_dir, use_reclient=use_reclient, gn_path=gn_path)
+          source_dir, build_dir, use_remoteexec=use_reclient, gn_path=gn_path)
     elif self.m.chromium.c.project_generator.tool == 'mb':
       self.m.chromium.mb_gen(source_dir, build_dir, builder_id)
     return self.m.chromium.compile(
