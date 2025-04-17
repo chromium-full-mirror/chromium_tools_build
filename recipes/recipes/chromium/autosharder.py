@@ -69,12 +69,18 @@ TEST_SUITE_EXCLUDE_SET = set([
 BUILDER_TEST_SUITE_EXCLUDE_DICT = {}
 
 MIN_SAMPLE_SIZE = 1500
+# The percentile that must meet the target runtime
+PERCENTILE = 80
 
 # TODO(crbug.com/40281184): Replace with queried, per-suite overheads, once
 # infra is set up to support automated overhead measurements.
 # See go/nplus1shardsproposal
-DEFAULT_OVERHEAD_SEC = 60
-ANDROID_OVERHEAD_SEC = 60 * 2
+DEFAULT_OVERHEAD_MIN = 1.0
+ANDROID_OVERHEAD_MIN = 2.0
+
+# Clamp values for test overheads.
+MIN_OVERHEAD_MIN = 0.2
+MAX_OVERHEAD_MIN = 4.0
 
 PROPERTIES = InputProperties
 
@@ -346,12 +352,12 @@ def _calculate_and_filter_optimal_shard_counts(overhead_dict, durations,
       # to reasonable values. At the time of writing this the min and max are
       # around 0.21 and 4.01. Ideally we could use more than one set of
       # shardings to determine this overhead.
-      overhead = max(min(overhead, 4.0), 0.2)
+      overhead = max(min(overhead, MAX_OVERHEAD_MIN), MIN_OVERHEAD_MIN)
     else:
       if 'android' in try_builder:
-        overhead = ANDROID_OVERHEAD_SEC / 60
+        overhead = ANDROID_OVERHEAD_MIN
       else:
-        overhead = DEFAULT_OVERHEAD_SEC / 60
+        overhead = DEFAULT_OVERHEAD_MIN
     r['test_overhead_min'] = overhead
 
     optimal_shard_count = math.ceil(
@@ -481,7 +487,7 @@ def query_durations(
         tasks_dataset='swarming',
         lookback_start_date=lookback_start_date,
         lookback_end_date=lookback_end_date,
-        percentile=80,
+        percentile=PERCENTILE,
         min_sample_size=MIN_SAMPLE_SIZE,
         desired_runtime=target_runtime,
         # TODO(crbug.com/1275620): Replace with
