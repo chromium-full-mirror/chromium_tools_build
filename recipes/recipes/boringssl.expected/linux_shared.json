@@ -282,8 +282,8 @@
       "go",
       "run",
       "[CACHE]/builder/boringssl/util/check_imported_libraries.go",
-      "[CACHE]/builder/boringssl/build/crypto/libcrypto.so",
-      "[CACHE]/builder/boringssl/build/ssl/libssl.so"
+      "[CACHE]/builder/boringssl/build/libcrypto.so",
+      "[CACHE]/builder/boringssl/build/libssl.so"
     ],
     "env": {
       "GOCACHE": "[CACHE]/gocache",

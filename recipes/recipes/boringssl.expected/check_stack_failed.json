@@ -281,7 +281,7 @@
       "go",
       "run",
       "[CACHE]/builder/boringssl/util/check_stack.go",
-      "[CACHE]/builder/boringssl/build/tool/bssl"
+      "[CACHE]/builder/boringssl/build/bssl"
     ],
     "env": {
       "GOCACHE": "[CACHE]/gocache",

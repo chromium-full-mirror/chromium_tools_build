@@ -296,15 +296,15 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
         defer(api.step, 'check imported libraries', [
             'go', 'run',
             src.joinpath('util', 'check_imported_libraries.go'),
-            build_dir.joinpath('crypto', 'libcrypto.so'),
-            build_dir.joinpath('ssl', 'libssl.so')
+            build_dir.joinpath('libcrypto.so'),
+            build_dir.joinpath('libssl.so')
         ])
 
       if check_stack:
         defer(api.step, 'check stack', [
             'go', 'run',
             src.joinpath('util', 'check_stack.go'),
-            build_dir.joinpath('tool', 'bssl')
+            build_dir.joinpath('bssl')
         ])
 
       with api.context(cwd=src):
