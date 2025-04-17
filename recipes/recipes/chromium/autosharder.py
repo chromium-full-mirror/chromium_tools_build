@@ -24,6 +24,7 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
+    'recipe_engine/led',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
@@ -139,30 +140,31 @@ def RunSteps(api, properties):
 
     api.step('//infra/config prod', [src_dir / 'infra/config/main.star'])
 
-  commit_message = COMMIT_MESSAGE.format(api.buildbucket.build.id)
-  api.git('commit', '-a', '-m', 'Autoshard test suites')
-  upload_args = [
-      '--cq-dry-run',
-      '--bypass-hooks',
-      '--enable-auto-submit',
-      '-r',
-      'rubber-stamper@appspot.gserviceaccount.com',
-      '--cc',
-      ','.join([
-          'gatong@google.com',
-          'sshrimp@google.com',
-          'chrome-dev-infra-auto+reviews@google.com',
-      ]),
-      '--send-email',
-  ]
+  if not api.led.led_build:
+    commit_message = COMMIT_MESSAGE.format(api.buildbucket.build.id)
+    api.git('commit', '-a', '-m', 'Autoshard test suites')
+    upload_args = [
+        '--cq-dry-run',
+        '--bypass-hooks',
+        '--enable-auto-submit',
+        '-r',
+        'rubber-stamper@appspot.gserviceaccount.com',
+        '--cc',
+        ','.join([
+            'gatong@google.com',
+            'sshrimp@google.com',
+            'chrome-dev-infra-auto+reviews@google.com',
+        ]),
+        '--send-email',
+    ]
 
-  with api.context(cwd=api.chromium_checkout.source_dir):
-    api.git_cl.upload(commit_message, upload_args, name='git cl upload')
-    api.git_cl(
-        'issue',
-        ['--json', api.json.output()],
-        name='git cl issue',
-    )
+    with api.context(cwd=api.chromium_checkout.source_dir):
+      api.git_cl.upload(commit_message, upload_args, name='git cl upload')
+      api.git_cl(
+          'issue',
+          ['--json', api.json.output()],
+          name='git cl issue',
+      )
 
 
 def calculate_optimal_shards(api, target_runtime):
@@ -525,6 +527,10 @@ def _prune_builders(api, data):
 
 
 def check_run_conditions(api):
+  # If it's a led job, we almost certainly want to run
+  if api.led.led_build:
+    return None
+
   # Check if it's been at least 7 days since the last merged reshard CL
   last_merged_change_list = api.gerrit.get_changes(
       name='get last merged change',
@@ -1356,6 +1362,23 @@ def GenTests(api):
               },
           }),
       api.post_process(check_not_sharded, 'chromium.win'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'led_job',
+      api.properties(**{
+          '$recipe_engine/led': {
+              'shadowed_bucket': 'try',
+          },
+      }),
+      api.time.seed(current_timestamp),
+      api.path.exists(autoshard_exceptions_json_path),
+      api.override_step_data(
+          'git diff',
+          stdout=api.raw_io.output_text(''),
+      ),
+      api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.DropExpectation),
   )
 
