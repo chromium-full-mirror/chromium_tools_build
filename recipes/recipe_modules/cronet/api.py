@@ -8,7 +8,7 @@ from recipe_engine.config_types import Path
 
 class CronetApi(recipe_api.RecipeApi):
 
-  def build(self, source_dir: Path, *, targets=None, use_reclient=False):
+  def build(self, source_dir: Path, *, targets=None):
     builder_id = self.m.chromium.get_builder_id()
     build_dir = self.m.chromium.default_build_dir(source_dir)
     self.m.chromium.runhooks(source_dir, build_dir)
@@ -18,12 +18,10 @@ class CronetApi(recipe_api.RecipeApi):
       gn_path = source_dir / 'buildtools/linux64/gn'
       if not self.m.path.exists(gn_path):
         gn_path = source_dir / 'third_party/gn/gn'
-      self.m.chromium.run_gn(
-          source_dir, build_dir, use_remoteexec=use_reclient, gn_path=gn_path)
+      self.m.chromium.run_gn(source_dir, build_dir, gn_path=gn_path)
     elif self.m.chromium.c.project_generator.tool == 'mb':
       self.m.chromium.mb_gen(source_dir, build_dir, builder_id)
-    return self.m.chromium.compile(
-        source_dir, build_dir, targets=targets, use_reclient=use_reclient)
+    return self.m.chromium.compile(source_dir, build_dir, targets=targets)
 
   def _get_version(self, source_dir: Path) -> str:
     version = self.m.chromium.get_version(source_dir)

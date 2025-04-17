@@ -15,7 +15,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/properties',
     'recipe_engine/runtime',
-    'reclient',
+    'siso',
 ]
 
 BUILDERS = freeze({
@@ -26,7 +26,7 @@ BUILDERS = freeze({
             'TARGET_BITS': 32,
             'TARGET_PLATFORM': 'android',
         },
-        'use_reclient': False,
+        'use_remoteexec': False,
     },
     'gn_test': {
         'kwargs': {
@@ -71,8 +71,7 @@ def RunSteps(api):
   cronet = api.cronet
   cronet.generate_changelist(source_dir)
 
-  use_reclient = builder_config.get('use_reclient', True)
-  raw_result = cronet.build(source_dir, use_reclient=use_reclient)
+  raw_result = cronet.build(source_dir)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -87,7 +86,7 @@ def GenTests(api):
         test_name += '_experimental'
       yield api.test(
           test_name,
-          api.reclient.properties(),
+          api.siso.properties(),
           api.chromium.ci_build(
               builder_group='fake-group',
               builder=builder,
@@ -98,7 +97,7 @@ def GenTests(api):
   # Do these proerties actually ever get set anymore?
   yield api.test(
       'optional_properties',
-      api.reclient.properties(),
+      api.siso.properties(),
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='local_test',
@@ -112,7 +111,7 @@ def GenTests(api):
 
   yield api.test(
       'compile_failure',
-      api.reclient.properties(),
+      api.siso.properties(),
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='local_test',
