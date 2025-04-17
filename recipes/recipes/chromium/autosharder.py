@@ -68,6 +68,8 @@ TEST_SUITE_EXCLUDE_SET = set([
 # Example: {'linux-rel': {'browser_tests'}}
 BUILDER_TEST_SUITE_EXCLUDE_DICT = {}
 
+# Minimum number of non-experimental samples to allow a suite to be
+# resharded
 MIN_SAMPLE_SIZE = 1500
 # The percentile that must meet the target runtime
 PERCENTILE = 80
@@ -188,28 +190,6 @@ def calculate_optimal_shards(api, target_runtime):
       lookback_end_date,
   )
 
-  filtered_durations = []
-  for d in durations:
-    # Filter out durations that don't meet sample size
-    if int(d['sample_size']) < MIN_SAMPLE_SIZE:  # pragma: nocover
-      continue
-
-    builder_group = d['waterfall_builder_group']
-    builder_name = d['waterfall_builder_name']
-    test_suite = d['test_suite']
-
-    excluded_tests = BUILDER_TEST_SUITE_EXCLUDE_DICT.get(d['try_builder'])
-    if (test_suite in TEST_SUITE_EXCLUDE_SET or
-        (excluded_tests and test_suite in excluded_tests) or
-        d['try_builder'] in BUILDER_EXCLUDE_SET):  # pragma: nocover
-      continue
-
-    # Don't bother resharding suites that are running < 1 minute faster
-    # than desired.
-    if abs(float(d['percentile_duration_minutes']) - float(target_runtime)) < 1:
-      continue
-    filtered_durations.append(d)
-
   overhead_dict = query_overheads(
       api,
       lookback_start_date,
@@ -217,7 +197,7 @@ def calculate_optimal_shards(api, target_runtime):
   )
 
   durations_with_optimal_shards = _calculate_and_filter_optimal_shard_counts(
-      overhead_dict, filtered_durations, target_runtime)
+      overhead_dict, durations, target_runtime)
 
   durations_with_optimal_shards_and_bot_hours = (
       _calculate_estimated_bot_hour_cost(
@@ -489,7 +469,7 @@ def query_durations(
         lookback_end_date=lookback_end_date,
         percentile=PERCENTILE,
         min_sample_size=MIN_SAMPLE_SIZE,
-        desired_runtime=target_runtime,
+        target_runtime=target_runtime,
         # TODO(crbug.com/1275620): Replace with
         # service_account.default().get_email()
         ignore_cl_owner=_join_sql_collection([
