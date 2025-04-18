@@ -238,8 +238,9 @@ solutions = [
               }
           },
           swarming_dimensions=[
-              'changed_dim:new-value',
-              'removed_dim:',
+              'changed_dim=new-value',
+              'removed_dim=',
+              'equal_value=foo=bar',
           ]),
       api.platform('linux', 64),
       api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
@@ -248,6 +249,8 @@ solutions = [
                        'unchanged_dim', 'baz'),
       api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
                        'removed_dim', None),
+      api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
+                       'equal_value', 'foo=bar'),
       api.post_process(post_process.DropExpectation),
   )
 
