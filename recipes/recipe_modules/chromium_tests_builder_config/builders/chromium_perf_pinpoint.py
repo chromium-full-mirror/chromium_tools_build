@@ -253,7 +253,17 @@ _AddIsolatedTestSpec(
     'win-arm64-builder-perf',
     target_arch='arm')
 _AddIsolatedTestSpec(
+    'win-arm64-snapdragon-plus-perf-cbb',
+    'win',
+    'win-arm64-builder-perf',
+    target_arch='arm')
+_AddIsolatedTestSpec(
     'win-arm64-snapdragon-elite-perf',
+    'win',
+    'win-arm64-builder-perf',
+    target_arch='arm')
+_AddIsolatedTestSpec(
+    'win-arm64-snapdragon-elite-perf-cbb',
     'win',
     'win-arm64-builder-perf',
     target_arch='arm')
