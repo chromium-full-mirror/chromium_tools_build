@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipe_modules.build.chromium_utr;
 
-// Next ID: 12
+// Next ID: 13
 message Request {
   // Required, the directory where chromium is checked out not including the src
   // dir
@@ -73,6 +73,12 @@ message Request {
 
   // Any extra cmd-line flags to pass to the tests (eg: "--gtest_filter=...")
   repeated string additional_test_args = 8;
+
+  // Custom swarming dimensions to overwrite all tests with in this run
+  // These are merged with the tests' existing dimensions. These should
+  // be in the form of '{dimension}:{value}'. To remove the value of a
+  // dimension, include the dimension with no value.
+  repeated string swarming_dimensions = 12;
 
   // An optional swarming task id to attempt to reuse the cas digest of
   string reuse_swarming_task = 9;

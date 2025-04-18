@@ -204,6 +204,53 @@ solutions = [
       api.post_process(post_process.DropExpectation),
   )
 
+  def _check_dimension(check, step_odict, step, key, value):
+    # Check if the trigger step uses (or in the case of a None
+    # value, does not use) the provided dimension
+    trigger_step = step_odict[step]
+    json_flag_index = trigger_step.cmd.index('-json-input')
+    check(json_flag_index < len(trigger_step.cmd))
+    json_input = api.json.loads(trigger_step.cmd[json_flag_index + 1])
+    dims = json_input['requests'][0]['task_slices'][0]['properties'][
+        'dimensions']
+    entry = {'key': key, 'value': value}
+    if value == None:
+      check(entry not in dims)
+    else:
+      check(entry in dims)
+
+  yield api.test(
+      'custom_dimensions',
+      boilerplate(
+          target_spec={
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'changed_dim': 'foo',
+                              'removed_dim': 'bar',
+                              'unchanged_dim': 'baz',
+                          },
+                      },
+                  }],
+              }
+          },
+          swarming_dimensions=[
+              'changed_dim:new-value',
+              'removed_dim:',
+          ]),
+      api.platform('linux', 64),
+      api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
+                       'changed_dim', 'new-value'),
+      api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
+                       'unchanged_dim', 'baz'),
+      api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
+                       'removed_dim', None),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'skylab',
       boilerplate(
