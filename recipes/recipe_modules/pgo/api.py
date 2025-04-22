@@ -10,15 +10,20 @@ from recipe_engine.config_types import Path
 
 class PgoApi(recipe_api.RecipeApi):
 
-  GS_BUCKET = 'chromium-optimization-profiles'
-  GS_BUCKET_PATH = 'pgo_profiles'
-  SUPPORTED_CROS_ARCH = ['amd64-generic', 'arm-generic', 'arm64-generic']
+  # This is used by main_waterfall_steps.py and trybot_steps.py.
   TEMP_PROFDATA_FILENAME = 'pgo_final_aggregate.profdata'
+
+  # These are private to this file.
+  _GS_BUCKET = 'chromium-optimization-profiles'
+  _GS_BUCKET_PATH = 'pgo_profiles'
+  _SUPPORTED_CROS_ARCH = ['amd64-generic', 'arm-generic', 'arm64-generic']
 
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._use_pgo = properties.use_pgo
     self._skip_profile_upload = properties.skip_profile_upload
+    self._gs_bucket_override = properties.gs_bucket_override
+    self._gs_bucket_path_override = properties.gs_bucket_path_override
 
   @property
   def using_pgo(self):
@@ -36,6 +41,22 @@ class PgoApi(recipe_api.RecipeApi):
     into src.
     """
     return self._skip_profile_upload
+
+  @property
+  def gs_bucket(self):
+    """The GS bucket name to use.
+
+    Can be overridden by the gs_bucket_override property.
+    """
+    return self._gs_bucket_override or self._GS_BUCKET
+
+  @property
+  def gs_bucket_path(self):
+    """The GS bucket path to use.
+
+    Can be overridden by the gs_bucket_path_override property.
+    """
+    return self._gs_bucket_path_override or self._GS_BUCKET_PATH
 
   @property
   def branch(self):
@@ -150,7 +171,7 @@ class PgoApi(recipe_api.RecipeApi):
       # all the boards, but we can only train with one. we may look into
       # training across multiple boards and merging into one, or train for the
       # most popular board to maximize perf.
-      for arch_def in self.SUPPORTED_CROS_ARCH:
+      for arch_def in self._SUPPORTED_CROS_ARCH:
         if arch_def in target_cros_boards:
           platform += '-' + arch_def
 
@@ -309,8 +330,8 @@ class PgoApi(recipe_api.RecipeApi):
 
       # Reset profdata_artifact to the updated naming
       self.m.profiles.upload(
-          self.GS_BUCKET,
-          '%s/%s' % (self.GS_BUCKET_PATH, new_filename),
+          self.gs_bucket,
+          '%s/%s' % (self.gs_bucket_path, new_filename),
           new_filepath,
           args=[
               '-Z',

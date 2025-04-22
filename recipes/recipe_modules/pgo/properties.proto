@@ -12,6 +12,10 @@ message InputProperties {
   // merge + upload.
   bool use_pgo = 1;
 
-  /// Bypasses uploading the profile to GS such that it's not rolled into src.
+  // Bypasses uploading the profile to GS such that it's not rolled into src.
   bool skip_profile_upload = 2;
+
+  // Allows overriding cloud storage buckets for testing.
+  string gs_bucket_override = 3;
+  string gs_bucket_path_override = 4;
 }
