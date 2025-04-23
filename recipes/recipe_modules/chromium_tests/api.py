@@ -1210,7 +1210,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                            update_step,
                            builder_config,
                            additional_properties=None,
-                           commit=None):
+                           commit=None,
+                           to_trigger: Iterable[str] | None = None):
     """Trigger builders that configure the current builder as parent.
 
     Args:
@@ -1234,9 +1235,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       * commit - The GitilesCommit message to set on the input of the
         triggered builds. If not provided,
         buildbucket.build.output.gitiles_commit will be used.
+      * to_trigger - An iterable of builder names that should be triggered
+        instead of predefined child builders as specified by builder_config.
     """
     with self.m.context(infra_steps=True):
-      to_trigger = self._get_builders_to_trigger(builder_id, builder_config)
+      if not to_trigger:
+        to_trigger = self._get_builders_to_trigger(builder_id, builder_config)
       if not to_trigger:
         return
 
