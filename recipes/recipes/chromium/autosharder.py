@@ -190,14 +190,18 @@ def calculate_optimal_shards(api, target_runtime):
       lookback_end_date,
   )
 
-  overhead_dict = query_overheads(
+  overheads = query_overheads(
       api,
       lookback_start_date,
       lookback_end_date,
   )
 
-  durations_with_optimal_shards = _calculate_and_filter_optimal_shard_counts(
-      overhead_dict, durations, target_runtime)
+  durations_with_optimal_shards = _calculate_optimal_shard_counts(
+      api,
+      overheads,
+      durations,
+      target_runtime,
+  )
 
   durations_with_optimal_shards_and_bot_hours = (
       _calculate_estimated_bot_hour_cost(
@@ -316,44 +320,88 @@ def _meets_optimal_shard_count_and_simulated_duration_requirements(
   return True
 
 
-def _calculate_and_filter_optimal_shard_counts(overhead_dict, durations,
-                                               desired_runtime):
-  filtered_durations = []
-  for r in durations:
-    try_builder = r['try_builder']
-    test_suite = r['test_suite']
-    shard_count = int(r['shard_count'])
+def _calculate_optimal_shard_counts(
+    api,
+    overheads,
+    durations,
+    target_runtime,
+):
 
-    overhead = overhead_dict.get(try_builder, {}).get(test_suite,
-                                                      {}).get(shard_count)
+  def _get_overhead(builder, suite, shard_count, overheads):
+    overhead = overheads.get(builder, {}).get(suite, {}).get(shard_count)
     if overhead:
       # Suites can be in a bad sharding. Since we only use one set of shards
       # (n and n+1) this can create a bad value for the overhead so clamp it
       # to reasonable values. At the time of writing this the min and max are
       # around 0.21 and 4.01. Ideally we could use more than one set of
       # shardings to determine this overhead.
-      overhead = max(min(overhead, MAX_OVERHEAD_MIN), MIN_OVERHEAD_MIN)
-    else:
-      if 'android' in try_builder:
-        overhead = ANDROID_OVERHEAD_MIN
-      else:
-        overhead = DEFAULT_OVERHEAD_MIN
-    r['test_overhead_min'] = overhead
+      return max(min(overhead, MAX_OVERHEAD_MIN), MIN_OVERHEAD_MIN)
 
-    optimal_shard_count = math.ceil(
-        (float(r['percentile_duration_minutes']) * shard_count -
-         overhead * shard_count) / (desired_runtime - overhead))
-    if optimal_shard_count <= 0:
-      continue
-    r['optimal_shard_count'] = optimal_shard_count
+    if 'android' in builder:
+      return ANDROID_OVERHEAD_MIN
+    return DEFAULT_OVERHEAD_MIN
 
-    overhead_change = (optimal_shard_count - shard_count) * overhead
-    simulated_max_shard_duration = round(
-        ((float(r['percentile_duration_minutes']) * shard_count +
-          overhead_change) / optimal_shard_count), 2)
-    r['simulated_max_shard_duration'] = simulated_max_shard_duration
+  def _calculate_optimal_shard_count(
+      api,
+      current_shard_count,
+      current_runtime,
+      target_runtime,
+      overhead,
+  ):
 
-    filtered_durations.append(r)
+    optimal_shard_count = (current_shard_count *
+                           (current_runtime - overhead)) / (
+                               target_runtime - overhead)
+    # When the overhead is poorly measured it can lead to the shard
+    # count being < 1 (e.g. the default android overhead is used
+    # on a suite taking < 2 min). In these cases force count to 1.
+    integer_optimal_shard_count = max(math.ceil(optimal_shard_count), 1)
+    api.step.empty(
+        'optimal shard calculation',
+        step_text=f""" Calculating optimal shards:
+(current_shard_count * (current_runtime - overhead)) / (target_runtime - overhead))
+
+current_runtime = {current_runtime}
+current_shard_count = {current_shard_count}
+target_runtime = {target_runtime}
+overhead = {overhead}
+
+optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}""")
+    return integer_optimal_shard_count
+
+  with api.step.nest('calculate optimal shards'):
+    filtered_durations = []
+    for row in durations:
+      try_builder = row['try_builder']
+      test_suite = row['test_suite']
+      current_shard_count = int(row['shard_count'])
+      current_runtime = float(row['percentile_duration_minutes'])
+
+      with api.step.nest(f'{try_builder}:{test_suite}'):
+
+        overhead = _get_overhead(try_builder, test_suite, current_shard_count,
+                                 overheads)
+
+        optimal_shard_count = _calculate_optimal_shard_count(
+            api, current_shard_count, current_runtime, target_runtime, overhead)
+
+        row['optimal_shard_count'] = optimal_shard_count
+
+        # Double check we have successfully sharded below the desired runtime.
+        # This should be impossible as adding shards should only reduce runtimes
+        overhead_change = (optimal_shard_count - current_shard_count) * overhead
+        simulated_max_shard_duration = (
+            (current_runtime * current_shard_count + overhead_change) /
+            optimal_shard_count)
+
+        assert simulated_max_shard_duration <= target_runtime, (
+            f'Simulated runtime {simulated_max_shard_duration} is greater '
+            f'than the desired runtime {target_runtime}')
+
+        row['simulated_max_shard_duration'] = simulated_max_shard_duration
+        row['test_overhead_min'] = overhead
+
+        filtered_durations.append(row)
   return filtered_durations
 
 
