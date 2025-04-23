@@ -46,6 +46,6 @@ builds_per_day_peak_hour_count AS (
 # be used at the end to estimate bot cost per hour.
 SELECT
   try_builder,
-  ROUND(avg(count)) avg_count
+  CAST(CEIL(avg(count)) as INTEGER) avg_count,
 FROM builds_per_day_peak_hour_count
 GROUP BY try_builder

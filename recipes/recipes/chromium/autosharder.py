@@ -100,7 +100,7 @@ def RunSteps(api, properties):
 
   setup_git(api)
 
-  calculate_optimal_shards(api, properties.target_runtime)
+  _calculate_optimal_shards(api, properties.target_runtime)
 
   def step_test_data():
     return api.raw_io.test_api.stream_output_text(
@@ -148,7 +148,7 @@ def RunSteps(api, properties):
       )
 
 
-def calculate_optimal_shards(api, target_runtime):
+def _calculate_optimal_shards(api, target_runtime):
   api.step('which bq', ['which', 'bq'])
 
   today = api.time.utcnow()
@@ -156,14 +156,20 @@ def calculate_optimal_shards(api, target_runtime):
   lookback_start_date = start.strftime('%Y-%m-%d')
   lookback_end_date = today.strftime('%Y-%m-%d')
 
-  durations = query_durations(
+  durations = _query_durations(
       api,
       target_runtime,
       lookback_start_date,
       lookback_end_date,
   )
 
-  overheads = query_overheads(
+  overheads = _query_overheads(
+      api,
+      lookback_start_date,
+      lookback_end_date,
+  )
+
+  builds_per_hour = _query_avg_builds_per_hour(
       api,
       lookback_start_date,
       lookback_end_date,
@@ -174,15 +180,8 @@ def calculate_optimal_shards(api, target_runtime):
       overheads,
       durations,
       target_runtime,
+      builds_per_hour,
   )
-
-  durations_with_optimal_shards_and_bot_hours = (
-      _calculate_estimated_bot_hour_cost(
-          api,
-          durations=durations_with_optimal_shards,
-          lookback_start_date=lookback_start_date,
-          lookback_end_date=lookback_end_date,
-      ))
 
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
       'infra', 'config', 'targets', 'autoshard_exceptions.json')
@@ -190,7 +189,7 @@ def calculate_optimal_shards(api, target_runtime):
       'read current exceptions file', exceptions_file, test_data={})
 
   new_data = {}
-  for r in durations_with_optimal_shards_and_bot_hours:
+  for r in durations_with_optimal_shards:
     builder_group = r['waterfall_builder_group']
     builder_name = r['waterfall_builder_name']
     test_suite = r['test_suite']
@@ -298,6 +297,7 @@ def _calculate_optimal_shard_counts(
     overheads,
     durations,
     target_runtime,
+    builds_per_hour,
 ):
 
   def _get_overhead(builder, suite, shard_count, overheads):
@@ -354,6 +354,7 @@ optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}""")
 
         overhead = _get_overhead(try_builder, test_suite, current_shard_count,
                                  overheads)
+        row['test_overhead_min'] = overhead
 
         optimal_shard_count = _calculate_optimal_shard_count(
             api, current_shard_count, current_runtime, target_runtime, overhead)
@@ -372,38 +373,23 @@ optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}""")
             f'than the desired runtime {target_runtime}')
 
         row['simulated_max_shard_duration'] = simulated_max_shard_duration
-        row['test_overhead_min'] = overhead
+
+        # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
+        estimated_bot_hour_cost = round(
+            (optimal_shard_count - current_shard_count) * (overhead / 60.0) *
+            builds_per_hour[try_builder], 2)
+        row['avg_num_builds_per_peak_hour'] = builds_per_hour[try_builder]
+        row['estimated_bot_hour_cost'] = estimated_bot_hour_cost
+        api.step.empty(
+            'estimated_cost',
+            step_text=f'Estimated change in bot hours: {estimated_bot_hour_cost}'
+        )
 
         filtered_durations.append(row)
   return filtered_durations
 
 
-def _calculate_estimated_bot_hour_cost(api, durations, lookback_start_date,
-                                       lookback_end_date):
-  results = _query_avg_num_builds_per_hour(
-      api,
-      lookback_start_date=lookback_start_date,
-      lookback_end_date=lookback_end_date,
-  )
-  avg_num_builds_per_hour = {
-      r['try_builder']: int(math.ceil(float(r['avg_count']))) for r in results
-  }
-
-  updated_durations = []
-  # Add estimated_bot_hour_cost and avg_num_builds_per_peak_hour
-  for r in durations:
-    try_builder = r['try_builder']
-    shard_count = int(r['shard_count'])
-
-    r['estimated_bot_hour_cost'] = round(
-        (r['optimal_shard_count'] - shard_count) *
-        (r['test_overhead_min'] / 60) * avg_num_builds_per_hour[try_builder], 2)
-    r['avg_num_builds_per_peak_hour'] = avg_num_builds_per_hour[try_builder]
-    updated_durations.append(r)
-  return updated_durations
-
-
-def run_query(api, query):
+def _run_query(api, query):
 
   result = api.step(
       'query', [
@@ -421,7 +407,7 @@ def run_query(api, query):
   return result.stdout
 
 
-def _query_avg_num_builds_per_hour(
+def _query_avg_builds_per_hour(
     api,
     lookback_start_date,
     lookback_end_date,
@@ -436,10 +422,14 @@ def _query_avg_num_builds_per_hour(
         lookback_start_date=lookback_start_date,
         lookback_end_date=lookback_end_date,
     )
-    return run_query(api, query)
+    result = _run_query(api, query)
+    builder_to_builds_per_hour = {
+        row['try_builder']: int(row['avg_count']) for row in result
+    }
+    return builder_to_builds_per_hour
 
 
-def query_overheads(
+def _query_overheads(
     api,
     lookback_start_date,
     lookback_end_date,
@@ -456,7 +446,7 @@ def query_overheads(
         lookback_start_date=lookback_start_date,
         lookback_end_date=lookback_end_date,
     )
-    rows = run_query(api, query)
+    rows = _run_query(api, query)
     trybuilder_to_overheads = {}
     for row in rows:
       sharding = int(row['normally_assigned_shard_count'])
@@ -468,7 +458,7 @@ def query_overheads(
     return trybuilder_to_overheads
 
 
-def query_durations(
+def _query_durations(
     api,
     target_runtime,
     lookback_start_date,
@@ -503,10 +493,10 @@ def query_durations(
             for builder, suite in BUILDER_TEST_SUITE_EXCLUDE_DICT.items()
         ]),
     )
-    return run_query(api, query)
+    return _run_query(api, query)
 
 
-def query_cq_builders(api):
+def _query_cq_builders(api):
   with api.step.nest('query cq builders'):
     query_tmpl = api.file.read_text('read_query',
                                     api.resource('query_cq_builders.sql.tmpl'))
@@ -514,12 +504,12 @@ def query_cq_builders(api):
         builders_project='chrome-trooper-analytics',
         builders_dataset='metrics',
     )
-    rows = run_query(api, query)
+    rows = _run_query(api, query)
     return [row['builder'] for row in rows]
 
 
 def _prune_builders(api, data):
-  cq_builders = query_cq_builders(api)
+  cq_builders = _query_cq_builders(api)
   data_copy = copy.deepcopy(data)
   for builder_group_name, builder_group in data_copy.items():
     for ci_builder_name, ci_builder in builder_group.items():
