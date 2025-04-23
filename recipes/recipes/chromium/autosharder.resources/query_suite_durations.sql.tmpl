@@ -40,6 +40,11 @@ deduped_tasks AS (
       FROM UNNEST(request.tags) tag
       WHERE REGEXP_CONTAINS(tag, 'test_suite:')
     ) AS test_suite,
+    EXISTS(
+      SELECT 0
+      FROM UNNEST(request.tags) tag
+      WHERE STARTS_WITH(tag, 'experimental_shard_count:')
+    ) AS is_experiment,
     # Excludes task setup overhead
     duration AS running_duration_sec,
     TIMESTAMP_DIFF(
@@ -75,6 +80,8 @@ tasks AS (
 durations_per_build_and_suite AS (
   SELECT
     test_suite,
+    MAX(start_time) as most_recent,
+    ANY_VALUE(is_experiment) as is_experiment,
     ANY_VALUE(try_builder) try_builder,
     ANY_VALUE(waterfall_builder_group) waterfall_builder_group,
     ANY_VALUE(waterfall_builder_name) waterfall_builder_name,
@@ -91,6 +98,8 @@ durations_per_build_and_suite AS (
 # waterfall_builder_group, waterfall_builder_name, and shard_count
 suite_and_builder_durations AS (
   SELECT
+    MAX(most_recent) as most_recent,
+    ANY_VALUE(is_experiment) as is_experiment,
     COUNT(*) sample_size,
     d.test_suite,
     d.try_builder,
@@ -118,23 +127,25 @@ suite_and_builder_durations AS (
     shard_count
   HAVING
     # Avoid using low volume shardings, these could come from CLs trying to
-    # implement sharding for instance
+    # implement sharding for instance. Even if the non-experimental builds
+    # meets its threshold, we don't want to use too few experimental builds
     COUNT(*) > 10
 ),
 # If a suite had its shards updated within the past lookback_days, there
 # will be multiple rows for multiple shard counts. To be able to know which
-# one to use, we will attach a "most_used_shard_count" to indicate what
-# shard_count is currently being used (a best guess).
-most_used_shard_counts AS (
+# one to use, we will use the most recent non experimental sharding that meets
+# the sample_size and is not experimental.
+most_recent_shard_counts AS (
   SELECT
     ARRAY_AGG(
-      (shard_count, sample_size) ORDER BY sample_size DESC)[
+      (shard_count, sample_size) ORDER BY most_recent DESC)[
       OFFSET(0)][OFFSET(0)]
-      AS most_used_shard_count,
+      AS most_recent_shard_count,
     test_suite,
     try_builder
   FROM suite_and_builder_durations
   WHERE sample_size >= {min_sample_size}
+    AND NOT is_experiment
   GROUP BY test_suite, try_builder
 )
 SELECT
@@ -142,11 +153,11 @@ SELECT
 FROM
   suite_and_builder_durations r
   # Only look at the most recent durations
-  JOIN most_used_shard_counts m
+  JOIN most_recent_shard_counts m
     ON (
       r.try_builder = m.try_builder
       AND r.test_suite = m.test_suite
-      AND r.shard_count = m.most_used_shard_count)
+      AND r.shard_count = m.most_recent_shard_count)
 WHERE
   # Don't bother resharding suites that are running < 1 minute faster
   # than desired.
