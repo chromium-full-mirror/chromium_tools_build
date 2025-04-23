@@ -5,6 +5,7 @@
 import copy
 import datetime
 import math
+import textwrap
 from recipe_engine import post_process
 from recipe_engine import recipe_api
 
@@ -175,121 +176,64 @@ def _calculate_optimal_shards(api, target_runtime):
       lookback_end_date,
   )
 
+  exceptions_file = api.chromium_checkout.source_dir.joinpath(
+      'infra', 'config', 'targets', 'autoshard_exceptions.json')
+  shard_exceptions = api.m.file.read_json(
+      'read current exceptions file', exceptions_file, test_data={})
+
   durations_with_optimal_shards = _calculate_optimal_shard_counts(
       api,
       overheads,
       durations,
       target_runtime,
+      shard_exceptions,
       builds_per_hour,
   )
 
-  exceptions_file = api.chromium_checkout.source_dir.joinpath(
-      'infra', 'config', 'targets', 'autoshard_exceptions.json')
-  data = api.m.file.read_json(
-      'read current exceptions file', exceptions_file, test_data={})
-
-  new_data = {}
-  for r in durations_with_optimal_shards:
-    builder_group = r['waterfall_builder_group']
-    builder_name = r['waterfall_builder_name']
-    test_suite = r['test_suite']
-    if not _meets_optimal_shard_count_and_simulated_duration_requirements(
-        r, data, target_runtime):
-      continue
-    shard_dict = {
+  # Update the file contents
+  for row in durations_with_optimal_shards:
+    builder_group = row['waterfall_builder_group']
+    builder_name = row['waterfall_builder_name']
+    test_suite = row['test_suite']
+    suite_exception = {
         test_suite: {
-            'shards': r['optimal_shard_count'],
-            'try_builder': r['try_builder'],
+            'shards': row['optimal_shard_count'],
+            'try_builder': row['try_builder'],
         },
     }
     debug_dict = {
         'avg_num_builds_per_peak_hour':
-            r['avg_num_builds_per_peak_hour'],
+            row['avg_num_builds_per_peak_hour'],
         'estimated_bot_hour_delta':
-            r['estimated_bot_hour_cost'],
+            row['estimated_bot_hour_cost'],
         'prev_avg_pending_time_sec':
-            float(r['avg_pending_time_sec']),
+            float(row['avg_pending_time_sec']),
         'prev_p50_pending_time_sec':
-            float(r['p50_pending_time_sec']),
+            float(row['p50_pending_time_sec']),
         'prev_p90_pending_time_sec':
-            float(r['p90_pending_time_sec']),
+            float(row['p90_pending_time_sec']),
         'prev_percentile_duration_minutes':
-            float(r['percentile_duration_minutes']),
+            float(row['percentile_duration_minutes']),
         'prev_shard_count':
-            int(r['shard_count']),
+            int(row['shard_count']),
         'simulated_max_shard_duration':
-            r['simulated_max_shard_duration'],
+            row['simulated_max_shard_duration'],
         'test_overhead_min':
-            r['test_overhead_min'],
+            row['test_overhead_min'],
     }
-    shard_dict[r['test_suite']]['debug'] = debug_dict
-    data.setdefault(builder_group, {}).setdefault(builder_name,
-                                                  {}).update(shard_dict)
-    new_data.setdefault(builder_group, {}).setdefault(builder_name,
-                                                      {}).update(shard_dict)
+    suite_exception[row['test_suite']]['debug'] = debug_dict
+    shard_exceptions.setdefault(builder_group,
+                                {}).setdefault(builder_name,
+                                               {}).update(suite_exception)
 
-  _prune_builders(api, data)
+  _prune_builders(api, shard_exceptions)
 
   api.file.write_json(
       'write exceptions file',
       exceptions_file,
-      data,
+      shard_exceptions,
       indent=4,
   )
-
-
-def _meets_optimal_shard_count_and_simulated_duration_requirements(
-    row, data, desired_runtime):
-  builder_group = row['waterfall_builder_group']
-  builder_name = row['waterfall_builder_name']
-  test_suite = row['test_suite']
-
-  current_autoshard_val = data.get(builder_group,
-                                   {}).get(builder_name,
-                                           {}).get(test_suite, {}).get('shards')
-
-  # No autosharding needed.
-  if int(row['optimal_shard_count']) == int(row['shard_count']):
-    return False
-
-  # Throw out any attempt to shard to 1. This will lock the test suite
-  # and prevent go/nplus1shardsproposal from running new shardings
-  if int(row['optimal_shard_count']) == 1:
-    return False
-
-  # Don't bother resharding if the simulated runtime is greater than the
-  # desired runtime.
-  if float(
-      row['simulated_max_shard_duration']) > desired_runtime:  # pragma: nocover
-    return False
-
-  # Shard values may have changed over the lookback period, so the query
-  # results could have multiple rows for each builder+test_suite. Logic below
-  # skips the rows that are for outdated shard counts.
-
-  # First check if this suite has been autosharded before
-  # If it has been autosharded before, we should only look at the row
-  # containing a matching 'shard_count' with the current autoshard value.
-  if current_autoshard_val:
-    # If this row does not match, skip it. This row is for an old shard count
-    # that is no longer being used.
-    if int(current_autoshard_val) != int(row['shard_count']):
-      return False
-  else:
-    # Query suggests we should decrease shard count for suite that has
-    # never been autosharded
-    if int(row['optimal_shard_count']) < int(row['shard_count']):
-      # Only use lower shard count value if the suite was previously
-      # autosharded.
-      # This is because the suite could have been previously autosharded with
-      # more shards due to a test regression. If the regression is fixed, that
-      # suite should have those extra shards removed.
-      # There's many existing suites that already run pretty fast from
-      # previous manual shardings. Those technically can have fewer shards as
-      # well, but let's leave those alone until we have a good reason to
-      # change a bunch of suites at once.
-      return False
-  return True
 
 
 def _calculate_optimal_shard_counts(
@@ -297,17 +241,18 @@ def _calculate_optimal_shard_counts(
     overheads,
     durations,
     target_runtime,
+    shard_exceptions,
     builds_per_hour,
 ):
 
   def _get_overhead(builder, suite, shard_count, overheads):
     overhead = overheads.get(builder, {}).get(suite, {}).get(shard_count)
     if overhead:
-      # Suites can be in a bad sharding. Since we only use one set of shards
-      # (n and n+1) this can create a bad value for the overhead so clamp it
-      # to reasonable values. At the time of writing this the min and max are
-      # around 0.21 and 4.01. Ideally we could use more than one set of
-      # shardings to determine this overhead.
+      # TODO(crbug.com/407846444): Suites can be in a bad sharding. Since we
+      # only use one set of shards (n and n+1) this can create a bad value
+      # for the overhead so clamp it to reasonable values. At the time of
+      # writing this the min and max are around 0.21 and 4.01. Ideally we
+      # could use more than one set of shardings to determine this overhead.
       return max(min(overhead, MAX_OVERHEAD_MIN), MIN_OVERHEAD_MIN)
 
     if 'android' in builder:
@@ -331,21 +276,24 @@ def _calculate_optimal_shard_counts(
     integer_optimal_shard_count = max(math.ceil(optimal_shard_count), 1)
     api.step.empty(
         'optimal shard calculation',
-        step_text=f""" Calculating optimal shards:
-(current_shard_count * (current_runtime - overhead)) / (target_runtime - overhead))
+        step_text=textwrap.dedent(f"""Calculating optimal shards:
+                                  (current_shard_count * (current_runtime - overhead)) / (target_runtime - overhead))
 
-current_runtime = {current_runtime}
-current_shard_count = {current_shard_count}
-target_runtime = {target_runtime}
-overhead = {overhead}
+                                  current_runtime = {current_runtime}
+                                  current_shard_count = {current_shard_count}
+                                  target_runtime = {target_runtime}
+                                  overhead = {overhead}
 
-optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}""")
+                                  optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}"""
+                                 ))
     return integer_optimal_shard_count
 
   with api.step.nest('calculate optimal shards'):
     filtered_durations = []
     for row in durations:
       try_builder = row['try_builder']
+      ci_builder = row['waterfall_builder_name']
+      builder_group = row['waterfall_builder_group']
       test_suite = row['test_suite']
       current_shard_count = int(row['shard_count'])
       current_runtime = float(row['percentile_duration_minutes'])
@@ -356,10 +304,33 @@ optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}""")
                                  overheads)
         row['test_overhead_min'] = overhead
 
+        # Get the number of shards we need to hit the target_runtime
         optimal_shard_count = _calculate_optimal_shard_count(
             api, current_shard_count, current_runtime, target_runtime, overhead)
 
         row['optimal_shard_count'] = optimal_shard_count
+
+        # Get the current configured shard count from the current file
+        old_shard_count = shard_exceptions.get(builder_group, {}).get(
+            ci_builder, {}).get(test_suite, {}).get('shards', None)
+        if old_shard_count and current_shard_count != int(old_shard_count):
+          # This row is for an old shard count that is no longer being used.
+          api.step.empty(
+              f'Skipping because it is not using the configured sharding ({old_shard_count})'
+          )
+          continue
+        if not old_shard_count and optimal_shard_count < current_shard_count:
+          # Do not reduce shard counts for tests that have never been autosharded.
+          # Only increase these.
+          api.step.empty(
+              'Skipping non-autosharded suite with a higher shard count')
+          continue
+        if optimal_shard_count == current_shard_count:
+          api.step.empty('Skipping already optimized sharding')
+          continue
+        if not old_shard_count and current_shard_count == 1:
+          api.step.empty('Skipping unverified shardable suite')
+          continue
 
         # Double check we have successfully sharded below the desired runtime.
         # This should be impossible as adding shards should only reduce runtimes
@@ -789,7 +760,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'dont_shard_to_1',
+      'dont_shard_from_1_if_previously_unsharded',
       boilerplate(
           durations=[
               create_durations_entry(
@@ -797,8 +768,8 @@ def GenTests(api):
                   waterfall_builder_name='Linux Tests',
                   try_builder='linux-rel',
                   test_suite='browser_tests',
-                  percentile_duration_minutes=5,
-                  shard_count=2,
+                  percentile_duration_minutes=20,
+                  shard_count=1,
               )
           ],
           overheads=[
@@ -807,8 +778,8 @@ def GenTests(api):
                   waterfall_builder_name='Linux Tests',
                   try_builder='linux-rel',
                   test_suite='browser_tests',
-                  normally_assigned_shard_count=2,
-                  experimental_shard_count=3,
+                  normally_assigned_shard_count=1,
+                  experimental_shard_count=2,
                   p50_test_harness_overhead_sec=1,
               )
           ],
@@ -817,22 +788,11 @@ def GenTests(api):
           ],
           cq_builders=[
               create_cq_builder(try_builder='linux-rel'),
-          ],
-          current_exceptions={
-              'chromium.linux': {
-                  'Linux Tests': {
-                      'browser_tests': {
-                          'shards': 2,
-                          'try_builder': 'linux-rel',
-                      }
-                  }
-              }
-          }),
+          ]),
       api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.MustRun, 'git cl upload'),
-      api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
-                       'browser_tests', 2),
+      api.post_process(check_not_sharded, 'chromium.linux'),
       api.post_process(post_process.DropExpectation),
   )
 
