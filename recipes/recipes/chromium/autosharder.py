@@ -100,45 +100,18 @@ def RunSteps(api, properties):
 
   setup_git(api)
 
-  potential_autoshard_exceptions_paths = (
-      api.chromium_checkout.source_dir.joinpath('infra', 'config', 'targets',
-                                                'autoshard_exceptions.json'),
-      api.chromium_checkout.source_dir.joinpath('testing', 'buildbot',
-                                                'autoshard_exceptions.json'),
-  )
-
-  for autoshard_exceptions_path in potential_autoshard_exceptions_paths:
-    if api.path.exists(autoshard_exceptions_path):
-      break
-  else:
-    step_text = ['', "none of the following file paths exist"]
-    for p in potential_autoshard_exceptions_paths:
-      step_text.append(f'* {p}')
-    api.step.empty(
-        'autoshard exceptions file not found',
-        status=api.step.EXCEPTION,
-        step_text='\n'.join(step_text))
-
   calculate_optimal_shards(api, properties.target_runtime)
 
   def step_test_data():
-    autoshard_exceptions_rel_path = api.path.relpath(
-        autoshard_exceptions_path, api.chromium_checkout.source_dir)
     return api.raw_io.test_api.stream_output_text(
-        f'diff --git a/{autoshard_exceptions_rel_path}'
-        f' b/{autoshard_exceptions_rel_path}')
+        'diff --git a/infra/config/targets/autoshard_exceptions.json'
+        ' b/infra/config/targets/autoshard_exceptions.json')
 
   diff_step = api.git(
       'diff', stdout=api.raw_io.output_text(), step_test_data=step_test_data)
   diff_step.presentation.logs['stdout'] = diff_step.stdout
   if not diff_step.stdout:
     return
-
-  # Output step with file contents in case we need to debug the build
-  api.file.read_json(
-      'read autoshard_exceptions.json',
-      autoshard_exceptions_path,
-  )
 
   with api.step.nest('regenerate targets specs'):
     src_dir = api.chromium_checkout.source_dir
@@ -1602,62 +1575,5 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.MustRun, 'git cl upload'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'new autoshard exceptions path',
-      api.time.seed(current_timestamp),
-      api.path.exists(
-          api.path.cache_dir.joinpath('builder', 'src', 'infra', 'config',
-                                      'targets', 'autoshard_exceptions.json')),
-      api.override_step_data(
-          'gerrit get last merged change',
-          api.json.output([{
-              'subject':
-                  'Autosharder CL',
-              '_number':
-                  '12345',
-              'updated':
-                  datetime.datetime(2023, 7,
-                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
-          }]),
-      ),
-      api.override_step_data(
-          'gerrit get active changes',
-          stdout=api.raw_io.output_text(''),
-      ),
-      api.override_step_data(
-          'git diff',
-          stdout=api.raw_io.output_text(''),
-      ),
-      api.post_process(post_process.MustRun, 'query durations'),
-      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
-      api.post_process(post_process.DoesNotRun, 'git cl upload'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'no autoshard exceptions',
-      api.time.seed(current_timestamp),
-      api.override_step_data(
-          'gerrit get last merged change',
-          api.json.output([{
-              'subject':
-                  'Autosharder CL',
-              '_number':
-                  '12345',
-              'updated':
-                  datetime.datetime(2023, 7,
-                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
-          }]),
-      ),
-      api.override_step_data(
-          'gerrit get active changes',
-          stdout=api.raw_io.output_text(''),
-      ),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.MustRun,
-                       'autoshard exceptions file not found'),
       api.post_process(post_process.DropExpectation),
   )
