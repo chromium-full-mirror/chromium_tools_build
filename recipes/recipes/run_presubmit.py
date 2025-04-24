@@ -233,17 +233,18 @@ def _RunStepsInternal(api):
     default_timeout = 900 if repo_name == 'luci_py' else 480
     timeout = api.properties.get('timeout') or default_timeout
     # ok_ret='any' causes all exceptions to be ignored in this step
-    step_json = api.presubmit(*presubmit_args, timeout=timeout, ok_ret='any')
+    presubmit_step = api.presubmit(
+        *presubmit_args, timeout=timeout, ok_ret='any')
+    if presubmit_step.exc_result.retcode != 0:
+      presubmit_step.presentation.status = 'FAILURE'
     # Set recipe result values
-    if step_json:
+    if (step_json := presubmit_step.json.output):
       raw_result.summary_markdown = _createSummaryMarkdown(step_json)
 
-    retcode = api.step.active_result.retcode
-    if retcode == 0:
+    if presubmit_step.exc_result.retcode == 0:
       raw_result.status = common_pb2.SUCCESS
       return raw_result
 
-    api.step.active_result.presentation.status = 'FAILURE'
     if api.step.active_result.exc_result.had_timeout:
       # TODO(iannucci): Shouldn't we also mark failure on timeouts?
       raw_result.status = common_pb2.FAILURE
@@ -252,7 +253,7 @@ def _RunStepsInternal(api):
         summary.append(raw_result.summary_markdown)
       summary.append('Timeout occurred during presubmit step.')
       raw_result.summary_markdown = '\n\n'.join(summary)
-    elif retcode == 1:
+    elif presubmit_step.exc_result.retcode == 1:
       raw_result.status = common_pb2.FAILURE
       api.tryserver.set_test_failure_tryjob_result()
     else:
