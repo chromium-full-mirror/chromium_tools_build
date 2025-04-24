@@ -164,6 +164,8 @@ def _calculate_optimal_shards(api, target_runtime):
       lookback_end_date,
   )
 
+  cq_builders = _query_cq_builders(api)
+
   overheads = _query_overheads(
       api,
       lookback_start_date,
@@ -226,7 +228,7 @@ def _calculate_optimal_shards(api, target_runtime):
                                 {}).setdefault(builder_name,
                                                {}).update(suite_exception)
 
-  _prune_builders(api, shard_exceptions)
+  _prune_builders(shard_exceptions, cq_builders)
 
   api.file.write_json(
       'write exceptions file',
@@ -479,19 +481,19 @@ def _query_cq_builders(api):
     return [row['builder'] for row in rows]
 
 
-def _prune_builders(api, data):
-  cq_builders = _query_cq_builders(api)
-  data_copy = copy.deepcopy(data)
-  for builder_group_name, builder_group in data_copy.items():
+def _prune_builders(shard_exceptions, cq_builders):
+  for builder_group_name, builder_group in copy.deepcopy(
+      shard_exceptions).items():
     for ci_builder_name, ci_builder in builder_group.items():
       for test_suite_name, test_suite in ci_builder.items():
         try_builder = test_suite['try_builder']
         if try_builder not in cq_builders:
-          del data[builder_group_name][ci_builder_name][test_suite_name]
-      if len(data[builder_group_name][ci_builder_name]) == 0:
-        del data[builder_group_name][ci_builder_name]
-    if len(data[builder_group_name]) == 0:
-      del data[builder_group_name]
+          del shard_exceptions[builder_group_name][ci_builder_name][
+              test_suite_name]
+      if len(shard_exceptions[builder_group_name][ci_builder_name]) == 0:
+        del shard_exceptions[builder_group_name][ci_builder_name]
+    if len(shard_exceptions[builder_group_name]) == 0:
+      del shard_exceptions[builder_group_name]
 
 
 def check_run_conditions(api):
