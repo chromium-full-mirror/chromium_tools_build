@@ -12,7 +12,7 @@ class GnApi(recipe_api.RecipeApi):
 
   _DEFAULT_STEP_NAME = 'read GN args'
   _NON_LOCAL_ARGS = frozenset(['target_sysroot'])
-  _DEFAULT_MAX_TEXT_LINES = 15
+  _DEFAULT_MAX_TEXT_LINES = 20
 
   ARG_RE = re.compile('\s*(\w+)\s*=\s*(\S+)')
   DEFAULT = constants.DEFAULT
