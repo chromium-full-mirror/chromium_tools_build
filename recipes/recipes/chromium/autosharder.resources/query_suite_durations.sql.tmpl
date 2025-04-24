@@ -109,15 +109,6 @@ suite_and_builder_durations AS (
     ROUND(
       APPROX_QUANTILES(max_shard_duration_sec, 1000)[OFFSET({percentile}0)] / 60, 2)
       AS percentile_duration_minutes,
-    ROUND(AVG(max_pending_time_sec), 1) avg_pending_time_sec,
-    ROUND(
-    APPROX_QUANTILES(
-      max_pending_time_sec, 1000)[OFFSET(500)], 1) AS p50_pending_time_sec,
-    ROUND(
-      APPROX_QUANTILES(
-        max_pending_time_sec, 1000)[OFFSET(900)], 1) AS p90_pending_time_sec,
-    ROUND(APPROX_QUANTILES(total_shard_duration, 100)[OFFSET(50)])
-      AS p50_total_duration_sec,
   FROM durations_per_build_and_suite d
   GROUP BY
     test_suite,

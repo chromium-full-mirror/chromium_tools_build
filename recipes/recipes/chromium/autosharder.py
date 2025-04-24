@@ -203,27 +203,6 @@ def _calculate_optimal_shards(api, target_runtime):
             'try_builder': row['try_builder'],
         },
     }
-    debug_dict = {
-        'avg_num_builds_per_peak_hour':
-            row['avg_num_builds_per_peak_hour'],
-        'estimated_bot_hour_delta':
-            row['estimated_bot_hour_cost'],
-        'prev_avg_pending_time_sec':
-            float(row['avg_pending_time_sec']),
-        'prev_p50_pending_time_sec':
-            float(row['p50_pending_time_sec']),
-        'prev_p90_pending_time_sec':
-            float(row['p90_pending_time_sec']),
-        'prev_percentile_duration_minutes':
-            float(row['percentile_duration_minutes']),
-        'prev_shard_count':
-            int(row['shard_count']),
-        'simulated_max_shard_duration':
-            row['simulated_max_shard_duration'],
-        'test_overhead_min':
-            row['test_overhead_min'],
-    }
-    suite_exception[row['test_suite']]['debug'] = debug_dict
     shard_exceptions.setdefault(builder_group,
                                 {}).setdefault(builder_name,
                                                {}).update(suite_exception)
@@ -304,7 +283,6 @@ def _calculate_optimal_shard_counts(
 
         overhead = _get_overhead(try_builder, test_suite, current_shard_count,
                                  overheads)
-        row['test_overhead_min'] = overhead
 
         # Get the number of shards we need to hit the target_runtime
         optimal_shard_count = _calculate_optimal_shard_count(
@@ -345,14 +323,10 @@ def _calculate_optimal_shard_counts(
             f'Simulated runtime {simulated_max_shard_duration} is greater '
             f'than the desired runtime {target_runtime}')
 
-        row['simulated_max_shard_duration'] = simulated_max_shard_duration
-
         # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
         estimated_bot_hour_cost = round(
             (optimal_shard_count - current_shard_count) * (overhead / 60.0) *
             builds_per_hour[try_builder], 2)
-        row['avg_num_builds_per_peak_hour'] = builds_per_hour[try_builder]
-        row['estimated_bot_hour_cost'] = estimated_bot_hour_cost
         api.step.empty(
             'estimated_cost',
             step_text=f'Estimated change in bot hours: {estimated_bot_hour_cost}'
@@ -700,13 +674,6 @@ def GenTests(api):
               'query cq builders.query',
               stdout=api.raw_io.output_text(api.json.dumps(cq_builders))))
     return sum(test_data, api.empty_test_data())
-
-  def check_exceptions_file_debug(check, steps, builder_group, builder,
-                                  test_suite, key, value):
-    exceptions_json = api.json.loads(
-        steps['write exceptions file'].logs['autoshard_exceptions.json'])
-    check(exceptions_json[builder_group][builder][test_suite]['debug'][key] ==
-          value)
 
   def check_exceptions_file(check, steps, builder_group, builder, test_suite,
                             key, value):
@@ -1100,9 +1067,10 @@ def GenTests(api):
           cq_builders=[
               create_cq_builder(try_builder='android-12-x64-rel'),
           ]),
-      api.post_process(check_exceptions_file_debug, 'chromium.android',
-                       'android-12-x64-rel', 'webview_instrumentation_test_apk',
-                       'test_overhead_min', 2.5),
+      api.post_process(
+          post_process.StepTextContains,
+          'calculate optimal shards.android-12-x64-rel:webview_instrumentation_test_apk.optimal shard calculation',
+          [f'overhead = {2.5}']),
       api.post_process(post_process.DropExpectation),
   )
 
