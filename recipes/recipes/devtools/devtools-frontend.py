@@ -466,7 +466,7 @@ def GenTests(api):
           ('Flake exonaration attempt.'
            'Trigger Tests.Trigger E2E Tests (rerun).'
            '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
-          '"etest1.first \\?\\?|etest2.second \\(to: escape\\)"'),
+          'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
       api.step_data(
           'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
           api.raw_io.stream_output_text(
