@@ -6,8 +6,10 @@ import copy
 import datetime
 import math
 import textwrap
+from typing import Any
+
 from recipe_engine import post_process
-from recipe_engine import recipe_api
+from recipe_engine.recipe_api import RecipeApi
 
 from PB.recipes.build.chromium.autosharder import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -88,7 +90,7 @@ MAX_OVERHEAD_MIN = 4.0
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: RecipeApi, properties: InputProperties):
   """Creates a CL to update test suite shards in chromium/src
   """
   api.gclient.set_config('chromium')
@@ -149,7 +151,7 @@ def RunSteps(api, properties):
       )
 
 
-def _calculate_optimal_shards(api, target_runtime):
+def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
   api.step('which bq', ['which', 'bq'])
 
   today = api.time.utcnow()
@@ -218,13 +220,13 @@ def _calculate_optimal_shards(api, target_runtime):
 
 
 def _calculate_optimal_shard_counts(
-    api,
-    overheads,
-    durations,
-    target_runtime,
-    shard_exceptions,
-    builds_per_hour,
-):
+    api: RecipeApi,
+    overheads: dict[str, dict[str, dict[int, float]]],
+    durations: list[dict[str, Any]],
+    target_runtime: float,
+    shard_exceptions: dict[str, dict[str, dict[str, dict[str, Any]]]],
+    builds_per_hour: dict[str, int],
+) -> list[dict[str, int]]:
 
   def _get_overhead(builder, suite, shard_count, overheads):
     overhead = overheads.get(builder, {}).get(suite, {}).get(shard_count)
@@ -241,7 +243,7 @@ def _calculate_optimal_shard_counts(
     return DEFAULT_OVERHEAD_MIN
 
   def _calculate_optimal_shard_count(
-      api,
+      api: RecipeApi,
       current_shard_count,
       current_runtime,
       target_runtime,
@@ -336,7 +338,7 @@ def _calculate_optimal_shard_counts(
   return filtered_durations
 
 
-def _run_query(api, query):
+def _run_query(api: RecipeApi, query: str) -> list[dict[str, Any]]:
 
   result = api.step(
       'query', [
@@ -355,10 +357,10 @@ def _run_query(api, query):
 
 
 def _query_avg_builds_per_hour(
-    api,
-    lookback_start_date,
-    lookback_end_date,
-):
+    api: RecipeApi,
+    lookback_start_date: datetime.datetime,
+    lookback_end_date: datetime.datetime,
+) -> dict[str, int]:
   with api.step.nest('query average builds per hour'):
     query_tmpl = api.file.read_text(
         'read_query',
@@ -377,10 +379,10 @@ def _query_avg_builds_per_hour(
 
 
 def _query_overheads(
-    api,
-    lookback_start_date,
-    lookback_end_date,
-):
+    api: RecipeApi,
+    lookback_start_date: datetime.datetime,
+    lookback_end_date: datetime.datetime,
+) -> dict[str, dict[str, dict[int, float]]]:
 
   with api.step.nest('query overheads'):
     query_tmpl = api.file.read_text(
@@ -406,11 +408,11 @@ def _query_overheads(
 
 
 def _query_durations(
-    api,
-    target_runtime,
-    lookback_start_date,
-    lookback_end_date,
-):
+    api: RecipeApi,
+    target_runtime: float,
+    lookback_start_date: datetime.datetime,
+    lookback_end_date: datetime.datetime,
+) -> list[dict[str, Any]]:
 
   def _join_sql_collection(collection):
     return ','.join([f'"{u}"' for u in collection] if collection else '""')
@@ -443,7 +445,7 @@ def _query_durations(
     return _run_query(api, query)
 
 
-def _query_cq_builders(api):
+def _query_cq_builders(api: RecipeApi) -> list[str]:
   with api.step.nest('query cq builders'):
     query_tmpl = api.file.read_text('read_query',
                                     api.resource('query_cq_builders.sql.tmpl'))
@@ -455,7 +457,10 @@ def _query_cq_builders(api):
     return [row['builder'] for row in rows]
 
 
-def _prune_builders(shard_exceptions, cq_builders):
+def _prune_builders(
+    shard_exceptions: dict[str, dict[str, dict[str, dict[str, Any]]]],
+    cq_builders: list[str],
+) -> None:
   for builder_group_name, builder_group in copy.deepcopy(
       shard_exceptions).items():
     for ci_builder_name, ci_builder in builder_group.items():
@@ -470,7 +475,7 @@ def _prune_builders(shard_exceptions, cq_builders):
       del shard_exceptions[builder_group_name]
 
 
-def check_run_conditions(api):
+def check_run_conditions(api: RecipeApi) -> result_pb2.RawResult:
   # If it's a led job, we almost certainly want to run
   if api.led.led_build:
     return None
@@ -542,7 +547,7 @@ def check_run_conditions(api):
   return None
 
 
-def setup_git(api):
+def setup_git(api: RecipeApi) -> None:
   api.git('config', 'user.name', 'autosharder')
   api.git('branch', '-D', 'autoshard', ok_ret='any')
   api.git('restore', '--staged', '.')
@@ -550,7 +555,7 @@ def setup_git(api):
     api.git('new-branch', 'autoshard', '--upstream', 'origin/main')
 
 
-def GenTests(api):
+def GenTests(api: RecipeApi):
   # Simulate running on a Monday
   current_timestamp = int(datetime.datetime(2023, 7, 3).timestamp())
 
