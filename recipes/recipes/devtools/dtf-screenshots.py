@@ -32,23 +32,24 @@ def RunSteps(api, clobber):
   builder_config = 'Release'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
-  api.devtools.update()
-  build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+  update_result = api.devtools.update()
+  source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
 
-  with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
-    api.chromium.run_gn(api.devtools.source_dir, build_dir)
-    compilation_result = api.chromium.compile(api.devtools.source_dir,
-                                              build_dir)
+  with api.devtools.depot_on_path(source_dir):
+    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
+    api.chromium.run_gn(source_dir, build_dir)
+    compilation_result = api.chromium.compile(source_dir, build_dir)
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
 
     with api.devtools.collect_screenshots('devtools-frontend-screenshots'):
-      update_screenshots(api, builder_config)
+      update_screenshots(api, source_dir, builder_config)
 
 
-def update_screenshots(api, builder_config):
+def update_screenshots(api, source_dir, builder_config):
   api.devtools.rdb_node_script(
+      source_dir,
       'Screenshots',
       'run_test_suite.js',
       [

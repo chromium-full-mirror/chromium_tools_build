@@ -15,12 +15,13 @@ class InteractionsTests(ExonerableTests):
 
   def __init__(self,
                api,
+               source_dir,
                trigger,
                builder_config,
                step_name,
                bucket='devtools-frontend-screenshots'):
     self.bucket = bucket
-    super().__init__(api, trigger, builder_config, False, step_name)
+    super().__init__(api, source_dir, trigger, builder_config, False, step_name)
 
   def collect(self):
     if self.api.tryserver.is_tryserver:
@@ -55,12 +56,10 @@ class InteractionsTests(ExonerableTests):
     golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
     self.api.file.rmtree(
         'remove previous goldens',
-        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
-                           'goldens'))
+        self.api.path.join(self.source_dir, 'test', 'interactions', 'goldens'))
     self.api.file.copytree(
         'copy golden snapshots', golden_snapshots_dir,
-        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
-                           'goldens'))
+        self.api.path.join(self.source_dir, 'test', 'interactions', 'goldens'))
 
   def test_name_to_grep_string(self, name):
     name = re.sub(r'^interactions/[^:]*: ', '', name)

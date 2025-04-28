@@ -28,24 +28,27 @@ def RunSteps(api, builder_config, clobber, parallel):
 
   api.devtools.configure(
       builder_config, is_official_build=True, devtools_skip_typecheck=True)
-  api.devtools.update()
+  update_result = api.devtools.update()
+  source_dir = update_result.source_root.path
 
-  with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
+  with api.devtools.depot_on_path(source_dir):
+    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
     api.step.empty(
         '{os} {cpu}'.format(**api.devtools.get_dimensions_for_platform()))
     if not parallel:
-      api.devtools.run_e2e(builder_config)
+      api.devtools.run_e2e(source_dir, builder_config)
       with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
         api.step('Nothing', [])
     else:
       # No function; called for complete coverage.
-      command = api.devtools.lookup_command('lint')
+      command = api.devtools.lookup_command(source_dir, 'lint')
       assert command == ['echo', '123']
       with api.step.nest('E2E Tests'):
         commands = api.devtools.divided_e2e_commands(
-            builder_config=builder_config,)
-        cas_digest = api.devtools.archive_to_cas()
+            source_dir,
+            builder_config=builder_config,
+        )
+        cas_digest = api.devtools.archive_to_cas(source_dir)
         tasks_results = []
         tasks = api.devtools.trigger_test_swarming_tasks(
             step_name='E2E Tests',

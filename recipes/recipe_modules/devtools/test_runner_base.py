@@ -13,8 +13,10 @@ FLAKE_DETECTION_MAX_TESTS = 20
 
 class DevToolsTests(ABC):
 
-  def __init__(self, api, trigger, builder_config, coverage, step_name):
+  def __init__(self, api, source_dir, trigger, builder_config, coverage,
+               step_name):
     self.api = api
+    self.source_dir = source_dir
     self.sw_trigger = trigger
     self.builder_config = builder_config
     self.step_name = step_name
@@ -204,8 +206,10 @@ class DevToolsTests(ABC):
 
 class ExonerableTests(DevToolsTests):
 
-  def __init__(self, api, trigger, builder_config, coverage, step_name):
-    super().__init__(api, trigger, builder_config, coverage, step_name)
+  def __init__(self, api, source_dir, trigger, builder_config, coverage,
+               step_name):
+    super().__init__(api, source_dir, trigger, builder_config, coverage,
+                     step_name)
     # Used to indicate that no task was triggered; may contain a failure if the
     # reason for not triggering qualifies as such
     self.skip_result = None

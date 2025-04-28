@@ -40,25 +40,26 @@ def RunSteps(api, clobber):
   devtools_skip_typecheck = False
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
-  api.devtools.update()
+  update_result = api.devtools.update()
 
-  build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
-  with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
-    api.chromium.run_gn(api.devtools.source_dir, build_dir)
+  source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
+  with api.devtools.depot_on_path(source_dir):
+    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
+    api.chromium.run_gn(source_dir, build_dir)
 
-    compilation_result = api.chromium.compile(api.devtools.source_dir,
-                                              build_dir)
+    compilation_result = api.chromium.compile(source_dir, build_dir)
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
-    cas_digest = api.devtools.archive_to_cas()
+    cas_digest = api.devtools.archive_to_cas(source_dir)
 
-    divider = E2ETestDivider(api, builder_config, shuffled=True)
+    divider = E2ETestDivider(api, source_dir, builder_config, shuffled=True)
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
-        E2ETests(api, trigger, builder_config, 'E2E Tests', divider),
-        RepeatE2EShuffledTests(api, trigger, builder_config, 'Repeat E2E Tests',
-                               divider),
+        E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests',
+                 divider),
+        RepeatE2EShuffledTests(api, source_dir, trigger, builder_config,
+                               'Repeat E2E Tests', divider),
     ]
 
     results = FirstRunPhase(api).run_all(tests)
