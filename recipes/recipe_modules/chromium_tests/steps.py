@@ -3016,7 +3016,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
       step_result: step_data.StepData,
   ) -> None:
     if self.spec.results_handler_name == 'layout tests':
-      upload_step_name = '.'.join(step_result.name_tokens)
+      upload_step_name = step_result.name_tokens[-1]
       swarm_task_ids = self._tasks[suffix].get_task_ids()
       _archive_layout_test_results(
           self.api.m,

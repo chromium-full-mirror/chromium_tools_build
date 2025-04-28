@@ -6,11 +6,22 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
+from PB.go.chromium.org.luci.resultdb.proto.v1 \
+    import common as resultdb_common
+from PB.go.chromium.org.luci.resultdb.proto.v1 \
+    import test_result as test_result_pb2
+from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+
 DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
+    'flakiness',
+    'recipe_engine/json',
+    'recipe_engine/luci_analysis',
+    'recipe_engine/raw_io',
+    'recipe_engine/resultdb',
     'recipe_engine/swarming',
 ]
 
@@ -323,6 +334,77 @@ def GenTests(api):
           }),
       api.post_process(post_process.StepSuccess,
                        'archive results for blink_web_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def _generate_test_result(test_id, test_variant):
+    return test_result_pb2.TestResult(
+        test_id=test_id,
+        variant=test_variant,
+        expected=False,
+        status=test_result_pb2.PASS,
+    )
+
+  correct_variant = resultdb_common.Variant()
+  variant_def = getattr(correct_variant, 'def')
+  variant_def['os'] = 'Mac-11'
+  variant_def['test_suite'] = 'blink_web_tests'
+
+  current_patchset_invocations = {
+      'invocations/1':
+          api.resultdb.Invocation(test_results=[
+              _generate_test_result('ninja://:blink_web_tests/fast/test.html',
+                                    correct_variant)
+          ])
+  }
+
+  recent_run = test_history.QueryTestHistoryResponse(
+      verdicts=[], next_page_token='dummy_token')
+
+  yield api.test(
+      'blink_web_tests_with_new_tests',
+      try_build(
+          test_spec={
+              'name': 'blink_web_tests',
+              'test': 'webkit_tests',
+              'results_handler': 'layout tests',
+              'swarming': {
+                  'dimensions': {
+                      'os': 'Mac-11',
+                  },
+              },
+              'test_id_prefix': 'ninja://:blink_web_tests/'
+          }),
+      api.flakiness(check_for_flakiness=True,),
+      # This overrides the file check to ensure that we have test files
+      # in the given patch.
+      api.step_data(
+          'git diff to analyze patch (2)',
+          api.raw_io.stream_output(
+              'third_party/blink/web_tests/fast/test.html\n')),
+      api.resultdb.query(
+          inv_bundle=current_patchset_invocations,
+          step_name=('collect tasks (with patch).'
+                     'blink_web_tests results'),
+      ),
+      api.luci_analysis.query_test_history(
+          recent_run,
+          'ninja://:blink_web_tests/fast/test.html',
+          parent_step_name='searching_for_new_tests',
+      ),
+      api.override_step_data(('test new tests for flakiness.'
+                              'blink_web_tests '
+                              '(check flakiness shard #0) on Mac-11'),
+                             api.chromium_swarming.canned_summary_output(
+                                 api.json.output({}), failure=False)),
+      api.resultdb.query(
+          inv_bundle=current_patchset_invocations,
+          step_name=('test new tests for flakiness.'
+                     'collect tasks (check flakiness shard #0).'
+                     'blink_web_tests results')),
+      api.post_process(
+          post_process.StepSuccess, 'test new tests for flakiness.'
+          'archive results for blink_web_tests (check flakiness shard #0)'),
       api.post_process(post_process.DropExpectation),
   )
 
