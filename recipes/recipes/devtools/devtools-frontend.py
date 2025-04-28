@@ -84,61 +84,57 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              clobber, coverage, perf_benchmarks):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
-  update_result = api.devtools.update()
+  api.devtools.update()
 
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
-  with api.devtools.depot_on_path(source_dir):
-    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
-    api.chromium.run_gn(source_dir, build_dir)
+  build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+  with api.devtools.depot_on_path():
+    api.devtools.clean_out_dir(builder_config, clobber)
+    api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
-    compilation_result = api.chromium.compile(source_dir, build_dir)
+    compilation_result = api.chromium.compile(api.devtools.source_dir,
+                                              build_dir)
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
-    cas_digest = api.devtools.archive_to_cas(source_dir)
+    cas_digest = api.devtools.archive_to_cas()
 
-    divider = E2ETestDivider(api, source_dir, builder_config)
+    divider = E2ETestDivider(api, builder_config)
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
-        UnitTests(api, source_dir, trigger, builder_config, coverage,
-                  'Unit Tests'),
-        InteractionsTests(api, source_dir, trigger, builder_config,
-                          'Interactions Tests'),
-        E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests',
-                 divider),
-        E2ENonHostedTests(api, source_dir, trigger, builder_config,
+        UnitTests(api, trigger, builder_config, coverage, 'Unit Tests'),
+        InteractionsTests(api, trigger, builder_config, 'Interactions Tests'),
+        E2ETests(api, trigger, builder_config, 'E2E Tests', divider),
+        E2ENonHostedTests(api, trigger, builder_config,
                           'E2E Tests (non-hosted)', divider),
-        PerformanceTests(api, source_dir, trigger, builder_config, coverage,
+        PerformanceTests(api, trigger, builder_config, coverage,
                          'Performance Tests'),
     ]
     tests = [t for t in tests if not t.skip()]
 
     FirstRunPhase(api).run_all(
-        tests,
-        task_on_builder=lambda: run_lint_check(api, builder_config, source_dir))
+        tests, task_on_builder=lambda: run_lint_check(api, builder_config))
 
     results = ExonerationPhase(api).run_all(tests)
 
-    publish_coverage_points(api, source_dir, skip=not coverage)
-    publish_performance_benchmarks(api, source_dir, skip=not perf_benchmarks)
+    publish_coverage_points(api, skip=not coverage)
+    publish_performance_benchmarks(api, skip=not perf_benchmarks)
 
     return results.raw_result()
 
 
-def run_lint_check(api, builder_config, source_dir):
+def run_lint_check(api, builder_config):
   is_debug_build = api.devtools.is_debug(builder_config)
   if is_debug_build or not api.platform.is_linux:
     return
-  with api.step.nest('Linting'), api.context(cwd=source_dir):
-    lint_command = api.devtools.lookup_command(source_dir, 'lint')
+  with api.step.nest('Linting'), api.context(cwd=api.devtools.source_dir):
+    lint_command = api.devtools.lookup_command('lint')
     api.step('Run lint check', lint_command)
 
 
 
-def publish_performance_benchmarks(api, source_dir, skip):
+def publish_performance_benchmarks(api, skip):
   if skip:
     return
-  report_file = source_dir / 'perf-data/devtools-perf.json'
+  report_file = api.devtools.source_dir / 'perf-data/devtools-perf.json'
   front_end_results = api.file.read_json('Read performance data results',
                                          report_file)
   tmp_dir = api.m.path.mkdtemp('perf-results')
@@ -192,14 +188,14 @@ def test_cov_data():
   }
 
 
-def publish_coverage_points(api, source_dir, skip):
+def publish_coverage_points(api, skip):
   if api.tryserver.is_tryserver or skip:
     return
   with api.step.nest('Coverage'):
     try:
       dimensions = ["lines", "statements", "functions", "branches"]
 
-      report_file = source_dir / 'karma-coverage/coverage-summary.json'
+      report_file = api.devtools.source_dir / 'karma-coverage/coverage-summary.json'
 
       summary = api.file.read_json('Coverage summary', report_file)
       totals = summary['total']
@@ -208,7 +204,7 @@ def publish_coverage_points(api, source_dir, skip):
           for dim in dimensions
       ])
 
-      with api.context(cwd=source_dir):
+      with api.context(cwd=api.devtools.source_dir):
         git_revision = api.bot_update.last_returned_properties['got_revision']
 
         commit_count = api.git(

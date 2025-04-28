@@ -52,23 +52,23 @@ def RunSteps(api, clobber, runner_args):
   builder_config = 'Debug'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
-  update_result = api.devtools.update()
+  api.devtools.update()
 
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
-  with api.devtools.depot_on_path(source_dir):
-    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
-    api.chromium.run_gn(source_dir, build_dir)
+  build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+  with api.devtools.depot_on_path():
+    api.devtools.clean_out_dir(builder_config, clobber)
+    api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
-    compilation_result = api.chromium.compile(source_dir, build_dir)
+    compilation_result = api.chromium.compile(api.devtools.source_dir,
+                                              build_dir)
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
-    cas_digest = api.devtools.archive_to_cas(source_dir)
+    cas_digest = api.devtools.archive_to_cas()
 
-    divider = E2ETestDivider(api, source_dir, builder_config)
+    divider = E2ETestDivider(api, builder_config)
     trigger = SwarmingTrigger(api, cas_digest)
-    e2e_stressor = E2EStressTests(api, source_dir, trigger, builder_config,
-                                  'E2E Tests', divider, runner_args)
+    e2e_stressor = E2EStressTests(api, trigger, builder_config, 'E2E Tests',
+                                  divider, runner_args)
 
     results = FirstRunPhase(api).run_all([e2e_stressor])
 
@@ -77,10 +77,9 @@ def RunSteps(api, clobber, runner_args):
 
 class E2EStressTests(E2ETests):
 
-  def __init__(self, api, source_dir, trigger, builder_config, step_name,
-               divider, runner_args):
-    super().__init__(api, source_dir, trigger, builder_config, step_name,
-                     divider)
+  def __init__(self, api, trigger, builder_config, step_name, divider,
+               runner_args):
+    super().__init__(api, trigger, builder_config, step_name, divider)
     self.test_list = []
     self.extra_args = []
     for arg in split(runner_args or ""):

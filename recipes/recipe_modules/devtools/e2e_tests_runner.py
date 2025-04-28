@@ -17,9 +17,8 @@ class E2ETests(ExonerableTests):
     prefix = 'shuffled_' if self.divider.shuffled else ''
     return prefix + 'e2e_tests'
 
-  def __init__(self, api, source_dir, trigger, builder_config, step_name,
-               divider):
-    super().__init__(api, source_dir, trigger, builder_config, False, step_name)
+  def __init__(self, api, trigger, builder_config, step_name, divider):
+    super().__init__(api, trigger, builder_config, False, step_name)
     self.divider = divider
     if self.divider.shuffled:
       self.extra_args = ['--bail']
@@ -48,17 +47,14 @@ class E2ETests(ExonerableTests):
     return super().test_name_to_grep_string(name)
 
   def trigger_exoneration(self, test_names):
-    self.divider = E2ETestDivider(
-        self.api, self.source_dir, self.builder_config, shard_count=1)
+    self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
     return super().trigger_exoneration(test_names)
 
 
 class E2ENonHostedTests(E2ETests):
 
-  def __init__(self, api, source_dir, trigger, builder_config, step_name,
-               divider):
-    super().__init__(api, source_dir, trigger, builder_config, step_name,
-                     divider)
+  def __init__(self, api, trigger, builder_config, step_name, divider):
+    super().__init__(api, trigger, builder_config, step_name, divider)
     self.skip_deflaking_result = None
     # TODO(liviurau): Needed only for where this cannot be passed in grep
     # pattern. To be removed once we have a ResultDB based solution.
@@ -90,8 +86,7 @@ class E2ENonHostedTests(E2ETests):
     # TODO(liviurau): The divider needs rework.  E.g. the rerun count could be
     # used to divide. Instead of running 10 times on one shard you could run
     # the same 5 times on 2 shares, etc.
-    self.divider = E2ETestDivider(
-        self.api, self.source_dir, self.builder_config, shard_count=1)
+    self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
     self.step_name += ' (flake detection)'
     # TODO(liviurau): There must be a better way to prepare a limited run.
     # Maybe pass the command function to the trigger function and have
@@ -124,12 +119,10 @@ class E2ETestDivider:
 
   def __init__(self,
                api,
-               source_dir,
                builder_config,
                shard_count=4,
                shuffled=False):
     self.api = api
-    self.source_dir = source_dir
     self.builder_config = builder_config
     self.shard_count = shard_count
     self.shuffled = shuffled
@@ -138,7 +131,7 @@ class E2ETestDivider:
   # It returns a list of lists of test paths
   @cached_property
   def commands(self):
-    contents = read_test_list(self.api, self.source_dir, self.builder_config)
+    contents = read_test_list(self.api, self.builder_config)
     all_tests = contents.splitlines()
     all_test_paths = [
         self.api.path.join(TEST_RELATIVE_PATH, t) for t in all_tests
@@ -161,15 +154,15 @@ def divide_list(lst, split_count):
   return result
 
 
-def read_test_list(api, source_dir, builder_config):
-  gen_root = source_dir / 'out' / builder_config / 'gen'
+def read_test_list(api, builder_config):
+  gen_root = api.devtools.source_dir / 'out' / builder_config / 'gen'
   test_root = gen_root / TEST_RELATIVE_PATH
   test_list_file_path = test_root / 'tests.txt'
   return api.file.read_text('Read test list', test_list_file_path)
 
 
-def write_test_list(api, source_dir, builder_config, test_list):
-  gen_root = source_dir / 'out' / builder_config / 'gen'
+def write_test_list(api, builder_config, test_list):
+  gen_root = api.devtools.source_dir / 'out' / builder_config / 'gen'
   test_root = gen_root / TEST_RELATIVE_PATH
   api.step('Create E2E test root', ['mkdir', '-p', test_root])
   test_list_file_path = test_root / 'tests.txt'

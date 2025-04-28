@@ -478,40 +478,6 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]/builder/devtools-frontend/package.json",
-      "/path/to/tmp/"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Read all commands",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@package.json@{@@@",
-      "@@@STEP_LOG_LINE@package.json@  \"scripts\": {@@@",
-      "@@@STEP_LOG_LINE@package.json@    \"lint\": \"echo 123\"@@@",
-      "@@@STEP_LOG_LINE@package.json@  }@@@",
-      "@@@STEP_LOG_LINE@package.json@}@@@",
-      "@@@STEP_LOG_END@package.json@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Run tests"
   },
