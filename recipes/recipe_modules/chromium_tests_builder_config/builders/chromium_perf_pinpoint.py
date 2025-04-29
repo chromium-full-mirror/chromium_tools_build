@@ -247,6 +247,7 @@ _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-gpu-perf', 'win', 'win64-builder-perf')
+_AddIsolatedTestSpec('win-victus-perf-cbb', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec(
     'win-arm64-snapdragon-plus-perf',
     'win',
