@@ -7,10 +7,8 @@ from .test_runner_base import DevToolsTests
 
 class LintCheck(DevToolsTests):
 
-  def __init__(self, api, source_dir, trigger, builder_config, step_name,
-               command, target_os):
-    super().__init__(api, source_dir, trigger, builder_config, False, step_name)
-    self.command = command
+  def __init__(self, api, trigger, builder_config, step_name, target_os):
+    super().__init__(api, trigger, builder_config, False, step_name)
     self.target_os = target_os.lower()
 
   @property
@@ -23,4 +21,4 @@ class LintCheck(DevToolsTests):
     return is_debug_build or not is_linux
 
   def commands(self):
-    return [self.command]
+    return [self.api.devtools.lookup_command('lint')]

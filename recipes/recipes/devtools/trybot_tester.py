@@ -67,9 +67,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              compilator_name, target_os, target_cpu):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
-  update_result = api.devtools.update()
+  api.devtools.update()
 
-  source_dir = update_result.source_root.path
   comp_props, maybe_raw_result = api.v8_orchestrator.orchestrated_compilation(
       compilator_name)
   if maybe_raw_result:
@@ -78,11 +77,11 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   # TODO(liviurau): Refactor this to make the divider take the file list a
   # direct argument. Eventually make it so we do not even need the list maybe
   # using a hash based stable sharding and ordering on the test runner side.
-  write_test_list(api, source_dir, builder_config, comp_props['e2e_test_list'])
+  write_test_list(api, builder_config, comp_props['e2e_test_list'])
 
   cas_digest = comp_props['cas_digest']
 
-  divider = E2ETestDivider(api, source_dir, builder_config)
+  divider = E2ETestDivider(api, builder_config)
   trigger = SwarmingTrigger(
       api,
       cas_digest,
@@ -93,20 +92,18 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       },
   )
   tests = [
-      UnitTests(api, source_dir, trigger, builder_config, False, 'Unit Tests'),
-      InteractionsTests(api, source_dir, trigger, builder_config,
-                        'Interactions Tests'),
-      E2ETests(api, source_dir, trigger, builder_config, 'E2E Tests', divider),
-      E2ENonHostedTests(api, source_dir, trigger, builder_config,
-                        'E2E Tests (non-hosted)', divider),
-      LintCheck(api, source_dir, trigger, builder_config, 'Lint Check',
-                api.devtools.lookup_command(source_dir, 'lint'), target_os),
+      UnitTests(api, trigger, builder_config, False, 'Unit Tests'),
+      InteractionsTests(api, trigger, builder_config, 'Interactions Tests'),
+      E2ETests(api, trigger, builder_config, 'E2E Tests', divider),
+      E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests (non-hosted)',
+                        divider),
+      LintCheck(api, trigger, builder_config, 'Lint Check', target_os),
   ]
   tests = [t for t in tests if not t.skip()]
 
   FirstRunPhase(api).run_all(tests)
   results = ExonerationPhase(api).run_all(tests)
-  results += FlakeDetectionPhase(api, source_dir).run_all(tests)
+  results += FlakeDetectionPhase(api).run_all(tests)
   return results.raw_result()
 
 def GenTests(api):

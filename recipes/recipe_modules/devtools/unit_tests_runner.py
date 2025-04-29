@@ -21,8 +21,9 @@ class UnitTests(ExonerableTests):
   def copy_coverage_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
     coverage_data_dir = self.output_dir / shard_output_dir / 'karma-coverage'
-    self.api.file.rmtree('remove coverage files if they exist',
-                         self.api.path.join(self.source_dir, 'karma-coverage'))
+    self.api.file.rmtree(
+        'remove coverage files if they exist',
+        self.api.path.join(self.api.devtools.source_dir, 'karma-coverage'))
     self.api.file.copytree(
         'copy unit tests coverage data', coverage_data_dir,
-        self.api.path.join(self.source_dir, 'karma-coverage'))
+        self.api.path.join(self.api.devtools.source_dir, 'karma-coverage'))

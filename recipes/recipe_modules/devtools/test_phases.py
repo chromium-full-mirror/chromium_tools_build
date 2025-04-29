@@ -112,14 +112,13 @@ def get_test_type(result):
 
 class FlakeDetectionPhase(TestRunPhase):
 
-  def __init__(self, api, source_dir):
+  def __init__(self, api):
     super().__init__(api)
-    self.source_dir = source_dir
     self.test_files = []
 
   def init_phase(self):
     with self.api.step.nest("find new tests") as presentation:
-      with self.api.context(cwd=self.source_dir):
+      with self.api.context(cwd=self.api.devtools.source_dir):
         git_show = self.api.v8.git_output('show', '--name-only',
                                           '--format=').splitlines()
         self.test_files = [

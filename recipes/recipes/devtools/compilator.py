@@ -66,19 +66,19 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(
         gitiles_commit=update_result.out_commit)
-    source_dir = update_result.source_root.path
-    build_dir = api.chromium.default_build_dir(source_dir)
-    with api.devtools.depot_on_path(source_dir):
-      api.devtools.clean_out_dir(source_dir, builder_config, clobber)
-      api.chromium.run_gn(source_dir, build_dir)
+    build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+    with api.devtools.depot_on_path():
+      api.devtools.clean_out_dir(builder_config, clobber)
+      api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
-      compilation_result = api.chromium.compile(source_dir, build_dir)
+      compilation_result = api.chromium.compile(api.devtools.source_dir,
+                                                build_dir)
       if compilation_result.status != common_pb.SUCCESS:
         return compilation_result
 
-    e2e_tests_list = read_test_list(api, source_dir, builder_config)
+    e2e_tests_list = read_test_list(api, builder_config)
 
-    cas_digest = api.devtools.archive_to_cas(source_dir)
+    cas_digest = api.devtools.archive_to_cas()
     emit_compilator_properties(api, cas_digest, e2e_tests_list)
   finally:
     if api.runtime.in_global_shutdown:
