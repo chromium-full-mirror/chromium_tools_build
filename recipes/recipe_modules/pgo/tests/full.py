@@ -265,6 +265,31 @@ def GenTests(api):
   )
 
   yield api.test(
+      'override_profdata_platform',
+      api.chromium.generic_build(
+          builder_group='chromium.perf', builder='android-builder-perf'),
+      api.pgo(use_pgo=True, profdata_platform_override='android-desktop-x64'),
+      api.platform('linux', 64),
+      api.properties(mock_merged_profdata=True),
+      api.override_step_data(
+          'validate benchmark results and profile data.searching for '
+          'profdata files',
+          api.file.listdir([
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
+          ])),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Processing PGO .profraw data.gsutil upload artifact to GS', [
+              'gs://chromium-optimization-profiles/pgo_profiles/'
+              'chrome-android-desktop-x64-main-1587876258-'
+              'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
+              'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'basic_mac_arm',
       api.chromium.generic_build(
           builder_group='chromium.perf', builder='mac-arm-builder-perf'),

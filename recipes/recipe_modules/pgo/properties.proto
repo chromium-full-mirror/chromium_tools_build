@@ -18,4 +18,7 @@ message InputProperties {
   // Allows overriding cloud storage buckets for testing.
   string gs_bucket_override = 3;
   string gs_bucket_path_override = 4;
+
+  // Allows overriding platform identifier in the profdata name.
+  string profdata_platform_override = 5;
 }

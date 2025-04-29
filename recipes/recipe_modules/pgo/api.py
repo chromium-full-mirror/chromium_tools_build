@@ -24,6 +24,7 @@ class PgoApi(recipe_api.RecipeApi):
     self._skip_profile_upload = properties.skip_profile_upload
     self._gs_bucket_override = properties.gs_bucket_override
     self._gs_bucket_path_override = properties.gs_bucket_path_override
+    self._profdata_platform_override = properties.profdata_platform_override
 
   @property
   def using_pgo(self):
@@ -66,6 +67,18 @@ class PgoApi(recipe_api.RecipeApi):
     # Main ref: refs/heads/main
     # If ref is undefined, default it to main
     return ref.split('/', 3)[2] if ref else 'main'
+
+  def _get_platform(self):
+    """Return the platform name used for the profdata artifact."""
+    if self._profdata_platform_override:
+      return self._profdata_platform_override
+
+    # android and chromeos are undefined through platform API,
+    # so we use the chromium config
+    target_platform = self.m.chromium.c.TARGET_PLATFORM
+    if target_platform in ['android', 'chromeos']:
+      return target_platform
+    return self.m.platform.name
 
   def configure_llvm_tooling_path(self, source_dir: Path, builder_id, is_cros):
     """Configure llvm tooling path
@@ -140,12 +153,7 @@ class PgoApi(recipe_api.RecipeApi):
     # without internal sources. Update this prefix when support is introduced.
     profdata_template = 'chrome-%s-%s-%s-%s-%s.profdata'
 
-    # android and chromeos are undefined through platform API,
-    # so we use the chromium config
-    target_platform = self.m.chromium.c.TARGET_PLATFORM
-    platform = (
-        target_platform
-        if target_platform in ['android', 'chromeos'] else self.m.platform.name)
+    platform = self._get_platform()
 
     # if is_win, we support [32,64,arm64].
     if self.m.platform.is_win:
