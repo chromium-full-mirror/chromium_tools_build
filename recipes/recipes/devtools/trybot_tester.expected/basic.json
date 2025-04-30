@@ -581,7 +581,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Unit Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Unit\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Unit Tests (Shard #0)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"front_end\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Unit Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Unit\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Unit Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"front_end\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -598,14 +598,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger Unit Tests.[trigger] Unit Tests (Shard #0)",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.[trigger] Unit Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Unit Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Unit Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -620,7 +620,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Unit Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Unit Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -637,7 +637,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:Unit\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:Unit Tests (Shard #0)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Unit Tests (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -684,7 +684,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -712,7 +712,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Unit Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: Unit Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -765,7 +765,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Interactions Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Interactions\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Interactions Tests (Shard #0)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:interactions_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"test/interactions\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Interactions\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Interactions Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:interactions_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"test/interactions\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -782,14 +782,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0)",
+    "name": "Run tests.Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Interactions Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -804,7 +804,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Interactions Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -821,7 +821,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:Interactions\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:Interactions Tests (Shard #0)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Interactions Tests (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -868,7 +868,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -896,7 +896,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Interactions Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=1@@@"
+      "@@@STEP_LINK@task UI: Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=1@@@"
     ]
   },
   {
@@ -979,7 +979,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #0)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -996,14 +996,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0)",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1018,7 +1018,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1035,7 +1035,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #0)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1081,7 +1081,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -1109,7 +1109,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #0)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=2@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=2@@@"
     ]
   },
   {
@@ -1119,7 +1119,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #1)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1136,14 +1136,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #1)",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #1)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1158,7 +1158,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #1)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1175,7 +1175,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #1)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #1) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1221,7 +1221,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -1249,7 +1249,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #1)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
     ]
   },
   {
@@ -1259,7 +1259,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #2)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1276,14 +1276,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #2)",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #2)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1298,7 +1298,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #2)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1315,7 +1315,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #2)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #2) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1361,7 +1361,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -1389,7 +1389,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #2)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
     ]
   },
   {
@@ -1399,7 +1399,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #3)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1416,14 +1416,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #3)",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #3)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"5\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1438,7 +1438,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #3)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1455,7 +1455,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #3)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #3) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1501,7 +1501,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -1529,7 +1529,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #3)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
     ]
   },
   {
@@ -1690,7 +1690,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #0)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (non-hosted) (Shard #0)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (non-hosted) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1707,14 +1707,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests (non-hosted).[trigger] E2E Tests (non-hosted) (Shard #0)",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests (non-hosted).[trigger] E2E Tests (non-hosted) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #0)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"6\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1729,7 +1729,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (Shard #0)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1746,7 +1746,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (Shard #0)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1793,7 +1793,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -1821,7 +1821,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #0)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
     ]
   },
   {
@@ -1854,6 +1854,755 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    \"invocations/6\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Lint Check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/devtools-frontend/package.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.Trigger Lint Check.Read all commands",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@package.json@{@@@",
+      "@@@STEP_LOG_LINE@package.json@  \"scripts\": {@@@",
+      "@@@STEP_LOG_LINE@package.json@    \"lint\": \"echo 123\",@@@",
+      "@@@STEP_LOG_LINE@package.json@    \"test\": \"test\"@@@",
+      "@@@STEP_LOG_LINE@package.json@  }@@@",
+      "@@@STEP_LOG_LINE@package.json@}@@@",
+      "@@@STEP_LOG_END@package.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Lint\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Lint Check (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:lint_check\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"echo\", \"123\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.Trigger Lint Check.[trigger] Lint Check (Shard #0) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"7\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:1234567/890\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gerrit:https://chromium-review.googlesource.com/c/123456/7\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:Lint\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Lint Check (Shard #0) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"1234567\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"890\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:lint_check\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"echo\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"123\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (8)",
+    "stdin": "{\"addInvocations\": [\"invocations/7\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Scripts Tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Scripts\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Scripts Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:scripts_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"scripts/run_on_target.mjs\", \"--target=Release\", \"gen/test/run.js\", \"--skip-ninja\", \"scripts/eslint_rules/tests/\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.Trigger Scripts Tests.[trigger] Scripts Tests (Shard #0) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"8\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/8\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:1234567/890\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gerrit:https://chromium-review.googlesource.com/c/123456/7\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:Scripts\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Scripts Tests (Shard #0) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"1234567\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"890\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:scripts_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/run_on_target.mjs\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--target=Release\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"gen/test/run.js\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/eslint_rules/tests/\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=8@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Scripts\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Scripts Tests (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:scripts_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"scripts/run_on_target.mjs\", \"--target=Release\", \"gen/test/run.js\", \"--skip-ninja\", \"scripts/stylelint_rules/tests/\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.Trigger Scripts Tests.[trigger] Scripts Tests (Shard #1) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"9\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:1234567/890\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gerrit:https://chromium-review.googlesource.com/c/123456/7\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:Scripts\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Scripts Tests (Shard #1) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"1234567\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"890\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:scripts_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/run_on_target.mjs\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--target=Release\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"gen/test/run.js\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/stylelint_rules/tests/\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Scripts\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:Scripts Tests (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:scripts_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"scripts/run_on_target.mjs\", \"--target=Release\", \"gen/test/run.js\", \"--skip-ninja\", \"scripts/build/tests/\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.Trigger Scripts Tests.[trigger] Scripts Tests (Shard #2) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"10\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/10\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:1234567/890\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gerrit:https://chromium-review.googlesource.com/c/123456/7\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:Scripts\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Scripts Tests (Shard #2) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"1234567\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"890\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:scripts_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"try:dtf_linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/run_on_target.mjs\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--target=Release\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"gen/test/run.js\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/build/tests/\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=10@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (9)",
+    "stdin": "{\"addInvocations\": [\"invocations/8\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/8\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (10)",
+    "stdin": "{\"addInvocations\": [\"invocations/9\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/9\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (11)",
+    "stdin": "{\"addInvocations\": [\"invocations/10\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/10\"@@@",
       "@@@STEP_LOG_LINE@json.input@  ],@@@",
       "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
@@ -1920,10 +2669,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0)",
+    "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update front_end```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update front_end```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2055,10 +2804,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0)",
+    "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update test/interactions```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update test/interactions```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2348,10 +3097,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0)",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2435,10 +3184,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1)",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2522,10 +3271,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2)",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2609,10 +3358,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3)",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2710,10 +3459,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #0)",
+    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2749,6 +3498,382 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/6/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=6@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Lint Check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Lint Check.Lint Check shards results",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/tmp_tmp_7",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "console",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"7\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Lint Check.Lint Check shards results.Lint Check (Shard #0) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u echo 123```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/7/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=7@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Scripts Tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Scripts Tests.Scripts Tests shards results",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/tmp_tmp_8",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "console",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"8\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Scripts Tests.Scripts Tests shards results.Scripts Tests (Shard #0) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output scripts/run_on_target.mjs --target=Release gen/test/run.js --skip-ninja scripts/eslint_rules/tests/```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/8\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"8\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/8/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=8@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/tmp_tmp_8",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "console",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"9\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Scripts Tests.Scripts Tests shards results.Scripts Tests (Shard #1) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output scripts/run_on_target.mjs --target=Release gen/test/run.js --skip-ninja scripts/stylelint_rules/tests/```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/9\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"9\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/9/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/tmp_tmp_8",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "console",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"10\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Scripts Tests.Scripts Tests shards results.Scripts Tests (Shard #2) on ubuntu",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output scripts/run_on_target.mjs --target=Release gen/test/run.js --skip-ninja scripts/build/tests/```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/10\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"10\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/10/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=10@@@"
     ]
   },
   {
@@ -2894,7 +4019,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/Linux/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0)\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"--repeat=10\", \"--bail\", \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"--repeat=10\", \"--bail\", \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2911,19 +4036,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Detect flakes in new tests.Trigger Tests.Trigger E2E Tests (non-hosted) (flake detection).[trigger] E2E Tests (non-hosted) (flake detection) (Shard #0)",
+    "name": "Detect flakes in new tests.Trigger Tests.Trigger E2E Tests (non-hosted) (flake detection).[trigger] E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/Linux/1234567/89/dtf_linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"7\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"11\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/11\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2933,7 +4058,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/Linux/1234567/89/dtf_linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -2950,7 +4075,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0)\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -2999,7 +4124,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -3027,7 +4152,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (flake detection) (Shard #0)/Linux/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux/-1@https://example.swarmingserver.appspot.com/task?id=11@@@"
     ]
   },
   {
@@ -3052,14 +4177,14 @@
       }
     },
     "name": "Detect flakes in new tests.Trigger Tests.resultdb.update_included_invocations",
-    "stdin": "{\"addInvocations\": [\"invocations/7\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "stdin": "{\"addInvocations\": [\"invocations/11\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/11\"@@@",
       "@@@STEP_LOG_LINE@json.input@  ],@@@",
       "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
@@ -3107,7 +4232,7 @@
       "console",
       "-verbose",
       "-requests-json",
-      "{\"tasks\": [{\"task_id\": \"7\"}]}"
+      "{\"tasks\": [{\"task_id\": \"11\"}]}"
     ],
     "env_prefixes": {
       "PATH": [
@@ -3126,10 +4251,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Detect flakes in new tests.E2E Tests (non-hosted) (flake detection).E2E Tests (non-hosted) (flake detection) shards results.E2E Tests (non-hosted) (flake detection) (Shard #0)",
+    "name": "Detect flakes in new tests.E2E Tests (non-hosted) (flake detection).E2E Tests (non-hosted) (flake detection) shards results.E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update --repeat=10 --bail test/e2e_non_hosted/performance/selector-stats-tracing_test.ts```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update --repeat=10 --bail test/e2e_non_hosted/performance/selector-stats-tracing_test.ts```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3154,17 +4279,17 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/11\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"11\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/7/test-results@@@",
-      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=7@@@"
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/11/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=11@@@"
     ]
   },
   {
