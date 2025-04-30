@@ -37,7 +37,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'dawn_node': 'False', 'dawn_root': 'dawn', 'download_remoteexec_cfg': 'True', 'fetch_cmake': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'dawn_node': 'True', 'dawn_root': 'dawn', 'download_remoteexec_cfg': 'True', 'fetch_cmake': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"dawn\"}",
       "--git-cache-dir",
@@ -561,6 +561,106 @@
       }
     },
     "name": "CMake build default targets.Compile default targets",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_WERROR=1",
+      "-DDAWN_USE_BUILT_DXC=1",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=1",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=1",
+      "-DTINT_BUILD_AS_OTHER_OS=0"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "ASAN_OPTIONS": "detect_container_overflow=0",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.CMake generate step for default targets with dawn.node enabled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "--build",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "--parallel",
+      "--target",
+      "dawn.node"
+    ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "ASAN_OPTIONS": "detect_container_overflow=0",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.Compile default targets with dawn.node enabled",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
