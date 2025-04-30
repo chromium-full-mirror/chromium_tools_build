@@ -101,6 +101,99 @@ class Sharding:
   runtime: float
   builds_per_hour: int = None
   optimal_shard_count: int = None
+  _overhead: float = None
+
+  @property
+  def overhead(self):
+    if self._overhead:
+      return self._overhead
+    if 'android' in self.try_builder:
+      return ANDROID_OVERHEAD_MIN
+    return DEFAULT_OVERHEAD_MIN
+
+  @overhead.setter
+  def overhead(self, value):
+    # Suites can be in a bad sharding. Since we only use one set of shards
+    # (n and n+1) this can create a bad value for the overhead so clamp it
+    # to reasonable values. At the time of writing this the min and max are
+    # around 0.21 and 4.01. Ideally we could use more than one set of
+    # shardings to determine this overhead.
+    self._overhead = max(min(value, MAX_OVERHEAD_MIN), MIN_OVERHEAD_MIN)
+
+  def calculate_optimal_shard_count(
+      self,
+      api: RecipeApi,
+      target_runtime,
+  ):
+
+    optimal_shard_count = (self.shard_count *
+                           (self.runtime - self.overhead)) / (
+                               target_runtime - self.overhead)
+    # When the overhead is poorly measured it can lead to the shard
+    # count being < 1 (e.g. the default android overhead is used
+    # on a suite taking < 2 min). In these cases force count to 1.
+    integer_optimal_shard_count = max(math.ceil(optimal_shard_count), 1)
+    api.step.empty(
+        'optimal shard calculation',
+        step_text=textwrap.dedent(f"""Calculating optimal shards:
+                                      (current_shard_count * (current_runtime - overhead)) / (target_runtime - overhead))
+
+                                      current_runtime = {self.runtime}
+                                      current_shard_count = {self.shard_count}
+                                      target_runtime = {target_runtime}
+                                      overhead = {self.overhead}
+
+                                      optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}"""
+                                 ))
+    self.optimal_shard_count = integer_optimal_shard_count
+
+    self._check_runtime(target_runtime)
+
+    self._emit_cost_step(api)
+
+    return self.optimal_shard_count
+
+  def _check_runtime(self, target_runtime):
+    # Double check we have successfully sharded below the desired runtime.
+    # This should be impossible as adding shards should only reduce runtimes
+    overhead_change = (self.optimal_shard_count -
+                       self.shard_count) * self.overhead
+    simulated_max_shard_duration = (
+        (self.runtime * self.shard_count + overhead_change) /
+        self.optimal_shard_count)
+
+    assert simulated_max_shard_duration <= target_runtime, (
+        f'Simulated runtime {simulated_max_shard_duration} is greater '
+        f'than the desired runtime {target_runtime}')
+
+  def _emit_cost_step(self, api):
+    # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
+    estimated_bot_hour_cost = round(
+        (self.optimal_shard_count - self.shard_count) * (self.overhead / 60.0) *
+        self.builds_per_hour, 2)
+    api.step.empty(
+        'estimated_cost',
+        step_text=f'Estimated change in bot hours: {estimated_bot_hour_cost}')
+
+  def check_valid_sharding(self, api, old_sharding):
+    if old_sharding and self.shard_count != int(old_sharding):
+      # This row is for an old shard count that is no longer being used.
+      api.step.empty(
+          f'Skipping because it is not using the configured sharding ({old_sharding})'
+      )
+      return False
+    if not old_sharding and self.optimal_shard_count < self.shard_count:
+      # Do not reduce shard counts for tests that have never been autosharded.
+      # Only increase these.
+      api.step.empty('Skipping non-autosharded suite with a higher shard count')
+      return False
+    if self.optimal_shard_count == self.shard_count:
+      api.step.empty('Skipping already optimized sharding')
+      return False
+    if not old_sharding and self.shard_count == 1:
+      api.step.empty('Skipping unverified shardable suite')
+      return False
+    return True
 
 
 def RunSteps(api: RecipeApi, properties: InputProperties):
@@ -181,14 +274,16 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
 
   cq_builders = _query_cq_builders(api)
 
-  overheads = _query_overheads(
+  _query_overheads(
       api,
+      shardings,
       lookback_start_date,
       lookback_end_date,
   )
 
-  builds_per_hour = _query_avg_builds_per_hour(
+  _query_avg_builds_per_hour(
       api,
+      shardings,
       lookback_start_date,
       lookback_end_date,
   )
@@ -200,26 +295,21 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
 
   shardings = _calculate_optimal_shard_counts(
       api,
-      overheads,
       shardings,
       target_runtime,
       shard_exceptions,
-      builds_per_hour,
   )
 
   # Update the file contents
   for sharding in shardings:
-    builder_group = sharding.waterfall_builder_group
-    builder_name = sharding.waterfall_builder_name
-    test_suite = sharding.test_suite
     suite_exception = {
-        test_suite: {
+        sharding.test_suite: {
             'shards': sharding.optimal_shard_count,
             'try_builder': sharding.try_builder,
         },
     }
-    shard_exceptions.setdefault(builder_group,
-                                {}).setdefault(builder_name,
+    shard_exceptions.setdefault(sharding.waterfall_builder_group,
+                                {}).setdefault(sharding.waterfall_builder_name,
                                                {}).update(suite_exception)
 
   _prune_builders(shard_exceptions, cq_builders)
@@ -234,112 +324,24 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
 
 def _calculate_optimal_shard_counts(
     api: RecipeApi,
-    overheads: dict[str, dict[str, dict[int, float]]],
     shardings: list[Sharding],
     target_runtime: float,
     shard_exceptions: dict[str, dict[str, dict[str, dict[str, Any]]]],
-    builds_per_hour: dict[str, int],
 ) -> list[Sharding]:
-
-  def _get_overhead(builder, suite, shard_count, overheads):
-    overhead = overheads.get(builder, {}).get(suite, {}).get(shard_count)
-    if overhead:
-      # TODO(crbug.com/407846444): Suites can be in a bad sharding. Since we
-      # only use one set of shards (n and n+1) this can create a bad value
-      # for the overhead so clamp it to reasonable values. At the time of
-      # writing this the min and max are around 0.21 and 4.01. Ideally we
-      # could use more than one set of shardings to determine this overhead.
-      return max(min(overhead, MAX_OVERHEAD_MIN), MIN_OVERHEAD_MIN)
-
-    if 'android' in builder:
-      return ANDROID_OVERHEAD_MIN
-    return DEFAULT_OVERHEAD_MIN
-
-  def _calculate_optimal_shard_count(
-      api: RecipeApi,
-      sharding: Sharding,
-      target_runtime,
-      overhead,
-  ):
-
-    optimal_shard_count = (sharding.shard_count *
-                           (sharding.runtime - overhead)) / (
-                               target_runtime - overhead)
-    # When the overhead is poorly measured it can lead to the shard
-    # count being < 1 (e.g. the default android overhead is used
-    # on a suite taking < 2 min). In these cases force count to 1.
-    integer_optimal_shard_count = max(math.ceil(optimal_shard_count), 1)
-    api.step.empty(
-        'optimal shard calculation',
-        step_text=textwrap.dedent(f"""Calculating optimal shards:
-                                  (current_shard_count * (current_runtime - overhead)) / (target_runtime - overhead))
-
-                                  current_runtime = {sharding.runtime}
-                                  current_shard_count = {sharding.shard_count}
-                                  target_runtime = {target_runtime}
-                                  overhead = {overhead}
-
-                                  optimal_shard_count = {optimal_shard_count} ~= {integer_optimal_shard_count}"""
-                                 ))
-    return integer_optimal_shard_count
-
   with api.step.nest('calculate optimal shards'):
     filtered_shardings = []
     for sharding in shardings:
       with api.step.nest(f'{sharding.try_builder}:{sharding.test_suite}'):
 
-        overhead = _get_overhead(sharding.try_builder, sharding.test_suite,
-                                 sharding.shard_count, overheads)
-
-        sharding.optimal_shard_count = _calculate_optimal_shard_count(
-            api, sharding, target_runtime, overhead)
+        sharding.calculate_optimal_shard_count(api, target_runtime)
 
         # Get the number of shards we need to hit the target_runtime
         old_shard_count = shard_exceptions.get(
             sharding.waterfall_builder_group,
             {}).get(sharding.waterfall_builder_name,
                     {}).get(sharding.test_suite, {}).get('shards', None)
-        if old_shard_count and sharding.shard_count != int(old_shard_count):
-          # This row is for an old shard count that is no longer being used.
-          api.step.empty(
-              f'Skipping because it is not using the configured sharding ({old_shard_count})'
-          )
-          continue
-        if not old_shard_count and sharding.optimal_shard_count < sharding.shard_count:
-          # Do not reduce shard counts for tests that have never been autosharded.
-          # Only increase these.
-          api.step.empty(
-              'Skipping non-autosharded suite with a higher shard count')
-          continue
-        if sharding.optimal_shard_count == sharding.shard_count:
-          api.step.empty('Skipping already optimized sharding')
-          continue
-        if not old_shard_count and sharding.shard_count == 1:
-          api.step.empty('Skipping unverified shardable suite')
-          continue
-
-        # Double check we have successfully sharded below the desired runtime.
-        # This should be impossible as adding shards should only reduce runtimes
-        overhead_change = (sharding.optimal_shard_count -
-                           sharding.shard_count) * overhead
-        simulated_max_shard_duration = (
-            (sharding.runtime * sharding.shard_count + overhead_change) /
-            sharding.optimal_shard_count)
-
-        assert simulated_max_shard_duration <= target_runtime, (
-            f'Simulated runtime {simulated_max_shard_duration} is greater '
-            f'than the desired runtime {target_runtime}')
-
-        # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
-        estimated_bot_hour_cost = round(
-            (sharding.optimal_shard_count - sharding.shard_count) *
-            (overhead / 60.0) * builds_per_hour[sharding.try_builder], 2)
-        api.step.empty(
-            'estimated_cost',
-            step_text=f'Estimated change in bot hours: {estimated_bot_hour_cost}'
-        )
-
-        filtered_shardings.append(sharding)
+        if sharding.check_valid_sharding(api, old_shard_count):
+          filtered_shardings.append(sharding)
   return filtered_shardings
 
 
@@ -363,9 +365,10 @@ def _run_query(api: RecipeApi, query: str) -> list[dict[str, Any]]:
 
 def _query_avg_builds_per_hour(
     api: RecipeApi,
+    shardings: list[Sharding],
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
-) -> dict[str, int]:
+) -> None:
   with api.step.nest('query average builds per hour'):
     query_tmpl = api.file.read_text(
         'read_query',
@@ -376,15 +379,16 @@ def _query_avg_builds_per_hour(
         lookback_start_date=lookback_start_date,
         lookback_end_date=lookback_end_date,
     )
-    result = _run_query(api, query)
-    builder_to_builds_per_hour = {
-        row['try_builder']: int(row['avg_count']) for row in result
-    }
-    return builder_to_builds_per_hour
+    rows = _run_query(api, query)
+    for row in rows:
+      for sharding in shardings:
+        if row['try_builder'] == sharding.try_builder:
+          sharding.builds_per_hour = int(row['avg_count'])
 
 
 def _query_overheads(
     api: RecipeApi,
+    shardings: list[Sharding],
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
 ) -> dict[str, dict[str, dict[int, float]]]:
@@ -401,15 +405,16 @@ def _query_overheads(
         lookback_end_date=lookback_end_date,
     )
     rows = _run_query(api, query)
-    trybuilder_to_overheads = {}
     for row in rows:
-      sharding = int(row['normally_assigned_shard_count'])
+      shard_count = int(row['normally_assigned_shard_count'])
       overhead = (float(row['p50_task_setup_duration_sec']) +
                   float(row['p50_test_harness_overhead_sec'])) / 60
-      trybuilder_to_overheads.setdefault(row['try_builder'],
-                                         {}).setdefault(row['test_suite'],
-                                                        {})[sharding] = overhead
-    return trybuilder_to_overheads
+
+      for sharding in shardings:
+        if (sharding.try_builder == row['try_builder'] and
+            sharding.test_suite == row['test_suite'] and
+            sharding.shard_count == shard_count):
+          sharding.overhead = overhead
 
 
 def _query_durations(
