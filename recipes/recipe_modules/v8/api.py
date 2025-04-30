@@ -823,7 +823,8 @@ class V8Api(recipe_api.RecipeApi):
       else:
         None
     """
-    with self.ensure_osx_sdk_if_needed():
+    with (self.ensure_osx_sdk_if_needed(),
+          self.m.chromium.guard_compile(build_dir)):
       # Calculate targets to isolate from V8-side test specification. The
       # test_spec contains extra TestStepConfig objects for the current builder
       # and all its triggered builders.
