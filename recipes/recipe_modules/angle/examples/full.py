@@ -121,7 +121,8 @@ def GenTests(api):
         platform=platform,
         test_mode=test_mode,
     ) + api.angle.builders(_TEST_BUILDERS) + api.angle.trybots(
-        _TEST_TRYBOTS) + api.angle.override_commit_pos_data()
+        _TEST_TRYBOTS) + api.angle.override_commit_pos_data(
+        ) + api.siso.properties()
 
   yield api.test(
       'android_test',

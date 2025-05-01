@@ -90,9 +90,11 @@ class ANGLEApi(recipe_api.RecipeApi):
         '--log',
         'debug',
         '--gtest_filter=%s' % gtest_filter,
-        '--out-dir=%s' % checkout.joinpath('out', 'CaptureReplayTest'),
-        '--use-reclient',
+        '--out-dir=%s' % checkout.joinpath('out_CaptureReplayTest'),
+        '--use-remoteexec',
     ]
+    if self.m.siso.enabled:
+      cmd += ['--use-siso']
     if self.m.platform.is_linux:
       cmd += ['--xvfb']
     self.m.step(step_name, cmd)

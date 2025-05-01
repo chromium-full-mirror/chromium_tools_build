@@ -47,7 +47,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'angle_root': 'angle', 'checkout_angle_internal': True}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'angle', 'url': 'https://chromium.googlesource.com/angle/angle'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'angle_root': 'angle', 'checkout_angle_internal': True, 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'angle', 'url': 'https://chromium.googlesource.com/angle/angle'}]",
       "--revision_mapping_file",
       "{\"got_angle_revision\": \"angle\", \"got_revision\": \"angle\"}",
       "--git-cache-dir",
@@ -201,8 +201,9 @@
       "--log",
       "debug",
       "--gtest_filter=*/ES2_Vulkan_SwiftShader",
-      "--out-dir=[CACHE]\\builder\\angle\\out\\CaptureReplayTest",
-      "--use-reclient"
+      "--out-dir=[CACHE]\\builder\\angle\\out_CaptureReplayTest",
+      "--use-remoteexec",
+      "--use-siso"
     ],
     "cwd": "[CACHE]\\builder\\angle",
     "luci_context": {
