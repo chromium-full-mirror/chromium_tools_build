@@ -2,14 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import copy
 import dataclasses
 import datetime
 import math
 import textwrap
-from typing import Any
+from typing import Any, Self
 
-from recipe_engine import post_process
+from recipe_engine import post_process, config_types
 from recipe_engine.recipe_api import RecipeApi
 
 from PB.recipes.build.chromium.autosharder import InputProperties
@@ -98,13 +97,17 @@ class Sharding:
   waterfall_builder_group: str
   waterfall_builder_name: str
   shard_count: int
-  runtime: float
-  builds_per_hour: int = None
-  optimal_shard_count: int = None
-  _overhead: float = None
+  runtime: float | None
+  builds_per_hour: int | None = None
+  optimal_shard_count: int | None = None
+  _overhead: float | None = None
 
   @property
-  def overhead(self):
+  def id(self) -> str:
+    return f'{self.try_builder}:{self.test_suite}'
+
+  @property
+  def overhead(self) -> float:
     if self._overhead:
       return self._overhead
     if 'android' in self.try_builder:
@@ -112,7 +115,7 @@ class Sharding:
     return DEFAULT_OVERHEAD_MIN
 
   @overhead.setter
-  def overhead(self, value):
+  def overhead(self, value: float):
     # Suites can be in a bad sharding. Since we only use one set of shards
     # (n and n+1) this can create a bad value for the overhead so clamp it
     # to reasonable values. At the time of writing this the min and max are
@@ -123,7 +126,7 @@ class Sharding:
   def calculate_optimal_shard_count(
       self,
       api: RecipeApi,
-      target_runtime,
+      target_runtime: float,
   ):
 
     optimal_shard_count = (self.shard_count *
@@ -153,7 +156,7 @@ class Sharding:
 
     return self.optimal_shard_count
 
-  def _check_runtime(self, target_runtime):
+  def _check_runtime(self, target_runtime: float) -> None:
     # Double check we have successfully sharded below the desired runtime.
     # This should be impossible as adding shards should only reduce runtimes
     overhead_change = (self.optimal_shard_count -
@@ -166,7 +169,7 @@ class Sharding:
         f'Simulated runtime {simulated_max_shard_duration} is greater '
         f'than the desired runtime {target_runtime}')
 
-  def _emit_cost_step(self, api):
+  def _emit_cost_step(self, api: RecipeApi):
     # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
     estimated_bot_hour_cost = round(
         (self.optimal_shard_count - self.shard_count) * (self.overhead / 60.0) *
@@ -175,8 +178,8 @@ class Sharding:
         'estimated_cost',
         step_text=f'Estimated change in bot hours: {estimated_bot_hour_cost}')
 
-  def check_valid_sharding(self, api, old_sharding):
-    if old_sharding and self.shard_count != int(old_sharding):
+  def check_valid_sharding(self, api: RecipeApi, old_sharding: Self) -> bool:
+    if old_sharding and self.shard_count != int(old_sharding.shard_count):
       # This row is for an old shard count that is no longer being used.
       api.step.empty(
           f'Skipping because it is not using the configured sharding ({old_sharding})'
@@ -203,11 +206,11 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   api.chromium.set_config('chromium')
 
   api.chromium_checkout.ensure_checkout()
-  maybe_result = check_run_conditions(api)
+  maybe_result = _check_run_conditions(api)
   if maybe_result:
     return maybe_result
 
-  setup_git(api)
+  _setup_git(api)
 
   _calculate_optimal_shards(api, properties.target_runtime)
 
@@ -271,16 +274,13 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
       lookback_start_date,
       lookback_end_date,
   )
-
   cq_builders = _query_cq_builders(api)
-
   _query_overheads(
       api,
       shardings,
       lookback_start_date,
       lookback_end_date,
   )
-
   _query_avg_builds_per_hour(
       api,
       shardings,
@@ -288,19 +288,48 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
       lookback_end_date,
   )
 
-  exceptions_file = api.chromium_checkout.source_dir.joinpath(
-      'infra', 'config', 'targets', 'autoshard_exceptions.json')
-  shard_exceptions = api.m.file.read_json(
-      'read current exceptions file', exceptions_file, test_data={})
+  old_shardings, exceptions_file = _load_shardings_file(api)
 
   shardings = _calculate_optimal_shard_counts(
       api,
-      shardings,
       target_runtime,
-      shard_exceptions,
+      shardings,
+      old_shardings,
+  )
+  shardings = [
+      sharding for sharding in shardings if sharding.try_builder in cq_builders
+  ]
+  _save_shardings_file(
+      api,
+      shardings,
+      exceptions_file,
   )
 
+
+def _load_shardings_file(api: RecipeApi):
+  exceptions_file = api.chromium_checkout.source_dir.joinpath(
+      'infra', 'config', 'targets', 'autoshard_exceptions.json')
+  exceptions_json = api.m.file.read_json(
+      'read current exceptions file', exceptions_file, test_data={})
+  return [
+      Sharding(
+          test_suite=test_suite,
+          try_builder=shard_info['try_builder'],
+          waterfall_builder_group=group,
+          waterfall_builder_name=ci_builder,
+          optimal_shard_count=shard_info['shards'],
+          shard_count=shard_info['shards'],
+          runtime=None)
+      for group, ci_builders in exceptions_json.items()
+      for ci_builder, test_suites in ci_builders.items()
+      for test_suite, shard_info in test_suites.items()
+  ], exceptions_file
+
+
+def _save_shardings_file(api: RecipeApi, shardings: list[Sharding],
+                         exceptions_file: config_types.Path):
   # Update the file contents
+  shard_exceptions = {}
   for sharding in shardings:
     suite_exception = {
         sharding.test_suite: {
@@ -312,8 +341,6 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
                                 {}).setdefault(sharding.waterfall_builder_name,
                                                {}).update(suite_exception)
 
-  _prune_builders(shard_exceptions, cq_builders)
-
   api.file.write_json(
       'write exceptions file',
       exceptions_file,
@@ -324,25 +351,23 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
 
 def _calculate_optimal_shard_counts(
     api: RecipeApi,
-    shardings: list[Sharding],
     target_runtime: float,
-    shard_exceptions: dict[str, dict[str, dict[str, dict[str, Any]]]],
+    shardings: list[Sharding],
+    old_shardings: list[Sharding],
 ) -> list[Sharding]:
+  builder_suite_shardings = {s.id: s for s in old_shardings}
+
   with api.step.nest('calculate optimal shards'):
-    filtered_shardings = []
     for sharding in shardings:
-      with api.step.nest(f'{sharding.try_builder}:{sharding.test_suite}'):
+      with api.step.nest(sharding.id):
 
         sharding.calculate_optimal_shard_count(api, target_runtime)
 
         # Get the number of shards we need to hit the target_runtime
-        old_shard_count = shard_exceptions.get(
-            sharding.waterfall_builder_group,
-            {}).get(sharding.waterfall_builder_name,
-                    {}).get(sharding.test_suite, {}).get('shards', None)
-        if sharding.check_valid_sharding(api, old_shard_count):
-          filtered_shardings.append(sharding)
-  return filtered_shardings
+        old_sharding = builder_suite_shardings.get(sharding.id, None)
+        if sharding.check_valid_sharding(api, old_sharding):
+          builder_suite_shardings[sharding.id] = sharding
+  return list(builder_suite_shardings.values())
 
 
 def _run_query(api: RecipeApi, query: str) -> list[dict[str, Any]]:
@@ -391,7 +416,7 @@ def _query_overheads(
     shardings: list[Sharding],
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
-) -> dict[str, dict[str, dict[int, float]]]:
+) -> None:
 
   with api.step.nest('query overheads'):
     query_tmpl = api.file.read_text(
@@ -477,25 +502,7 @@ def _query_cq_builders(api: RecipeApi) -> list[str]:
     return [row['builder'] for row in rows]
 
 
-def _prune_builders(
-    shard_exceptions: dict[str, dict[str, dict[str, dict[str, Any]]]],
-    cq_builders: list[str],
-) -> None:
-  for builder_group_name, builder_group in copy.deepcopy(
-      shard_exceptions).items():
-    for ci_builder_name, ci_builder in builder_group.items():
-      for test_suite_name, test_suite in ci_builder.items():
-        try_builder = test_suite['try_builder']
-        if try_builder not in cq_builders:
-          del shard_exceptions[builder_group_name][ci_builder_name][
-              test_suite_name]
-      if len(shard_exceptions[builder_group_name][ci_builder_name]) == 0:
-        del shard_exceptions[builder_group_name][ci_builder_name]
-    if len(shard_exceptions[builder_group_name]) == 0:
-      del shard_exceptions[builder_group_name]
-
-
-def check_run_conditions(api: RecipeApi) -> result_pb2.RawResult:
+def _check_run_conditions(api: RecipeApi) -> result_pb2.RawResult:
   # If it's a led job, we almost certainly want to run
   if api.led.led_build:
     return None
@@ -567,7 +574,7 @@ def check_run_conditions(api: RecipeApi) -> result_pb2.RawResult:
   return None
 
 
-def setup_git(api: RecipeApi) -> None:
+def _setup_git(api: RecipeApi) -> None:
   api.git('config', 'user.name', 'autosharder')
   api.git('branch', '-D', 'autoshard', ok_ret='any')
   api.git('restore', '--staged', '.')
