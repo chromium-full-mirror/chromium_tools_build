@@ -49,28 +49,6 @@ Ignore-Freeze:True
 
 _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 
-# TODO(http://crbug.com/407846444): Move these to builder config
-# All suites triggered by the builder will not be autosharded.
-BUILDER_EXCLUDE_SET = set([
-    'mac-rel',
-    'mac14-arm64-rel',
-    'ios-simulator',
-    'ios-simulator-full-configs',
-    'android-arm64-rel',
-])
-
-# Test suites will not be autosharded on all builders that run the test suite.
-# Example: 'browser_tests' -> turns of browser_tests on linux-rel and win-rel
-TEST_SUITE_EXCLUDE_SET = set([
-    # 'chrome_all_tast_tests': crbug.com/1516971
-    'chrome_all_tast_tests',
-])
-
-# Test suite and try builder dicts that should not be autosharded any further.
-# Maps try builder to set of test suite
-# Example: {'linux-rel': {'browser_tests'}}
-BUILDER_TEST_SUITE_EXCLUDE_DICT = {}
-
 # Minimum number of non-experimental samples to allow a suite to be
 # resharded
 MIN_SAMPLE_SIZE = 1500
@@ -212,7 +190,13 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
   _setup_git(api)
 
-  _calculate_optimal_shards(api, properties.target_runtime)
+  _calculate_optimal_shards(
+      api,
+      properties.target_runtime,
+      properties.exclude_test_suites,
+      properties.exclude_builders,
+      properties.exclude_builder_test_suites,
+  )
 
   def step_test_data():
     return api.raw_io.test_api.stream_output_text(
@@ -260,7 +244,13 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
       )
 
 
-def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
+def _calculate_optimal_shards(
+    api: RecipeApi,
+    target_runtime: float,
+    exclude_suites: list[str],
+    exclude_builders: list[str],
+    exclude_builder_suites: dict[str, list[str]],
+) -> None:
   api.step('which bq', ['which', 'bq'])
 
   today = api.time.utcnow()
@@ -273,6 +263,9 @@ def _calculate_optimal_shards(api: RecipeApi, target_runtime: float) -> None:
       target_runtime,
       lookback_start_date,
       lookback_end_date,
+      exclude_suites,
+      exclude_builders,
+      exclude_builder_suites,
   )
   cq_builders = _query_cq_builders(api)
   _query_overheads(
@@ -447,6 +440,9 @@ def _query_durations(
     target_runtime: float,
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
+    exclude_suites: list[str],
+    exclude_builders: list[str],
+    exclude_builder_suites: dict[str, list[str]],
 ) -> list[Sharding]:
 
   def _join_sql_collection(collection):
@@ -470,11 +466,12 @@ def _query_durations(
         ignore_cl_owner=_join_sql_collection([
             'chromium-autosharder@chops-service-accounts.iam.gserviceaccount.com'
         ]),
-        exclude_test_suites=_join_sql_collection(TEST_SUITE_EXCLUDE_SET),
-        exclude_builders=_join_sql_collection(BUILDER_EXCLUDE_SET),
+        exclude_test_suites=_join_sql_collection(exclude_suites),
+        exclude_builders=_join_sql_collection(exclude_builders),
         exclude_builder_suites=_join_sql_collection([
             f'{builder}:{suite}'
-            for builder, suite in BUILDER_TEST_SUITE_EXCLUDE_DICT.items()
+            for builder, suites in exclude_builder_suites.items()
+            for suite in suites.suites
         ]),
     )
     rows = _run_query(api, query)
@@ -757,6 +754,54 @@ def GenTests(api: RecipeApi):
       api.post_process(post_process.MustRun, 'git cl upload'),
       api.post_process(check_sharding, 'chromium.linux', 'Linux Tests',
                        'browser_tests', 15),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'excludes_builder_test_suites',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+      ),
+      api.properties(
+          target_runtime=15.0,
+          exclude_test_suites=['s1', 's2'],
+          exclude_builders=['b1', 'b2'],
+          exclude_builder_test_suites={'b': {
+              'suites': ['s1', 's2']
+          }},
+      ),
+      api.override_step_data(
+          'query durations.read_query',
+          api.file.read_text(
+              '{exclude_test_suites}/{exclude_builders}/{exclude_builder_suites}'
+          ),
+      ),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.StepCommandContains,
+                       'query durations.query',
+                       ['"s1","s2"/"b1","b2"/"b:s1","b:s2"']),
+      api.post_process(post_process.MustRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -6,9 +6,26 @@ syntax = "proto3";
 
 package recipes.build.chromium.autosharder;
 
-// Next ID: 2
+// Next ID: 5
 message InputProperties {
 
   // Required, the target time to make tests run
   float target_runtime = 1;
+
+  // Test suites will not be autosharded on all builders that run the test suite.
+  // Example: 'browser_tests' -> turns of browser_tests on linux-rel and win-rel
+  repeated string exclude_test_suites = 2;
+
+  // All suites triggered by the builder will not be autosharded.
+  repeated string exclude_builders = 3;
+
+  // Next ID: 2
+  message SuiteList {
+    repeated string suites = 1;
+  }
+
+  // Test suite and try builder dicts that should not be autosharded any further.
+  // Maps try builder to set of test suite
+  // Example: {'linux-rel': {'suites': ['browser_tests']}}
+  map<string, SuiteList> exclude_builder_test_suites = 4;
 }
