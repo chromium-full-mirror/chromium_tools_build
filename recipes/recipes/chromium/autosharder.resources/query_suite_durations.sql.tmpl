@@ -11,8 +11,7 @@ build_task_ids AS (
   FROM
     `{builds_project}`.{builds_dataset}.builds b
   WHERE
-    b.start_time > '{lookback_start_date}'
-    AND b.start_time <= '{lookback_end_date}'
+    b.start_time BETWEEN '{lookback_start_date}' AND '{lookback_end_date}'
     AND b.builder.bucket = 'try'
     AND JSON_VALUE(b.input.properties, '$.cq') = 'required'
     AND JSON_QUERY(b.output.properties, '$.rts_was_used') IS NULL
@@ -53,10 +52,7 @@ deduped_tasks AS (
   WHERE
     request.parent_task_id IS NOT NULL
     # Ignore all retry and flakiness step level runs
-    # TODO(sshrimp): this is fragile and should be handled another way
-    AND request.name NOT LIKE '%retry shards%'
-    AND request.name NOT LIKE '%without patch%'
-    AND request.name NOT LIKE '%check flakiness%'
+    AND EXISTS(SELECT 0 FROM UNNEST(request.tags) t WHERE t = 'test_phase:with patch')
     # Ignore tasks deduped by swarming
     AND start_time > create_time
     AND DATE(end_time) BETWEEN
@@ -86,8 +82,6 @@ durations_per_build_and_suite AS (
     ANY_VALUE(waterfall_builder_group) waterfall_builder_group,
     ANY_VALUE(waterfall_builder_name) waterfall_builder_name,
     MAX(running_duration_sec) max_shard_duration_sec,
-    MAX(pending_time_sec) max_pending_time_sec,
-    SUM(running_duration_sec) total_shard_duration,
     COUNT(*) shard_count,
   FROM tasks
   GROUP BY
@@ -129,8 +123,7 @@ suite_and_builder_durations AS (
 most_recent_shard_counts AS (
   SELECT
     ARRAY_AGG(
-      (shard_count, sample_size) ORDER BY most_recent DESC)[
-      OFFSET(0)][OFFSET(0)]
+      (shard_count, sample_size) ORDER BY most_recent DESC)[OFFSET(0)][OFFSET(0)]
       AS most_recent_shard_count,
     test_suite,
     try_builder
