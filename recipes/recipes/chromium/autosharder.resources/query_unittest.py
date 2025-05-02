@@ -569,6 +569,131 @@ class QueryIntegrationTests(unittest.TestCase):
     row = get_builder_row('monday-heavy')
     self.assertEqual(float(row['avg_count']), 5)
 
+  def testOverhead(self):
+    start_date = datetime.datetime(2025, 1, 5)
+    end_date = datetime.datetime(2025, 1, 12)
+
+    # A build with perfect, 0 overhead
+    builds = [
+        # Normal build
+        Build(
+            'perfect-overhead-try-builder', 'foo-group', 'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1), [
+                Suite(
+                    name='foo-suite',
+                    tasks=[
+                        Task(
+                            duration=10.0,
+                            create_time=start_date + datetime.timedelta(0, 10),
+                            start_time=start_date + datetime.timedelta(0, 20)),
+                    ])
+            ]),
+        # n+1 experimental build
+        Build('perfect-overhead-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(0, 1), [
+                  Suite(
+                      name='foo-suite',
+                      tasks=[
+                          Task(
+                              duration=5.0,
+                              create_time=start_date + datetime.timedelta(0, 1),
+                              start_time=start_date + datetime.timedelta(0, 2)),
+                          Task(
+                              duration=5.0,
+                              create_time=start_date + datetime.timedelta(0, 1),
+                              start_time=start_date + datetime.timedelta(0, 2)),
+                      ],
+                      normally_assigned_shard_count=1,
+                      experimental_shard_count=2),
+              ])
+    ]
+
+    # Build with 1 overhead
+    builds.extend([
+        # Normal build
+        Build(
+            'one-overhead-try-builder',
+            'foo-group',
+            'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1),
+            [
+                Suite(
+                    name='foo-suite',
+                    tasks=[
+                        # 9 minutes of testing, 1 min of overhead per shard
+                        Task(
+                            duration=5.5,
+                            create_time=start_date + datetime.timedelta(0, 1),
+                            start_time=start_date + datetime.timedelta(0, 2)),
+                        Task(
+                            duration=5.5,
+                            create_time=start_date + datetime.timedelta(0, 1),
+                            start_time=start_date + datetime.timedelta(0, 2)),
+                    ])
+            ]),
+        # n+1 experimental build
+        Build(
+            'one-overhead-try-builder',
+            'foo-group',
+            'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1),
+            [
+                Suite(
+                    name='foo-suite',
+                    # 1 min overhead per shard still means 9 mins of
+                    # testing total
+                    tasks=[
+                        Task(
+                            duration=4.0,
+                            create_time=start_date + datetime.timedelta(0, 1),
+                            start_time=start_date + datetime.timedelta(0, 2)),
+                        Task(
+                            duration=4.0,
+                            create_time=start_date + datetime.timedelta(0, 1),
+                            start_time=start_date + datetime.timedelta(0, 2)),
+                        Task(
+                            duration=4.0,
+                            create_time=start_date + datetime.timedelta(0, 1),
+                            start_time=start_date + datetime.timedelta(0, 2)),
+                    ],
+                    normally_assigned_shard_count=2,
+                    experimental_shard_count=3),
+            ])
+    ])
+
+    self._create_builds_table(builds)
+
+    query_file = os.path.join(
+        os.path.dirname(__file__), 'query_test_overheads.sql.tmpl')
+    with open(query_file, 'r', encoding='utf-8') as f:
+      query_str = f.read()
+    query = query_str.format(
+        builds_project=_CLOUD_PROJECT_ID,
+        builds_dataset=self._dataset.dataset_id,
+        tasks_project=_CLOUD_PROJECT_ID,
+        tasks_dataset=self._dataset.dataset_id,
+        lookback_start_date=start_date,
+        lookback_end_date=end_date,
+    )
+    rows = self._run_query([
+        'bq', 'query', '--project_id=' + _CLOUD_PROJECT_ID, '--format=json',
+        '--max_rows=100000', '--nouse_legacy_sql', query
+    ])
+
+    def get_builder_row(builder):
+      for row in rows:
+        if row['try_builder'] == builder:
+          return row
+      return None
+
+    row = get_builder_row('perfect-overhead-try-builder')
+    self.assertEqual(float(row['p50_task_setup_duration_sec']), 0)
+    self.assertEqual(float(row['p50_test_harness_overhead_sec']), 0)
+
+    row = get_builder_row('one-overhead-try-builder')
+    self.assertEqual(float(row['p50_task_setup_duration_sec']), 0)
+    self.assertEqual(float(row['p50_test_harness_overhead_sec']), 1)
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
