@@ -14,6 +14,7 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
+    'recipe_engine/nodejs',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -36,7 +37,7 @@ PROPERTIES = {
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
-def _checkout_steps(api):
+def _checkout_steps(api, build_dawn_node):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
@@ -49,7 +50,10 @@ def _checkout_steps(api):
     # 'dawn'.  To make both cases work, the dawn DEPS file pulls deps and runs
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'dawn' on bots here:
-    api.gclient.c.solutions[0].custom_vars = {'dawn_root': 'dawn'}
+    api.gclient.c.solutions[0].custom_vars = {
+        'dawn_root': 'dawn',
+        'dawn_node': 'True' if build_dawn_node else 'False',
+    }
     if api.siso.enabled:
       api.siso.enable_download_remoteexec_cfg_hook()
     update_result = api.bot_update.ensure_checkout()
@@ -174,8 +178,38 @@ def _generate_fuzz_corpus(api, source_dir, **kwargs):
         name='Upload to the {} seed corpus'.format(fuzzer_name))
 
 
+def _run_dawn_node_test(api, source_dir, dawn_node_exe,
+                        dawn_node_uses_swiftshader):
+  with api.step.nest('Run basic CTS test with dawn.node') as _, \
+    api.nodejs('16.13.0') as _:
+    # Install node deps in webgpu-cts directory
+    cts_dir = source_dir.joinpath('third_party', 'webgpu-cts')
+    with api.context(cwd=cts_dir):
+      api.step('Install CTS dependencies',
+               ['npm.cmd' if api.platform.is_win else 'npm', 'install'])
+    # Run test using run-cts
+    go_path = source_dir.joinpath('tools', 'golang', 'bin')
+    with api.context(cwd=source_dir) as _, \
+        api.context(env_prefixes={'PATH': [go_path]}) as _:
+      case = 'webgpu:api,operation,adapter,requestDevice:default:*'
+      # Run shell scripts with bash on Windows
+      shell_wrapper = ('bash', '--') if api.platform.is_win else ()
+      cmd = ['tools/run', 'run-cts', '-bin', api.path.dirname(dawn_node_exe)]
+      if dawn_node_uses_swiftshader:
+        cmd.extend(['-backend', 'vulkan', '-adapter', 'SwiftShader'])
+      else:
+        cmd.extend(
+            ['-backend', 'd3d12', '-adapter', 'Microsoft Basic Render Driver'])
+      cmd.append(case)
+      api.step(case, cmd, wrapper=shell_wrapper)
+
 def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
-  update_result = _checkout_steps(api)
+  # dawn.node not currently supported on x86
+  build_dawn_node = target_cpu != 'x86'
+  # On Windows, we use D3D12 WARP for dawn_node, otherwise we use SwiftShader
+  dawn_node_uses_swiftshader = not api.platform.is_win
+
+  update_result = _checkout_steps(api, build_dawn_node)
   source_dir = update_result.source_root.path
   if gen_fuzz_corpus:
     _generate_fuzz_corpus(
@@ -199,6 +233,8 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
         is_clang=clang,
         is_component_build=False,
         dawn_use_swiftshader=False,
+        dawn_build_node_bindings=build_dawn_node and
+        not dawn_node_uses_swiftshader,
         **extra_gn_args,
     ) as build:
       # Build default targets, and specifically the unittest binaries.
@@ -206,6 +242,8 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
                                                   'tint_unittests')
       if api.platform.is_win and not debug:
         (dawn_end2end_tests_warp,) = build('dawn_end2end_tests')
+      if build_dawn_node and not dawn_node_uses_swiftshader:
+        (dawn_node,) = build('dawn_node')
 
     if not api.platform.is_win:
       with _gn_build(
@@ -234,9 +272,15 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
         is_clang=clang,
         is_component_build=True,
         dawn_use_swiftshader=True,
+        dawn_build_node_bindings=build_dawn_node and dawn_node_uses_swiftshader,
         **extra_gn_args,
     ) as build:
       (dawn_end2end_tests_swiftshader,) = build('dawn_end2end_tests')
+      if build_dawn_node and dawn_node_uses_swiftshader:
+        (dawn_node,) = build('dawn_node')
+
+  if build_dawn_node:
+    _run_dawn_node_test(api, source_dir, dawn_node, dawn_node_uses_swiftshader)
 
   api.step('Run the Dawn unittests', [dawn_unittests])
   api.step('Run the Dawn unittests with the wire',

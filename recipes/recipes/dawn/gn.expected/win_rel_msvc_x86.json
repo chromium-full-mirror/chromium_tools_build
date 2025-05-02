@@ -32,7 +32,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'dawn_root': 'dawn', 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'dawn_node': 'False', 'dawn_root': 'dawn', 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"dawn\"}",
       "--git-cache-dir",
@@ -154,8 +154,8 @@
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\dawn",
       "gen",
-      "//out/4496a5bf1e66c9c2d9137c37766972cb1e366a6c",
-      "--args=target_cpu=\"x86\" is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false use_custom_libcxx=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
+      "//out/10c8e7057101ea0da751db8d7c4277fa710d4008",
+      "--args=target_cpu=\"x86\" is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false dawn_build_node_bindings=false use_custom_libcxx=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
     "luci_context": {
@@ -186,7 +186,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\dawn\\out\\4496a5bf1e66c9c2d9137c37766972cb1e366a6c",
+      "[CACHE]\\builder\\dawn\\out\\10c8e7057101ea0da751db8d7c4277fa710d4008",
       "default",
       "dawn_unittests",
       "tint_unittests"
@@ -227,7 +227,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\dawn\\out\\4496a5bf1e66c9c2d9137c37766972cb1e366a6c",
+      "[CACHE]\\builder\\dawn\\out\\10c8e7057101ea0da751db8d7c4277fa710d4008",
       "dawn_end2end_tests"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
@@ -258,8 +258,8 @@
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\dawn",
       "gen",
-      "//out/1814f1e92a4bb7ffbc874583966a0f3fc8dac8c1",
-      "--args=target_cpu=\"x86\" is_debug=false is_clang=false is_component_build=true dawn_use_swiftshader=true use_custom_libcxx=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true dawn_enable_d3d12=false"
+      "//out/a53b56959a4375c412819d63d322103909837939",
+      "--args=target_cpu=\"x86\" is_debug=false is_clang=false is_component_build=true dawn_use_swiftshader=true dawn_build_node_bindings=false use_custom_libcxx=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
     "luci_context": {
@@ -290,7 +290,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\dawn\\out\\1814f1e92a4bb7ffbc874583966a0f3fc8dac8c1",
+      "[CACHE]\\builder\\dawn\\out\\a53b56959a4375c412819d63d322103909837939",
       "dawn_end2end_tests"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
@@ -317,7 +317,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\4496a5bf1e66c9c2d9137c37766972cb1e366a6c\\dawn_unittests"
+      "[CACHE]\\builder\\dawn\\out\\10c8e7057101ea0da751db8d7c4277fa710d4008\\dawn_unittests"
     ],
     "luci_context": {
       "realm": {
@@ -335,7 +335,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\4496a5bf1e66c9c2d9137c37766972cb1e366a6c\\dawn_unittests",
+      "[CACHE]\\builder\\dawn\\out\\10c8e7057101ea0da751db8d7c4277fa710d4008\\dawn_unittests",
       "--use-wire"
     ],
     "luci_context": {
@@ -354,7 +354,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\4496a5bf1e66c9c2d9137c37766972cb1e366a6c\\tint_unittests"
+      "[CACHE]\\builder\\dawn\\out\\10c8e7057101ea0da751db8d7c4277fa710d4008\\tint_unittests"
     ],
     "luci_context": {
       "realm": {
@@ -372,7 +372,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\4496a5bf1e66c9c2d9137c37766972cb1e366a6c\\dawn_end2end_tests",
+      "[CACHE]\\builder\\dawn\\out\\10c8e7057101ea0da751db8d7c4277fa710d4008\\dawn_end2end_tests",
       "--adapter-vendor-id=0x1414"
     ],
     "luci_context": {
@@ -391,7 +391,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\1814f1e92a4bb7ffbc874583966a0f3fc8dac8c1\\dawn_end2end_tests",
+      "[CACHE]\\builder\\dawn\\out\\a53b56959a4375c412819d63d322103909837939\\dawn_end2end_tests",
       "--adapter-vendor-id=0x1AE0"
     ],
     "luci_context": {
@@ -410,7 +410,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\1814f1e92a4bb7ffbc874583966a0f3fc8dac8c1\\dawn_end2end_tests",
+      "[CACHE]\\builder\\dawn\\out\\a53b56959a4375c412819d63d322103909837939\\dawn_end2end_tests",
       "--backend=opengles",
       "--use-angle=swiftshader",
       "--enable-toggles=gl_force_es_31_and_no_extensions"
