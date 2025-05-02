@@ -507,5 +507,68 @@ class QueryIntegrationTests(unittest.TestCase):
     # Infrequently run builders don't get sharded
     self.assertIsNone(get_builder_row('infrequently-run-builder'))
 
+  def testAvgBuildsPerHour(self):
+    start_date = datetime.datetime(
+        2025, 1, 5, tzinfo=ZoneInfo('America/Los_Angeles'))
+    end_date = datetime.datetime(
+        2025, 1, 12, tzinfo=ZoneInfo('America/Los_Angeles'))
+
+    # Add a builder that runs 1 Monday-Friday and 5 on the weekends (to ignore)
+    builds = [
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder', start_date, [])
+        for _ in range(5)
+    ] + [
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(1), []),
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(2), []),
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(3), []),
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(4), []),
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(5), []),
+    ] + [
+        Build('foo-try-builder', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(6), []) for _ in range(5)
+    ]
+
+    # Add a builder that run 5 on Monday
+    builds.extend([
+        Build('monday-heavy', 'foo-group', 'foo-ci-builder',
+              start_date + datetime.timedelta(1), []) for _ in range(5)
+    ])
+
+    self._create_builds_table(builds)
+
+    query_file = os.path.join(
+        os.path.dirname(__file__),
+        'query_average_number_builds_per_hour.sql.tmpl')
+    with open(query_file, 'r', encoding='utf-8') as f:
+      query_str = f.read()
+    query = query_str.format(
+        builds_project=_CLOUD_PROJECT_ID,
+        builds_dataset=self._dataset.dataset_id,
+        lookback_start_date=start_date,
+        lookback_end_date=end_date,
+    )
+    rows = self._run_query([
+        'bq', 'query', '--project_id=' + _CLOUD_PROJECT_ID, '--format=json',
+        '--max_rows=100000', '--nouse_legacy_sql', query
+    ])
+
+    def get_builder_row(builder):
+      for row in rows:
+        if row['try_builder'] == builder:
+          return row
+      return None
+
+    row = get_builder_row('foo-try-builder')
+    self.assertEqual(float(row['avg_count']), 1)
+
+    row = get_builder_row('monday-heavy')
+    self.assertEqual(float(row['avg_count']), 5)
+
+
 if __name__ == '__main__':
   unittest.main(verbosity=2)
