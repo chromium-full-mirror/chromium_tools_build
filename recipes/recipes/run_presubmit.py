@@ -16,11 +16,13 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/cv',
+    'recipe_engine/findings',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/resultdb',
     'recipe_engine/step',
     'depot_tools/tryserver',
     # The following recipe modules are not used here,
@@ -240,6 +242,8 @@ def _RunStepsInternal(api):
     # Set recipe result values
     if (step_json := presubmit_step.json.output):
       raw_result.summary_markdown = _createSummaryMarkdown(step_json)
+      if api.tryserver.is_tryserver and api.resultdb.enabled:
+        api.presubmit.upload_findings_from_result(step_json)
 
     if presubmit_step.exc_result.retcode == 0:
       raw_result.status = common_pb2.SUCCESS
@@ -727,3 +731,29 @@ def GenTests(api):
       api.properties(runhooks=True, repo_name='v8'),
       api.tryserver.gerrit_change_target_ref('refs/heads/infra/config'),
   )
+
+  yield api.test(
+      'upload_findings',
+      api.buildbucket.try_build(
+          builder='infra_presubmit',
+          git_repo='https://chromium.googlesource.com/infra/luci/recipes-py'),
+      api.step_data(
+          'presubmit',
+          api.json.output({
+              'errors': [],
+              'notifications': [],
+              'warnings': [{
+                  'message': 'this is a message',
+                  'long_text': '',
+                  'items': [],
+                  'locations': [{
+                      'file_path': 'path/to/file',
+                  }],
+                  'fatal': False
+              }]
+          })),
+      api.post_process(
+          post_process.StepSuccess,
+          'upload presubmit results as findings',
+      ), api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation))
