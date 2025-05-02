@@ -140,6 +140,117 @@ from zoneinfo import ZoneInfo
 _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 
 
+class Task:
+  task_id = 0
+
+  def __init__(
+      self,
+      duration: float,
+      start_time: datetime.datetime,
+      create_time: datetime.datetime,
+      end_time: datetime.datetime | None = None,
+  ):
+    self.duration = duration
+    self.start_time = start_time
+    self.create_time = create_time
+    self.end_time = end_time or (start_time + datetime.timedelta(0, duration))
+    self.task_id = Task.task_id
+    Task.task_id += 1
+    self.tags = []
+    self.parent_build = None
+
+  def get_row(self):
+    return {
+        'task_id': self.task_id,
+        'request': {
+            'name': 'foo-task-name',
+            'parent_task_id': self.parent_build.build_task_id,
+            'tags': self.tags,
+        },
+        'duration': self.duration,
+        'start_time': str(self.start_time),
+        'create_time': str(self.create_time),
+        'end_time': str(self.end_time)
+    }
+
+
+class Suite:
+
+  def __init__(
+      self,
+      name: str,
+      tasks: list[Task],
+      normally_assigned_shard_count: int | None = None,
+      experimental_shard_count: int | None = None,
+  ):
+    self.name = name
+    self.tasks = tasks
+    for t in tasks:
+      t.tags.append(f'test_suite:{name}')
+      t.tags.append('test_phase:with patch')
+      if normally_assigned_shard_count:
+        t.tags.append(
+            f'normally_assigned_shard_count:{normally_assigned_shard_count}')
+      if experimental_shard_count:
+        t.tags.append(f'experimental_shard_count:{experimental_shard_count}')
+
+
+class Build:
+  task_id = 0
+
+  def __init__(
+      self,
+      builder: str,
+      waterfall_builder_group: str,
+      waterfall_buildername: str,
+      start_time: datetime,
+      suites: list[Suite],
+  ):
+    self.builder = builder
+    self.start_time = start_time
+    for suite in suites:
+      for task in suite.tasks:
+        task.tags.extend([
+            f'waterfall_builder_group:{waterfall_builder_group}',
+            f'waterfall_buildername:{waterfall_buildername}',
+        ])
+        task.parent_build = self
+    self.suites = suites
+
+    self.build_task_id = Build.task_id
+    Build.task_id += 1
+
+  def get_row(self):
+    return {
+        'builder': {
+            'builder': self.builder,
+            'bucket': 'try',
+            'project': 'chromium',
+        },
+        'start_time': str(self.start_time),
+        'infra': {
+            'backend': {
+                'task': {
+                    'id': {
+                        'id': self.build_task_id
+                    },
+                },
+            },
+        },
+        'input': {
+            'properties': json.dumps({'cq': 'required'}),
+        },
+        'output': {
+            'properties': None,
+        },
+        'status': 'SUCCESS',
+        'tags': [{
+            'key': 'cq_cl_owner',
+            'value': 'foo_user@bar.com',
+        }]
+    }
+
+
 def is_retryable(exc):
   # If the dataset isn't found it's most likely because it was just recreated
   is_404 = isinstance(exc, exceptions.NotFound)
@@ -200,6 +311,16 @@ class QueryIntegrationTests(unittest.TestCase):
     self._client.insert_rows(
         self._cq_builders_table, cq_builders, timeout=120, retry=self._retry)
 
+  def _create_builds_table(self, builds: list[Build]):
+    self._client.insert_rows_json(
+        self._builds_table, [b.get_row() for b in builds],
+        timeout=120,
+        retry=self._retry)
+    task_rows = [t.get_row() for b in builds for s in b.suites for t in s.tasks]
+    if task_rows:
+      self._client.insert_rows_json(
+          self._tasks_table, task_rows, timeout=120, retry=self._retry)
+
   def _run_query(self, args):
     try:
       output = subprocess.check_output(args)
@@ -230,6 +351,161 @@ class QueryIntegrationTests(unittest.TestCase):
     self.assertEqual(
         set(r['builder'] for r in rows), set(i[0] for i in cq_builders))
 
+  def testQuerySuiteDurations(self):
+    start_date = datetime.datetime(2025, 1, 6)
+    end_date = datetime.datetime(2025, 1, 13)
+
+    min_sample_size = 11
+    # Simple builder with 2 suites (sharded with 1 and 2 shard counts)
+    # that run consistently for the minimum sample count
+    builds = ([
+        Build(
+            'foo-try-builder', 'foo-group', 'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1), [
+                Suite(
+                    name='foo-suite-with-1-shard',
+                    tasks=[
+                        Task(
+                            duration=10.0,
+                            create_time=start_date + datetime.timedelta(0, 10),
+                            start_time=start_date + datetime.timedelta(0, 20)),
+                    ]),
+                Suite(
+                    name='foo-suite-with-2-shards',
+                    tasks=[
+                        Task(
+                            duration=20.0,
+                            create_time=start_date + datetime.timedelta(0, 20),
+                            start_time=start_date + datetime.timedelta(0, 40)),
+                        Task(
+                            duration=10.0,
+                            create_time=start_date + datetime.timedelta(0, 10),
+                            start_time=start_date + datetime.timedelta(0, 20)),
+                    ])
+            ]) for _ in range(min_sample_size)
+    ])
+
+    # Add a builder that has different performances half the time it runs
+    builds.extend([
+        Build(
+            'changing-runtimes-between-builds',
+            'foo-group',
+            'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1),
+            [
+                Suite(
+                    name='foo-suite',
+                    tasks=[
+                        Task(
+                            duration=10.0,
+                            # Pending of 20
+                            create_time=start_date + datetime.timedelta(0, 10),
+                            start_time=start_date + datetime.timedelta(0, 30)),
+                    ])
+            ]) for _ in range(6)
+    ] + [
+        Build(
+            'changing-runtimes-between-builds',
+            'foo-group',
+            'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1),
+            [
+                Suite(
+                    name='foo-suite',
+                    tasks=[
+                        Task(
+                            duration=20.0,
+                            # Pending of 40
+                            create_time=start_date + datetime.timedelta(0, 10),
+                            start_time=start_date + datetime.timedelta(0, 50)),
+                    ])
+            ]) for _ in range(6)
+    ])
+
+    # Add a builder that doesn't run enough to get sharded
+    builds.extend([
+        Build(
+            'infrequently-run-builder', 'foo-group', 'foo-ci-builder',
+            start_date + datetime.timedelta(0, 1), [
+                Suite(
+                    name='foo-suite',
+                    tasks=[
+                        Task(
+                            duration=10.0,
+                            create_time=start_date + datetime.timedelta(0, 10),
+                            start_time=start_date + datetime.timedelta(0, 20)),
+                    ])
+            ]) for _ in range(min_sample_size - 1)
+    ])
+
+    self._create_builds_table(builds)
+
+    query_file = os.path.join(
+        os.path.dirname(__file__), 'query_suite_durations.sql.tmpl')
+    with open(query_file, 'r', encoding='utf-8') as f:
+      query = f.read().format(
+          builds_project=_CLOUD_PROJECT_ID,
+          builds_dataset=self._dataset.dataset_id,
+          tasks_project=_CLOUD_PROJECT_ID,
+          tasks_dataset=self._dataset.dataset_id,
+          lookback_start_date=start_date,
+          lookback_end_date=end_date,
+          percentile=80,  # default
+          min_sample_size=10,
+          target_runtime=15.0,
+          ignore_cl_owner='""',
+          exclude_test_suites='""',
+          exclude_builders='""',
+          exclude_builder_suites='""',
+      )
+
+    rows = self._run_query([
+        'bq', 'query', '--project_id=' + _CLOUD_PROJECT_ID, '--format=json',
+        '--max_rows=100000', '--nouse_legacy_sql', query
+    ])
+
+    def get_builder_row(builder, suite=None):
+      for row in rows:
+        if row['try_builder'] == builder and (not suite or
+                                              row['test_suite'] == suite):
+          return row
+      return None
+
+    # Single shard suite
+    row = get_builder_row('foo-try-builder', 'foo-suite-with-1-shard')
+    self.assertEqual(int(row['sample_size']), min_sample_size)
+    self.assertEqual(row['test_suite'], 'foo-suite-with-1-shard')
+    self.assertEqual(row['try_builder'], 'foo-try-builder')
+    self.assertEqual(row['waterfall_builder_group'], 'foo-group')
+    self.assertEqual(row['waterfall_builder_name'], 'foo-ci-builder')
+    self.assertEqual(int(row['shard_count']), 1)
+    self.assertAlmostEqual(
+        float(row['percentile_duration_minutes']), round(10 / 60, 2))
+
+    # 2 shard suite
+    row = get_builder_row('foo-try-builder', 'foo-suite-with-2-shards')
+    self.assertEqual(int(row['sample_size']), min_sample_size)
+    self.assertEqual(row['test_suite'], 'foo-suite-with-2-shards')
+    self.assertEqual(row['try_builder'], 'foo-try-builder')
+    self.assertEqual(row['waterfall_builder_group'], 'foo-group')
+    self.assertEqual(row['waterfall_builder_name'], 'foo-ci-builder')
+    # Based on the max pending shard per build (making this a percentile
+    # over a single number)
+    self.assertEqual(int(row['shard_count']), 2)
+    self.assertAlmostEqual(float(row['percentile_duration_minutes']), .33)
+
+    # 2 different runtimes/pendings profiles for the same suite
+    row = get_builder_row('changing-runtimes-between-builds')
+    self.assertEqual(int(row['sample_size']), 12)
+    self.assertEqual(row['test_suite'], 'foo-suite')
+    self.assertEqual(row['try_builder'], 'changing-runtimes-between-builds')
+    self.assertEqual(row['waterfall_builder_group'], 'foo-group')
+    self.assertEqual(row['waterfall_builder_name'], 'foo-ci-builder')
+    self.assertEqual(int(row['shard_count']), 1)
+    self.assertAlmostEqual(float(row['percentile_duration_minutes']), .33)
+
+    # Infrequently run builders don't get sharded
+    self.assertIsNone(get_builder_row('infrequently-run-builder'))
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
