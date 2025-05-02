@@ -179,6 +179,11 @@ _AddBuildSpec(
     'android',
     target_bits=64,
     bisect_archive_build=False)
+_AddBuildSpec(
+    'android-desktop-x64-builder-perf',
+    'android',
+    target_bits=64,
+    bisect_archive_build=False)
 
 # LUCI builder
 # The config for the following builders is now specified src-side in
@@ -236,6 +241,10 @@ _AddIsolatedTestSpec('android-pixel9-pro-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 _AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
                      'android_arm64_high_end-builder-perf')
+
+# AL
+_AddIsolatedTestSpec('android-byra-perf', 'android',
+                     'android-desktop-x64-builder-perf')
 
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
