@@ -265,6 +265,12 @@ def CheckRecipesPyTestsOnCommit(input_api, output_api):
 def CheckTestsOnCommit(input_api, output_api):
   excluded_test_files = set(_RecipesPyTestFiles(input_api))
 
+  # query_unittest.py is not meant to be automated because it operates on
+  # live tables.
+  excluded_test_files.update(
+      'recipes/recipes/chromium/autosharder.resources/query_unittest.py'
+  )
+
   test_files = []
   for dir_glob in (
       ('recipes', 'unittests'),
