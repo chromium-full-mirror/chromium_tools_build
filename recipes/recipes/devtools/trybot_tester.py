@@ -133,7 +133,7 @@ def GenTests(api):
   def test(name, *args, **kwargs):
     return api.test(
         name,
-        api.buildbucket.try_build(builder='dtf_linux_rel'),
+        api.buildbucket.try_build(builder='dtf_linux'),
         api.properties(
             compilator_name='dtf_linux_compiler',
             target_os='ubuntu',

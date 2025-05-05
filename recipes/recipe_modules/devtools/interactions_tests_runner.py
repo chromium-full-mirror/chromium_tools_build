@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .test_runner_base import ExonerableTests, Results, GoldensCollector
+from .test_runner_base import ExonerableTests, Results
 from contextlib import contextmanager
 import re
 
 
-class InteractionsTests(ExonerableTests, GoldensCollector):
+class InteractionsTests(ExonerableTests):
 
   @property
   def test_type_tag(self):
@@ -45,6 +45,22 @@ class InteractionsTests(ExonerableTests, GoldensCollector):
 
   def _post_collect(self):
     self.copy_golden_snapshots()
+
+  def copy_golden_snapshots(self):
+    # TODO:(liviurau) Remove this after fast build gets fixed for the new runner
+    goldens_collector_builders = ["dtf_linux_rel", "dtf_mac_rel", "dtf_win_rel"]
+    if self.api.buildbucket.builder_name not in goldens_collector_builders:
+      return
+    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
+    golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
+    self.api.file.rmtree(
+        'remove previous goldens',
+        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
+                           'goldens'))
+    self.api.file.copytree(
+        'copy golden snapshots', golden_snapshots_dir,
+        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
+                           'goldens'))
 
   def test_name_to_grep_string(self, name):
     name = re.sub(r'^interactions/[^:]*: ', '', name)
