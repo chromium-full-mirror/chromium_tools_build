@@ -44,36 +44,44 @@ def get_utr_instruction(command: str,
       return '"' + s + '"'
     return s
 
-  utr_cmd = [
-      'vpython3',
-      'tools/utr',
-      '-p',
-      project,
-      '-B',
-      bucket,
-      '-b',
-      builder,
-  ]
-  if utr_flags:
-    utr_cmd.extend(utr_flags)
-  if not test_names:
-    test_names = []
-  for test in test_names:
-    utr_cmd.extend(['-t', test])
-  utr_cmd.append(command)
+  def gen_cmd(skip_siso=False):
+    utr_cmd = [
+        'vpython3',
+        'tools/utr',
+        '-p',
+        project,
+        '-B',
+        bucket,
+        '-b',
+        builder,
+    ]
+    if skip_siso:
+      utr_cmd += ['--no-siso']
+    if utr_flags:
+      utr_cmd.extend(utr_flags)
+    for test in test_names or []:
+      utr_cmd.extend(['-t', test])
+    utr_cmd.append(command)
+    if extra_args:
+      utr_cmd.extend(extra_args)
+    return ' '.join([sanitize_arg(arg) for arg in utr_cmd])
 
-  if extra_args:
-    utr_cmd.extend(extra_args)
-
-  utr_cmd = ' '.join([sanitize_arg(arg) for arg in utr_cmd])
   lines = []
   if include_preface_text:
     utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
     lines.append(
         f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
         'checkout:')
-  lines.append('```' + utr_cmd + '```')
+  lines.append('```' + gen_cmd() + '```')
   lines.append('')
+
+  if not project.startswith('chrome'):
+    non_googler_cmd = gen_cmd(skip_siso=True)
+    non_googler_line = (
+        '<details><summary>For non-Googlers, use this command</summary>')
+    non_googler_line += f'```{non_googler_cmd}```</details>'
+    lines.append(non_googler_line)
+
   return '<br/>'.join(lines)
 
 
