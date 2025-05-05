@@ -1492,7 +1492,7 @@
       }
     },
     "name": "luci-scheduler.EmitTriggers",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Android Tester ARM64 Debug (Nexus 5X)\", \"project\": \"libyuv\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"parent_buildername\": \"Android ARM64 Debug\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"tags\": [\"buildset:commit/gitiles/chromium.googlesource.com/libyuv/libyuv/+/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"gitiles_ref:refs/heads/main\", \"parent_buildername:Android ARM64 Debug\", \"parent_buildnumber:1337\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Android ARM64 Debug/1337\"}}], \"timestamp\": 1337000006000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Android Tester ARM64 Debug (Nexus 5X)\", \"project\": \"libyuv\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"parent_buildername\": \"Android ARM64 Debug\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"tags\": [\"buildset:commit/gitiles/chromium.googlesource.com/libyuv/libyuv/+/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"gitiles_ref:refs/heads/main\", \"parent_buildername:Android ARM64 Debug\", \"parent_buildnumber:1337\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Android ARM64 Debug/1337\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000006000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -1519,7 +1519,8 @@
       "@@@STEP_LOG_LINE@input@                    ]@@@",
       "@@@STEP_LOG_LINE@input@                },@@@",
       "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"title\": \"Android ARM64 Debug/1337\"@@@",
+      "@@@STEP_LOG_LINE@input@                \"title\": \"Android ARM64 Debug/1337\",@@@",
+      "@@@STEP_LOG_LINE@input@                \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@input@            }@@@",
       "@@@STEP_LOG_LINE@input@        }@@@",
       "@@@STEP_LOG_LINE@input@    ],@@@",

@@ -2059,7 +2059,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Mac 11\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"Mac64 Builder\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:Mac64 Builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Mac64 Builder/0\"}}], \"timestamp\": 1337000006000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Mac 11\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"Mac64 Builder\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:Mac64 Builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Mac64 Builder/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000006000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -2104,7 +2104,8 @@
       "@@@STEP_LOG_LINE@input@                    ]@@@",
       "@@@STEP_LOG_LINE@input@                },@@@",
       "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"title\": \"Mac64 Builder/0\"@@@",
+      "@@@STEP_LOG_LINE@input@                \"title\": \"Mac64 Builder/0\",@@@",
+      "@@@STEP_LOG_LINE@input@                \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@input@            }@@@",
       "@@@STEP_LOG_LINE@input@        }@@@",
       "@@@STEP_LOG_LINE@input@    ],@@@",

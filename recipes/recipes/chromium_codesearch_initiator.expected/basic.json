@@ -270,7 +270,7 @@
       }
     },
     "name": "luci-scheduler.EmitTriggers",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"codesearch-gen-chromium-android\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-chromiumos\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-fuchsia\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-lacros\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-linux\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-mac\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-win\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\"}}], \"timestamp\": 1337000001500000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"codesearch-gen-chromium-android\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-chromiumos\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-fuchsia\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-lacros\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-linux\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-mac\", \"project\": \"infra\"}, {\"job\": \"codesearch-gen-chromium-win\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000001500000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -319,7 +319,8 @@
       "@@@STEP_LOG_LINE@input@                    ]@@@",
       "@@@STEP_LOG_LINE@input@                },@@@",
       "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"title\": \"builder/0\"@@@",
+      "@@@STEP_LOG_LINE@input@                \"title\": \"builder/0\",@@@",
+      "@@@STEP_LOG_LINE@input@                \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@input@            }@@@",
       "@@@STEP_LOG_LINE@input@        }@@@",
       "@@@STEP_LOG_LINE@input@    ],@@@",
