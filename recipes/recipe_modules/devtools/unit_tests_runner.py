@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .test_runner_base import ExonerableTests
+from .test_runner_base import ExonerableTests, GoldensCollector
 
 
-class UnitTests(ExonerableTests):
+class UnitTests(ExonerableTests, GoldensCollector):
 
   @property
   def test_type_tag(self):
@@ -15,6 +15,7 @@ class UnitTests(ExonerableTests):
     return [self.run_tests_command('front_end')]
 
   def _post_collect(self):
+    self.copy_golden_snapshots()
     if self.coverage:
       self.copy_coverage_data()
 

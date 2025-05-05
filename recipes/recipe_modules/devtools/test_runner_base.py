@@ -202,6 +202,23 @@ class DevToolsTests(ABC):
     """
 
 
+class GoldensCollector(DevToolsTests):
+
+  def copy_golden_snapshots(self):
+    goldens_collector_builders = ["dtf_linux_rel", "dtf_mac_rel", "dtf_win_rel"]
+    if self.api.buildbucket.builder_name not in goldens_collector_builders:
+      return
+    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
+    golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
+    self.api.file.rmtree(
+        'remove previous goldens',
+        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
+                           'goldens'))
+    self.api.file.copytree(
+        'copy golden snapshots', golden_snapshots_dir,
+        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
+                           'goldens'))
+
 class ExonerableTests(DevToolsTests):
 
   def __init__(self, api, trigger, builder_config, coverage, step_name):
