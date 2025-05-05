@@ -42,7 +42,7 @@ def RunSteps(api):
   cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
   try:
     api.step('Run End2End Tests', [
-        'vpython3', 'crossbench/tests/end2end/runner.py',
+        'vpython3', '-Xutf8', 'crossbench/tests/end2end/runner.py',
         '--test-gsutil-path=%s' % api.gsutil.gsutil_py_path,
         '--test-browser-path=%s' % chrome_app_path,
         '--test-driver-path=%s' % chrome_driver_path,
