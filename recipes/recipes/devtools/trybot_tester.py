@@ -133,7 +133,7 @@ def GenTests(api):
   def test(name, *args, **kwargs):
     return api.test(
         name,
-        api.buildbucket.try_build(builder='dtf_linux'),
+        api.buildbucket.try_build(builder='dtf_linux_rel'),
         api.properties(
             compilator_name='dtf_linux_compiler',
             target_os='ubuntu',
@@ -161,6 +161,8 @@ def GenTests(api):
               'test/e2e_non_hosted/shared/page-wrapper.ts',
               'test/shared/helper.ts',
           ]))),
+      # Update this path when the order of swarming tasks changes.
+      api.path.exists(api.path.cleanup_dir.joinpath('tmp_tmp_4/1/goldens')),
   )
 
   yield test(
