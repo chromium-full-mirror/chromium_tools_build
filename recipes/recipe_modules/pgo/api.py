@@ -25,6 +25,7 @@ class PgoApi(recipe_api.RecipeApi):
     self._gs_bucket_override = properties.gs_bucket_override
     self._gs_bucket_path_override = properties.gs_bucket_path_override
     self._profdata_platform_override = properties.profdata_platform_override
+    self._last_uploaded_pgo_filename = None
 
   @property
   def using_pgo(self):
@@ -58,6 +59,11 @@ class PgoApi(recipe_api.RecipeApi):
     Can be overridden by the gs_bucket_path_override property.
     """
     return self._gs_bucket_path_override or self._GS_BUCKET_PATH
+
+  @property
+  def last_uploaded_pgo_filename(self):
+    """The filename of the most recently uploaded profile."""
+    return self._last_uploaded_pgo_filename
 
   @property
   def branch(self):
@@ -335,6 +341,8 @@ class PgoApi(recipe_api.RecipeApi):
         return self.m.step.empty(
             'Skipping upload to GS for this generated profile as '
             'skip_profile_upload property is enabled.')
+
+      self._last_uploaded_pgo_filename = new_filename
 
       # Reset profdata_artifact to the updated naming
       self.m.profiles.upload(

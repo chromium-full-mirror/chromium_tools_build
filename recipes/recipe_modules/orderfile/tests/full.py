@@ -38,6 +38,11 @@ def RunSteps(api: recipe_api.RecipeApi):
   # coverage only
   _ = api.orderfile.using_orderfile
 
+  # TODO(https://crbug.com/372693334): Actually use these.
+  _ = api.orderfile.gs_bucket
+  _ = api.orderfile.gs_bucket_path
+  _ = api.orderfile.last_uploaded_pgo_filename
+
 
 def GenTests(api):
 

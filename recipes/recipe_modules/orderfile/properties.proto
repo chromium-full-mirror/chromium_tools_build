@@ -10,6 +10,11 @@ message InputProperties {
   // Determines whether to run the cipd upload script for orderfile.
   bool use_orderfile = 1;
 
-  /// Whether to upload the generated orderfile to cipd.
+  // Whether to upload the generated orderfile to cipd.
   bool upload_orderfile = 2;
+
+  // These 3 strings are passed from the pgo recipe module.
+  string gs_bucket = 3;
+  string gs_bucket_path = 4;
+  string last_uploaded_pgo_filename = 5;
 }

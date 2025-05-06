@@ -132,6 +132,7 @@ def RunSteps(api):
 
   # coverage only
   _ = api.pgo.using_pgo
+  _ = api.pgo.last_uploaded_pgo_filename
 
 
 def GenTests(api):
