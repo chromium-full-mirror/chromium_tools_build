@@ -419,12 +419,6 @@ def checkout_pgo_profiles(c):
   c.solutions[0].custom_vars['checkout_pgo_profiles'] = 'True'
 
 
-# Lacros builders are required to checkout Lacros sdks.
-@CONFIG_CTX()
-def checkout_lacros_sdk(c):
-  c.solutions[0].custom_vars['checkout_lacros_sdk'] = 'True'
-
-
 @CONFIG_CTX()
 def checkout_copybara(c):
   c.solutions[0].custom_vars['checkout_copybara'] = 'True'

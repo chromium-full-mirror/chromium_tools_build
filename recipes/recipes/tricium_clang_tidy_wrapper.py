@@ -64,14 +64,6 @@ BUILDERS = freeze({
                 ),
             'linux-clang-tidy-rel':
                 ClangTidySpec(),
-            'linux-lacros-clang-tidy-rel':
-                ClangTidySpec(
-                    gclient_apply_config=['chromeos', 'checkout_lacros_sdk'],
-                    chromium_config_kwargs={
-                        'TARGET_BITS': 64,
-                        'TARGET_PLATFORM': 'chromeos',
-                    },
-                ),
             'mac-clang-tidy-rel':
                 ClangTidySpec(chromium_apply_config=['mac_toolchain']),
             'win10-clang-tidy-rel':

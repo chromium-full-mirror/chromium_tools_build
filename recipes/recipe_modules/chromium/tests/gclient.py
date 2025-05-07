@@ -63,11 +63,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'lacros_sdk',
-      api.properties(apply_gclient_config='checkout_lacros_sdk'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
       'enable_wpr_tests',
       api.properties(apply_gclient_config='enable_wpr_tests'),
       api.post_process(post_process.DropExpectation),

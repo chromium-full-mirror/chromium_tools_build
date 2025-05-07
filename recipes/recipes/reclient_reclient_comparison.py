@@ -283,12 +283,10 @@ COMPARISON_BUILDERS = freeze({
         'chromium_apply_config': ['mb'],
         'gclient_apply_config_1': [
             'chromeos',
-            'checkout_lacros_sdk',
         ],
         'gclient_apply_config_2': [
             'chromeos',
             'reclient_test',
-            'checkout_lacros_sdk',
         ],
         'reclient_extra_env_1': {
             'RBE_bq_project': 'foundry-x-experiments',
