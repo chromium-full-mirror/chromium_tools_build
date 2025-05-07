@@ -46,6 +46,8 @@ def RunSteps(api):
         include_utr_instruction=True,
         builder_id=chromium.BuilderId.create_for_group('builder group',
                                                        'builder name'))
+    with api.siso.context():
+      api.step('siso context', cmd=['some_process_calling_siso.py'])
   with api.siso.disable():
     assert not api.siso.enabled
   if api.siso.without_bytes:
@@ -60,10 +62,16 @@ def RunSteps(api):
 
 
 def GenTests(api):
+
+  def siso_env_checker(check, steps):
+    env = steps['siso context'].env
+    check(env['SISO_PROJECT'] == 'test-rbe-project')
+
   yield api.test(
       'basic',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(),
+      api.post_check(siso_env_checker),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(

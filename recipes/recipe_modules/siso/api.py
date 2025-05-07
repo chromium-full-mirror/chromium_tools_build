@@ -398,3 +398,12 @@ class SisoApi(recipe_api.RecipeApi):
     gclient_solution = self.m.gclient.c.solutions[0]
     gclient_solution.custom_vars['rbe_instance'] = rbe_instance
     gclient_solution.custom_vars['download_remoteexec_cfg'] = 'True'
+
+  @contextlib.contextmanager
+  def context(self):
+    """Provides siso context for the step."""
+    with self.m.context(env={
+        'SISO_PROJECT': self.project,
+        'SISO_REAPI_INSTANCE': self.reapi_instance,
+    }):
+      yield
