@@ -66,13 +66,15 @@ def RunSteps(api):
         t for t in targets_config.all_tests if t.target_name in test_targets
     ]
 
-    # run_mb creates a build_dir dependening on the builder and phase
-    build_dir = api.webrtc.run_mb(source_dir, builder_id, phase,
-                                  tests_to_compile)
-    raw_result = api.chromium.compile(
-        source_dir, build_dir, targets=compile_targets, use_reclient=True)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    with api.chromium.guard_compile(build_dir):
+      # run_mb creates a build_dir depending on the builder and phase
+      build_dir = api.webrtc.run_mb(source_dir, builder_id, phase,
+                                    tests_to_compile)
+      raw_result = api.chromium.compile(
+          source_dir, build_dir, targets=compile_targets, use_reclient=True)
+      if raw_result.status != common_pb.SUCCESS:
+        return raw_result
+
     api.webrtc.isolate(build_dir, builder_id, builder_config, tests_to_compile)
 
     builder_spec = builders.BUILDERS_DB[builder_id]
