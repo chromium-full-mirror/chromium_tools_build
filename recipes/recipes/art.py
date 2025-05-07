@@ -79,7 +79,7 @@ def checkout_git(api, branch, repo_root):
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.git("fetch")
     else:
-      url = repo_root + "/platform/superproject"
+      url = repo_root + "/platform/superproject/master"
       api.git("clone", url, ".")
 
     ref = 'origin/' + branch

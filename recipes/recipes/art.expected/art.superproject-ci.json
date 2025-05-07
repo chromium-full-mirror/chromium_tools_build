@@ -7,7 +7,7 @@
     "cmd": [
       "git",
       "clone",
-      "https://android.googlesource.com/platform/superproject",
+      "https://android.googlesource.com/platform/superproject/master",
       "."
     ],
     "cwd": "[CACHE]/art",
