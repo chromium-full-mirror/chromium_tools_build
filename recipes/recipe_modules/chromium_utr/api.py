@@ -499,8 +499,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       error_message = self.check_gclient(source_dir)
       if error_message:
         rerun_options = [
-            self.create_prompt_option(properties, 'yes', bypass_gclient=True),
-            self.create_prompt_option(properties, 'no')
+            self.create_prompt_option(
+                properties, 'ignore and proceed', bypass_gclient=True),
+            self.create_prompt_option(properties, 'abort')
         ]
         return self.create_rerun_result(rerun_options, error_message,
                                         properties.output_properties_file)
