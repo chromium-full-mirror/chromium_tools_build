@@ -8,8 +8,9 @@ from collections import namedtuple
 
 
 SupportedScript = namedtuple(
-    'SupportedScript', ['title', 'exe', 'args', 'message', 'bot_commit'],
-    defaults=[None, None, None, None, False])
+    'SupportedScript',
+    ['title', 'exe', 'args', 'message', 'bot_commit', 'footers'],
+    defaults=[None, None, None, None, False, []])
 """A dict of supported scripted rolls. The key is the script key and the value
 is a tuple of the title and the path elements to the script.
 """
@@ -32,7 +33,7 @@ SUPPORTED_SCRIPTS = {
                 '--ref', 'working-tree', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
                 '--update-node'
             ], 'In case of failures or errors, reach out to someone from '
-            'config/owner/COMMON_OWNERS.', True),
+            'config/owner/COMMON_OWNERS.', True, ['NO_IFTTT=unavailable file']),
     # Add more scripts here
 }
 
@@ -85,10 +86,12 @@ class ScriptedRollHandler(RollHandler):
     return f'Roll {self.key}'
 
   def commit_msg_lines(self, _):
-    return commons.commit_msg_lines_w_reviewes(
+    msg_lines = commons.commit_msg_lines_w_reviewes(
         [self.script.message,
          commons.roll_origin_line(self.api)],
         self.config.get('manual_roll_reviewers'))
+    msg_lines.append(self.script.footers)
+    return msg_lines
 
   def summary(self):
     return self.name()
