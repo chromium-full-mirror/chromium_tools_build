@@ -854,7 +854,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     # Some flags with "--" are read by trigger script too.
     args = [
         '--swarming',
-        self.m.swarming.current_server,
+        task.server or self.m.swarming.current_server,
         '--priority',
         str(task_request.priority),
         '--task-name',
