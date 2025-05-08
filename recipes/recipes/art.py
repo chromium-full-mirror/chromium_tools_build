@@ -85,10 +85,12 @@ def checkout_git(api, branch, repo_root):
     ref = 'origin/' + branch
     if api.buildbucket.gitiles_commit.id:
       ref = api.buildbucket.gitiles_commit.id
+      # Search for super-project commit that first mentions the given
+      # sub-project commit (either as submodule or in .supermanifest).
       cmd = api.git(
           "log",
           '--pretty=format:%H',
-          f"--find-object={ref}",
+          f"-S{ref}",
           f"origin/{branch}",
           stdout=api.raw_io.output_text())
       ref = (cmd.stdout or "").strip().split("\n")[-1]
