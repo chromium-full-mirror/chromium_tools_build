@@ -64,9 +64,7 @@ class CronetApi(recipe_api.RecipeApi):
         name='upload_cronet_package',
         link_name='Cronet package')
 
-  def run_perf_tests(self,
-                     perf_builder_name_alias,
-                     use_reclient=True):
+  def run_perf_tests(self, perf_builder_name_alias):
     # TODO(crbug.com/1324274): Revive, or bury the perf test bot for good
     raise NotImplementedError(
         "The perf bot is broken. See crbug.com/1324274 for details.")
