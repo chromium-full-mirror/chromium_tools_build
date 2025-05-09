@@ -66,12 +66,6 @@ TRYBOT_SPEC = freeze({
 })
 
 
-def _use_reclient(api, gn_args):
-  args = api.gn.parse_gn_args(gn_args)
-  return args.get('use_remoteexec') == 'true' and args.get(
-      'use_reclient') != 'false'
-
-
 def _get_revision(api):  # pragma: no cover
   """Returns the git commit hash of the project.
   """
@@ -243,7 +237,7 @@ def RunSteps(api, properties):
     # by that step may be deleted (if they've been unchanged for the past week).
     api.codesearch.cleanup_old_generated()
 
-  gn_args = api.chromium.mb_gen(
+  api.chromium.mb_gen(
       source_dir,
       build_dir,
       chromium.BuilderId.create_for_group(builder_id.group, builder_id.builder),
@@ -277,8 +271,6 @@ def RunSteps(api, properties):
       'create sentinel file', sentinel_path, 'cr-cs-sentinel',
       include_log=False)
 
-  use_reclient = _use_reclient(api, gn_args)
-
   # If the compile fails, abort execution and don't upload the pack. When we
   # upload an incomplete (due to compile failures) pack to Kythe, it fails
   # validation and doesn't get pushed out anyway, so there's no point in
@@ -290,11 +282,7 @@ def RunSteps(api, properties):
           'KYTHE_CORPUS': corpus
       }):
     raw_result = api.chromium.compile(
-        source_dir,
-        build_dir,
-        targets=targets,
-        name='compile%s' % name_suffix,
-        use_reclient=use_reclient)
+        source_dir, build_dir, targets=targets, name='compile%s' % name_suffix)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
