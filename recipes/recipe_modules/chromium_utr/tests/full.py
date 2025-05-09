@@ -220,7 +220,7 @@ solutions = [
       check(entry in dims)
 
   yield api.test(
-      'custom_dimensions',
+      'swarming_overrides',
       boilerplate(
           target_spec={
               'fake-tester': {
@@ -241,7 +241,9 @@ solutions = [
               'changed_dim=new-value',
               'removed_dim=',
               'equal_value=foo=bar',
-          ]),
+          ],
+          swarming_shards=10,
+      ),
       api.platform('linux', 64),
       api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
                        'changed_dim', 'new-value'),
@@ -251,6 +253,8 @@ solutions = [
                        'removed_dim', None),
       api.post_process(_check_dimension, 'test_pre_run.[trigger] browser_tests',
                        'equal_value', 'foo=bar'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests (10)'),
       api.post_process(post_process.DropExpectation),
   )
 

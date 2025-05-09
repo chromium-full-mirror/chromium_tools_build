@@ -152,6 +152,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         t.spec = attr.evolve(
             t.spec, resultdb=attr.evolve(t.spec.resultdb, enable=False))
 
+    if properties.swarming_shards:
+      for t in tests:
+        if t.runs_on_swarming:
+          t.spec = attr.evolve(t.spec, shards=properties.swarming_shards)
+
     if properties.swarming_dimensions:
       for t in tests:
         if t.runs_on_swarming:
@@ -162,7 +167,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
               for d in properties.swarming_dimensions
           })
           t.spec = attr.evolve(t.spec, dimensions=new_dimensions)
-
 
     test_runner = self.m.chromium_tests.create_test_runner(
         checkout_dir,
