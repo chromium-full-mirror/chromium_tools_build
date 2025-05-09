@@ -24,7 +24,6 @@ DEPS = [
     'depot_tools/tryserver',
     'filter',
     'gn',
-    'reclient',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -132,12 +131,6 @@ def batched(iterable):
     yield batch
 
 
-def use_reclient(api, gn_args):
-  args = api.gn.parse_gn_args(gn_args)
-  return args.get('use_remoteexec') == 'true' and args.get(
-      'use_reclient') != 'false'
-
-
 def get_target_cpu(api, gn_args):
   args = api.gn.parse_gn_args(gn_args)
   return str(args.get('target_cpu')).replace('"', '')
@@ -164,11 +157,7 @@ def RunSteps(api, properties):
     if properties.fuzz_engine == 'fuzzilli':
       # compile d8 to run fuzzilli fuzz tests
       targets = ['d8']
-      raw_result = api.chromium.compile(
-          source_dir,
-          build_dir,
-          targets=targets,
-          use_reclient=use_reclient(api, gn_args))
+      raw_result = api.chromium.compile(source_dir, build_dir, targets=targets)
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
@@ -249,10 +238,7 @@ def RunSteps(api, properties):
       raw_result = None
       for target_batch in batched(targets):
         raw_result = api.chromium.compile(
-            source_dir,
-            build_dir,
-            targets=target_batch,
-            use_reclient=use_reclient(api, gn_args))
+            source_dir, build_dir, targets=target_batch)
 
         if raw_result.status != common_pb.SUCCESS:
           return raw_result
@@ -379,7 +365,6 @@ def GenTests(api):
         collect_fuzz_coverage=is_coverage,
         fuzz_engine=engine,
     )
-    test += api.reclient.properties()
     if engine != 'fuzzilli':
       test += api.step_data(
           'calculate all_fuzzers',
@@ -615,7 +600,6 @@ def GenTests(api):
               },
           })),
       api.platform.name('linux'),
-      api.reclient.properties(),
       api.properties(fuzz_engine='fuzzilli'),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
@@ -637,7 +621,6 @@ def GenTests(api):
               },
           })),
       api.platform.name('mac'),
-      api.reclient.properties(),
       api.step_data(
           'calculate all_fuzzers',
           stdout=api.raw_io.output_text('//foo/bar:target1')),
