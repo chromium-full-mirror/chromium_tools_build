@@ -326,7 +326,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     result.presentation.properties['binary_sizes'] = result.json.output
 
   def include_cleaner(self, source_dir: Path, builder_id):
-    INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply-include-cleaner'
+    INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply_include_cleaner.py'
     FILTER_LIST = 'tools_webrtc/iwyu/iwyu-verifier-filter_list.json'
     SKIP_FOOTER = 'No-Iwyu'
 
@@ -349,10 +349,10 @@ class WebRTCApi(recipe_api.RecipeApi):
           f, filter_list) or not self.m.path.exists(source_dir / f):
         continue
       with self.m.context(cwd=source_dir):
-        # First call to apply-include-cleaner generates compile_commands.json.
+        # First call to apply_include_cleaner generates compile_commands.json.
         step_result = self.m.step(
-            'apply-include-cleaner ' + f,
-            [INCLUDE_CLEANER, '-r', '-c', '-w', build_dir, f],
+            'apply_include_cleaner.py ' + f,
+            ['vpython3', '-u', INCLUDE_CLEANER, '-c', '-w', build_dir, f],
             raise_on_failure=False)
       if step_result.exc_result.retcode != 0:
         result = result_pb.RawResult(

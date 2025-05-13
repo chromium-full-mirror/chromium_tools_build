@@ -2449,8 +2449,9 @@
   },
   {
     "cmd": [
-      "tools_webrtc/iwyu/apply-include-cleaner",
-      "-r",
+      "vpython3",
+      "-u",
+      "tools_webrtc/iwyu/apply_include_cleaner.py",
       "-c",
       "-w",
       "out/iwyu_verifier",
@@ -2469,7 +2470,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "apply-include-cleaner foo.cc",
+    "name": "apply_include_cleaner.py foo.cc",
     "~followup_annotations": [
       "@@@STEP_FAILURE@@@"
     ]
@@ -2477,7 +2478,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "Run \"tools_webrtc/iwyu/apply-include-cleaner\" to fix this bot !<br>Add a \"No-Iwyu: [reason]\" footer in the commit description to skip this bot."
+      "humanReason": "Run \"tools_webrtc/iwyu/apply_include_cleaner.py\" to fix this bot !<br>Add a \"No-Iwyu: [reason]\" footer in the commit description to skip this bot."
     },
     "name": "$result"
   }

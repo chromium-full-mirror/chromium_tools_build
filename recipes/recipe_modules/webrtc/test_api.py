@@ -101,7 +101,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
     if fail_iwyu:
       step_test_data = recipe_test_api.StepTestData()
       step_test_data.retcode = 1
-      test += self.override_step_data('apply-include-cleaner foo.cc',
+      test += self.override_step_data('apply_include_cleaner.py foo.cc',
                                       step_test_data)
 
     git_repo = 'https://webrtc.googlesource.com/src'
