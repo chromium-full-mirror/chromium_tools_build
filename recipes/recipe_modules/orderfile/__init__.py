@@ -5,6 +5,7 @@
 from PB.recipe_modules.build.orderfile import properties
 
 DEPS = [
+    'recipe_engine/file',
     'recipe_engine/properties',
     'recipe_engine/step',
 ]

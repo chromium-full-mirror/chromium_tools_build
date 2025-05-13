@@ -743,9 +743,9 @@ def GenTests(api):
                   }],
               },
           }),
-      api.post_process(post_process.MustRun, 'Processing generated orderfile'),
+      api.post_process(post_process.MustRun, 'processing generated orderfile'),
       api.post_process(post_process.MustRunRE,
-                       '.*Uploading generated orderfile to CIPD.'),
+                       '.*uploading generated orderfile to CIPD'),
       api.post_process(post_process.DropExpectation),
   )
 

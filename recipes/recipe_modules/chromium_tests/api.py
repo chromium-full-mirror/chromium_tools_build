@@ -1390,7 +1390,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           clean_step_presentation = self.m.step.active_result.presentation
           clean_step_presentation.step_text = 'reason: cleandead unsuccessful'
 
-
       ret = self.m.chromium.compile(
           source_dir,
           build_dir,
@@ -1915,6 +1914,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       is_cros = self.m.chromium.c.TARGET_PLATFORM == 'chromeos'
       self.m.pgo.configure_llvm_tooling_path(
           source_dir, builder_id, is_cros=is_cros)
+
+    if self.m.orderfile.using_orderfile:
+      self.m.orderfile.configure_custom_pgo_profile(source_dir)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):

@@ -33,15 +33,12 @@ def RunSteps(api: recipe_api.RecipeApi):
   # Fake path.
   api.profiles.source_dir = api.path.start_dir
 
+  api.orderfile.configure_custom_pgo_profile(source_dir)
+
   api.orderfile.process_orderfile_data(source_dir)
 
   # coverage only
   _ = api.orderfile.using_orderfile
-
-  # TODO(https://crbug.com/372693334): Actually use these.
-  _ = api.orderfile.gs_bucket
-  _ = api.orderfile.gs_bucket_path
-  _ = api.orderfile.last_uploaded_pgo_filename
 
 
 def GenTests(api):
@@ -52,6 +49,10 @@ def GenTests(api):
           builder_group='chromium.perf', builder='android-builder-perf'),
       api.orderfile(use_orderfile=True, upload_orderfile=True),
       api.platform('linux', 32),
+      api.post_process(
+          post_process.MustRun,
+          'processing generated orderfile.uploading generated orderfile to CIPD'
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -61,5 +62,33 @@ def GenTests(api):
           builder_group='chromium.perf', builder='android-builder-perf'),
       api.orderfile(use_orderfile=True),
       api.platform('linux', 32),
+      api.post_process(
+          post_process.MustRunRE,
+          'processing generated orderfile.skipping upload to CIPD.*'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'gs_bucket_no_file',
+      api.chromium.generic_build(
+          builder_group='chromium.perf', builder='android-builder-perf'),
+      api.orderfile(
+          use_orderfile=True, gs_bucket="bucket", gs_bucket_path="path"),
+      api.platform('linux', 32),
+      api.post_process(post_process.MustRun, 'no custom PGO profile specified'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'gs_bucket_with_file',
+      api.chromium.generic_build(
+          builder_group='chromium.perf', builder='android-builder-perf'),
+      api.orderfile(
+          use_orderfile=True,
+          gs_bucket="bucket",
+          gs_bucket_path="path",
+          last_uploaded_pgo_filename="profile.prof"),
+      api.platform('linux', 32),
+      api.post_process(post_process.MustRun, 'override PGO profile'),
       api.post_process(post_process.DropExpectation),
   )
