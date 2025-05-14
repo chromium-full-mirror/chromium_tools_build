@@ -22,7 +22,6 @@ per-file chromium_codesearch_initiator.py=file:chromium_codesearch_initiator.exp
 per-file chromium_speed_*=file://recipes/recipe_modules/perf_dashboard/OWNERS
 per-file chromium_trybot.py=gbeaty@google.com
 per-file chromium_trybot.py=iannucci@chromium.org
-per-file cronet.py=file:cronet.expected/OWNERS
 per-file emscripten_releases.py=file:emscripten_releases.expected/OWNERS
 per-file lkgr_finder.py=file:lkgr_finder.expected/OWNERS
 per-file nacl.py=bradnelson@chromium.org
