@@ -76,6 +76,8 @@
       "bin:super/awesome/pkg=git_revision:deadbeef",
       "--digest",
       "hash_for_win/size",
+      "--cas-instance",
+      "projects/example-cas-server/instances/default_instance",
       "--",
       "--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json",
       "--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json"

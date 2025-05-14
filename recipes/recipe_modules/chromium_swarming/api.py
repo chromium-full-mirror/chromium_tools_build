@@ -925,6 +925,15 @@ class SwarmingApi(recipe_api.RecipeApi):
     if task_slice.cas_input_root:
       args.extend(('--digest', task_slice.cas_input_root))
 
+      # For cross server execution, this means that the triggered task will
+      # fail to fetch the uploaded CAS digest because the CAS instance is
+      # different. Explicitly set the CAS instance to the host if the task
+      # defines a swarming server to run on.
+      # For example, if chromium-swarm triggers on chromsos-swarming,
+      # pass in projects/chromium-swarm/instances/default_instance
+      if task.server:
+        args.extend(('--cas-instance', self.m.cas.instance))
+
     if task_slice.relative_cwd:  # pragma: no cover
       args.extend(['--relative-cwd', task_slice.relative_cwd])
 
