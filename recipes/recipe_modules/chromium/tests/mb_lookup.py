@@ -77,7 +77,7 @@ def GenTests(api):
   yield api.test(
       'raise_on_failure',
       api.properties(expected_gn_args=gn_args),
-      api.step_data('lookup GN args', retcode=1, STATUS='FAILURE'),
+      api.step_data('lookup GN args', retcode=1),
       api.post_process(post_process.StepCommandContains, 'lookup GN args',
                        ['--quiet']),
       api.post_process(post_process.DropExpectation),

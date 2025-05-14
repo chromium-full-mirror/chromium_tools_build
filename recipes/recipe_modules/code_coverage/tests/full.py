@@ -614,8 +614,7 @@ def GenTests(api):
       ]),
       api.override_step_data(
           'process clang code coverage data for overall test coverage.filter '
-          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2),
-          step_test_data=lambda: self.m.json.test_api.output([])),
+          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2)),
       api.post_process(
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.skip '
