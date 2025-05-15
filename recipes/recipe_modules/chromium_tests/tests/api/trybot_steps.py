@@ -1041,7 +1041,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.StepTextContains, 'rts options',
-                       ['RTS was enabled in a dry run']),
+                       ['RTS was enabled']),
       api.post_process(post_process.MustRun, 'RTS was used'),
       api.post_process(post_process.PropertyEquals, 'rts_model',
                        'smart-test-selection'),

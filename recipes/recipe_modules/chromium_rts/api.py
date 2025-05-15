@@ -124,28 +124,14 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
 
   def init_rts_options(self, builder_config):
     """Initialize the rts module settings for the builder config."""
-    run_mode = None
-    props = self.m.properties.get('$recipe_engine/cv', None)
-    if props:
-      run_mode = props.get('run_mode', props.get('runMode'))
-
-    dry_run = False
-    if run_mode == self.m.cv.DRY_RUN:
-      dry_run = ('chromium_rts.rts'
-                 in self.m.buildbucket.build.input.experiments)
-      if dry_run:
-        step_result = self.m.step('rts dry run', [])
-
     self._rts_model = None
-    use_rts = (
-        dry_run or builder_config.regression_test_selection == try_spec.ALWAYS)
+    use_rts = ('chromium_rts.rts' in self.m.buildbucket.build.input.experiments
+               or builder_config.regression_test_selection == try_spec.ALWAYS)
 
     if use_rts and not self._is_rts_footer_disabled():
       self._rts_model = _SMART_TEST_SELECTION_MODEL
       step_result = self.m.step('rts options', [])
-      if dry_run:
-        step_result.presentation.step_text = 'RTS was enabled in a dry run'
-
+      step_result.presentation.step_text = 'RTS was enabled'
       step_result.presentation.properties['rts_model'] = self._rts_model
 
   def mb_args(self):
