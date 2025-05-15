@@ -155,7 +155,7 @@
       "-root",
       "[START_DIR]/packages",
       "-ensure-file",
-      "infra/3pp/tools/go/${platform} version:3@1.23.4\ninfra/tools/protoc/${platform} protobuf_version:v3.6.1\ninfra/third_party/cacert date:2017-01-18",
+      "infra/3pp/tools/go/${platform} version:3@1.23.4\ninfra/tools/protoc/${platform} protobuf_version:v3.17.0\ninfra/third_party/cacert date:2017-01-18",
       "-max-threads",
       "0",
       "-json-output",

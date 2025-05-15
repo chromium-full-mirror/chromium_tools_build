@@ -176,7 +176,7 @@ def _BuildCelabFromSource(api, checkout):
   ensure_file = api.cipd.EnsureFile()
   ensure_file.add_package('infra/3pp/tools/go/${platform}', 'version:3@1.23.4')
   ensure_file.add_package('infra/tools/protoc/${platform}',
-                          'protobuf_version:v3.6.1')
+                          'protobuf_version:v3.17.0')
   ensure_file.add_package('infra/third_party/cacert', 'date:2017-01-18')
   api.cipd.ensure(packages_root, ensure_file)
 
