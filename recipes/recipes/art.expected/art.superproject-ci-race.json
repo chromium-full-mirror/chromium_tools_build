@@ -6,6 +6,59 @@
   {
     "cmd": [
       "git",
+      "clone",
+      "https://android.googlesource.com/platform/superproject/master",
+      "."
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git clone",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "log",
+      "--pretty=format:%H",
+      "-S2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "origin/master-art"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.find super-project commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
       "fetch"
     ],
     "cwd": "[CACHE]/art",
@@ -49,7 +102,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "checkout.find super-project commit",
+    "name": "checkout.find super-project commit (retry)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

@@ -77,7 +77,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "checkout.git log",
+    "name": "checkout.find super-project commit",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -87,7 +87,7 @@
       "git",
       "checkout",
       "--force",
-      ""
+      "42424242"
     ],
     "cwd": "[CACHE]/art",
     "infra_step": true,

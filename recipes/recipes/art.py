@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from PB.recipes.build.art import InputProperties
+from time import sleep
 
 DEPS = [
     'depot_tools/git',
@@ -87,13 +88,21 @@ def checkout_git(api, branch, repo_root):
       ref = api.buildbucket.gitiles_commit.id
       # Search for super-project commit that first mentions the given
       # sub-project commit (either as submodule or in .supermanifest).
+      args = ["log", '--pretty=format:%H', f"-S{ref}", f"origin/{branch}"]
       cmd = api.git(
-          "log",
-          '--pretty=format:%H',
-          f"-S{ref}",
-          f"origin/{branch}",
+          *args,
+          name="find super-project commit",
           stdout=api.raw_io.output_text())
-      ref = (cmd.stdout or "").strip().split("\n")[-1]
+      if not cmd.stdout:
+        # If the CL was just submitted, the super-project entry might not exist yet.
+        sleep(60)
+        api.git("fetch")
+        cmd = api.git(
+            *args,
+            name="find super-project commit (retry)",
+            stdout=api.raw_io.output_text())
+      assert cmd.stdout, f"Commit {ref} was not found in the git superproject"
+      ref = cmd.stdout.strip().split("\n")[-1]
 
     api.git("checkout", "--force", ref)
     api.git("clean", "-ffxd", "-e", "out", "-e", "vm")
@@ -681,6 +690,21 @@ def GenTests(api):
   yield api.test(
       'art.superproject-ci',  # tests gitiles_commit path.
       api.buildbucket.ci_build(experiments=['art.superproject']),
+      api.step_data(
+          "checkout.find super-project commit",
+          stdout=api.raw_io.output_text("42424242")),
+      api.properties(build_only=True),
+  )
+
+  yield api.test(
+      'art.superproject-ci-race',  # tests gitiles_commit path.
+      api.buildbucket.ci_build(experiments=['art.superproject']),
+      api.step_data(
+          "checkout.find super-project commit",
+          stdout=api.raw_io.output_text("")),
+      api.step_data(
+          "checkout.find super-project commit (retry)",
+          stdout=api.raw_io.output_text("42424242")),
       api.properties(build_only=True),
   )
 
@@ -701,6 +725,9 @@ def GenTests(api):
       'art.superproject-repo2git',  # git checkout after repo checkout.
       api.buildbucket.ci_build(experiments=['art.superproject']),
       api.path.exists(api.path.cache_dir.joinpath("art/.repo")),
+      api.step_data(
+          "checkout.find super-project commit",
+          stdout=api.raw_io.output_text("42424242")),
       api.properties(build_only=True),
   )
 
@@ -708,5 +735,8 @@ def GenTests(api):
       'art.superproject-incremental',  # repeated git checkout.
       api.buildbucket.ci_build(experiments=['art.superproject']),
       api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+      api.step_data(
+          "checkout.find super-project commit",
+          stdout=api.raw_io.output_text("42424242")),
       api.properties(build_only=True),
   )
