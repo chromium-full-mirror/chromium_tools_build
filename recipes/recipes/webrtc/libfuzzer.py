@@ -76,8 +76,7 @@ def RunSteps(api):
 
     targets = step_result.stdout.split()
     api.step.active_result.presentation.logs['targets'] = targets
-    return api.chromium.compile(
-        source_dir, build_dir, targets=targets, use_reclient=True)
+    return api.chromium.compile(source_dir, build_dir, targets=targets)
 
 
 def GenTests(api):
