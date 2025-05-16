@@ -190,9 +190,11 @@ def GenTests(api):
 
   yield api.test(
       'use_rts',
+      api.chromium.try_build(experiments=['chromium_rts.rts'], build_id=123),
       api.properties(rts_model='smart-test-selection'),
-      api.post_process(post_process.StepCommandContains, 'generate_build_files',
-                       ['--rts-model', 'smart-test-selection']),
+      api.post_process(
+          post_process.StepCommandContains, 'generate_build_files',
+          ['--rts-model', 'smart-test-selection', '--sts-config-file']),
       api.post_process(post_process.DropExpectation),
   )
 

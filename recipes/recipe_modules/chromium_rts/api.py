@@ -27,15 +27,14 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     self._rts_model = None
 
   @property
-  def test_executor_build(self):
+  def test_executor_build_id(self):
     # If the current build is a compilator build, the tests will be executed
     # by orchestrator
     if ('orchestrator' in self.m.properties and
         self.m.buildbucket.build.ancestor_ids):
       parent_id = self.m.buildbucket.build.ancestor_ids[-1]
-      return self.m.buildbucket.get(
-          parent_id, step_name='Get orchestrator build')
-    return self.m.buildbucket.build
+      return parent_id
+    return self.m.buildbucket.build.id
 
   @property
   def rts_model(self) -> str:
@@ -57,42 +56,12 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         disabled = footer_vals[-1].lower() == 'true'
     return disabled
 
-  def _invoke_smart_test_selection(self, tests):
-    # TODO(b/396675456): Currently Prepare() is being invoked AFTER compilation
-    # where as Select() is being invoked before. This is WRONG! The order of
-    # API invocation should be opposite. Fix this ASAP
-    target_set = {test.canonical_name for test in tests if test.is_rts}
-    if not target_set:
-      self.m.step.empty('No candidate test targets for smart test selection')
-      return
-    gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
-    with self.m.secret_manager.fetch(
-        project=_API_KEY_HOLDER_PROJECT,
-        secret=_API_KEY_SECRET,
-        step_name='fetch api key and trigger test selection') as api_key:
-      key_file = self.m.path.mkstemp()
-      self.m.file.write_text(
-          name='write api_key to disk',
-          dest=key_file,
-          text_data=api_key,
-          include_log=False)
-      build = self.test_executor_build
-      cmd = ['vpython3', self.resource('decisiongraph_invoker.py')]
-      cmd.append('--test-targets')
-      cmd.extend(target_set)
-      cmd.extend([
-          '--build_id', build.id, '--change', gerrit_change.change,
-          '--patchset', gerrit_change.patchset, '--builder',
-          build.builder.builder, '--api_key_file', key_file
-      ])
-      self.m.step('Trigger test selection', cmd)
-      self.m.file.remove('remove api_key file', source=key_file)
-
-  def trigger_test_selection(self, tests):
-    """Triggers smart test selection for given tests.
+  def generate_filter_files(self, tests):
+    """Generates .filter files for the given tests.
     """
-    if self._rts_model == _SMART_TEST_SELECTION_MODEL:
-      self._invoke_smart_test_selection(tests)
+    # TODO(crbug.com/396251277): Add logic to fetch stored test selection
+    # results from the decision graph API and use them to skip tests
+
 
   def setup_tests(self, tests):
     """Sets the given tests up to be run with RTS
@@ -138,8 +107,30 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     """Returns the mb args to generate the RTS filter files"""
     mb_args = []
     if self._rts_model:
+      rts_input_json = self._create_sts_input_json()
       step_result = self.m.step('adding rts to mb args', [])
       mb_args += ['--rts-model', self._rts_model]
+      mb_args += ['--sts-config-file', rts_input_json, '--verbose']
       step_result.presentation.step_text = self._rts_model
-
     return mb_args
+
+  def _create_sts_input_json(self):
+    gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
+    with self.m.secret_manager.fetch(
+        project=_API_KEY_HOLDER_PROJECT,
+        secret=_API_KEY_SECRET,
+        step_name='fetch decisiongraph api key') as api_key:
+      rts_dict = {
+          'build_id': str(self.test_executor_build_id),
+          'change': gerrit_change.change,
+          'patchset': gerrit_change.patchset,
+          'builder': self.m.buildbucket.build.builder.builder,
+          'api_key': api_key
+      }
+      rts_input_json_path = self.m.path.mkstemp('rts_input.json')
+      # Write to json file
+      self.m.file.write_json(
+          name='create test selection input json',
+          dest=rts_input_json_path,
+          data=rts_dict)
+      return rts_input_json_path

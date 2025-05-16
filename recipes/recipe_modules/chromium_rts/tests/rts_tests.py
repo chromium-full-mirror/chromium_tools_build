@@ -6,11 +6,11 @@ DEPS = [
     'chromium',
     'chromium_rts',
     'chromium_tests',
+    'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/swarming',
 ]
-
 from PB.recipes.build.chromium.compilator import InputProperties
 from PB.recipe_modules.recipe_engine.led.properties import InputProperties as InputPropertiesLed
 from recipe_engine import post_process
@@ -32,7 +32,7 @@ def RunSteps(api):
   assert (api.m.chromium_rts.enabled)
 
   api.m.chromium_rts.setup_tests(tests)
-  api.m.chromium_rts.trigger_test_selection(tests)
+  api.m.chromium_rts.generate_filter_files(tests)
   if supports_rts:
     assert (tests[0].is_rts)
 
@@ -41,62 +41,89 @@ def RunSteps(api):
   mb_args = api.m.chromium_rts.mb_args()
   assert (mb_args[0] == '--rts-model')
   assert (mb_args[1] == 'smart-test-selection')
+  assert (mb_args[2] == '--sts-config-file')
 
 
 def GenTests(api):
+
   # RTS on dry run causes builds to be compatible for different run modes and
   # can only be determined when the individual tests are set
   yield api.test(
-      'rts_basic',
+      'rts_basic_compilator_is_test_executor',
       api.chromium.try_build(
-          experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
+          builder='linux-rel',
+          experiments=['chromium_rts.rts'],
+          build_id=_COMPILATOR_BUILD_ID),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection'),
+          'fetch decisiongraph api key.create test selection input json'),
+      api.post_process(
+          post_process.LogContains,
+          'fetch decisiongraph api key.create test selection input json',
+          'rts_input.json_tmp_1', [
+              api.json.dumps({
+                  "api_key": "abcd1234",
+                  "build_id": str(_COMPILATOR_BUILD_ID),
+                  "builder": "linux-rel",
+                  "change": 456789,
+                  "patchset": 12
+              })
+          ]),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'rts_basic_with_orchestrator',
+      'rts_basic_orchestrator_is_test_executor',
       api.chromium.try_build(
+          builder='linux-rel',
           experiments=['chromium_rts.rts'],
           build_id=_COMPILATOR_BUILD_ID,
           ancestor_ids=[_ORCHESTRATOR_BUILD_ID]),
       api.properties(
           InputProperties(
               orchestrator=InputProperties.Orchestrator(
-                  builder_name='fake-orchestrator',
-                  builder_group='fake-try-group'))),
+                  builder_name='linux-rel', builder_group='fake-try-group'))),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection'),
+          'fetch decisiongraph api key.create test selection input json'),
       api.post_process(
-          post_process.MustRun,
-          'fetch api key and trigger test selection.Get orchestrator build'),
+          post_process.LogContains,
+          'fetch decisiongraph api key.create test selection input json',
+          'rts_input.json_tmp_1', [
+              api.json.dumps({
+                  "api_key": "abcd1234",
+                  "build_id": str(_ORCHESTRATOR_BUILD_ID),
+                  "builder": "linux-rel",
+                  "change": 456789,
+                  "patchset": 12
+              })
+          ]),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'rts_basic_with_led',
       api.chromium.try_build(
+          builder='linux-rel',
           experiments=['chromium_rts.rts'],
-          build_id=_COMPILATOR_BUILD_ID,
-          ancestor_ids=[_ORCHESTRATOR_BUILD_ID]),
+          build_id=_COMPILATOR_BUILD_ID),
       api.properties(**{
           '$recipe_engine/led': InputPropertiesLed(led_run_id='some-led-run'),
       }),
       api.swarming.properties(task_id='some-task-id'),
       api.post_process(
           post_process.MustRun,
-          'fetch api key and trigger test selection.Trigger test selection'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'skip_test_selection',
-      api.chromium.try_build(
-          experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
-      api.properties(supports_rts=False),
-      api.post_process(post_process.MustRun,
-                       'No candidate test targets for smart test selection'),
+          'fetch decisiongraph api key.create test selection input json'),
+      api.post_process(
+          post_process.LogContains,
+          'fetch decisiongraph api key.create test selection input json',
+          'rts_input.json_tmp_1', [
+              api.json.dumps({
+                  "api_key": "abcd1234",
+                  "build_id": str(_COMPILATOR_BUILD_ID),
+                  "builder": "linux-rel",
+                  "change": 456789,
+                  "patchset": 12
+              })
+          ]),
       api.post_process(post_process.DropExpectation),
   )
