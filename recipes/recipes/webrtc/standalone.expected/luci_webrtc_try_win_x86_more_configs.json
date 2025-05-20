@@ -748,7 +748,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "ninja",
+      "siso",
       "[CACHE]\\builder\\src\\out\\Debug_x64\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
@@ -766,7 +766,7 @@
     },
     "name": "write LAST_BUILD_SYSTEM.txt",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@ninja@@@",
+      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@siso@@@",
       "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
     ]
   },
@@ -958,20 +958,26 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::chromium]\\resources\\ninja_wrapper.py",
-      "--ninja_info_output",
-      "/path/to/tmp/json",
-      "--failure_output",
+      "[CACHE]\\builder\\src\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
       "/path/to/tmp/",
-      "--",
-      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
       "realm": {
@@ -989,6 +995,13 @@
     "tags": {
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
     }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile@@@"
+    ]
   },
   {
     "cmd": [
@@ -1029,7 +1042,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -1059,8 +1072,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -1081,13 +1094,23 @@
     },
     "name": "gsutil upload ninja_log",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz@@@"
     ]
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
+      "[CACHE]\\builder\\src\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
       "-d",
@@ -1096,7 +1119,8 @@
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
       "realm": {
@@ -1110,7 +1134,17 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile confirm no-op"
+    "name": "compile confirm no-op",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (2)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile confirm no-op@@@"
+    ]
   },
   {
     "cmd": [
@@ -1335,7 +1369,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "ninja",
+      "siso",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
@@ -1353,7 +1387,7 @@
     },
     "name": "write LAST_BUILD_SYSTEM.txt (2)",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@ninja@@@",
+      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@siso@@@",
       "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
     ]
   },
@@ -1558,20 +1592,26 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::chromium]\\resources\\ninja_wrapper.py",
-      "--ninja_info_output",
-      "/path/to/tmp/json",
-      "--failure_output",
+      "[CACHE]\\builder\\src\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
       "/path/to/tmp/",
-      "--",
-      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001343"
     },
     "luci_context": {
       "realm": {
@@ -1587,8 +1627,15 @@
     },
     "name": "compile (2)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (3)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile@@@"
+    ]
   },
   {
     "cmd": [
@@ -1629,7 +1676,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]\\ninja_log.20120514-125323.00000000-0000-0000-0000-000000001340.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -1659,8 +1706,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\ninja_log.20120514-125323.00000000-0000-0000-0000-000000001340.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-000000001340.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -1681,13 +1728,23 @@
     },
     "name": "gsutil upload ninja_log (2)",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-000000001340.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-000000001340.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz@@@"
     ]
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
+      "[CACHE]\\builder\\src\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
       "-d",
@@ -1696,7 +1753,8 @@
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001343"
     },
     "luci_context": {
       "realm": {
@@ -1710,7 +1768,17 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile confirm no-op (2)"
+    "name": "compile confirm no-op (2)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (4)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile confirm no-op@@@"
+    ]
   },
   {
     "cmd": [
@@ -1938,7 +2006,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "ninja",
+      "siso",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
@@ -1956,7 +2024,7 @@
     },
     "name": "write LAST_BUILD_SYSTEM.txt (3)",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@ninja@@@",
+      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@siso@@@",
       "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
     ]
   },
@@ -2178,20 +2246,26 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::chromium]\\resources\\ninja_wrapper.py",
-      "--ninja_info_output",
-      "/path/to/tmp/json",
-      "--failure_output",
+      "[CACHE]\\builder\\src\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
       "/path/to/tmp/",
-      "--",
-      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
       "[CACHE]\\builder\\src\\out\\disable_trace_events"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000134f"
     },
     "luci_context": {
       "realm": {
@@ -2207,8 +2281,15 @@
     },
     "name": "compile (3)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000134f"
     }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (5)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile@@@"
+    ]
   },
   {
     "cmd": [
@@ -2249,7 +2330,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]\\ninja_log.20120514-125324.00000000-0000-0000-0000-000000001346.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -2279,8 +2360,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\ninja_log.20120514-125324.00000000-0000-0000-0000-000000001346.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-000000001346.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -2301,13 +2382,23 @@
     },
     "name": "gsutil upload ninja_log (3)",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-000000001346.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-000000001346.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz@@@"
     ]
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
+      "[CACHE]\\builder\\src\\third_party\\siso\\siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]\\builder\\src\\out\\disable_trace_events",
       "-d",
@@ -2316,7 +2407,8 @@
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000134f"
     },
     "luci_context": {
       "realm": {
@@ -2330,7 +2422,17 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile confirm no-op (3)"
+    "name": "compile confirm no-op (3)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000134f"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (6)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile confirm no-op@@@"
+    ]
   },
   {
     "cmd": [

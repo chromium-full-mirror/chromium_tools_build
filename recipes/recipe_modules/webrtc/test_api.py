@@ -79,7 +79,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
       test += self.m.properties(
           swarming_command_lines={test_target: ['./dummy_cmd']})
 
-    test += self.m.reclient.properties()
+    test += self.m.siso.properties()
 
     if fail_compile:
       test += self.step_data('compile', retcode=1)

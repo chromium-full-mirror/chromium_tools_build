@@ -578,7 +578,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "ninja",
+      "siso",
       "[CACHE]/builder/src/out/Release/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
@@ -596,7 +596,7 @@
     },
     "name": "write LAST_BUILD_SYSTEM.txt",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@ninja@@@",
+      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@siso@@@",
       "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
     ]
   },
@@ -786,14 +786,19 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
-      "--ninja_info_output",
-      "/path/to/tmp/json",
-      "--failure_output",
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
       "/path/to/tmp/",
-      "--",
-      "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/Android64_Builder_arm64",
       "default"
@@ -801,7 +806,8 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
       "realm": {
@@ -819,6 +825,13 @@
     "tags": {
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
     }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile@@@"
+    ]
   },
   {
     "cmd": [
@@ -859,7 +872,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -889,8 +902,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -911,13 +924,23 @@
     },
     "name": "gsutil upload ninja_log",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz@@@"
     ]
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]/builder/src/out/Android64_Builder_arm64",
       "default",
@@ -928,7 +951,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
       "realm": {
@@ -942,7 +965,17 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile confirm no-op"
+    "name": "compile confirm no-op",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (2)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile confirm no-op@@@"
+    ]
   },
   {
     "cmd": [
@@ -1108,7 +1141,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Android64 (R Pixel5)\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"Android64 Builder arm64\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:Android64 Builder arm64\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Android64 Builder arm64/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000003000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Perf Android64 (R Pixel5)\", \"project\": \"webrtc\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"src\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"client.webrtc\", \"parent_buildername\": \"Android64 Builder arm64\", \"parent_got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_got_revision_cp\": \"refs/heads/main@{#170242}\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"swarm_hashes\": {}, \"swarming_command_lines\": {}}, \"ref\": \"refs/heads/main\", \"repo\": \"https://webrtc.googlesource.com/src\", \"revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"tags\": [\"parent_buildername:Android64 Builder arm64\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"Android64 Builder arm64/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000006000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -1158,7 +1191,7 @@
       "@@@STEP_LOG_LINE@input@            }@@@",
       "@@@STEP_LOG_LINE@input@        }@@@",
       "@@@STEP_LOG_LINE@input@    ],@@@",
-      "@@@STEP_LOG_LINE@input@    \"timestamp\": 1337000003000000@@@",
+      "@@@STEP_LOG_LINE@input@    \"timestamp\": 1337000006000000@@@",
       "@@@STEP_LOG_LINE@input@}@@@",
       "@@@STEP_LOG_END@input@@@"
     ]

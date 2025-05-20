@@ -362,14 +362,6 @@ class WebRTCApi(recipe_api.RecipeApi):
             ': [reason]" footer in the commit description to skip this bot.')
     return result
 
-  def build_with_reclient(self, step_name, source_dir: Path, cmd):
-    cmd += ['--use-remoteexec']
-    # TODO(b/243628179): get ninja command generated in build_aar.py
-    ninja_command = ""
-    with self.m.reclient.process(step_name, ninja_command, source_dir) as p:
-      step_result = self.m.step(step_name, cmd)
-      p.build_exit_status = step_result.retcode
-
   def build_android_archive(self, source_dir: Path):
     # Build the Android .aar archive and upload it to Google storage (except for
     # trybots). This should only be run on a single bot or the archive will be
@@ -383,10 +375,10 @@ class WebRTCApi(recipe_api.RecipeApi):
     cmd = ['vpython3', '-u', build_script] + args
 
     with self.m.context(cwd=source_dir):
-      build_step_name = 'build android archive'
       build_dir = source_dir / 'andriod-archive'
-      cmd += ['--build-dir', build_dir]
-      self.build_with_reclient(build_step_name, source_dir, cmd)
+      cmd += ['--build-dir', build_dir, '--use-remoteexec']
+      with self.m.siso.context():
+        self.m.step('build android archive', cmd)
       self.m.file.rmtree('Remove android archive dir', build_dir)
 
     if not self.m.tryserver.is_tryserver and not self.m.runtime.is_experimental:

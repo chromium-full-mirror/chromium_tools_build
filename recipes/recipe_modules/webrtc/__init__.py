@@ -43,7 +43,7 @@ DEPS = [
     'recipe_engine/scheduler',
     'recipe_engine/service_account',
     'recipe_engine/step',
-    'reclient',
+    'siso',
     'test_utils',
 ]
 

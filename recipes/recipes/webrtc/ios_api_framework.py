@@ -12,7 +12,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
-    'reclient',
+    'siso',
     'webrtc',
 ]
 
@@ -29,11 +29,12 @@ def RunSteps(api):
 
   source_dir = update_result.source_root.path
   build_script = source_dir.joinpath('tools_webrtc', 'ios', 'build_ios_libs.py')
-  cmd = ['vpython3', '-u', build_script, '--verbose']
+  cmd = ['vpython3', '-u', build_script, '--verbose', '--use-remoteexec']
   if not api.tryserver.is_tryserver:
     api.step('cleanup', [build_script, '-c'])
     cmd += ['-r', api.webrtc.revision_number]
-  api.webrtc.build_with_reclient('build', source_dir, cmd)
+  with api.siso.context():
+    api.step('build', cmd)
 
   output_dir = source_dir / 'out_ios_libs'
 
@@ -49,7 +50,7 @@ def GenTests(api):
       api.builder_group.for_current('client.webrtc'),
       api.buildbucket.generic_build(builder='iOS API Framework Builder'),
       api.properties(xcode_build_version='dummy_xcode'),
-      api.reclient.properties(),
+      api.siso.properties(),
   )
 
   yield api.test(
@@ -59,7 +60,7 @@ def GenTests(api):
       api.buildbucket.generic_build(builder='iOS API Framework Builder'),
       api.properties(xcode_build_version='dummy_xcode'),
       api.step_data('build', retcode=1),
-      api.reclient.properties(),
+      api.siso.properties(),
       status='FAILURE',
   )
 
@@ -72,5 +73,5 @@ def GenTests(api):
           xcode_build_version='dummy_xcode',
           gerrit_url='https://webrtc-review.googlesource.com',
           gerrit_project='src'),
-      api.reclient.properties(),
+      api.siso.properties(),
   )
