@@ -21,9 +21,10 @@ def _AddIsolatedTestSpec(name,
                          parent_buildername=None,
                          parent_builder_group=None,
                          target_bits=64,
+                         config_name='chromium_perf',
                          **kwargs):
   spec = chromium_perf.TestSpec(
-      'chromium_perf',
+      config_name,
       platform,
       target_bits,
       parent_buildername=parent_buildername,
@@ -65,6 +66,20 @@ _AddBuildSpec(
     ])
 
 _AddBuildSpec('win-arm64-builder-perf', 'win', target_arch='arm')
+
+_AddBuildSpec(
+    'linux-chromium-builder-perf',
+    'linux',
+    bisect_archive_build=False,
+    chromium_config='chromium_public_perf',
+    gclient_config='chromium')
+
+_AddIsolatedTestSpec(
+    'linux-chromium-r350-perf',
+    'linux',
+    'linux-chromium-builder-perf',
+    chromium_config='chromium_public_perf',
+    gclient_config='chromium')
 
 _AddIsolatedTestSpec(
     'fuchsia-perf-nsn',

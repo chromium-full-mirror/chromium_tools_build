@@ -11,25 +11,34 @@ SPEC = {}
 
 @CHROMIUM_CONFIG_CTX(includes=[
     'chromium',
-    'official',
     'mb',
+    'official',
 ])
 def chromium_perf(c):
   c.clobber_before_runhooks = False
 
 
-def _common_kwargs(execution_mode, config_name, platform, target_bits):
+@CHROMIUM_CONFIG_CTX(includes=[
+    'chromium',
+    'mb',
+])
+def chromium_public_perf(c):
+  c.clobber_before_runhooks = False
+
+
+def _common_kwargs(execution_mode, chromium_config, platform, target_bits,
+                   gclient_config):
   spec = {
       'execution_mode':
           execution_mode,
       'chromium_config':
-          config_name,
+          chromium_config,
       'chromium_config_kwargs': {
           'BUILD_CONFIG': 'Release',
           'TARGET_BITS': target_bits,
       },
       'gclient_config':
-          config_name,
+          gclient_config,
       'gclient_apply_config': [],
       'simulation_platform':
           'linux' if platform in ('android', 'chromeos',
@@ -52,19 +61,24 @@ def _common_kwargs(execution_mode, config_name, platform, target_bits):
   return spec
 
 
-def BuildSpec(config_name,
-              platform,
-              target_bits,
-              bisect_archive_build=False,
-              cros_boards=None,
-              target_arch=None,
-              extra_gclient_apply_config=None):
+def BuildSpec(
+    config_name,
+    platform,
+    target_bits,
+    bisect_archive_build=False,
+    cros_boards=None,
+    target_arch=None,
+    extra_gclient_apply_config=None,
+    chromium_config=None,
+    gclient_config=None,
+):
 
   kwargs = _common_kwargs(
       execution_mode=builder_spec.COMPILE_AND_TEST,
-      config_name=config_name,
+      chromium_config=chromium_config or config_name,
       platform=platform,
       target_bits=target_bits,
+      gclient_config=gclient_config or config_name,
   )
 
   kwargs['perf_isolate_upload'] = True
@@ -96,12 +110,15 @@ def TestSpec(config_name,
              target_bits,
              parent_buildername,
              cros_boards=None,
-             target_arch=None):
+             target_arch=None,
+             chromium_config=None,
+             gclient_config=None):
   kwargs = _common_kwargs(
       execution_mode=builder_spec.TEST,
-      config_name=config_name,
+      chromium_config=chromium_config or config_name,
       platform=platform,
       target_bits=target_bits,
+      gclient_config=gclient_config or config_name,
   )
 
   kwargs['parent_buildername'] = parent_buildername
