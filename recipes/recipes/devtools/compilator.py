@@ -51,6 +51,12 @@ PROPERTIES = {
             kind=bool,
             help='Should the builder clean up the out/ folder before building',
             default=False),
+    'force_host_cpu':
+        Property(
+            kind=str,
+            help='Force host_cpu variable in DEPS to a specific value. '
+            '(Forces Node and CfT binaries to be downloaded for the specific CPU)',
+            default=None),
 }
 
 CANCELLATION_MESSAGE = (
@@ -58,10 +64,10 @@ CANCELLATION_MESSAGE = (
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber):
+             clobber, force_host_cpu):
   try:
     api.devtools.configure(builder_config, is_official_build,
-                           devtools_skip_typecheck)
+                           devtools_skip_typecheck, force_host_cpu)
     update_result = api.devtools.update()
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(

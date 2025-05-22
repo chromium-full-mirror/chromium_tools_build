@@ -21,13 +21,17 @@ PROPERTIES = {
     'builder_config': Property(kind=str, default='Release'),
     'clobber': Property(kind=bool, default=False),
     'parallel': Property(kind=bool, default=False),
+    'force_host_cpu': Property(kind=str, default=None),
 }
 
 
-def RunSteps(api, builder_config, clobber, parallel):
+def RunSteps(api, builder_config, clobber, parallel, force_host_cpu):
 
   api.devtools.configure(
-      builder_config, is_official_build=True, devtools_skip_typecheck=True)
+      builder_config,
+      is_official_build=True,
+      devtools_skip_typecheck=True,
+      force_host_cpu=force_host_cpu)
   api.devtools.update()
 
   with api.devtools.depot_on_path():
@@ -102,6 +106,7 @@ def GenTests(api):
       'parallel release',
       try_build(builder='parallel builder'),
       api.properties(parallel=True),
+      api.properties(force_host_cpu='future_cpu'),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(

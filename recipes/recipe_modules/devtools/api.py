@@ -16,9 +16,12 @@ REPO_URL = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
 class DevToolsAPI(recipe_api.RecipeApi):
   source_dir = None
 
-  def configure(self, builder_config, is_official_build,
-                devtools_skip_typecheck):
-    self._configure_source()
+  def configure(self,
+                builder_config,
+                is_official_build,
+                devtools_skip_typecheck,
+                force_host_cpu=None):
+    self._configure_source(force_host_cpu)
     self._configure_build(builder_config, is_official_build,
                           devtools_skip_typecheck)
 
@@ -242,9 +245,11 @@ class DevToolsAPI(recipe_api.RecipeApi):
             name='upload patch',
         )
 
-  def _configure_source(self):
+  def _configure_source(self, force_host_cpu=None):
     src_cfg = self.m.gclient.make_config()
     soln = src_cfg.solutions.add()
+    if force_host_cpu:
+      soln.custom_vars = {'host_cpu': force_host_cpu}
     soln.name = 'devtools-frontend'
     soln.url = REPO_URL
     soln.revision = self.m.buildbucket.gitiles_commit.id or 'HEAD'
