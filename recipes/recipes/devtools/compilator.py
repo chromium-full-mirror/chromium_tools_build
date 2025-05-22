@@ -51,11 +51,6 @@ PROPERTIES = {
             kind=bool,
             help='Should the builder clean up the out/ folder before building',
             default=False),
-    'target_cpu':
-        Property(
-            kind=str,
-            help='Target cpu architecture for compilation',
-            default=None),
 }
 
 CANCELLATION_MESSAGE = (
@@ -63,10 +58,10 @@ CANCELLATION_MESSAGE = (
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber, target_cpu):
+             clobber):
   try:
     api.devtools.configure(builder_config, is_official_build,
-                           devtools_skip_typecheck, target_cpu)
+                           devtools_skip_typecheck)
     update_result = api.devtools.update()
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(
