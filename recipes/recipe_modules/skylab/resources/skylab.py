@@ -56,24 +56,33 @@ def _call_buildbucket(bb_request_data, json_creds, end_point):
   return json.loads(content[content.find('\n') + 1:])
 
 
-def _check_build_status(url, opts):
-  if not url:
-    return None
-  match = re.search(
-      r'https://ci.chromium.org/p/chromeos/builders/test_runner/'
-      r'test_runner[-a-z]*/b(\d+)', url)
-  if not match:
-    logging.error('Could not find results of the test runner build.')
-    return None
-  bb_request_data = json.dumps({
-      'id': match.group(1),
-      'mask': {
-          'fields': 'status',
-      }
-  })
-  resp = _call_buildbucket(bb_request_data, opts.json_creds,
-                           BUILDBUCKET_GET_ENDPOINT)
-  return resp.get('status')
+def _fix_test_runner_status(task_result):
+  # pylint: disable=import-outside-toplevel
+  from chromite.api.gen.test_platform import taskstate_pb2
+
+  for v in task_result.prejob_steps:
+    if v.verdict not in [
+        taskstate_pb2.TaskState.VERDICT_PASSED,
+        taskstate_pb2.TaskState.VERDICT_PASSED_ON_RETRY
+    ]:
+      return "INFRA_FAILURE"
+  failing_tests = []
+  total_tests = []
+  for v in task_result.test_cases:
+    if v.name == "tauto.tast.chrome-from-gcs":
+      continue
+    total_tests.append(v)
+    if v.verdict not in [
+        taskstate_pb2.TaskState.VERDICT_PASSED,
+        taskstate_pb2.TaskState.VERDICT_PASSED_ON_RETRY
+    ]:
+      failing_tests.append(v)
+
+  if not total_tests:
+    return "INFRA_FAILURE"
+  if failing_tests:
+    return "FAILURE"
+  return "SUCCESS"
 
 
 def schedule_skylab_tests(opts):
@@ -197,7 +206,7 @@ def schedule_skylab_tests(opts):
 
 def read_ctp_results(opts):
   # pylint: disable=import-outside-toplevel
-  from chromite.api.gen.test_platform.steps import execution_pb2 as ctp_resp
+  from chromite.api.gen.test_platform.steps import execution_pb2
 
   bb_request_data = json.dumps({
       'id': opts.ctp_build_id,
@@ -214,24 +223,34 @@ def read_ctp_results(opts):
     logging.error('Could not find results in build\'s output properties.')
     return
   wire_format = zlib.decompress(base64.b64decode(compressed_proto))
-  sharded_resp = ctp_resp.ExecuteResponses.FromString(
+  tagged_resp = execution_pb2.ExecuteResponses.FromString(
       wire_format).tagged_responses
 
-  res = {}
-  for k, v in sharded_resp.items():
-    task_result = v.task_results[-1]
+  task_results = {}
+  for name, exec_resp in tagged_resp.items():
+    for consolidated_result in exec_resp.consolidated_results:
+      for attempt in consolidated_result.attempts:
+        if '-shard-' in name:  # Legacy autotest
+          k = name
+        else:
+          k = attempt.name
+        if k not in task_results:
+          task_results[k] = attempt
+        elif attempt.attempt > task_results[k].attempt:
+          task_results[k] = attempt
 
-    # The field name should align with TestRunner defined in ../test_runner.py.
+  res = {}
+  for k, task_result in task_results.items():
     res[k] = {
         'url': task_result.task_url,
         'log_url': task_result.log_data.testhaus_url,
-        'status': _check_build_status(task_result.task_url, opts),
+        'status': _fix_test_runner_status(task_result),
     }
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
       json.dump(res, json_file)
   else:
-    logging.info(res)
+    logging.info(json.dumps(res, indent=2))
 
 
 def main(args):
