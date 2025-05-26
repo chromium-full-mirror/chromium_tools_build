@@ -234,9 +234,9 @@ def read_ctp_results(opts):
           k = name
         else:
           k = attempt.name
-        if k not in task_results:
-          task_results[k] = attempt
-        elif attempt.attempt > task_results[k].attempt:
+        is_infra_failure = (_fix_test_runner_status(attempt) == 'INFRA_FAILURE')
+        if k not in task_results or (attempt.attempt > task_results[k].attempt
+                                     and not is_infra_failure):
           task_results[k] = attempt
 
   res = {}
