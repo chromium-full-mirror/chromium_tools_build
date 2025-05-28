@@ -589,6 +589,11 @@ def android_asan(_):
   pass
 
 
+@config_ctx(includes=['chromium', 'mac_toolchain'])
+def chromium_tvos(c):
+  c.mac_toolchain.kind = 'tvos'
+
+
 @config_ctx()
 def android_common(c):
   c.env.PATH.extend([

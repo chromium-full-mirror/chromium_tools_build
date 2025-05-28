@@ -219,6 +219,21 @@ def GenTests(api):
       ),
   )
 
+  yield api.test(
+      'chromium_tvos',
+      api.platform('mac', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          bot_id='build1-a1',
+          build_number=77457,
+      ),
+      api.properties(
+          chromium_configs=['chromium_tvos'],
+          xcode_build_version='12345',
+      ),
+  )
+
   # Coverage for the chromeos gclient config defined in this module
   yield api.test(
       'chromeos',
