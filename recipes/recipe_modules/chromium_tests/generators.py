@@ -35,6 +35,7 @@ class Generator:
       remote_tests_only: bool = False,
       precommit_details: PrecommitDetails | None = None,
       scripts_compile_targets_fn: Callable[[], Iterable[str]] | None = None,
+      force_experimental_tests: bool = False,
   ):
     """
     Args:
@@ -50,6 +51,8 @@ class Generator:
         will use the non-pre-commit behavior.
       scripts_compile_targets_fn: A function that can be called to get
         the compile targets required for script tests.
+      force_experimental_tests: If True, treats any experimental test as if it
+        was a normal non-experimental test. Should be used sparingly.
     """
     self._chromium_tests_api = chromium_tests_api
     self._got_revisions = got_revisions
@@ -58,6 +61,7 @@ class Generator:
     self._precommit_details = precommit_details
     self._scripts_compile_targets_fn = (
         scripts_compile_targets_fn or (lambda: []))
+    self._force_experimental_tests = force_experimental_tests
 
   def generate(
       self,
@@ -125,7 +129,7 @@ class Generator:
       test_spec: steps.AbstractTestSpec,
   ) -> steps.AbstractTestSpec:
     experiment_percentage = raw_test_spec.get('experiment_percentage')
-    if experiment_percentage is None:
+    if experiment_percentage is None or self._force_experimental_tests:
       return test_spec
     return steps.ExperimentalTestSpec.create(test_spec,
                                              int(experiment_percentage))

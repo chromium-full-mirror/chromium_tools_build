@@ -866,7 +866,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         got_revisions,
         source_dir,
         build_dir,
-        checkout_dir=checkout_dir)
+        checkout_dir=checkout_dir,
+        force_experimental_tests=True,
+    )
 
     def _get_matching_test(requested_test_name):
       for t in targets_config.all_tests:

@@ -325,7 +325,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             checkout_dir: Path | None = None,
                             precommit_details=_COMPUTE_PRECOMMIT_DETAILS,
                             scripts_compile_targets_fn=None,
-                            remote_tests_only=False):
+                            remote_tests_only=False,
+                            force_experimental_tests=False):
     """
     Args:
       builder_config (BuilderConfig): config for the current builder
@@ -348,6 +349,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         Results will be memoized, so it will only be called a single
         time.
       remote_tests_only (bool): only include targets for remote tests
+      force_experimental_tests (bool): If True, treats any experimental test
+        as if it was a normal non-experimental test. Should be used sparingly.
 
     Returns: TargetsConfig for current builder
     """
@@ -384,9 +387,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         precommit_details = generators.PrecommitDetails(
             footers=self.m.tryserver.get_footers())
 
-    generator = generators.Generator(self, got_revisions, source_dir,
-                                     remote_tests_only, precommit_details,
-                                     memoized_scripts_compile_targets_fn)
+    generator = generators.Generator(
+        self,
+        got_revisions,
+        source_dir,
+        remote_tests_only,
+        precommit_details,
+        memoized_scripts_compile_targets_fn,
+        force_experimental_tests=force_experimental_tests)
 
     targets_by_builder_id = {}
     for builder_id in builder_config.builder_ids_in_scope_for_testing:
