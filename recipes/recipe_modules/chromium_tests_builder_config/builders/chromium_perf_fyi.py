@@ -141,13 +141,6 @@ _AddIsolatedTestSpec(
     parent_builder_group='chromium.perf.fyi')
 
 _AddIsolatedTestSpec(
-    'win-arm64-snapdragon-elite-perf',
-    'win',
-    target_arch='arm',
-    parent_buildername='win-arm64-builder-perf',
-    parent_builder_group='chromium.perf.fyi')
-
-_AddIsolatedTestSpec(
     'chromeos-kevin-perf-fyi',
     'chromeos',
     parent_buildername='chromeos-kevin-builder-perf-fyi',
