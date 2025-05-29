@@ -14,6 +14,7 @@ DEPS = [
     'depot_tools/gsutil',
     'depot_tools/osx_sdk',
     'depot_tools/tryserver',
+    'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
     'recipe_engine/cipd',
@@ -27,7 +28,6 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
     'recipe_engine/time',
-    'siso',
 ]
 
 from dataclasses import dataclass
@@ -169,7 +169,11 @@ class _TestRequest:
   command: str
 
 
-def _checkout_step(api, target_os, rust):
+def _is_reclient_enabled(api):
+  return api.reclient.instance
+
+
+def _checkout_step(api, target_os, reclient_enabled, rust):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
@@ -179,8 +183,8 @@ def _checkout_step(api, target_os, rust):
     if target_os:
       api.gclient.c.target_os = {target_os}
     api.gclient.c.got_revision_mapping['pdfium'] = 'got_revision'
-    if api.siso.enabled:
-      api.siso.enable_download_remoteexec_cfg_hook()
+    if reclient_enabled:
+      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
     if rust:
       api.gclient.c.solutions[0].custom_vars['checkout_rust'] = 'True'
     update_result = api.bot_update.ensure_checkout()
@@ -219,6 +223,7 @@ def _generate_out_path(memory_tool, skia, rust, xfa, v8, rel, component):
 # the used build configuration to be used by Gold.
 def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
                    target_cpu, rel, component, target_os, out_dir):
+  enable_reclient = _is_reclient_enabled(api)
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
   gn_cmd = api.depot_tools.gn_py_path
@@ -227,15 +232,16 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
   args = [
       'enable_rust=%s' % gn_bool[rust],
       'enable_rust_cxx=%s' % gn_bool[rust],
-      'is_component_build=%s' % gn_bool[component],
       'is_debug=%s' % gn_bool[not rel],
+      'is_component_build=%s' % gn_bool[component],
       'pdf_enable_fontations=%s' % gn_bool[rust],
       'pdf_enable_v8=%s' % gn_bool[v8],
       'pdf_enable_xfa=%s' % gn_bool[xfa],
-      'pdf_is_standalone=true',
       'pdf_use_skia=%s' % gn_bool[skia],
-      'use_remoteexec=true',
+      'pdf_is_standalone=true',
   ]
+  if enable_reclient:
+    args.append('use_remoteexec=true')
   if api.platform.is_win and not memory_tool:
     args.append('symbol_level=1')
 
@@ -268,12 +274,20 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
 
 
 def _build_steps(api, source_root, out_dir):
+  enable_reclient = _is_reclient_enabled(api)
   debug_path = source_root.joinpath('out', out_dir)
-  ninja_cmd = ['ninja', '-C', debug_path]
+  ninja_path = source_root.joinpath('third_party', 'ninja', 'ninja')
+  ninja_cmd = [ninja_path, '-C', debug_path]
+  if enable_reclient:
+    ninja_cmd.extend(['-j', api.reclient.jobs])
   ninja_cmd.append('pdfium_all')
 
-  with api.siso.context():
-    api.siso.run_ninja(source_root, ninja_cmd, name='compile with siso')
+  if enable_reclient:
+    with api.reclient.process(
+        'compile', '', source_root, deps_cache_by_step=False):
+      api.step('compile with ninja', ninja_cmd)
+  else:
+    api.step('compile with ninja', ninja_cmd)
 
 
 def _request_all_javascript_tests(test_runner, xfa):
@@ -926,16 +940,21 @@ def _gen_local_build(api, builder):
 
 def _gen_properties(api, **kwargs):
   updated_kwargs = {
+      '$build/reclient': {
+          'instance': 'fake-reclient-instance',
+          'jobs': '500',
+      },
       'bot_id': 'test_bot',
   }
   updated_kwargs.update(kwargs)
-  return api.properties(**updated_kwargs) + api.siso.properties()
+  return api.properties(**updated_kwargs)
 
 
 def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, rel,
              run_skia_gold, component, skip_test, target_os, renderers,
              swarming):
-  update_result = _checkout_step(api, target_os, rust)
+  update_result = _checkout_step(api, target_os, _is_reclient_enabled(api),
+                                 rust)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
 
@@ -1701,6 +1720,5 @@ def GenTests(api):
 
   yield api.test(
       'local',
-      api.siso.properties(),
       _gen_local_build(api, 'linux'),
   )
