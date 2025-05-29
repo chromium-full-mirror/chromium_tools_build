@@ -260,7 +260,14 @@ _AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
 # AL
+# TODO(crbug.com/414619873) - deprecate byra
 _AddIsolatedTestSpec('android-byra-perf', 'android',
+                     'android-desktop-x64-builder-perf')
+_AddIsolatedTestSpec('android-brya-kano-i5-8gb-perf', 'android',
+                     'android-desktop-x64-builder-perf')
+_AddIsolatedTestSpec('android-corsola-steelix-8gb-perf', 'android',
+                     'android-desktop-x64-builder-perf')
+_AddIsolatedTestSpec('android-nissa-uldren-8gb-perf', 'android',
                      'android-desktop-x64-builder-perf')
 
 _AddIsolatedTestSpec(
