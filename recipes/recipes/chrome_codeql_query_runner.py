@@ -116,9 +116,9 @@ def RunSteps(api, properties):
   # In particular, we'll fetch a list of "for database [x], what queries should
   # we run" from a config file & iterate through all databases [x] accordingly.
   # However, while we're doing v0 of these feature and ensuring everything works
-  # end-to-end, let's just focus on libavif for now as it's a relatively small
-  # database and easy to test against.
-  db_name = "libavif"
+  # end-to-end, let's just focus on d8 for now as it's a database of interest
+  # and relatively easy to test against.
+  db_name = "d8"
 
   unzipped_db_path = download_database(
       api=api,
