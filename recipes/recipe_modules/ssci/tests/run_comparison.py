@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DoesNotRunRE, DropExpectation, StepCommandContains
+from recipe_engine.post_process import DropExpectation, MustRunRE, StepCommandContains
 
 from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 
@@ -40,6 +40,7 @@ def RunSteps(api):
       build_dir=source_dir / 'Release/out',
       gn_targets=['chromium', 'chromium_installer'],
       platform='linux',
+      run_comparison=True,
   )
 
   api.assertions.assertEqual(
@@ -105,6 +106,24 @@ def GenTests(api):
                   },
               })),
       api.post_process(
+          MustRunRE,
+          r'.+\.run ssci tool to generate .+ SPDX sbom',
+          at_least=4,
+          at_most=4,
+      ),
+      api.post_process(
+          MustRunRE,
+          r'.+\.run SSCI SBOM Generator to generate .+ SPDX SBOM',
+          at_least=4,
+          at_most=4,
+      ),
+      api.post_process(
+          MustRunRE,
+          r'.+\.compare .+ SBOMs',
+          at_least=4,
+          at_most=4,
+      ),
+      api.post_process(
           StepCommandContains,
           'move and rename SBOM to match artifact',
           [
@@ -125,14 +144,6 @@ def GenTests(api):
               "[CLEANUP]/tmp_tmp_6/spdx-out.json",
               "[START_DIR]/src/Release/out/special/remoting.zip.spdx.json"
           ],
-      ),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.run SSCI SBOM Generator to generate .+ SPDX SBOM',
-      ),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.compare .+ SBOMs',
       ),
       api.post_process(DropExpectation),
   )
@@ -169,14 +180,6 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   },
               })),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.run SSCI SBOM Generator to generate .+ SPDX SBOM',
-      ),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.compare .+ SBOMs',
-      ),
       api.post_process(DropExpectation),
       status='FAILURE',
   )

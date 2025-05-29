@@ -45,6 +45,12 @@ message InputProperties {
 
   // enable the uploading of data collected from the various SSCI binaries.
   bool enable_upload_collected_data = 11;
+
+  // Version of the SSCI SBOM Generator to use.
+  string ssci_sbom_version = 12;
+
+  // Version of the sbomdiff to use.
+  string sbomdiff_version = 13;
 }
 
 message GeneratedSBOM {
