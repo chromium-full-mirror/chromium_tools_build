@@ -320,15 +320,6 @@ def RunSteps(api, properties):
                                       properties.fuzz_engine + '_all.json')
             api.gsutil.upload(json_file, 'code-coverage-data', gcs_dir)
 
-            succeeded = api.file.listdir('List succeeded targets',
-                                         api.path.cast_to_path(profdata_dir))
-            for profdata_file in succeeded:
-              test_type = api.path.basename(profdata_file)
-              api.code_coverage.get_chromium_fuzz_coverage(
-                  api.chromium_checkout.source_dir, build_dir,
-                  api.path.join(profdata_dir, profdata_file), profdata_dir,
-                  test_type)
-
           profdata_path = api.chromium_checkout.source_dir.joinpath(
               'total_fuzz_coverage.profdata')
           llvm_profdata_path = api.chromium_checkout.source_dir.joinpath(
@@ -617,8 +608,6 @@ def GenTests(api):
               },
           })),
       api.platform.name('linux'),
-      api.step_data('process fuzz coverage.List succeeded targets',
-                    api.file.listdir(['target1', 'target2'])),
       generate_test(is_coverage=True, engine='centipede'),
   )
 
