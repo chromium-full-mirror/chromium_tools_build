@@ -86,7 +86,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
       "--patch_root",
       "pdfium",
       "--revision_mapping_file",
@@ -213,7 +213,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_v8",
-      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=false pdf_is_standalone=true pdf_use_skia=false use_reclient=false use_remoteexec=true use_siso=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -231,11 +231,26 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/pdfium/third_party/ninja/ninja",
+      "[CACHE]/builder/pdfium/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
       "-C",
       "[CACHE]/builder/pdfium/out/debug_v8",
       "pdfium_all"
     ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "env": {
+      "SISO_PROJECT": "test-rbe-project",
+      "SISO_REAPI_INSTANCE": "default_instance"
+    },
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -247,7 +262,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile with ninja"
+    "name": "compile with siso"
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile with siso@@@"
+    ]
   },
   {
     "cmd": [
@@ -304,7 +326,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -339,7 +361,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -375,7 +397,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -410,7 +432,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite oneshot use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -446,7 +468,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -482,7 +504,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -518,7 +540,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -553,7 +575,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite oneshot use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -589,7 +611,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -625,7 +647,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
