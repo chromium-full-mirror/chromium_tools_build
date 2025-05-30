@@ -21,9 +21,11 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/depot_tools',
+    'depot_tools/gsutil',
     'depot_tools/tryserver',
     'filter',
     'gn',
+    'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -287,14 +289,37 @@ def RunSteps(api, properties):
           withxvfb_args = ['--target', api.chromium.c.build_config_fs]
           withxvfb_args.append('--build-dir=%s' % build_dir)
 
-          api.step(
-              'run all fuzzers', ['python3', withxvfb_path] + withxvfb_args + [
-                  '--', 'python3', 'tools/code_coverage/run_all_fuzzers.py',
-                  '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
-                  corpora_dir, '--profdata-outdir', profdata_dir, '--fuzzer',
-                  properties.fuzz_engine
-              ])
+          run_cmd = ['python3', withxvfb_path] + withxvfb_args + [
+              '--', 'python3', 'tools/code_coverage/run_all_fuzzers.py',
+              '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
+              corpora_dir, '--profdata-outdir', profdata_dir, '--fuzzer',
+              properties.fuzz_engine
+          ]
           if properties.fuzz_engine != 'fuzzilli':
+            target_list_dir = str(
+                api.chromium_checkout.source_dir.joinpath(
+                    'out', 'target-list-dir'))
+            api.file.rmtree('ensure target list directory blank',
+                            target_list_dir)
+            api.step('make target list directory',
+                     ['mkdir', '-p', target_list_dir])
+            run_cmd.extend(['--target-list-dir', target_list_dir])
+
+          api.step('run all fuzzers', run_cmd)
+
+          if properties.fuzz_engine != 'fuzzilli':
+            # For libfuzzer or centipede, upload two json files respectively for
+            # succeeded and all targets to GCS.
+            gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
+            revision = api.buildbucket.gitiles_commit.id[:7]
+            json_file = api.path.join(target_list_dir,
+                                      properties.fuzz_engine + '.json')
+            api.gsutil.upload(json_file, 'code-coverage-data',
+                              f'{gcs_dir}/{revision}/')
+            json_file = api.path.join(target_list_dir,
+                                      properties.fuzz_engine + '_all.json')
+            api.gsutil.upload(json_file, 'code-coverage-data', gcs_dir)
+
             succeeded = api.file.listdir('List succeeded targets',
                                          api.path.cast_to_path(profdata_dir))
             for profdata_file in succeeded:
@@ -303,6 +328,7 @@ def RunSteps(api, properties):
                   api.chromium_checkout.source_dir, build_dir,
                   api.path.join(profdata_dir, profdata_file), profdata_dir,
                   test_type)
+
           profdata_path = api.chromium_checkout.source_dir.joinpath(
               'total_fuzz_coverage.profdata')
           llvm_profdata_path = api.chromium_checkout.source_dir.joinpath(
