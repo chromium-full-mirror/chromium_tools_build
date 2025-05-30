@@ -22,7 +22,8 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                  limits=None,
                  fail_if_reapi_used=None,
                  output_local_strategy=None,
-                 keep_going=None):
+                 keep_going=None,
+                 disable_batch_mode=None):
     return self.m.properties(
         **{
             '$build/siso': {
@@ -41,5 +42,6 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                 'fail_if_reapi_used': fail_if_reapi_used,
                 'output_local_strategy': output_local_strategy,
                 'keep_going': keep_going,
+                'disable_batch_mode': disable_batch_mode,
             },
         })

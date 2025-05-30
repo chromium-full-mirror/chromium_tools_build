@@ -238,3 +238,12 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess, 'fs flush base_unittests'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'disable_batch_mode',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(disable_batch_mode=True),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-batch=false']),
+      api.post_process(post_process.DropExpectation),
+  )

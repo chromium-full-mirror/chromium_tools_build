@@ -150,6 +150,8 @@ class SisoApi(recipe_api.RecipeApi):
     ])
     if self._props.keep_going:
       cmd.extend(['-k', '0'])
+    if self._props.disable_batch_mode:
+      cmd.extend(['-batch=false'])
 
     if not skip_log_upload:
       cmd.append('--enable_cloud_logging')
