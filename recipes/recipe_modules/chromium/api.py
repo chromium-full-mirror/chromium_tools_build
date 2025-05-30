@@ -8,6 +8,7 @@ import contextlib
 from collections.abc import Iterable
 import functools
 import hashlib
+import os
 import re
 import textwrap
 
@@ -42,7 +43,6 @@ _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
 # TODO: b/315393741 - Remove this logic after Siso migration.
 _LAST_BUILD_SYSTEM = 'LAST_BUILD_SYSTEM.txt'
 
-
 class ChromiumApi(recipe_api.RecipeApi):
 
   def __init__(self, input_properties, *args, **kwargs):
@@ -55,10 +55,16 @@ class ChromiumApi(recipe_api.RecipeApi):
     # TODO(yueshe@) - migrate this property to xcode module once downstream
     # no longer sets this property
     self._xcode_build_version = input_properties.xcode_build_version
+    self._fail_build_on_clang_warnings = input_properties.fail_build_on_clang_warnings
+
 
   @property
   def xcode_build_version(self):
     return self._xcode_build_version
+
+  @property
+  def fail_build_on_clang_warnings(self):
+    return self._fail_build_on_clang_warnings
 
   @property
   def verify_config(self):
@@ -528,6 +534,9 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.m.ninjalog.upload(name, ninja_command, ninja_step_result.retcode,
                                ninja_invocation_id)
 
+    if self.fail_build_on_clang_warnings:
+      self.check_for_clang_warnings(self.m.siso._ninja_dir(cmd))
+
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 
     ninja_no_work = 'ninja: no work to do.'
@@ -689,6 +698,67 @@ class ChromiumApi(recipe_api.RecipeApi):
         builder_id=builder_id,
         **kwargs)
     return ninja_result
+
+  def check_for_clang_warnings(self, build_dir):
+    """
+    Scan the compiler output (contained in build_dir / 'siso_output') for any
+    warnings. If any were present, fail the build.
+
+    Note that chromium usually builds with -Werror, so clang will only emit
+    warnings if that flag is turned off.
+
+    It would be preferable to use the WARNING status instead of FAILURE, but
+    that doesn't seem to be supported: crbug.com/40581344
+
+    Args:
+      build_dir: The path to the build directory used by ninja, which contains
+                 the siso_output file.
+
+    Returns:
+      None
+
+    Raises:
+      StepFailure from the 'scan siso_output for warnings' step
+    """
+
+    with self.m.step.nest('check for compile warnings'):
+      step_text = 'No warnings found'
+      log_text = ''
+      status = self.m.step.SUCCESS
+
+      siso_output_path = os.path.join(build_dir, 'siso_output')
+      if self.m.path.exists(siso_output_path):
+        siso_output = self.m.file.read_text('read siso_output',
+                                            siso_output_path)
+      else:
+        siso_output = ''
+        step_text = str(siso_output_path) + ' does not exist'
+
+      # Regex matching a warning outputted by clang
+      m = re.search(r'warning:.+\[-W.+\]', siso_output)
+      if m:
+        step_text = ('Clang emitted warnings during compilation.\n' +
+                     'See siso_output for full details.')
+        log_text = ('warning text (see siso_output for full details):\n' +
+                    m.group(0))
+        status = self.m.step.FAILURE
+
+      if len(log_text) > 1024:
+        log_text = log_text[:1024] + '...'
+
+      # Don't raise immediately, so that we can manually raise with
+      # a nicer error message.
+      self.m.step.empty(
+          'scan siso_output for warnings',
+          status,
+          step_text,
+          log_text,
+          raise_on_failure=False)
+
+      if m:
+        raise self.m.step.StepFailure(
+            'Error: compiler warnings were detected. See logs under the'
+            '"scan siso_output for warnings" step for details.')
 
   @contextlib.contextmanager
   def guard_compile(self, build_dir: Path, *, suffix=''):
@@ -876,8 +946,8 @@ class ChromiumApi(recipe_api.RecipeApi):
                                               name or 'compile', footer)
       return result_pb2.RawResult(
           status=common_pb.FAILURE, summary_markdown=failure_summary)
-    return result_pb2.RawResult(status=common_pb.SUCCESS)
 
+    return result_pb2.RawResult(status=common_pb.SUCCESS)
 
   @_with_chromium_layout
   def runtest(self,

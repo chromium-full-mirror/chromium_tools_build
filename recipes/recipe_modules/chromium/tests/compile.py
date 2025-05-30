@@ -4,6 +4,7 @@
 
 DEPS = [
     'chromium',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
@@ -261,5 +262,53 @@ def GenTests(api):
           stdout=api.raw_io.output_text('ninja explain: dirty')),
       api.post_process(post_process.StepFailure, 'compile confirm no-op'),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  fail_on_warnings_properties = {
+      '$build/chromium': {
+          'fail_build_on_clang_warnings': True
+      },
+  }
+
+  build_dir = api.path.cache_dir / 'builder/src' / 'out/Release'
+
+  yield api.test(
+      'warning_failure',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.properties(**fail_on_warnings_properties),
+      api.path.exists(build_dir / 'siso_output'),
+      api.step_data(
+          'check for compile warnings.read siso_output',
+          api.file.read_text('../../a/b/c.cc:1:2: warning: '
+                             'something bad happened [-Wwarning]')),
+      api.post_process(
+          post_process.StepFailure,
+          'check for compile warnings.scan siso_output for warnings'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'warning_failure_long_msg',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.properties(**fail_on_warnings_properties),
+      api.path.exists(build_dir / 'siso_output'),
+      api.step_data(
+          'check for compile warnings.read siso_output',
+          api.file.read_text('../../a/b/c.cc:1:2: warning: ' +
+                             "long text " * 100 +
+                             'something bad happened [-Wwarning]')),
+      api.post_process(
+          post_process.StepFailure,
+          'check for compile warnings.scan siso_output for warnings'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_warnings_no_failure',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.properties(**fail_on_warnings_properties),
       api.post_process(post_process.DropExpectation),
   )

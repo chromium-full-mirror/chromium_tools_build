@@ -14,4 +14,6 @@ message InputProperties {
 
   reserved 2;
   reserved "goma_cache_silo";
+
+  bool fail_build_on_clang_warnings = 3;
 }
