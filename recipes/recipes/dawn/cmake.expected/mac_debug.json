@@ -49,6 +49,7 @@
     "cwd": "[CACHE]/uncached",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -127,7 +128,8 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "FORCE_MAC_TOOLCHAIN": "1"
     },
     "env_suffixes": {
       "PATH": [
@@ -311,7 +313,8 @@
       "-DDAWN_ENABLE_ASAN=0",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=0"
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
@@ -397,7 +400,8 @@
       "-DDAWN_ENABLE_ASAN=0",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=1",
-      "-DTINT_BUILD_AS_OTHER_OS=0"
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
@@ -567,7 +571,8 @@
       "-DDAWN_ENABLE_ASAN=0",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=1"
+      "-DTINT_BUILD_AS_OTHER_OS=1",
+      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
@@ -653,7 +658,8 @@
       "-DDAWN_ENABLE_ASAN=0",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=0"
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {

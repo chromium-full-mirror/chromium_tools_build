@@ -531,9 +531,9 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
@@ -2168,9 +2168,9 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=1",
       "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
@@ -3831,9 +3831,9 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=1",
+      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
@@ -5353,9 +5353,9 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DTINT_BUILD_FUZZERS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=0",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"

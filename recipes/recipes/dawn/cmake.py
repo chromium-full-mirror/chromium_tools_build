@@ -44,7 +44,12 @@ def _checkout_steps(api):
   solution_path = api.path.cache_dir / 'uncached'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
-  with api.context(cwd=solution_path):
+  env = {}
+  if api.platform.is_mac:
+    # Necessary to get the hermetic toolchain.
+    env['FORCE_MAC_TOOLCHAIN'] = '1'
+
+  with api.context(cwd=solution_path, env=env):
     # Checkout dawn and its dependencies (specified in DEPS) using gclient.
     api.gclient.set_config('dawn')
     api.gclient.c.got_revision_mapping['dawn'] = 'got_revision'
@@ -323,14 +328,22 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
   ]
   if fixed_args.clang:
     cmake_args.extend([
-        '-DCMAKE_C_COMPILER=clang',
-        '-DCMAKE_CXX_COMPILER=clang++',
         f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(build_fuzzers)}',
     ])
     if api.platform.is_linux:
+      cmake_args.extend([
+          '-DCMAKE_C_COMPILER=clang',
+          '-DCMAKE_CXX_COMPILER=clang++',
+      ])
       # On Linux, use the x64 sysroot specified in DEPS
       sysroot = source_dir.joinpath('build/linux/debian_bullseye_amd64-sysroot')
       cmake_args.extend([f'-DCMAKE_SYSROOT={sysroot}'])
+
+  # Use the hermetic toolchain on Mac so that the OS version used does not matter.
+  if api.platform.is_mac:
+    cmake_args.extend([
+        '-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake',
+    ])
 
   rbe_exec_root = _rbe_exec_root(api)
   if use_remoteexec:

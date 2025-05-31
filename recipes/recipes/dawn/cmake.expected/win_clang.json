@@ -332,8 +332,6 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_C_COMPILER=clang",
-      "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
@@ -441,8 +439,6 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=1",
       "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_C_COMPILER=clang",
-      "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
@@ -666,8 +662,6 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_C_COMPILER=clang",
-      "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
