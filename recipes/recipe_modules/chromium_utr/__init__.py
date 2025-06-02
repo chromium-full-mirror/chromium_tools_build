@@ -11,7 +11,6 @@ DEPS = [
     'gn',
     'isolate',
     'profiles',
-    'reclient',
     'siso',
     'depot_tools/gclient',
     'depot_tools/git',

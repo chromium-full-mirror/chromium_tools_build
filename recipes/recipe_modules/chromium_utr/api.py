@@ -668,20 +668,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     self.m.code_coverage.instrument(paths)
     return []
 
-  def get_remote_compile_options(self, build_dir: Path,
-                                 properties: Request) -> bool:
-    use_reclient = False
-    if self.m.chromium.c.project_generator.tool == 'mb':
-      gn_args, _ = self.m.gn.read_args(build_dir)
-      args = self.m.gn.parse_gn_args(gn_args)
-      use_reclient = args.get('use_remoteexec') == 'true' and args.get(
-          'use_reclient') != 'false'
-
-    if properties.no_rbe:
-      use_reclient = False
-
-    return use_reclient
-
   def gn_gen(
       self,
       properties: Request,
@@ -811,24 +797,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if not targets:
       return None, generated_isolates
 
-    use_reclient = self.get_remote_compile_options(build_dir, properties)
-
-    if use_reclient:
-      self.m.reclient.credentials_helper = 'luci-auth'
-      self.m.reclient.credentials_helper_args = ' '.join([
-          'token',
-          '-scopes-context',
-          '-json-output=-',
-          '-json-format=reclient',
-          '-lifetime=5m',
-      ])
-
     return self.m.chromium.compile(
-        source_dir,
-        build_dir,
-        targets=targets,
-        skip_log_upload=True,
-        use_reclient=use_reclient), generated_isolates
+        source_dir, build_dir, targets=targets,
+        skip_log_upload=True), generated_isolates
 
 
   def create_tests(

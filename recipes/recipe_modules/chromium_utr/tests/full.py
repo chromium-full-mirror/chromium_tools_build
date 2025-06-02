@@ -452,30 +452,6 @@ solutions = [
   )
 
   yield api.test(
-      'reclient',
-      boilerplate(),
-      api.step_data('read GN args',
-                    api.raw_io.output_text('use_remoteexec = true')),
-      api.post_process(post_process.MustRun, 'isolate tests'),
-      api.post_process(post_process.MustRun, 'lookup GN args'),
-      api.post_process(post_process.MustRun,
-                       'test_pre_run.[trigger] browser_tests'),
-      api.post_process(post_process.StepCommandContains, 'compile', [
-          '[CACHE]/src/third_party/ninja/ninja', '-C',
-          '[CACHE]/src/out/Release', '-j', '160', 'browser_tests'
-      ]),
-      api.post_process(post_process.MustRun, 'browser_tests'),
-      api.post_process(
-          post_process.MustRun,
-          'postprocess for reclient.shutdown reproxy via bootstrap'),
-      api.post_process(post_process.DoesNotRun,
-                       'postprocess for reclient.stop cloudtail'),
-      api.post_process(post_process.DoesNotRun,
-                       'preprocess for reclient.start cloudtail: reproxy.INFO'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'child_tester',
       boilerplate_properties(),
       api.chromium_tests_builder_config.ci_build(
@@ -765,11 +741,6 @@ target_os=['os']
           preserve_gn_args=False,
       ),
       api.code_coverage(use_clang_coverage=True),
-      api.step_data(
-          'read GN args',
-          api.raw_io.output_text('coverage_instrumentation_input_file = '
-                                 '".code-coverage/files_to_instrument.txt"\n'
-                                 'b = true')),
       api.step_data(
           'lookup_builder_gn_args',
           stdout=api.raw_io.output_text(
