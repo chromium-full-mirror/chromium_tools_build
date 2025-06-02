@@ -169,7 +169,7 @@ _CLIENT_WEBRTC_SPEC = {
     'Linux (more configs)':
         WebRTCBuilderSpec.create(
             phases=('dummy_audio_file_devices_no_protobuf', 'rtti_no_sctp',
-                    'disable_trace_events', 'openssl', 'perfetto', 'no_lld'),
+                    'disable_trace_events', 'openssl', 'perfetto'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             chromium_config_kwargs={
@@ -901,7 +901,7 @@ _TRYSERVER_WEBRTC_SPEC = {
     'linux_more_configs':
         WebRTCBuilderSpec.create(
             phases=('dummy_audio_file_devices_no_protobuf', 'rtti_no_sctp',
-                    'disable_trace_events', 'openssl', 'perfetto', 'no_lld'),
+                    'disable_trace_events', 'openssl', 'perfetto'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             chromium_config_kwargs={
