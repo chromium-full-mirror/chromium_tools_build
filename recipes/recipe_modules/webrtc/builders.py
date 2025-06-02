@@ -166,11 +166,10 @@ _CLIENT_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Release',
                 'TARGET_BITS': 64,
             }),
-    #TODO: b/319083416 - Add disable_trace_events to CI more config bots.
     'Linux (more configs)':
         WebRTCBuilderSpec.create(
             phases=('dummy_audio_file_devices_no_protobuf', 'rtti_no_sctp',
-                    'openssl'),
+                    'disable_trace_events', 'openssl', 'perfetto', 'no_lld'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             chromium_config_kwargs={
@@ -902,7 +901,7 @@ _TRYSERVER_WEBRTC_SPEC = {
     'linux_more_configs':
         WebRTCBuilderSpec.create(
             phases=('dummy_audio_file_devices_no_protobuf', 'rtti_no_sctp',
-                    'disable_trace_events', 'openssl'),
+                    'disable_trace_events', 'openssl', 'perfetto', 'no_lld'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             chromium_config_kwargs={

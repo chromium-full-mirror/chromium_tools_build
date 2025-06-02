@@ -4112,6 +4112,1397 @@
     "name": "remove compile guard (4)"
   },
   {
+    "cmd": [
+      "git",
+      "-c",
+      "core.quotePath=false",
+      "diff",
+      "--cached",
+      "--name-only"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git diff to analyze patch (5)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
+      "@@@STEP_LOG_END@files@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/infra/specs/trybot_analyze_config.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read filter exclusion spec (5)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
+      "analyze",
+      "-m",
+      "tryserver.webrtc",
+      "-b",
+      "linux_more_configs",
+      "--config-file",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
+      "--phase",
+      "perfetto",
+      "-v",
+      "[CACHE]/builder/src/out/openssl",
+      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
+      "/path/to/tmp/json",
+      "--json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "analyze (5)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"all\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ],@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status\": \"Found dependency\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"test_targets\": []@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[failure_summary]@@@",
+      "@@@STEP_LOG_LINE@analyze_details@{@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
+      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"affected test targets\": [],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"affected compile targets\": [@@@",
+      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  ]@@@",
+      "@@@STEP_LOG_LINE@analyze_details@}@@@",
+      "@@@STEP_LOG_END@analyze_details@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/src/out/openssl"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure output directory (5)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
+      "[CACHE]/builder/src/out/openssl/CR_COMPILE_GUARD.txt"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create compile guard (5)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@This file exists while a build compiles and is removed at the end of@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@compilation. If the next build finds that the file exists prior to@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@compilation, it will wipe the output directory.@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@See https://crbug.com/959436 for more context.@@@",
+      "@@@STEP_LOG_END@CR_COMPILE_GUARD.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "siso",
+      "[CACHE]/builder/src/out/openssl/LAST_BUILD_SYSTEM.txt"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "write LAST_BUILD_SYSTEM.txt (5)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@siso@@@",
+      "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
+      "lookup",
+      "-m",
+      "tryserver.webrtc",
+      "-b",
+      "linux_more_configs",
+      "--config-file",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
+      "--phase",
+      "perfetto",
+      "--quiet"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "lookup GN args (5)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
+      "gen",
+      "-m",
+      "tryserver.webrtc",
+      "-b",
+      "linux_more_configs",
+      "--config-file",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
+      "--phase",
+      "perfetto",
+      "--json-output",
+      "/path/to/tmp/json",
+      "[CACHE]/builder/src/out/perfetto"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "generate_build_files (5)",
+    "tags": {
+      "resultdb.instruction.id": "generate_build_files_5_repro_instructions"
+    },
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/perfetto/gn_logs.txt",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read gn_logs.txt (5)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@gn_logs.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions (8)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (3) instructions\", \"id\": \"generate_build_files_3_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase disable_trace_events out/disable_trace_events```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/dummy size] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (4) instructions\", \"id\": \"generate_build_files_4_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase openssl out/openssl```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (5) instructions\", \"id\": \"generate_build_files_5_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase perfetto out/perfetto```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (2) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (3) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_3_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase disable_trace_events out/disable_trace_events```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"dummy_test instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/dummy size] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (4) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_4_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase openssl out/openssl```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (5) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_5_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase perfetto out/perfetto```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
+      "/path/to/tmp/",
+      "-C",
+      "[CACHE]/builder/src/out/perfetto"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001367"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile (5)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001367"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (9)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/perfetto/.ninja_log",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read ninja log (5)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake gzip data",
+      "[TMP_BASE]/ninja_log.20120514-125341.00000000-0000-0000-0000-00000000136d.gz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create ninja log gzip (5)"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/ninja_log.20120514-125341.00000000-0000-0000-0000-00000000136d.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125341.00000000-0000-0000-0000-00000000136d.gz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload ninja_log (5)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125341.00000000-0000-0000-0000-00000000136d.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125341.00000000-0000-0000-0000-00000000136d.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-C",
+      "[CACHE]/builder/src/out/perfetto",
+      "-d",
+      "explain",
+      "-n"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001367"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile confirm no-op (5)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001367"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (10)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile confirm no-op@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "remove",
+      "[CACHE]/builder/src/out/openssl/CR_COMPILE_GUARD.txt"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "remove compile guard (5)"
+  },
+  {
+    "cmd": [
+      "git",
+      "-c",
+      "core.quotePath=false",
+      "diff",
+      "--cached",
+      "--name-only"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git diff to analyze patch (6)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
+      "@@@STEP_LOG_END@files@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/infra/specs/trybot_analyze_config.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read filter exclusion spec (6)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
+      "analyze",
+      "-m",
+      "tryserver.webrtc",
+      "-b",
+      "linux_more_configs",
+      "--config-file",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
+      "--phase",
+      "no_lld",
+      "-v",
+      "[CACHE]/builder/src/out/perfetto",
+      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
+      "/path/to/tmp/json",
+      "--json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "analyze (6)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"all\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ],@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status\": \"Found dependency\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"test_targets\": []@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[failure_summary]@@@",
+      "@@@STEP_LOG_LINE@analyze_details@{@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
+      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"affected test targets\": [],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"affected compile targets\": [@@@",
+      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  ]@@@",
+      "@@@STEP_LOG_LINE@analyze_details@}@@@",
+      "@@@STEP_LOG_END@analyze_details@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/src/out/perfetto"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure output directory (6)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
+      "[CACHE]/builder/src/out/perfetto/CR_COMPILE_GUARD.txt"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create compile guard (6)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@This file exists while a build compiles and is removed at the end of@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@compilation. If the next build finds that the file exists prior to@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@compilation, it will wipe the output directory.@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@@@@",
+      "@@@STEP_LOG_LINE@CR_COMPILE_GUARD.txt@See https://crbug.com/959436 for more context.@@@",
+      "@@@STEP_LOG_END@CR_COMPILE_GUARD.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "siso",
+      "[CACHE]/builder/src/out/perfetto/LAST_BUILD_SYSTEM.txt"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "write LAST_BUILD_SYSTEM.txt (6)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@LAST_BUILD_SYSTEM.txt@siso@@@",
+      "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
+      "lookup",
+      "-m",
+      "tryserver.webrtc",
+      "-b",
+      "linux_more_configs",
+      "--config-file",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
+      "--phase",
+      "no_lld",
+      "--quiet"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "lookup GN args (6)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
+      "gen",
+      "-m",
+      "tryserver.webrtc",
+      "-b",
+      "linux_more_configs",
+      "--config-file",
+      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
+      "--phase",
+      "no_lld",
+      "--json-output",
+      "/path/to/tmp/json",
+      "[CACHE]/builder/src/out/no_lld"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "generate_build_files (6)",
+    "tags": {
+      "resultdb.instruction.id": "generate_build_files_6_repro_instructions"
+    },
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/no_lld/gn_logs.txt",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read gn_logs.txt (6)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@gn_logs.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions (9)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (3) instructions\", \"id\": \"generate_build_files_3_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase disable_trace_events out/disable_trace_events```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/dummy size] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (4) instructions\", \"id\": \"generate_build_files_4_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase openssl out/openssl```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (5) instructions\", \"id\": \"generate_build_files_5_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase perfetto out/perfetto```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (6) instructions\", \"id\": \"generate_build_files_6_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase no_lld out/no_lld```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (2) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (3) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_3_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase disable_trace_events out/disable_trace_events```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"dummy_test instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/dummy size] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (4) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_4_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase openssl out/openssl```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (5) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_5_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase perfetto out/perfetto```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files (6) instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_6_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m tryserver.webrtc -b linux_more_configs --config-file tools_webrtc/mb/mb_config.pyl --phase no_lld out/no_lld```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
+      "/path/to/tmp/",
+      "-C",
+      "[CACHE]/builder/src/out/no_lld"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001373"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile (6)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001373"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (11)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/no_lld/.ninja_log",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read ninja log (6)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake gzip data",
+      "[TMP_BASE]/ninja_log.20120514-125345.00000000-0000-0000-0000-000000001379.gz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create ninja log gzip (6)"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/ninja_log.20120514-125345.00000000-0000-0000-0000-000000001379.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125345.00000000-0000-0000-0000-000000001379.gz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload ninja_log (6)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125345.00000000-0000-0000-0000-000000001379.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125345.00000000-0000-0000-0000-000000001379.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-C",
+      "[CACHE]/builder/src/out/no_lld",
+      "-d",
+      "explain",
+      "-n"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001373"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile confirm no-op (6)",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001373"
+    }
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (12)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile confirm no-op@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "remove",
+      "[CACHE]/builder/src/out/perfetto/CR_COMPILE_GUARD.txt"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "remove compile guard (6)"
+  },
+  {
     "name": "$result"
   }
 ]
