@@ -701,6 +701,7 @@
     },
     "name": "clang_revision",
     "~followup_annotations": [
+      "@@@STEP_TEXT@123456-7@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"clang_revision\": \"123456-7\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",

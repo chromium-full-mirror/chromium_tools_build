@@ -1049,6 +1049,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           **kwargs)
       clang_revision = step_result.json.output['clang_revision']
       step_result.presentation.properties['clang_revision'] = clang_revision
+      step_result.presentation.step_text = clang_revision
     return clang_revision
 
   def get_mac_toolchain_installer(self):
