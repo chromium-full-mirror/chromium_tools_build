@@ -47,7 +47,7 @@ class LibyuvApi(recipe_api.RecipeApi):
     return self.bot_type in ('builder', 'builder_tester')
 
   @property
-  def should_use_reclient(self):
+  def should_use_remoteexec(self):
     return self.buildername not in _LOCAL_COMPILE_BUILDERS
 
   @property

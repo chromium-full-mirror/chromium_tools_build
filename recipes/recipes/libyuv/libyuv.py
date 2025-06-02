@@ -27,6 +27,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/step',
     'reclient',
+    'siso',
 ]
 
 
@@ -36,18 +37,22 @@ def RunSteps(api):
       builder_db=builders.BUILDERS_DB)
   libyuv.apply_bot_config(builder_id, builder_config)
 
-  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+  if api.siso.enabled:
+    api.siso.enable_download_remoteexec_cfg_hook()
+  else:
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   update_result = libyuv.checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
   api.chromium.runhooks(source_dir, build_dir)
 
   if libyuv.should_build:
-    with libyuv.ensure_sdk():
+    with libyuv.ensure_sdk(), api.chromium.guard_compile(build_dir):
+      api.chromium.c.gn_args.append('use_siso=true')
       api.chromium.run_gn(
-          source_dir, build_dir, use_remoteexec=libyuv.should_use_reclient)
+          source_dir, build_dir, use_remoteexec=libyuv.should_use_remoteexec)
       raw_result = api.chromium.compile(
-          source_dir, build_dir, use_reclient=libyuv.should_use_reclient)
+          source_dir, build_dir, use_reclient=libyuv.should_use_remoteexec)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     if libyuv.should_upload_build:
@@ -137,3 +142,8 @@ def GenTests(api):
       'tryserver.libyuv', 'linux', revision=None, suffix='_compile_failed') +
          api.step_data('compile', retcode=1) + api.expect_status('FAILURE') +
          api.post_process(post_process.DropExpectation))
+
+  # TODO: b/412968361 - Remove after completing the Siso migration.
+  yield (generate_builder(
+      builder_group, 'Linux64 Debug', revision=None, suffix='_siso') +
+         api.siso.properties() + api.post_process(post_process.DropExpectation))
