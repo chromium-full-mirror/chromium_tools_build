@@ -16,10 +16,11 @@ _BQ_TABLE_NAME = 'chromium-build-stats.public.build_stats'
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
-  def build_with_ninja(self, *args, **kwargs):
+  def build_with_ninja(self, source_dir: Path, *args, **kwargs):
     """Run a build with Ninja. See _build()."""
-    with self.m.siso.disable():
-      return self._build(*args, **kwargs)
+    with self.m.siso.disable(), self.m.reclient.process('build with ninja',
+                                                        None, source_dir):
+      return self._build(source_dir, *args, **kwargs)
 
   def build_with_siso(self, *args, **kwargs):
     """Run a build with Siso. See _build()."""
@@ -76,7 +77,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
             targets=[target],
             name=step_name,
             timeout=timeout,
-            use_reclient=use_rbe,
             siso_args=siso_args,
             resource_usage_output_file=resource_usage_output_file)
       finally:

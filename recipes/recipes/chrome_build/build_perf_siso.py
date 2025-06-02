@@ -111,13 +111,6 @@ def RunSteps(api):
 
   # Build target: all
   _run_builds(api, source_dir, build_dir, 'all', phase='builtin')
-  _run_builds(
-      api,
-      source_dir,
-      build_dir,
-      'all',
-      phase='reproxy',
-      step_name_suffix=' with reproxy')
 
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
