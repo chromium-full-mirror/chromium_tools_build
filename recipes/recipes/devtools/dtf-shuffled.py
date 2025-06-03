@@ -45,12 +45,13 @@ def RunSteps(api, clobber):
   build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
-    api.chromium.run_gn(api.devtools.source_dir, build_dir)
+    with api.chromium.guard_compile(build_dir):
+      api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
-    compilation_result = api.chromium.compile(api.devtools.source_dir,
-                                              build_dir)
-    if compilation_result.status != common_pb.SUCCESS:
-      return compilation_result
+      compilation_result = api.chromium.compile(api.devtools.source_dir,
+                                                build_dir)
+      if compilation_result.status != common_pb.SUCCESS:
+        return compilation_result
     cas_digest = api.devtools.archive_to_cas()
 
     divider = E2ETestDivider(api, builder_config, shuffled=True)

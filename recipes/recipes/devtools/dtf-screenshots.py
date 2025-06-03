@@ -37,11 +37,12 @@ def RunSteps(api, clobber):
 
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
-    api.chromium.run_gn(api.devtools.source_dir, build_dir)
-    compilation_result = api.chromium.compile(api.devtools.source_dir,
-                                              build_dir)
-    if compilation_result.status != common_pb.SUCCESS:
-      return compilation_result
+    with api.chromium.guard_compile(build_dir):
+      api.chromium.run_gn(api.devtools.source_dir, build_dir)
+      compilation_result = api.chromium.compile(api.devtools.source_dir,
+                                                build_dir)
+      if compilation_result.status != common_pb.SUCCESS:
+        return compilation_result
 
     with api.devtools.collect_screenshots('devtools-frontend-screenshots'):
       update_screenshots(api, builder_config)
