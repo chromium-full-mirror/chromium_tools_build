@@ -1288,6 +1288,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '--profdata-dir',
         profdata_dir,
     ]
+    fuzz_target_args = (['--fuzz-target', test_type]
+                        if test_type != constants.test_types.OVERALL else [])
+    cmd.extend(fuzz_target_args)
     self.m.step('generate coverage metadata', cmd)
 
     self._persist_coverage_artifacts(source_dir=output_dir, test_type=test_type)

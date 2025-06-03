@@ -867,6 +867,8 @@ def _parse_args(args):
       action='store_true',
       help='indicates whether we are generating fuzzing coverage')
   parser.add_argument(
+      '--fuzz-target', type=str, help='Fuzz target to generate code coverage')
+  parser.add_argument(
       '--profdata-dir',
       type=str,
       help=('Data in which profdata files are stored. Used by fuzzing coverage'
@@ -913,6 +915,13 @@ def _is_elf(binary_abspath):
   return False
 
 
+def _read_runtime_deps(build_dir, fuzz_target):
+  with open(os.path.join(build_dir, fuzz_target + '.runtime_deps')) as fp:
+    lines = fp.readlines()
+  lines = [line.strip() for line in lines]
+  return [os.path.abspath(os.path.join(build_dir, line)) for line in lines]
+
+
 def main():
   params = _parse_args(sys.argv[1:])
   _validate_params_for_code_coverage(params)
@@ -942,6 +951,10 @@ def main():
   summaries = ''
 
   if (params.fuzz):
+    if params.fuzz_target:
+      runtime_deps = _read_runtime_deps(params.build_dir, params.fuzz_target)
+    else:
+      runtime_deps = []
     binaries = []
     # Some fuzzers invoke multiple binaries (notably fuzztest where a thin
     # wrapper binary invokes a more substantial unit test binary).
@@ -952,7 +965,9 @@ def main():
       binary_abspath = os.path.join(str(params.build_dir), binary_name)
       # Only ELF binaries are instrumented, so we only want to include those.
       if _is_elf(binary_abspath):
-        binaries.append(binary_abspath)
+        if not runtime_deps or binary_abspath in runtime_deps:
+          binaries.append(binary_abspath)
+
     data, summaries = _generate_metadata(
         params.src_path,
         params.output_dir,
