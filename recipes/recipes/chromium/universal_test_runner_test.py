@@ -69,6 +69,17 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   with replace_bootstrap_proto_link(api, infra_dir):
     bundle_dir = create_recipe_bundle(api, recipe_dir, infra_dir)
 
+  # Opt-in to telemetry to verify it works
+  api.step(
+      'opt-in telemetry',
+      cmd=[
+          'vpython3',
+          api.chromium_checkout.source_dir.joinpath('third_party',
+                                                    'depot_tools', 'infra_lib',
+                                                    'telemetry'),
+          '--enable',
+      ])
+
   failed_invocations = 0
   for builder_suites in properties.builder_suites:
     test_names = ', '.join(builder_suites.test_names)
