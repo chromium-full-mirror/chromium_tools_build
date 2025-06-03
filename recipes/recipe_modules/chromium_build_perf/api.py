@@ -20,7 +20,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     """Run a build with Ninja. See _build()."""
     with self.m.siso.disable(), self.m.reclient.process('build with ninja',
                                                         None, source_dir):
-      return self._build(source_dir, *args, **kwargs)
+      return self._build(
+          source_dir,
+          *args,
+          extra_ninja_args=['-j=' + str(self.m.reclient.jobs)],
+          **kwargs)
 
   def build_with_siso(self, *args, **kwargs):
     """Run a build with Siso. See _build()."""
@@ -36,7 +40,9 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       step_name_suffix=None,
       use_rbe=True,
       # TODO: Remove this flag.
-      resource_usage_output_file=None):
+      resource_usage_output_file=None,
+      extra_ninja_args=None,
+  ):
     """Run a build.
 
         Args:
@@ -69,12 +75,16 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     if step_name_suffix:
       step_name += step_name_suffix
     timeout = 60 * 60 * 3  # 3h
+    targets = [target]
+    if extra_ninja_args:
+      # This is a workaround to add extra ninja args to compile command.
+      targets.extend(extra_ninja_args)
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
             source_dir,
             build_dir,
-            targets=[target],
+            targets=targets,
             name=step_name,
             timeout=timeout,
             siso_args=siso_args,
