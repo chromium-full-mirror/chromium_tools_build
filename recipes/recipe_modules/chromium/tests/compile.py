@@ -32,7 +32,10 @@ def RunSteps(api):
   build_dir = source_dir / 'out/Release'
 
   return api.chromium.compile(
-      source_dir, build_dir, targets=api.properties.get('targets'))
+      source_dir,
+      build_dir,
+      targets=api.properties.get('targets'),
+      extra_ninja_args=api.properties.get('extra_ninja_args'))
 
 
 def GenTests(api):
@@ -310,5 +313,14 @@ def GenTests(api):
       'no_warnings_no_failure',
       api.chromium.generic_build(builder_group='test_group'),
       api.properties(**fail_on_warnings_properties),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'extra_ninja_args',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.properties(extra_ninja_args=['-j', '100']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-j', '100']),
       api.post_process(post_process.DropExpectation),
   )

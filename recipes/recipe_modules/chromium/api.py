@@ -850,6 +850,7 @@ class ChromiumApi(recipe_api.RecipeApi):
               reclient_extra_env: dict | None = None,
               include_utr_instruction: bool = False,
               builder_id: chromium.BuilderId | None = None,
+              extra_ninja_args: list[str] | None = None,
               **kwargs):
     """Return a compile.py invocation.
 
@@ -868,6 +869,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                             to resource usage while compiling
       include_utr_instruction: Whether or not to include instructions using utr
       builder_id: BuilderId for the compile being run
+      extra_ninja_args: Additional Ninja args.
 
     Returns:
       A RawResult object with the compile step's status and failure message
@@ -909,6 +911,9 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     if targets is not None and 'all' not in targets:
       command += targets
+
+    if extra_ninja_args:
+      command += extra_ninja_args
 
     assert 'env' not in kwargs
     assert 'cwd' not in kwargs

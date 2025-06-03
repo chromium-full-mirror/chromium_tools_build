@@ -58,14 +58,17 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     step_name = 'Build ' + target
     env = {}
     siso_args = []
+    extra_ninja_args = []
     if not use_rbe:
       step_name += ' without remote execution'
     elif with_remote_cache:
       step_name += ' with remote cache'
+      extra_ninja_args += ['-j', self.m.reclient.jobs]
     else:
       step_name += ' without remote cache'
       env['RBE_remote_accept_cache'] = "false"
       siso_args += ['-re_cache_enable_read=false']
+      extra_ninja_args += ['-j', self.m.reclient.jobs]
     if step_name_suffix:
       step_name += step_name_suffix
     timeout = 60 * 60 * 3  # 3h
@@ -78,7 +81,9 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
             name=step_name,
             timeout=timeout,
             siso_args=siso_args,
-            resource_usage_output_file=resource_usage_output_file)
+            resource_usage_output_file=resource_usage_output_file,
+            extra_ninja_args=extra_ninja_args,
+        )
       finally:
         # b/323976014: Clean up temp dirs for iOS simulators.
         if self.m.chromium.c.TARGET_PLATFORM == 'ios':
