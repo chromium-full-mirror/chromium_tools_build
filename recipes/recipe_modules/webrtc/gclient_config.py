@@ -43,12 +43,6 @@ def webrtc_use_include_cleaner(c):
   c.solutions[0].custom_vars['checkout_clangd'] = 'True'
 
 
-@CONFIG_CTX(includes=['webrtc'])
-def webrtc_use_fuzzer(c):
-  """Add llvm libfuzzer tools to the solution."""
-  c.solutions[0].custom_vars['checkout_fuzzer'] = 'True'
-
-
 @CONFIG_CTX()
 def _webrtc(c):
   """Add the main solution for WebRTC standalone builds.

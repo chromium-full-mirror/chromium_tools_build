@@ -28,7 +28,7 @@ BUILDERS_DB = builder_db.BuilderDatabase.create({
         'Linux64 Release (Libfuzzer)':
             builder_spec.BuilderSpec.create(
                 chromium_config='webrtc_default',
-                gclient_config='webrtc_use_fuzzer',
+                gclient_config='webrtc',
                 chromium_config_kwargs={
                     'BUILD_CONFIG': 'Release',
                     'TARGET_BITS': 64,
@@ -38,7 +38,7 @@ BUILDERS_DB = builder_db.BuilderDatabase.create({
         'linux_libfuzzer_rel':
             builder_spec.BuilderSpec.create(
                 chromium_config='webrtc_default',
-                gclient_config='webrtc_use_fuzzer',
+                gclient_config='webrtc',
                 chromium_config_kwargs={
                     'BUILD_CONFIG': 'Release',
                     'TARGET_BITS': 64,
