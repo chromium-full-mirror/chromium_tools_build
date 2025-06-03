@@ -9,4 +9,5 @@ per-file SECURITY_TEAM_OWNERS=file:SECURITY_TEAM_OWNERS
 
 # For reverts only
 agrieve@chromium.org
-
+# TODO: b/422005134 - Remove after granting O-O power to the TOK build team's oncallers.
+jwata@google.com
