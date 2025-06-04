@@ -54,8 +54,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   def rdb_node_script(self, step_name, script, args=None):
     rdb_wrapper = self.m.resultdb.wrap([])
-    # TODO(liviurau) : remove this temporary override
-    rdb_wrapper = []
     self.run_node_script(step_name, script, args, wrapper=rdb_wrapper)
 
   def run_node_script(self, step_name, script, args=None, **kwargs):
@@ -192,8 +190,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
             full_command,
             base_tags=[('test_type', rdb_test_type), ('run_phase', run_phase)],
         )
-        # TODO(liviurau) : remove this temporary override
-        wrapped_cmd = full_command
         request_slice = request[0].with_command(wrapped_cmd)
         task.request = request.with_slice(0, request_slice)
 
