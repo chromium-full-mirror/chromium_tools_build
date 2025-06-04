@@ -279,7 +279,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=is_official_build=true chrome_pgo_phase=0 dcheck_always_on=false use_siso=true use_remoteexec=true is_debug=false target_cpu=\"x64\""
+      "--args=is_official_build=true chrome_pgo_phase=0 dcheck_always_on=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

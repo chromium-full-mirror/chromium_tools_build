@@ -5,7 +5,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'v8', 'url': 'https://chromium.googlesource.com/v8/v8'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'v8', 'url': 'https://chromium.googlesource.com/v8/v8'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"v8\"}",
       "--git-cache-dir",
@@ -101,7 +101,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=dcheck_always_on=false use_siso=true use_remoteexec=true is_debug=false target_cpu=\"x64\""
+      "--args=dcheck_always_on=false is_debug=false target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -125,6 +125,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "build.preprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
@@ -136,11 +143,19 @@
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/v8/out/build",
+      "-j",
+      "160",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1"
+      "CHROME_HEADLESS": "1",
+      "RBE_canonicalize_working_dir": "true",
+      "RBE_correlated_invocations_id": "8945511751514863184",
+      "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -169,7 +184,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=v8_static_library=true dcheck_always_on=false use_siso=true use_remoteexec=true is_debug=false target_cpu=\"x64\""
+      "--args=v8_static_library=true dcheck_always_on=false is_debug=false target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -188,6 +203,13 @@
       }
     },
     "name": "build (libs).gn",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "build (libs).preprocess for reclient",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

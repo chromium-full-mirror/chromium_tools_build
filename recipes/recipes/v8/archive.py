@@ -26,6 +26,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'reclient',
     'v8',
 ]
 
@@ -39,6 +40,8 @@ PROPERTIES = {
     'target_bits': Property(default=None, kind=Single((int, float))),
     # One of android|fuchsia|linux|mac|win.
     'target_platform': Property(default=None, kind=str),
+    # Whether to use reclient for compilation.
+    'use_remoteexec': Property(default=False, kind=bool),
     # Whether to upload archive.
     'upload_archive': Property(default=True, kind=bool),
 }
@@ -74,9 +77,6 @@ def make_archive(api,
       api.chromium.apply_config('v8_android')
     elif api.chromium.c.TARGET_ARCH == 'arm':
       api.chromium.apply_config('arm_hard_float')
-
-    api.chromium.c.gn_args.append('use_siso=true')
-    api.chromium.c.gn_args.append('use_remoteexec=true')
 
     # Opt out of using gyp environment variables.
     api.chromium.c.use_gyp_env = False
@@ -559,16 +559,22 @@ def GenTests(api):
           builder='V8 Foobar',
           revision='a' * 40),
       api.properties(
-          build_config='Release', target_bits=64, upload_archive=False),
+          build_config='Release',
+          target_bits=64,
+          upload_archive=False,
+          **{'$build/v8': {'use_remoteexec': True}}),
+      api.reclient.properties(),
       api.platform('linux', 64),
       api.v8.version_file(0, 'head', prefix='sync.'),
       api.override_step_data('sync.git describe',
                              api.raw_io.stream_output_text('3.4.3')),
       api.post_process(MustRun, 'sync.clobber', 'sync.gclient runhooks',
-                       'build.gn', 'build.compile', 'make archive.zipping'),
+                       'build.gn', 'build.preprocess for reclient',
+                       'build.compile', 'make archive.zipping'),
       api.post_process(DoesNotRun, 'make archive.gsutil upload'),
       api.post_process(
-          Filter('sync.bot_update', 'build.gn', 'build.compile',
-                 'build (libs).gn')),
+          Filter('sync.bot_update', 'build.gn', 'build.preprocess for reclient',
+                 'build.compile', 'build (libs).gn',
+                 'build (libs).preprocess for reclient')),
       status='SUCCESS',
   )
