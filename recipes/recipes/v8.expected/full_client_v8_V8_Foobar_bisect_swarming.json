@@ -534,19 +534,11 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -581,13 +573,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -620,13 +606,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -660,13 +640,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -693,21 +667,13 @@
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160",
       "-d",
       "explain",
       "-n"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -1760,19 +1726,11 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001340",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -1788,7 +1746,7 @@
     },
     "name": "Bisect a0.compile",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001340"
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
     },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -1807,13 +1765,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001340",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -1842,17 +1794,11 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-130520.00000000-0000-0000-0000-000000001343.gz"
+      "[TMP_BASE]/ninja_log.20120514-130120.00000000-0000-0000-0000-000000001340.gz"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001340",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -1881,18 +1827,12 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-130520.00000000-0000-0000-0000-000000001343.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130520.00000000-0000-0000-0000-000000001343.gz"
+      "[TMP_BASE]/ninja_log.20120514-130120.00000000-0000-0000-0000-000000001340.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130120.00000000-0000-0000-0000-000000001340.gz"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001340",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -1910,8 +1850,8 @@
     "name": "Bisect a0.gsutil upload ninja_log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130520.00000000-0000-0000-0000-000000001343.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-130520.00000000-0000-0000-0000-000000001343.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130120.00000000-0000-0000-0000-000000001340.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-130120.00000000-0000-0000-0000-000000001340.gz@@@"
     ]
   },
   {
@@ -1919,21 +1859,13 @@
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160",
       "-d",
       "explain",
       "-n"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001340",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -2759,19 +2691,11 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -2787,7 +2711,7 @@
     },
     "name": "Bisect a2.compile",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -2806,13 +2730,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -2841,17 +2759,11 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-131120.00000000-0000-0000-0000-00000000134c.gz"
+      "[TMP_BASE]/ninja_log.20120514-130320.00000000-0000-0000-0000-000000001346.gz"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -2880,18 +2792,12 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-131120.00000000-0000-0000-0000-00000000134c.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131120.00000000-0000-0000-0000-00000000134c.gz"
+      "[TMP_BASE]/ninja_log.20120514-130320.00000000-0000-0000-0000-000000001346.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130320.00000000-0000-0000-0000-000000001346.gz"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -2909,8 +2815,8 @@
     "name": "Bisect a2.gsutil upload ninja_log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131120.00000000-0000-0000-0000-00000000134c.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-131120.00000000-0000-0000-0000-00000000134c.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130320.00000000-0000-0000-0000-000000001346.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-130320.00000000-0000-0000-0000-000000001346.gz@@@"
     ]
   },
   {
@@ -2918,21 +2824,13 @@
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160",
       "-d",
       "explain",
       "-n"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001349",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -3797,19 +3695,11 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001352",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -3825,7 +3715,7 @@
     },
     "name": "Bisect a1.compile",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001352"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
     },
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -3844,13 +3734,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001352",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -3879,17 +3763,11 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-131720.00000000-0000-0000-0000-000000001355.gz"
+      "[TMP_BASE]/ninja_log.20120514-130520.00000000-0000-0000-0000-00000000134c.gz"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001352",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -3918,18 +3796,12 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-131720.00000000-0000-0000-0000-000000001355.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131720.00000000-0000-0000-0000-000000001355.gz"
+      "[TMP_BASE]/ninja_log.20120514-130520.00000000-0000-0000-0000-00000000134c.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130520.00000000-0000-0000-0000-00000000134c.gz"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001352",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -3947,8 +3819,8 @@
     "name": "Bisect a1.gsutil upload ninja_log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131720.00000000-0000-0000-0000-000000001355.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-131720.00000000-0000-0000-0000-000000001355.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130520.00000000-0000-0000-0000-00000000134c.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-130520.00000000-0000-0000-0000-00000000134c.gz@@@"
     ]
   },
   {
@@ -3956,21 +3828,13 @@
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160",
       "-d",
       "explain",
       "-n"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001352",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
