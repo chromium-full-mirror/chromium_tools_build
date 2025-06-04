@@ -308,17 +308,14 @@ def RunSteps(api, properties):
           api.step('run all fuzzers', run_cmd)
 
           if properties.fuzz_engine != 'fuzzilli':
-            # For libfuzzer or centipede, upload two json files respectively for
-            # succeeded and all targets to GCS.
+            # For libfuzzer or centipede, upload the succeeded targets in a
+            # json file to GCS
             gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
             revision = api.buildbucket.gitiles_commit.id[:7]
             json_file = api.path.join(target_list_dir,
                                       properties.fuzz_engine + '.json')
             api.gsutil.upload(json_file, 'code-coverage-data',
-                              f'{gcs_dir}/{revision}/')
-            json_file = api.path.join(target_list_dir,
-                                      properties.fuzz_engine + '_all.json')
-            api.gsutil.upload(json_file, 'code-coverage-data', gcs_dir)
+                              f'{gcs_dir}{revision}/')
 
             succeeded = api.file.listdir('List succeeded targets',
                                          api.path.cast_to_path(profdata_dir))
