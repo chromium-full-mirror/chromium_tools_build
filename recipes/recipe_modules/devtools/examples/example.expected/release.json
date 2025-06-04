@@ -211,9 +211,6 @@
   },
   {
     "cmd": [
-      "rdb",
-      "stream",
-      "--",
       "vpython3",
       "-u",
       "third_party/node/node.py",
