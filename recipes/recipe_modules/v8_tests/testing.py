@@ -267,7 +267,8 @@ class BaseTest:
 
     task = self.api.chromium_swarming.task(
         cas_input_root=cas_digest, raw_cmd=raw_cmd, **kwargs)
-    if self.api.v8_tests.resultdb:
+    # TODO(https://crbug.com/422298480): Disable resultdb temporarily.
+    if False:  # pragma: no cover
       request = task.request.with_resultdb()
       wrapperd_cmd = self.api.v8_tests.resultdb.wrap(
           self.api,
@@ -281,7 +282,7 @@ class BaseTest:
 
     return task
 
-  def base_variant(self):
+  def base_variant(self):  # pragma: no cover
     vatiant_tags = {
         'bucket': self.api.buildbucket.build.builder.bucket,
         'builder': self.api.buildbucket.builder_name,
@@ -500,8 +501,9 @@ def _trigger_swarming_task(api, task, test_step_config):
   api.chromium_swarming.trigger_task(task)
 
   # Remove 'invocations/' because it is added again in include_invocations.
-  api.resultdb.include_invocations(
-      [i[len('invocations/'):] for i in task.get_invocation_names()])
+  # TODO(https://crbug.com/422298480): Disable resultdb temporarily.
+  # api.resultdb.include_invocations(
+  #     [i[len('invocations/'):] for i in task.get_invocation_names()])
 
 
 def override_swarming_attrs(task, task_slice, attrs):
