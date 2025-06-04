@@ -729,7 +729,7 @@ def _generate_metadata(src_path,
   summaries = _get_per_target_coverage_summary(profdata_path, llvm_cov_path,
                                                build_dir, binaries, arch)
 
-  if (diff_mapping is None):
+  if (diff_mapping is None and not is_fuzz_coverage):
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
         files_coverage, src_path, 'DEPS')
 
