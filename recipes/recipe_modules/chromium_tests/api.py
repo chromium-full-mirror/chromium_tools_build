@@ -623,11 +623,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.log('android_version_code:%s' % android_version_code)
     return android_version_name, android_version_code
 
-  def _use_reclient(self, gn_args):
-    args = self.m.gn.parse_gn_args(gn_args)
-    return args.get('use_remoteexec') == 'true' and args.get(
-        'use_reclient') != 'false'
-
   def compile_specific_targets(self,
                                build_dir: Path,
                                builder_id,
@@ -1376,8 +1371,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               android_version_code=android_version_code,
               android_version_name=android_version_name)
 
-        gn_args = _mb_gen()
-        use_reclient = self._use_reclient(gn_args)
+        _mb_gen()
 
       # run experimental dependency analysis for SSCI.
       if ('ssci.experimental' in self.m.buildbucket.build.input.experiments):
@@ -1403,7 +1397,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           build_dir,
           targets=compile_targets,
           name='compile%s' % name_suffix,
-          use_reclient=use_reclient,
           include_utr_instruction=include_utr_instruction,
           builder_id=builder_id)
       if include_utr_instruction:

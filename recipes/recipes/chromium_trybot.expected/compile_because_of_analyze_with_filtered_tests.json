@@ -78,20 +78,12 @@
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/Release",
-      "-j",
-      "160",
       "base_unittests",
       "browser_tests"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {

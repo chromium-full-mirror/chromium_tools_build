@@ -23,7 +23,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
-    'reclient',
+    'siso',
 ]
 
 BUILDERS = ctbc.BuilderDatabase.create({
@@ -118,24 +118,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'linux_tests_reclient',
-      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.reclient.properties(),
-      api.properties(swarming_gtest=True),
-      api.step_data('lookup GN args',
-                    api.raw_io.stream_output_text('use_remoteexec = true\n')),
-      # Check that we do use reclient as the distributed compiler
-      api.post_process(post_process.MustRun,
-                       'preprocess for reclient.start reproxy via bootstrap'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'linux_tests_ssci_experimental',
       api.chromium.ci_build(
           builder_group='fake-group',
@@ -146,7 +128,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.reclient.properties(),
+      api.siso.properties(),
       api.properties(
           swarming_gtest=True,
           **{'$build/ssci': {
@@ -176,7 +158,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.reclient.properties(),
+      api.siso.properties(),
       api.properties(swarming_gtest=True),
       api.post_process(post_process.DoesNotRun, 'SSCI collection.run depbot'),
       api.post_process(post_process.DropExpectation),
