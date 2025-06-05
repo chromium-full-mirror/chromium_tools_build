@@ -104,7 +104,8 @@ def RunSteps(api, is_debug, triggers, v8_tot):
 
   with api.step.nest('build'):
     depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
-    with api.context(env_prefixes={'PATH': [depot_tools_path]}):
+    with (api.context(env_prefixes={'PATH': [depot_tools_path]}),
+          api.chromium.guard_compile(build_dir)):
       api.chromium.run_gn(source_dir, build_dir, use_remoteexec=True)
       raw_result = api.chromium.compile(
           source_dir, build_dir, use_reclient=True)
