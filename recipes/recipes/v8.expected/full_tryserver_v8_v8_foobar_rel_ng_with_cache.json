@@ -639,12 +639,6 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
@@ -688,13 +682,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -727,13 +715,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -767,13 +749,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "CHROME_HEADLESS": "1"
     },
     "infra_step": true,
     "luci_context": {
@@ -817,12 +793,6 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "RBE_canonicalize_working_dir": "true",
-      "RBE_correlated_invocations_id": "8945511751514863184",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
@@ -902,7 +872,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"try.triggered\", \"builder\": \"v8_foobar_rel_ng_triggered\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gerritChanges\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"v8/v8\"}], \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"id\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\", \"project\": \"v8/v8\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"category\": \"cq\", \"disable_auto_bisect\": true, \"newest_gitiles_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"oldest_gitiles_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_build\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\", \"parent_buildername\": \"v8_foobar_rel_ng\", \"parent_gn_args\": [\"target_cpu = \\\"x86\\\"\", \"use_remoteexec = true\"], \"parent_got_revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\", \"parent_got_revision_cp\": \"refs/heads/main@{#50110}\", \"patch_gerrit_url\": \"https://chromium-review.googlesource.com\", \"patch_issue\": 456789.0, \"patch_project\": \"v8/v8\", \"patch_set\": 12.0, \"patch_storage\": \"gerrit\", \"reason\": \"CQ\", \"revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\", \"tags\": [{\"key\": \"buildset\", \"value\": \"patch/gerrit/chromium-review.googlesource.com/456789/12\"}, {\"key\": \"cq_experimental\", \"value\": \"false\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"triggered_by\", \"value\": \"build/milo/v8/try/v8_foobar_rel_ng/0\"}, {\"key\": \"user_agent\", \"value\": \"cq\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"try.triggered\", \"builder\": \"v8_foobar_rel_ng_triggered\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gerritChanges\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"v8/v8\"}], \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"id\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\", \"project\": \"v8/v8\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"category\": \"cq\", \"disable_auto_bisect\": true, \"newest_gitiles_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"oldest_gitiles_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"parent_build\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\", \"parent_buildername\": \"v8_foobar_rel_ng\", \"parent_gn_args\": [\"target_cpu = \\\"x86\\\"\", \"use_remoteexec = true\"], \"parent_got_revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\", \"parent_got_revision_cp\": \"refs/heads/main@{#50110}\", \"patch_gerrit_url\": \"https://chromium-review.googlesource.com\", \"patch_issue\": 456789.0, \"patch_project\": \"v8/v8\", \"patch_set\": 12.0, \"patch_storage\": \"gerrit\", \"reason\": \"CQ\", \"revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\", \"tags\": [{\"key\": \"buildset\", \"value\": \"patch/gerrit/chromium-review.googlesource.com/456789/12\"}, {\"key\": \"cq_experimental\", \"value\": \"false\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"triggered_by\", \"value\": \"build/milo/v8/try/v8_foobar_rel_ng/0\"}, {\"key\": \"user_agent\", \"value\": \"cq\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
@@ -969,7 +939,7 @@
       "@@@STEP_LOG_LINE@request@          \"reason\": \"CQ\",@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
       "@@@STEP_LOG_LINE@request@            \"key\": \"buildset\",@@@",

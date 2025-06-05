@@ -6,7 +6,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=dcheck_always_on=false arm_float_abi=\"hard\" is_debug=false target_cpu=\"arm\""
+      "--args=dcheck_always_on=false arm_float_abi=\"hard\" use_siso=true use_remoteexec=true is_debug=false target_cpu=\"arm\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -178,7 +178,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=v8_static_library=true dcheck_always_on=false arm_float_abi=\"hard\" is_debug=false target_cpu=\"arm\""
+      "--args=v8_static_library=true dcheck_always_on=false arm_float_abi=\"hard\" use_siso=true use_remoteexec=true is_debug=false target_cpu=\"arm\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

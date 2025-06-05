@@ -6,7 +6,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=v8_enable_slow_dchecks=true is_debug=true target_cpu=\"x64\""
+      "--args=v8_enable_slow_dchecks=true use_siso=true use_remoteexec=true is_debug=true target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

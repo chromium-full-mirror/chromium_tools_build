@@ -294,7 +294,6 @@ class V8Api(recipe_api.RecipeApi):
     self.revision = None
     self.revision_cp = None
     self.revision_number = None
-    self.use_remoteexec = properties.get('use_remoteexec', False)
     self.always_isolate_targets = properties.get('always_isolate_targets', [])
     self.recipe_result = RawResult(status=common_pb.SUCCESS)
     self._build_config = None
@@ -864,11 +863,9 @@ class V8Api(recipe_api.RecipeApi):
         presentation = self.m.step.active_result.presentation
         presentation.logs['gn_args'] = self.m.v8_tests.gn_args
       elif self.m.chromium.c.project_generator.tool == 'gn':
-        self.m.chromium.run_gn(
-            source_dir, build_dir, use_remoteexec=self.use_remoteexec)
+        self.m.chromium.run_gn(source_dir, build_dir)
 
-      raw_result = self.m.chromium.compile(
-          source_dir, build_dir, use_reclient=self.use_remoteexec, **kwargs)
+      raw_result = self.m.chromium.compile(source_dir, build_dir, **kwargs)
 
       if raw_result.status != common_pb.SUCCESS:
         self.isolate_tests(build_dir, self.always_isolate_targets)
