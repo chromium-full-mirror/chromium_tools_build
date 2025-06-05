@@ -108,7 +108,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
           api.chromium.guard_compile(build_dir)):
       api.chromium.run_gn(source_dir, build_dir, use_remoteexec=True)
       raw_result = api.chromium.compile(
-          source_dir, build_dir, use_reclient=True)
+          source_dir, build_dir, use_reclient=bool(api.reclient.instance))
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
