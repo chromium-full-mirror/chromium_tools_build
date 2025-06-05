@@ -224,13 +224,6 @@ class SkylabApi(recipe_api.RecipeApi):
 
       test_args.append(('resultdb_settings', _base64_encode_str(rdb_str)))
 
-      if test.spec.tast_expr:
-        # Due to crbug/1173329, skylab does not support arbitrary tast
-        # expressions. As a workaround, we encode test argument which may
-        # contain complicated patterns to base64.
-        test_args.append(
-            ('tast_expr_b64', _base64_encode_str(test.spec.tast_expr)))
-
       if test.spec.test_args:
         if test.is_tast_test:
           test_args.extend(
@@ -239,75 +232,107 @@ class SkylabApi(recipe_api.RecipeApi):
           test_args.append(('test_args_b64',
                             _base64_encode_str(' '.join(test.spec.test_args))))
 
-      test_retries = '2'
-      if test.spec.test_level_retries != None:
-        test_retries = test.spec.test_level_retries
-      test_args.append(('retries', test_retries))
-
       if test.spec.shard_level_retries_on_ctp >= 0:
         cmd.extend(['--retry', str(test.spec.shard_level_retries_on_ctp)])
 
-      if test.exe_rel_path:
-        test_args.append(('exe_rel_path', test.exe_rel_path))
-
-      if test.tast_expr_file:
-        test_args.append(('tast_expr_file', test.tast_expr_file))
-        if test.spec.tast_expr_key:
-          test_args.append(('tast_expr_key', test.spec.tast_expr_key))
-
-      if test.spec.extra_browser_args:
-        test_args.append(('extra_browser_args_b64',
-                          _base64_encode_str(test.spec.extra_browser_args)))
-
-      if test.spec.benchmark:
-        test_args.append(('benchmark', test.spec.benchmark))
-
-      if test.spec.results_label:
-        test_args.append(('results_label', test.spec.results_label))
-
-      if test.spec.story_filter:
-        test_args.append(('story_filter', test.spec.story_filter))
-
-      if test.spec.test_shard_map_filename:
-        test_args.append(
-            ('test_shard_map_filename', test.spec.test_shard_map_filename))
-
-      if test.spec.max_run_sec:
-        test_args.append(('max_run_sec', str(test.spec.max_run_sec)))
-
-      # TODO(crbug.com/1233676): Support chromium perf tests.
-      # if test.telemetry_shard_index is not None:
-      #   test_args.append(('test_shard_index', str(test.telemetry_shard_index)))
-
-      if test.spec.bucket and 'chromium' in test.spec.bucket:
-        test_args.append(('run_private_tests', 'False'))
-      for test_arg_key, test_arg_value in test_args:
-        cmd.extend(['--test-arg', test_arg_key, test_arg_value])
-
       lacros_gcs_path = os.path.join(test.lacros_gcs_path,
                                      'skylab_runtime_deps.tar.zst')
-      cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
+      if test.spec.autotest_name:
+        cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
 
-      if test.spec.secondary_cros_board:
-        should_provision_browser_files = test.spec.should_provision_browser_files or [
-            True
-        ] * len(boards)
-        if len(should_provision_browser_files) != len(boards):
-          raise recipe_api.StepFailure(
-              'Length of should_provision_browser_files'
-              ' must match secondary_cros_board')
-        for s in should_provision_browser_files:
-          cmd.extend(
-              ['--secondary-lacros-gcs-path', lacros_gcs_path if s else ''])
+        if test.spec.tast_expr:
+          # Due to crbug/1173329, skylab does not support arbitrary tast
+          # expressions. As a workaround, we encode test argument which may
+          # contain complicated patterns to base64.
+          test_args.append(
+              ('tast_expr_b64', _base64_encode_str(test.spec.tast_expr)))
 
-      cmd.extend(['--autotest-name', test.spec.autotest_name])
-      cmd.extend(['--total-shards', test.spec.shards])
+        test_retries = '2'
+        if test.spec.test_level_retries != None:
+          test_retries = test.spec.test_level_retries
+        test_args.append(('retries', test_retries))
+
+        # TODO(crbug.com/1233676): Support chromium perf tests.
+        # if test.telemetry_shard_index is not None:
+        #   test_args.append(('test_shard_index', str(test.telemetry_shard_index)))
+
+        if test.spec.bucket and 'chromium' in test.spec.bucket:
+          test_args.append(('run_private_tests', 'False'))
+
+        if test.exe_rel_path:
+          test_args.append(('exe_rel_path', test.exe_rel_path))
+
+        if test.tast_expr_file:
+          test_args.append(('tast_expr_file', test.tast_expr_file))
+          if test.spec.tast_expr_key:
+            test_args.append(('tast_expr_key', test.spec.tast_expr_key))
+
+        if test.spec.extra_browser_args:
+          test_args.append(('extra_browser_args_b64',
+                            _base64_encode_str(test.spec.extra_browser_args)))
+
+        if test.spec.benchmark:
+          test_args.append(('benchmark', test.spec.benchmark))
+
+        if test.spec.results_label:
+          test_args.append(('results_label', test.spec.results_label))
+
+        if test.spec.story_filter:
+          test_args.append(('story_filter', test.spec.story_filter))
+
+        if test.spec.test_shard_map_filename:
+          test_args.append(
+              ('test_shard_map_filename', test.spec.test_shard_map_filename))
+
+        if test.spec.max_run_sec:
+          test_args.append(('max_run_sec', str(test.spec.max_run_sec)))
+
+        if test.spec.secondary_cros_board:
+          should_provision_browser_files = test.spec.should_provision_browser_files or [
+              True
+          ] * len(boards)
+          if len(should_provision_browser_files) != len(boards):
+            raise recipe_api.StepFailure(
+                'Length of should_provision_browser_files'
+                ' must match secondary_cros_board')
+          for s in should_provision_browser_files:
+            cmd.extend(
+                ['--secondary-lacros-gcs-path', lacros_gcs_path if s else ''])
+
+        cmd.extend(['--autotest-name', test.spec.autotest_name])
+        cmd.extend(['--total-shards', test.spec.shards])
+      else:
+        for tag in test.spec.cros_test_tags:
+          cmd.extend(['--cros-test-tags', tag])
+        for tag in test.spec.cros_test_tags_exclude:
+          cmd.extend(['--cros-test-tags-exclude', tag])
+        for t in test.spec.cros_test_names:
+          cmd.extend(['--cros-test-names', t])
+        for t in test.spec.cros_test_names_exclude:
+          cmd.extend(['--cros-test-names-exclude', t])
+        for t in test.spec.cros_test_names_from_file:
+          cmd.extend(['--cros-test-names-from-file', t])
+        for t in test.spec.cros_test_names_exclude_from_file:
+          cmd.extend(['--cros-test-names-exclude-from-file', t])
+
+        if test.spec.secondary_cros_board:  # pragma: nocover
+          assert False, 'Not supported yet'
+
+        cmd.extend(['--ash-chrome-gcs-path', lacros_gcs_path])
+        if test.exe_rel_path:
+          cmd.extend([
+              '--ash-chrome-build-output-dir',
+              os.path.dirname(test.exe_rel_path)
+          ])
 
       if test.spec.strip_chrome:
         cmd.append('--strip')
 
       for retry_shard in retry_shards or []:
         cmd.extend(['--shard-indexes', retry_shard])
+
+      for test_arg_key, test_arg_value in test_args:
+        cmd.extend(['--test-arg', test_arg_key, test_arg_value])
 
       step_result = self.m.step(
           'schedule',

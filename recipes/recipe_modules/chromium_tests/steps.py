@@ -3245,6 +3245,16 @@ class SkylabTestSpec(TestSpec):
   # The runtime timeout sent to the test execution environment.
   max_run_sec = attrib(int, default=0)
 
+  # Attributes for Tast First Class requests.
+  # On ChromeOS, these parameters are not limited to tast first class but all
+  # tests, so not using "tast" here.
+  cros_test_tags = attrib(sequence[str], default=())
+  cros_test_tags_exclude = attrib(sequence[str], default=())
+  cros_test_names = attrib(sequence[str], default=())
+  cros_test_names_exclude = attrib(sequence[str], default=())
+  cros_test_names_from_file = attrib(sequence[str], default=())
+  cros_test_names_exclude_from_file = attrib(sequence[str], default=())
+
   # Generic arguments to pass to the test command run in skylab.
   test_args = attrib(command_args, default=())
 

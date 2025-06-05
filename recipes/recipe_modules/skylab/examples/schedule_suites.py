@@ -171,6 +171,33 @@ REQUESTS = [
     ),
 ]
 
+TFC_REQUESTS = [
+    gen_skylab_test(
+        'tfc_chrome_all_tests',
+        retries=3,
+        shard_level_retries_on_ctp=1,
+        cros_board='brya',
+        cros_model='kano',
+        cros_test_tags=['group:mainline'],
+        cros_test_tags_exclude=['informational'],
+        cros_test_names_exclude=['tast.disabled.DisabledTest'],
+        cros_test_names_exclude_from_file=['dynamically-disabled-tests.txt'],
+        tast_expr='STUB_STRING_TO_RUN_TAST_TESTS',
+        autotest_name='',
+    ),
+    gen_skylab_test(
+        'tfc_explicit_test_list',
+        retries=3,
+        shard_level_retries_on_ctp=1,
+        cros_board='brya',
+        cros_model='kano',
+        cros_test_names=['tast.run.TestA', 'tast.run.TestB'],
+        cros_test_names_from_file=['dynamically-disabled-tests.txt'],
+        tast_expr='STUB_STRING_TO_RUN_TAST_TESTS',
+        autotest_name='',
+    ),
+]
+
 BUILD_VARIANT_REQUESTS = [
     gen_skylab_test(
         'build_variant',
@@ -759,5 +786,71 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[6].name + '.schedule',
                        '--strip'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tfc-all',
+      api.properties(requests=TFC_REQUESTS[:1]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
+              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--cros-test-tags',
+              'group:mainline',
+              '--cros-test-tags-exclude',
+              'informational',
+              '--cros-test-names-exclude',
+              'tast.disabled.DisabledTest',
+              '--cros-test-names-exclude-from-file',
+              'dynamically-disabled-tests.txt',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--ash-chrome-gcs-path',
+              f'{LACROS_GCS_PATH}/skylab_runtime_deps.tar.zst',
+              '--ash-chrome-build-output-dir', 'out/Release'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tfc-with-list',
+      api.properties(requests=TFC_REQUESTS[1:]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[1].name + '.schedule', [
+              'request', '--chromium-suite-name', 'tfc_explicit_test_list',
+              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[1].name + '.schedule', [
+              '--cros-test-names',
+              'tast.run.TestA',
+              '--cros-test-names',
+              'tast.run.TestB',
+              '--cros-test-names-from-file',
+              'dynamically-disabled-tests.txt',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[1].name + '.schedule', [
+              '--ash-chrome-gcs-path',
+              f'{LACROS_GCS_PATH}/skylab_runtime_deps.tar.zst',
+              '--ash-chrome-build-output-dir', 'out/Release'
+          ]),
       api.post_process(post_process.DropExpectation),
   )

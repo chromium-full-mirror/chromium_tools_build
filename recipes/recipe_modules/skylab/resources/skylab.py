@@ -85,6 +85,127 @@ def _fix_test_runner_status(task_result):
   return "SUCCESS"
 
 
+def _populate_suite_request_for_autotest(opts, test_suite, shard_idx):
+  test_args = opts.test_arg[:]
+  test_args.append(['lacros_gcs_path', opts.lacros_gcs_path])
+  test_args.append(['total_shards', str(opts.total_shards)])
+  test_args.append(['shard_index', str(shard_idx)])
+  test_args.append(['is_cft', 'True'])
+
+  autotest_name = opts.autotest_name.replace('tauto.', '')
+  autotest_name = f'tauto.{autotest_name}'
+
+  if opts.strip:
+    test_args.append(('chrome_deploy_strip', 'True'))
+
+  if opts.secondary_boards:
+    if any(opts.secondary_lacros_gcs_path):
+      test_args.append([
+          'secondary_lacros_gcs_path', ','.join(opts.secondary_lacros_gcs_path)
+      ])
+
+  for test_arg in test_args:
+    arg = test_suite.execution_metadata.args.add()
+    arg.flag = test_arg[0]
+    arg.value = test_arg[1]
+
+  return autotest_name
+
+
+def _populate_req_common(opts, req, cft_ash_chrome_provision):
+
+  # Import the protobuf binding for cros_test_platform requests(the entry
+  # point for Skylab) from chromite. As the script lives in recipe repo,
+  # it has to receive the chromium/src path from the input.
+  # pylint: disable=import-outside-toplevel
+  from chromite.api.gen.chromiumos.test.api import ctp2_pb2 as ctpv2
+
+  _bucket = opts.bucket.replace('gs://', '').rstrip('/')
+  gs_url = f'gs://{_bucket}/{opts.image}'
+  root_schedule_targets = req.schedule_targets.add()
+  schedule_targets = root_schedule_targets.targets.add()
+  schedule_targets.sw_target.legacy_sw.gcs_path = gs_url
+  schedule_targets.hw_target.legacy_hw.board = opts.board
+  if opts.bucket:
+    sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+    sw_kv.key = 'chromeos_build_gcs_bucket'
+    sw_kv.value = _bucket
+  sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+  sw_kv.key = 'chromeos_build'
+  sw_kv.value = opts.image
+  req.pool = opts.pool
+  if opts.pool == 'DUT_POOL_QUOTA':
+    req.scheduler_info.scheduler = ctpv2.SchedulerInfo.SCHEDUKE
+  else:
+    req.scheduler_info.scheduler = ctpv2.SchedulerInfo.QSCHEDULER
+  req.scheduler_info.qs_account = opts.qs_account
+  if opts.ash_chrome_gcs_path and cft_ash_chrome_provision:
+    sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+    sw_kv.key = 'ash_chrome_gcs_path'
+    sw_kv.value = opts.ash_chrome_gcs_path
+  if opts.ash_chrome_build_output_dir and cft_ash_chrome_provision:
+    sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+    sw_kv.key = 'ash_chrome_build_output_dir'
+    sw_kv.value = opts.ash_chrome_build_output_dir
+
+  if opts.cbx:
+    assert False, "Not supported in CTPv2's hw_target"
+  req.suite_request.maximum_duration.seconds = opts.timeout_mins * 60
+
+  if opts.retry >= 0:
+    req.suite_request.retry_count = opts.retry if opts.retry > 0 else 99999
+
+  if opts.model:
+    schedule_targets.hw_target.legacy_hw.model = opts.model
+
+  assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
+      opts.secondary_lacros_gcs_path), (
+          'Length of --secondary-lacros-gcs-path and --secondary-images '
+          'must match --secondary-boards. Pass empty string if not '
+          'require CrOS and Lacros provision.')
+
+  for board, img in zip(opts.secondary_boards, opts.secondary_images):
+    assert opts.autotest_name, ('Multi-DUT must be used together with'
+                                ' autotest_name specified '
+                                '(autotest wrapper).')
+    secondary_targets = root_schedule_targets.targets.add()
+    secondary_targets.hw_target.legacy_hw.board = board
+    secondary_targets.sw_target.legacy_sw.gcs_path = f'gs://{_bucket}/{img}'
+    if opts.bucket:
+      sw_kv = secondary_targets.sw_target.legacy_sw.key_values.add()
+      sw_kv.key = 'chromeos_build_gcs_bucket'
+      sw_kv.value = _bucket
+    sw_kv = secondary_targets.sw_target.legacy_sw.key_values.add()
+    sw_kv.key = 'chromeos_build'
+    sw_kv.value = img
+
+
+def _tests_from_file(f, board):
+  v = []
+  with open(f, encoding='utf-8') as d:
+    for l in d:
+      stripped = l.strip()
+      if stripped == '':
+        continue
+      if stripped.startswith('#'):
+        continue
+      splitted = stripped.split('@')
+      test_name = splitted[0]
+      if len(splitted) > 1 and splitted[1] != board:
+        continue
+      if not test_name.startswith('tast.'):
+        test_name = 'tast.' + test_name
+      v.append(test_name)
+  return v
+
+
+def _tests_from_files(root, files, board):
+  v = []
+  for f in files:
+    v.extend(_tests_from_file(os.path.join(root, f), board))
+  return list(set(v))
+
+
 def schedule_skylab_tests(opts):
 
   # Import the protobuf binding for cros_test_platform requests(the entry
@@ -94,79 +215,32 @@ def schedule_skylab_tests(opts):
   from chromite.api.gen.chromiumos.test.api import ctp2_pb2 as ctpv2
 
   v2req = ctpv2.CTPv2Request()
-  for i in opts.shard_indexes or range(opts.total_shards):
+  if opts.autotest_name:
+    for i in opts.shard_indexes or range(opts.total_shards):
+      req = v2req.requests.add()
+      _populate_req_common(opts, req, False)
+
+      req.suite_request.test_suite.name = f'{opts.chromium_suite_name}-shard-{i}'
+      autotest_name = _populate_suite_request_for_autotest(
+          opts, req.suite_request.test_suite, i)
+      test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
+      test_case.value = autotest_name
+  else:
     req = v2req.requests.add()
-    _bucket = opts.bucket.replace('gs://', '').rstrip('/')
-    gs_url = f'gs://{_bucket}/{opts.image}'
-    root_schedule_targets = req.schedule_targets.add()
-    schedule_targets = root_schedule_targets.targets.add()
-    schedule_targets.sw_target.legacy_sw.gcs_path = gs_url
-    schedule_targets.hw_target.legacy_hw.board = opts.board
-    if opts.bucket:
-      sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
-      sw_kv.key = 'chromeos_build_gcs_bucket'
-      sw_kv.value = _bucket
-    sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
-    sw_kv.key = 'chromeos_build'
-    sw_kv.value = opts.image
-    req.pool = opts.pool
-    if opts.pool == 'DUT_POOL_QUOTA':
-      req.scheduler_info.scheduler = ctpv2.SchedulerInfo.SCHEDUKE
-    else:
-      req.scheduler_info.scheduler = ctpv2.SchedulerInfo.QSCHEDULER
-    req.scheduler_info.qs_account = opts.qs_account
-
-    if opts.cbx:
-      assert False, "Not supported in CTPv2's hw_target"
-    req.suite_request.maximum_duration.seconds = opts.timeout_mins * 60
-
-    if opts.retry >= 0:
-      req.suite_request.retry_count = opts.retry if opts.retry > 0 else 99999
-
-    if opts.model:
-      schedule_targets.hw_target.legacy_hw.model = opts.model
-
-    test_args = opts.test_arg[:]
-    test_args.append(['lacros_gcs_path', opts.lacros_gcs_path])
-    test_args.append(['total_shards', str(opts.total_shards)])
-    test_args.append(['shard_index', str(i)])
-    test_args.append(['is_cft', 'True'])
-
-    autotest_name = opts.autotest_name.replace('tauto.', '')
-    autotest_name = f'tauto.{autotest_name}'
-
-    if opts.strip:
-      test_args.append(('chrome_deploy_strip', 'True'))
-
-    if opts.secondary_boards:
-      assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
-          opts.secondary_lacros_gcs_path), (
-              'Length of --secondary-lacros-gcs-path and --secondary-images '
-              'must match --secondary-boards. Pass empty string if not '
-              'require CrOS and Lacros provision.')
-
-      for board, img in zip(opts.secondary_boards, opts.secondary_images):
-        secondary_targets = root_schedule_targets.targets.add()
-        secondary_targets.hw_target.legacy_hw.board = board
-        secondary_targets.sw_target.legacy_sw.gcs_path = f'gs://{_bucket}/{img}'
-        if opts.bucket:
-          sw_kv = secondary_targets.sw_target.legacy_sw.key_values.add()
-          sw_kv.key = 'chromeos_build_gcs_bucket'
-          sw_kv.value = _bucket
-        sw_kv = secondary_targets.sw_target.legacy_sw.key_values.add()
-        sw_kv.key = 'chromeos_build'
-        sw_kv.value = img
-
-      if any(opts.secondary_lacros_gcs_path):
-        test_args.append([
-            'secondary_lacros_gcs_path',
-            ','.join(opts.secondary_lacros_gcs_path)
-        ])
-
-    req.suite_request.test_suite.name = f'{opts.chromium_suite_name}-shard-{i}'
-    test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
-    test_case.value = autotest_name
-    for test_arg in test_args:
+    _populate_req_common(opts, req, True)
+    req.suite_request.test_suite.name = opts.chromium_suite_name
+    for v in opts.cros_test_tags:
+      req.suite_request.test_suite.test_case_tag_criteria.tags.append(v)
+    for v in opts.cros_test_tags_exclude:
+      req.suite_request.test_suite.test_case_tag_criteria.tag_excludes.append(v)
+    for v in set(opts.cros_test_names + _tests_from_files(
+        opts.chromium_src, opts.cros_test_names_from_file, opts.board)):
+      req.suite_request.test_suite.test_case_tag_criteria.test_names.append(v)
+    for v in set(opts.cros_test_names_exclude + _tests_from_files(
+        opts.chromium_src, opts.cros_test_names_exclude_from_file, opts.board)):
+      req.suite_request.test_suite.test_case_tag_criteria.test_name_excludes.append(
+          v)
+    for test_arg in opts.test_arg:
       arg = req.suite_request.test_suite.execution_metadata.args.add()
       arg.flag = test_arg[0]
       arg.value = test_arg[1]
@@ -300,24 +374,38 @@ def main(args):
       '--pool', type=str, default='DUT_POOL_QUOTA', help='Skylab pool.')
   subparser.add_argument(
       '--image', type=str, help='ChromeOS image for the board to run tests.')
+  # TODO(fqj): Remove lacros-gcs-path
   subparser.add_argument(
       '--lacros-gcs-path',
       type=str,
       default='',
       help='The full GCS path to the lacros artifact for the test.')
   subparser.add_argument(
+      '--ash-chrome-gcs-path',
+      type=str,
+      default='',
+      help='The full GCS path to the lacros artifact for the test.')
+  subparser.add_argument(
+      '--ash-chrome-build-output-dir',
+      type=str,
+      default='',
+      help='Build output dir of Chrome.')
+  subparser.add_argument(
       '--secondary-boards',
       type=str,
+      default=[],
       action='append',
       help='Secondary board for nearby tests. May be repeated.')
   subparser.add_argument(
       '--secondary-images',
       type=str,
+      default=[],
       action='append',
       help='CrOS image for the secondary boards. May be repeated.')
   subparser.add_argument(
       '--secondary-lacros-gcs-path',
       type=str,
+      default=[],
       action='append',
       help='The full GCS path to the lacros artifact for secondary board of '
       'nearby tests. May be repeated.')
@@ -353,6 +441,42 @@ def main(args):
       help='Test suite name on Chromium config')
   subparser.add_argument(
       '--autotest-name', type=str, default='', help='Autotest wrapper name.')
+  subparser.add_argument(
+      '--cros-test-tags',
+      action='append',
+      default=[],
+      help='Tags of the tests to run.',
+  )
+  subparser.add_argument(
+      '--cros-test-tags-exclude',
+      action='append',
+      default=[],
+      help='Tags to exclude for the tests to run.',
+  )
+  subparser.add_argument(
+      '--cros-test-names',
+      action='append',
+      default=[],
+      help='Names of the tests to run.',
+  )
+  subparser.add_argument(
+      '--cros-test-names-exclude',
+      action='append',
+      default=[],
+      help='Names to exclude for the tests to run.',
+  )
+  subparser.add_argument(
+      '--cros-test-names-from-file',
+      action='append',
+      default=[],
+      help='Names of the tests to run.',
+  )
+  subparser.add_argument(
+      '--cros-test-names-exclude-from-file',
+      action='append',
+      default=[],
+      help='Names to exclude for the tests to run.',
+  )
   subparser.add_argument(
       '--test-arg',
       nargs=2,

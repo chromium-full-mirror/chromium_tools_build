@@ -27,6 +27,7 @@ def gen_skylab_test(name, **kwargs):
 REQUESTS = [
     gen_skylab_test(
         'multi_dut_should_provision_browser_files_len_mismatch',
+        autotest_name='tauto.tast',
         cros_board='eve',
         cros_img='eve-release/R88-13545.0.0',
         secondary_cros_board='eve,pixel6',
@@ -34,6 +35,7 @@ REQUESTS = [
         should_provision_browser_files=[True, False, True]),
     gen_skylab_test(
         'multi_dut_secondary_cros_img_len_mismatch',
+        autotest_name='tauto.tast',
         cros_board='eve',
         cros_img='eve-release/R88-13545.0.0',
         secondary_cros_board='eve,pixel6',
