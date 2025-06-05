@@ -29,7 +29,6 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'tricium_clang_tidy',
-    'reclient',
 ]
 
 

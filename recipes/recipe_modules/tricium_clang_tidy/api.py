@@ -259,7 +259,7 @@ class TriciumClangTidyApi(RecipeApi):
         '--findings_file=%s' % warnings_file,
         '--clang_tidy_binary=%s' % clang_tidy_location,
         '--base_path=%s' % self.m.context.cwd,
-        '--ninja_jobs=%s' % self.m.reclient.jobs,
+        '--remote_jobs=%s' % self.m.siso.remote_jobs,
         '--verbose',
     ]
 
@@ -287,11 +287,8 @@ class TriciumClangTidyApi(RecipeApi):
     else:
       fix_file_path = lambda x: x
 
-    autoninja_dir = source_dir / 'third_party/depot_tools'
-    autoninja_path = {'PATH': [autoninja_dir]}
-    with self.m.context(env_suffixes=autoninja_path):
-      self._build_with_reclient(source_dir, 'tricium_clang_tidy_script.py',
-                                tricium_clang_tidy_command)
+    with self.m.siso.context():
+      self.m.step('tricium_clang_tidy_script.py', tricium_clang_tidy_command)
 
     # Please see tricium_clang_tidy_script.py for full docs on what this
     # contains.
@@ -359,9 +356,3 @@ class TriciumClangTidyApi(RecipeApi):
               message, line, diag_name, suggestions)
 
     return per_file_comments
-
-  def _build_with_reclient(self, source_dir: Path, step_name, cmd):
-    ninja_command = ""
-    with self.m.reclient.process(step_name, ninja_command, source_dir) as p:
-      step_result = self.m.step(step_name, cmd)
-      p.build_exit_status = step_result.retcode

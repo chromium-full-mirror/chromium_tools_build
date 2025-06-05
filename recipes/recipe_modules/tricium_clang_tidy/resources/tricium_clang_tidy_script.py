@@ -87,6 +87,13 @@ def _generate_compile_commands(out_dir: str, gn: str) -> str:
   return compile_commands
 
 
+def _siso_path(base_path: str) -> str:
+  siso_path = os.path.join(base_path, 'third_party', 'siso', 'cipd', 'siso')
+  if sys.platform.startswith('win'):
+    siso_path += '.exe'
+  return siso_path
+
+
 def _run_ninja(out_dir: str,
                base_path: str,
                object_targets: List[str],
@@ -126,16 +133,9 @@ def _run_ninja(out_dir: str,
   # 500 targets per invocation is arbitrary, but we start hitting OS argv size
   # limits around 1K in my experience.
   def make_ninja_command(targets):
-    if platform.system() == 'Windows':
-      autoninja_path = os.path.join(
-          base_path,
-          'third_party\\depot_tools\\autoninja.py').replace('/', '\\')
-      autoninja_cmd = ['vpython3', autoninja_path]
-    else:
-      autoninja_cmd = ['autoninja']
-    ninja_cmd = autoninja_cmd + ['-k', '1000000']
+    ninja_cmd = [_siso_path(base_path), 'ninja', '-k', '1000000']
     if jobs is not None:
-      ninja_cmd.extend(['-j', str(jobs)])
+      ninja_cmd.extend(['-remote_jobs', str(jobs)])
 
     ninja_cmd.append('--')
     ninja_cmd += targets
@@ -688,13 +688,7 @@ def _parse_ninja_deps(
   `object_file`s are all relative to out_dir; all `file_it_depends_on`s are
   absolute.
   """
-  if platform.system() == 'Windows':
-    autoninja_path = os.path.join(
-        base_path, 'third_party\\depot_tools\\autoninja.py').replace('/', '\\')
-    autoninja_cmd = ['vpython3', autoninja_path]
-  else:
-    autoninja_cmd = ['autoninja']
-  command = autoninja_cmd + ['-t', 'deps']
+  command = [_siso_path(base_path), 'query', 'deps']
   ninja = subprocess.Popen(
       command,
       cwd=out_dir,
@@ -1512,7 +1506,9 @@ def main():
       'subdirectories of this will be ignored. Also the root of your gn build '
       'tree.')
   parser.add_argument(
-      '--ninja_jobs', type=int, help='Number of jobs to run `ninja` with')
+      '--remote_jobs',
+      type=int,
+      help='Number of remote jobs to run `siso ninja` with')
   parser.add_argument(
       '--out_dir', required=True, help='Chromium out/ directory')
   parser.add_argument(
@@ -1591,7 +1587,7 @@ def main():
         out_dir,
         base_path,
         object_targets,
-        jobs=args.ninja_jobs,
+        jobs=args.remote_jobs,
         force_clean=args.clean)
 
   with open(compile_commands_location, encoding='utf-8') as f:

@@ -10,7 +10,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/step',
-    'reclient',
+    'siso',
 ]
 
 _clang_tidy_path = ('third_party', 'llvm-build', 'Release+Asserts', 'bin',
