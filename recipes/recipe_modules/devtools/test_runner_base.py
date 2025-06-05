@@ -60,7 +60,9 @@ class DevToolsTests(ABC):
         self.test_names_to_grep_string(test_names),
         '--retries=5',
     ]
-    self.env['DEBUG'] = 'puppeteer:*'
+    # TODO (liviurau): add it back after puppeteer bug fix
+    # https://github.com/puppeteer/puppeteer/pull/13901
+    # self.env['DEBUG'] = 'puppeteer:*'
 
   def test_names_to_grep_string(self, names):
     # Keep sorted for stable test expectations.
