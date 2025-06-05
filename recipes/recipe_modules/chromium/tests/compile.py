@@ -283,8 +283,10 @@ def GenTests(api):
       api.path.exists(build_dir / 'siso_output'),
       api.step_data(
           'check for compile warnings.read siso_output',
-          api.file.read_text('../../a/b/c.cc:1:2: warning: '
-                             'something bad happened [-Wwarning]')),
+          api.file.read_text('build step: foo\n'
+                             '../../a/b/c.cc:1:2: warning: '
+                             'something bad happened [-Wwarning]\n'
+                             '1 warning generated.')),
       api.post_process(
           post_process.StepFailure,
           'check for compile warnings.scan siso_output for warnings'),
@@ -299,9 +301,11 @@ def GenTests(api):
       api.path.exists(build_dir / 'siso_output'),
       api.step_data(
           'check for compile warnings.read siso_output',
-          api.file.read_text('../../a/b/c.cc:1:2: warning: ' +
+          api.file.read_text('build step: foo\n'
+                             '../../a/b/c.cc:1:2: warning: ' +
                              "long text " * 100 +
-                             'something bad happened [-Wwarning]')),
+                             'something bad happened [-Wwarning]\n'
+                             '2 warnings generated.')),
       api.post_process(
           post_process.StepFailure,
           'check for compile warnings.scan siso_output for warnings'),

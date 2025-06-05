@@ -535,7 +535,11 @@ class ChromiumApi(recipe_api.RecipeApi):
                                ninja_invocation_id)
 
     if self.fail_build_on_clang_warnings:
-      self.check_for_clang_warnings(self.m.siso._ninja_dir(cmd))
+      result = self.check_for_clang_warnings(self.m.siso._ninja_dir(cmd))
+      if result:
+        return CompileResult(
+            failure_summary=result, failure_summary_url='', retcode=1)
+
 
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 
@@ -725,6 +729,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       step_text = 'No warnings found'
       log_text = ''
       status = self.m.step.SUCCESS
+      failure_summary = ''
 
       siso_output_path = os.path.join(build_dir, 'siso_output')
       if self.m.path.exists(siso_output_path):
@@ -734,14 +739,33 @@ class ChromiumApi(recipe_api.RecipeApi):
         siso_output = ''
         step_text = str(siso_output_path) + ' does not exist'
 
-      # Regex matching a warning outputted by clang
-      m = re.search(r'warning:.+\[-W.+\]', siso_output)
+      # Regex matching a warning outputted by clang.
+      m = list(re.finditer(r'warning:.+\[-W.+\]', siso_output))
       if m:
-        step_text = ('Clang emitted warnings during compilation.\n' +
-                     'See siso_output for full details.')
+        first_warning = m[0]
+        warning_count = len(m)
+
+        plural = 'warnings' if warning_count != 1 else 'warning'
+        step_text = (
+            f'Clang emitted {warning_count} {plural} during compilation. '
+            'See siso_output for full details.')
         log_text = ('warning text (see siso_output for full details):\n' +
-                    m.group(0))
+                    first_warning.group(0))
         status = self.m.step.FAILURE
+
+        # Extract the compiler output for the first warning for convenient
+        # display to the user. The relevant text blob in siso_output will start
+        # with 'build step:' and end with 'X warning(s) generated.'
+        end_match = re.search(r'warnings? generated.', siso_output)
+
+        # Find the _last_ instance of 'build step' preceding the warning text
+        start_matches = list(
+            re.finditer(r'build step:', siso_output[:first_warning.start()]))
+        start_match = start_matches[-1] if start_matches else None
+
+        if start_match and end_match:
+          output_blob = siso_output[start_match.start():end_match.end()]
+          failure_summary = step_text + '\n\n' + output_blob
 
       if len(log_text) > 1024:
         log_text = log_text[:1024] + '...'
@@ -756,9 +780,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           raise_on_failure=False)
 
       if m:
-        raise self.m.step.StepFailure(
-            'Error: compiler warnings were detected. See logs under the'
-            '"scan siso_output for warnings" step for details.')
+        return failure_summary
 
   @contextlib.contextmanager
   def guard_compile(self, build_dir: Path, *, suffix=''):
