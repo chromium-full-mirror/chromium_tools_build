@@ -1,18 +1,21 @@
 [
   {
     "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
-      "--ninja_info_output",
-      "/path/to/tmp/json",
-      "--failure_output",
+      "[CACHE]/builder/v8/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
       "/path/to/tmp/",
-      "--",
-      "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "160",
       "v8_foobar"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -23,7 +26,8 @@
       "RBE_exec_strategy": "remote_local_fallback",
       "RBE_invocation_id": "00000000-0000-0000-0000-000000001337",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
     },
     "luci_context": {
       "realm": {

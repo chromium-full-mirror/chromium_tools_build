@@ -39,6 +39,7 @@ DEPS = [
     'recipe_engine/time',
     'recipe_engine/url',
     'reclient',
+    'siso',
     'test_utils',
     'v8_tests',
 ]

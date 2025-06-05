@@ -31,6 +31,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/step',
     'reclient',
+    'siso',
     'v8',
 ]
 
@@ -81,7 +82,10 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     # Set up dependent modules.
     api.chromium.set_config(chromium_config, BUILD_CONFIG=build_config)
     api.gclient.set_config('node_ci')
-    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+    if api.reclient.instance:
+      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+    elif api.siso.enabled:
+      api.siso.enable_download_remoteexec_cfg_hook()
     revision = api.buildbucket.gitiles_commit.id or 'HEAD'
     if v8_tot:
       api.gclient.c.revisions['node-ci'] = 'HEAD'
@@ -215,6 +219,7 @@ def GenTests(api):
         properties_fn(**properties),
         buildbucket_fn(**buildbucket_kwargs),
         api.platform(platform, 64),
+        api.siso.properties(),
         api.v8.hide_infra_steps(),
         status=status,
     )

@@ -242,8 +242,10 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
             # migrated to new buildbucket properties.
             buildername=buildername,
             use_remoteexec=True,
-            **dict(kwargs, **{'$build/v8': {'use_remoteexec': True}})),
-        self.m.reclient.properties(),
+            **dict(kwargs, **{'$build/v8': {
+                'use_remoteexec': True
+            }})),
+        self.m.siso.properties(),
         self.m.builder_group.for_current(builder_group),
         self.m.platform('linux', 64),
         status=status,
