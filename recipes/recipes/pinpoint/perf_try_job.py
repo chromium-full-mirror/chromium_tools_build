@@ -60,7 +60,12 @@ def RunSteps(api, properties):
     cmd.extend(['--configuration', properties.configuration])
     cmd.extend(['--benchmark', properties.benchmark])
     cmd.extend(['--story', properties.story])
-    cmd.extend(['--user', api.tryserver.gerrit_change_owner['name']])
+    user = api.tryserver.gerrit_change_owner.get('name')
+    if not user:
+      change = api.tryserver.gerrit_change_number
+      patchset = api.tryserver.gerrit_patchset_number
+      user = f'Change {change}/{patchset}'
+    cmd.extend(['--user', user])
     cmd.extend(['--tags', _generate_tag_string(properties.tags)])
     token = _generate_access_token(api)
     cmd.extend(['--token', api.raw_io.input_text(token)])
@@ -116,6 +121,8 @@ def GenTests(api):
           'name': 'fake-user',
       },
   }]
+  mock_gerrit_fetch_result_no_user = [dict(mock_gerrit_fetch_result[0])]
+  mock_gerrit_fetch_result_no_user[0]['owner'] = {'_account_id': 1234}
   # expected cmd based on the mocks above
   expected_cmd = [
       'vpython3',
@@ -139,6 +146,9 @@ def GenTests(api):
       '--token',
       '.*',  # any string for oauth token
   ]
+  expected_cmd_no_user = list(expected_cmd)
+  expected_cmd_no_user[expected_cmd_no_user.index(
+      'fake-user')] = 'Change 666666/16'
   expected_cmd_staging = list(expected_cmd)
   expected_cmd_staging.append('--use_staging')
 
@@ -169,6 +179,21 @@ def GenTests(api):
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
           expected_cmd,
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'trigger_with_hash_no_user',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data('gerrit fetch current CL info',
+                             api.json.output(mock_gerrit_fetch_result_no_user)),
+      api.post_process(post_process.MustRun,
+                       'Trigger Performance Test fake-benchmark'),
+      api.post_process(
+          post_process.StepCommandRE,
+          'Trigger Performance Test fake-benchmark',
+          expected_cmd_no_user,
       ),
       api.post_process(post_process.DropExpectation),
   )
