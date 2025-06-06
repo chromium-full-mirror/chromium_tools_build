@@ -14,12 +14,7 @@ PINPOINT_URL = 'https://pinpoint-dot-chromeperf.appspot.com'
 NEW_JOB_ENDPOINT = '/api/new'
 
 
-def invoke_pinpoint_try_job(params, token, use_staging=False):
-  pinpoint_url = STAGING_PINPOINT_URL if use_staging else PINPOINT_URL
-  url = f'{pinpoint_url}{NEW_JOB_ENDPOINT}?{urllib.parse.urlencode(params)}'
-
-  print(f'Request url: {url}')
-
+def invoke_pinpoint_try_job(url, token):
   headers = utils.default_headers()
   if token:
     with open(token, encoding='utf-8') as oauth_token_fd:
@@ -28,6 +23,13 @@ def invoke_pinpoint_try_job(params, token, use_staging=False):
   response = requests.post(url, headers=headers)
 
   return response
+
+
+def generate_request_url(params, use_staging=False):
+  pinpoint_url = STAGING_PINPOINT_URL if use_staging else PINPOINT_URL
+  url = f'{pinpoint_url}{NEW_JOB_ENDPOINT}?{urllib.parse.urlencode(params)}'
+
+  return url
 
 
 def parse_args():
@@ -118,9 +120,10 @@ def main():
   params = generate_params_from_args(args)
   use_staging = args.use_staging or False
   token = args.token
-  resp = invoke_pinpoint_try_job(
-      params=params, token=token, use_staging=use_staging)
+  request_url = generate_request_url(params=params, use_staging=use_staging)
+  resp = invoke_pinpoint_try_job(url=request_url, token=token)
   data = {
+      'request_url': request_url,
       'params': params,
       'response': resp.json(),
   }

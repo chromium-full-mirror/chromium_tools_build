@@ -8,6 +8,7 @@ import json
 from recipe_engine import post_process
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipes.build.pinpoint import perf_try_job
+from PB.recipe_engine import result as result_pb2
 
 DEPS = [
     'chromium',
@@ -72,13 +73,26 @@ def RunSteps(api, properties):
     if properties.use_staging:
       cmd.extend(['--use_staging'])
 
-    step_result = api.step(
+    invoke_cmd_result = api.step(
         f'Trigger Performance Test {properties.benchmark}',
         cmd,
         stdout=api.json.output())
-    if step_result.stdout:
-      url = step_result.stdout.get('response', {}).get('url')
-      api.step(f'Try job triggered: {url}', None)
+    # invoke command returns:
+    # {
+    #   request_url: the url sent to pinpoint.
+    #   params: the params used to create the url.
+    #   ressponse: the pinpoint response json with 'jobId' and 'jobUrl'.
+    # }
+    if invoke_cmd_result.stdout:
+      url = invoke_cmd_result.stdout.get('response', {}).get('jobUrl')
+      report_step_result = api.step('Try job triggered.', None)
+      report_step_result.presentation.links['Pinpoint job'] = url
+      return result_pb2.RawResult(
+          status=common_pb2.SUCCESS,
+          summary_markdown=(f'Pinpoint job created: {url}'))
+    return result_pb2.RawResult(
+        status=common_pb2.FAILURE,
+        summary_markdown=('Failed to trigger Pinpoint try job.'))
 
 
 def GenTests(api):
@@ -158,13 +172,14 @@ def GenTests(api):
       api.properties(**mock_properties_staging),
       api.override_step_data('gerrit fetch current CL info',
                              api.json.output(mock_gerrit_fetch_result)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output({'response': {
+              'jobUrl': 'fake-pinpoint-link'
+          }})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
-      api.post_process(
-          post_process.StepCommandRE,
-          'Trigger Performance Test fake-benchmark',
-          expected_cmd_staging,
-      ),
+      api.post_process(post_process.MustRun, 'Try job triggered.'),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -173,8 +188,16 @@ def GenTests(api):
       api.properties(**mock_properties),
       api.override_step_data('gerrit fetch current CL info',
                              api.json.output(mock_gerrit_fetch_result)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output({'response': {
+              'jobUrl': 'fake-pinpoint-link'
+          }})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
+      api.post_process(post_process.MustRun, 'Try job triggered.'),
+      api.post_process(post_process.LinkEquals, 'Try job triggered.',
+                       'Pinpoint job', 'fake-pinpoint-link'),
       api.post_process(
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
@@ -188,6 +211,11 @@ def GenTests(api):
       api.properties(**mock_properties),
       api.override_step_data('gerrit fetch current CL info',
                              api.json.output(mock_gerrit_fetch_result_no_user)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output({'response': {
+              'jobUrl': 'fake-pinpoint-link'
+          }})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
       api.post_process(
@@ -204,23 +232,18 @@ def GenTests(api):
       api.step_data('Trigger Performance Test fake-benchmark', retcode=1),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
-      api.post_process(post_process.DoesNotRun,
-                       'Try job triggered: fake-pinpoint-link'),
+      api.post_process(post_process.DoesNotRun, 'Try job triggered.'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
   yield api.test(
-      'trigger_with_hash_return_0',
+      'trigger_with_hash_return_empty_stdout',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
-      api.step_data(
-          'Trigger Performance Test fake-benchmark',
-          stdout=api.json.output({'response': {
-              'url': 'fake-pinpoint-link'
-          }})),
+      # step is not mocked, a.k.a., no stdout.
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
-      api.post_process(post_process.MustRun,
-                       'Try job triggered: fake-pinpoint-link'),
+      api.post_process(post_process.DoesNotRun, 'Try job triggered.'),
       api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )
