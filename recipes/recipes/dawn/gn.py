@@ -83,6 +83,7 @@ def _gn_build(source_dir, flavor, api, **kwargs):
       'tint_build_wgsl_writer=true',
       'tint_build_msl_writer=true',
       'tint_build_hlsl_writer=true',
+      'use_siso=true',
   ])
 
   if use_remoteexec:

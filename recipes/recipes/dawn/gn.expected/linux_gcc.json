@@ -155,7 +155,7 @@
       "--root=[CACHE]/builder/dawn",
       "gen",
       "//out/8d1090f301eafa808272a0f84b3e3f57c0d4776c",
-      "--args=is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false dawn_build_node_bindings=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
+      "--args=is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false dawn_build_node_bindings=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_siso=true"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -220,7 +220,7 @@
       "--root=[CACHE]/builder/dawn",
       "gen",
       "//out/2afda240ab207323b063306bf696ba742a23ed8c",
-      "--args=is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false use_libfuzzer=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
+      "--args=is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false use_libfuzzer=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_siso=true"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -283,7 +283,7 @@
       "--root=[CACHE]/builder/dawn",
       "gen",
       "//out/c1e1efe5577cbaace114a8fc2cec2036a8c6606d",
-      "--args=is_debug=false is_clang=false is_component_build=true dawn_use_swiftshader=true dawn_build_node_bindings=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true dawn_enable_d3d12=false"
+      "--args=is_debug=false is_clang=false is_component_build=true dawn_use_swiftshader=true dawn_build_node_bindings=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_siso=true dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
