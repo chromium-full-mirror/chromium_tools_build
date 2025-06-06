@@ -106,6 +106,8 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
     with (api.context(env_prefixes={'PATH': [depot_tools_path]}),
           api.chromium.guard_compile(build_dir)):
+      if api.siso.enabled:
+        api.chromium.c.gn_args.append('use_siso=true')
       api.chromium.run_gn(source_dir, build_dir, use_remoteexec=True)
       raw_result = api.chromium.compile(
           source_dir, build_dir, use_reclient=bool(api.reclient.instance))
