@@ -994,11 +994,47 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Check/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Check\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Check on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"bot_default\", \"--variants=more,dev\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Check/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Check\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Check on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"ci:V8 Foobar\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"bot_default\", \"--variants=more,dev\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "name": "trigger tests.[trigger] Check on Ubuntu-16.04"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "trigger tests.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
   },
   {
     "cmd": [
@@ -1007,11 +1043,47 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Test262/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for test262/dummy size]\", \"name:Test262\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Test262 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for test262\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"test262\", \"--variants=more,dev\", \"--extra-flags=--flag\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Test262/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for test262/dummy size]\", \"name:Test262\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Test262 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for test262\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"ci:V8 Foobar\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"test262\", \"--variants=more,dev\", \"--extra-flags=--flag\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "name": "trigger tests.[trigger] Test262 on Ubuntu-16.04"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "trigger tests.resultdb.update_included_invocations (2)",
+    "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
   },
   {
     "cmd": [
@@ -2060,7 +2132,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Retry\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Retry on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"suite-name/dir/fast\", \"--random-seed\", \"123\", \"--variants=default\", \"--rerun-failures-count=0\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Retry\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Retry on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"ci:V8 Foobar\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"suite-name/dir/fast\", \"--random-seed\", \"123\", \"--variants=default\", \"--rerun-failures-count=0\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2086,7 +2158,12 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
@@ -2097,6 +2174,9 @@
       "@@@STEP_LOG_LINE@json.input@      \"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"v8:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
@@ -2125,6 +2205,19 @@
       "@@@STEP_LOG_LINE@json.input@              }@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"//\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"bucket:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:V8 Foobar\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"ci:V8 Foobar\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"tools/run-tests.py\",@@@",
@@ -2179,6 +2272,42 @@
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
       "@@@STEP_LINK@task UI: Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571@https://example.swarmingserver.appspot.com/task?id=2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a0.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/2\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/2\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -3061,7 +3190,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Retry\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Retry on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"suite-name/dir/fast\", \"--random-seed\", \"123\", \"--variants=default\", \"--rerun-failures-count=0\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Retry\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Retry on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"ci:V8 Foobar\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"suite-name/dir/fast\", \"--random-seed\", \"123\", \"--variants=default\", \"--rerun-failures-count=0\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3087,7 +3216,12 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
@@ -3098,6 +3232,9 @@
       "@@@STEP_LOG_LINE@json.input@      \"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"v8:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
@@ -3126,6 +3263,19 @@
       "@@@STEP_LOG_LINE@json.input@              }@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"//\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"bucket:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:V8 Foobar\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"ci:V8 Foobar\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"tools/run-tests.py\",@@@",
@@ -3180,6 +3330,42 @@
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
       "@@@STEP_LINK@task UI: Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571@https://example.swarmingserver.appspot.com/task?id=3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a2.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/3\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/3\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -4101,7 +4287,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Retry\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Retry on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"suite-name/dir/fast\", \"--random-seed\", \"123\", \"--variants=default\", \"--rerun-failures-count=0\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for bot_default/dummy size]\", \"name:Retry\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:Retry on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"ci:V8 Foobar\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"suite-name/dir/fast\", \"--random-seed\", \"123\", \"--variants=default\", \"--rerun-failures-count=0\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -4127,7 +4313,12 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
@@ -4138,6 +4329,9 @@
       "@@@STEP_LOG_LINE@json.input@      \"name\": \"Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"v8:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
       "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
@@ -4166,6 +4360,19 @@
       "@@@STEP_LOG_LINE@json.input@              }@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"//\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"bucket:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:V8 Foobar\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"ci:V8 Foobar\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"tools/run-tests.py\",@@@",
@@ -4220,6 +4427,42 @@
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
       "@@@STEP_LINK@task UI: Retry/Ubuntu-16.04/[dummy has/V8 Foobar/571@https://example.swarmingserver.appspot.com/task?id=4@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a1.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/4\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/4\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {

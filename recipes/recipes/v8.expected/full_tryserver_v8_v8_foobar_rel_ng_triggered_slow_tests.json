@@ -260,11 +260,47 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Check/Ubuntu-16.04/[dummy has/v8_foobar_rel_ng_triggered/-1\", \"priority\": \"30\", \"realm\": \"v8:try\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.v8\", \"buildername:v8_foobar_rel_ng_triggered\", \"data:[dummy hash for bot_default]/123\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:Check\", \"patch_project:v8/v8\", \"project:v8\", \"purpose:pre-commit\", \"spec_name:v8.try:v8_foobar_rel_ng_triggered\", \"stepname:Check on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default]\", \"size_bytes\": \"123\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"bot_default\", \"--variants=more,dev\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Check/Ubuntu-16.04/[dummy has/v8_foobar_rel_ng_triggered/-1\", \"priority\": \"30\", \"realm\": \"v8:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.v8\", \"buildername:v8_foobar_rel_ng_triggered\", \"data:[dummy hash for bot_default]/123\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:Check\", \"patch_project:v8/v8\", \"project:v8\", \"purpose:pre-commit\", \"spec_name:v8.try:v8_foobar_rel_ng_triggered\", \"stepname:Check on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for bot_default]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:try\", \"-var\", \"builder:v8_foobar_rel_ng_triggered\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"try:v8_foobar_rel_ng_triggered\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"bot_default\", \"--variants=more,dev\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "name": "trigger tests.[trigger] Check on Ubuntu-16.04"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "trigger tests.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
   },
   {
     "cmd": [
@@ -273,11 +309,47 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Test262/Ubuntu-16.04/[dummy has/v8_foobar_rel_ng_triggered/-1\", \"priority\": \"30\", \"realm\": \"v8:try\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.v8\", \"buildername:v8_foobar_rel_ng_triggered\", \"data:[dummy hash for test262]/123\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:Test262\", \"patch_project:v8/v8\", \"project:v8\", \"purpose:pre-commit\", \"spec_name:v8.try:v8_foobar_rel_ng_triggered\", \"stepname:Test262 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for test262]\", \"size_bytes\": \"123\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"test262\", \"--variants=more,dev\", \"--extra-flags=--flag\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Test262/Ubuntu-16.04/[dummy has/v8_foobar_rel_ng_triggered/-1\", \"priority\": \"30\", \"realm\": \"v8:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.v8\", \"buildername:v8_foobar_rel_ng_triggered\", \"data:[dummy hash for test262]/123\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:Test262\", \"patch_project:v8/v8\", \"project:v8\", \"purpose:pre-commit\", \"spec_name:v8.try:v8_foobar_rel_ng_triggered\", \"stepname:Test262 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for test262]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:try\", \"-var\", \"builder:v8_foobar_rel_ng_triggered\", \"-coerce-negative-duration\", \"-inherit-sources\", \"-baseline-id\", \"try:v8_foobar_rel_ng_triggered\", \"--\", \"vpython3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir\", \"out/build\", \"--random-seed=-721873131\", \"test262\", \"--variants=more,dev\", \"--extra-flags=--flag\", \"--rerun-failures-count=2\", \"--swarming\", \"--json-test-results\", \"${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "name": "trigger tests.[trigger] Test262 on Ubuntu-16.04"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "trigger tests.resultdb.update_included_invocations (2)",
+    "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
   },
   {
     "cmd": [
