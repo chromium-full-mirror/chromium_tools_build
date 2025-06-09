@@ -201,6 +201,11 @@ _AddBuildSpec(
     'android',
     target_bits=64,
     bisect_archive_build=False)
+_AddBuildSpec(
+    'android-desktop-arm-builder-perf',
+    'android',
+    target_bits=64,
+    bisect_archive_build=False)
 
 # LUCI builder
 # The config for the following builders is now specified src-side in
@@ -263,7 +268,7 @@ _AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
 _AddIsolatedTestSpec('android-brya-kano-i5-8gb-perf', 'android',
                      'android-desktop-x64-builder-perf')
 _AddIsolatedTestSpec('android-corsola-steelix-8gb-perf', 'android',
-                     'android-desktop-x64-builder-perf')
+                     'android-desktop-arm-builder-perf')
 _AddIsolatedTestSpec('android-nissa-uldren-8gb-perf', 'android',
                      'android-desktop-x64-builder-perf')
 
