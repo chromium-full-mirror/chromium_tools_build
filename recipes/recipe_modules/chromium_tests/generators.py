@@ -567,7 +567,15 @@ class Generator:
     }
     common_skylab_kwargs['test_args'] = self._get_args_for_test(raw_test_spec)
     common_skylab_kwargs['target_name'] = raw_test_spec.get('test')
-    if not common_skylab_kwargs.get('autotest_name'):
+    has_tag_criteria = any(key in common_skylab_kwargs for key in [
+        'cros_test_tags',
+        'cros_test_tags_exclude',
+        'cros_test_names',
+        'cros_test_names_exclude',
+        'cros_test_names_from_file',
+        'cros_test_names_exclude_from_file',
+    ])
+    if not common_skylab_kwargs.get('autotest_name') and not has_tag_criteria:
       if common_skylab_kwargs.get('tast_expr'):
         common_skylab_kwargs['autotest_name'] = 'tast.lacros'
       elif common_skylab_kwargs.get('benchmark'):
