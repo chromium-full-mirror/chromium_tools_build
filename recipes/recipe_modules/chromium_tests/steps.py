@@ -78,7 +78,7 @@ RETRY_LIMIT_FOR_CI_RETRY_SHARDS = 5
 # https://chromium.googlesource.com/infra/infra/+/main/go/src/infra/cmd/mac_toolchain
 MAC_TOOLCHAIN_PACKAGE = 'infra/tools/mac_toolchain/${platform}'
 MAC_TOOLCHAIN_VERSION = (
-    'git_revision:2daac90d8dfc12cda481b08428dd302e3d96650f')
+    'git_revision:2abc9d22f3c8445b3b7cd3d1d9a1605fe12ce62a')
 MAC_TOOLCHAIN_ROOT = '.'
 
 ALLOWED_RESULT_HANDLER_NAMES = ('default', 'layout tests', 'fake')
