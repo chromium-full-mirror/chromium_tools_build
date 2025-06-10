@@ -100,17 +100,25 @@ def generate_compilation_database(api, source_dir, out_path,
   return step_result
 
 
-def generate_gn_compilation_database(api, source_dir, out_path, targets):
+def generate_gn_metadata(api,
+                         source_dir,
+                         out_path,
+                         export_compile_cmd=False,
+                         export_compile_targets=None):
+  """Generates metadata using gn gen.
+  """
   with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
-    export_compile_cmd = '--export-compile-commands'
-    if targets:
-      export_compile_cmd += '=' + ','.join(targets)
-    api.step(
-        'generate gn compilation database', [
-            'python3', '-u', api.depot_tools.gn_py_path, 'gen',
-            export_compile_cmd, out_path
-        ],
-        stdout=api.raw_io.output_text())
+    cmd = [
+        'python3', '-u', api.depot_tools.gn_py_path, 'gen',
+        '--export-rust-project'
+    ]
+    if export_compile_cmd:
+      export_compile_flag = '--export-compile-commands'
+      if export_compile_targets:
+        export_compile_flag += '=' + ','.join(export_compile_targets)
+      cmd.append(export_compile_flag)
+    cmd.append(out_path)
+    api.step('run gn gen', cmd, stdout=api.raw_io.output_text())
 
 
 def generate_gn_target_list(api,
@@ -249,8 +257,12 @@ def RunSteps(api, properties):
     # GN target format is different than ninja's, we might need a dedicated GN
     # target list.
     webview_gn_targets = ['//android_webview:system_webview_apk']
-    generate_gn_compilation_database(
-        api=api, source_dir=source_dir, out_path=build_dir, targets=targets)
+    generate_gn_metadata(
+        api=api,
+        source_dir=source_dir,
+        out_path=build_dir,
+        export_compile_cmd=True,
+        export_compile_targets=targets)
     generate_gn_target_list(api, source_dir, build_dir, gn_targets_json_file,
                             webview_gn_targets)
   else:
@@ -260,6 +272,7 @@ def RunSteps(api, properties):
         out_path=build_dir,
         compile_commands_json_file=compile_commands_json_file,
         targets=targets)
+    generate_gn_metadata(api=api, source_dir=source_dir, out_path=build_dir)
     generate_gn_target_list(api, source_dir, build_dir, gn_targets_json_file)
 
   # Prepare Java Kythe output directory

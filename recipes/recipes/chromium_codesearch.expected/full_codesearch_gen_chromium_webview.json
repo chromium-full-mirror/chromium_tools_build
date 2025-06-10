@@ -413,6 +413,7 @@
       "-u",
       "RECIPE_REPO[depot_tools]/gn.py",
       "gen",
+      "--export-rust-project",
       "--export-compile-commands=all",
       "[CACHE]/builder/src/out/webview-Debug"
     ],
@@ -429,7 +430,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "generate gn compilation database"
+    "name": "run gn gen"
   },
   {
     "cmd": [
