@@ -358,6 +358,23 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
+      "[CACHE]/builder/devtools-frontend/out/Release/gen/test/e2e_non_hosted/tests.txt",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "Read test list (2)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@tests.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
       "/path/to/tmp/"
     ],
@@ -445,10 +462,11 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@compilator_properties@{@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
+      "@@@STEP_LOG_LINE@compilator_properties@  \"e2e_non_hosted_test_list\": \"\",@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"e2e_test_list\": \"\"@@@",
       "@@@STEP_LOG_LINE@compilator_properties@}@@@",
       "@@@STEP_LOG_END@compilator_properties@@@",
-      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"e2e_test_list\": \"\"}@@@"
+      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"e2e_non_hosted_test_list\": \"\", \"e2e_test_list\": \"\"}@@@"
     ]
   },
   {
