@@ -105,6 +105,14 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   },
               })),
+      api.override_step_data(
+          "SSCI collection.target specific steps for chromium.compare chromium SBOMs",
+          api.json.output(
+              retcode=1,
+              data={
+                  "out": "SBOMs are different",
+              },
+          )),
       api.post_process(
           MustRunRE,
           r'.+\.run ssci tool to generate .+ SPDX sbom',

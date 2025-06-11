@@ -349,13 +349,17 @@ class SsciAPI(recipe_api.RecipeApi):
 
         # Compare the SBOMs from the different tools.
         self.m.step(
-            f'compare {display_name} SBOMs', [
+            f'compare {display_name} SBOMs',
+            [
                 self.sbomdiff.tool_path,
                 "-reference",
                 spdx_file,
                 "-candidate",
                 ssci_sbom_file,
             ],
+            # The step is successful if the SBOMs were able to be compared, even
+            # if there are differences.
+            ok_ret=(0, 1),
             infra_step=True,
             step_test_data=(lambda: self.m.raw_io.test_api.stream_output_text(
                 "SBOMs are equal")))
