@@ -7,6 +7,7 @@ from .test_runner_base import ExonerableTests
 from functools import cached_property
 import re
 
+TEST_RELATIVE_PATH = 'test/e2e'
 FLAKE_DETECTION_OPTION = '--repeat=10'
 
 class E2ETests(ExonerableTests):
@@ -31,7 +32,7 @@ class E2ETests(ExonerableTests):
       return [self.run_tests_command('test/e2e')]
     return [
         self.run_tests_command(*test_list)
-        for test_list in self.divider.commands('e2e')
+        for test_list in self.divider.commands
     ]
 
   @property
@@ -63,10 +64,7 @@ class E2ENonHostedTests(E2ETests):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
       return [self.run_tests_command(*self.owned_new_tests)]
-    return [
-        self.run_tests_command(*test_list)
-        for test_list in self.divider.commands('e2e_non_hosted')
-    ]
+    return [self.run_tests_command('test/e2e_non_hosted')]
 
   @property
   def grep_filter_pattern(self):
@@ -129,12 +127,14 @@ class E2ETestDivider:
     self.shard_count = shard_count
     self.shuffled = shuffled
 
+  # TODO(liviurau) Rename function after legacy branch is no longer supported
   # It returns a list of lists of test paths
-  def commands(self, test_type):
-    contents = read_test_list(self.api, self.builder_config, test_type)
+  @cached_property
+  def commands(self):
+    contents = read_test_list(self.api, self.builder_config)
     all_tests = contents.splitlines()
     all_test_paths = [
-        self.api.path.join('test', test_type, t) for t in all_tests
+        self.api.path.join(TEST_RELATIVE_PATH, t) for t in all_tests
     ]
     if self.shuffled:
       # TODO(liviurau) make this pseudo-random with a seed based e.g. on
@@ -154,16 +154,16 @@ def divide_list(lst, split_count):
   return result
 
 
-def read_test_list(api, builder_config, test_type):
+def read_test_list(api, builder_config):
   gen_root = api.devtools.source_dir / 'out' / builder_config / 'gen'
-  test_root = gen_root / 'test' / test_type
+  test_root = gen_root / TEST_RELATIVE_PATH
   test_list_file_path = test_root / 'tests.txt'
   return api.file.read_text('Read test list', test_list_file_path)
 
 
-def write_test_list(api, builder_config, test_type, test_list):
+def write_test_list(api, builder_config, test_list):
   gen_root = api.devtools.source_dir / 'out' / builder_config / 'gen'
-  test_root = gen_root / 'test' / test_type
+  test_root = gen_root / TEST_RELATIVE_PATH
   api.step('Create E2E test root', ['mkdir', '-p', test_root])
   test_list_file_path = test_root / 'tests.txt'
   api.file.write_text('Write E2E test list', test_list_file_path, test_list)

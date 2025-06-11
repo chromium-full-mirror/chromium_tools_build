@@ -79,9 +79,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   # TODO(liviurau): Refactor this to make the divider take the file list a
   # direct argument. Eventually make it so we do not even need the list maybe
   # using a hash based stable sharding and ordering on the test runner side.
-  write_test_list(api, builder_config, 'e2e', comp_props['e2e_test_list'])
-  write_test_list(api, builder_config, 'e2e_non_hosted',
-                  comp_props['e2e_non_hosted_test_list'])
+  write_test_list(api, builder_config, comp_props['e2e_test_list'])
 
   cas_digest = comp_props['cas_digest']
 
@@ -116,7 +114,6 @@ def GenTests(api):
       "compilator_properties": {
           "cas_digest": '1234567/890',
           "e2e_test_list": 'test1.ts\ntest2.ts\n',
-          "e2e_non_hosted_test_list": 'test11.ts\ntest22.ts\n',
       },
   }
 
