@@ -315,6 +315,10 @@ class SkylabApi(recipe_api.RecipeApi):
         for t in test.spec.cros_test_names_exclude_from_file:
           cmd.extend(['--cros-test-names-exclude-from-file', t])
 
+        if test.spec.cros_test_max_in_shard > 0:
+          cmd.extend(
+              ['--cros-test-max-in-shard', test.spec.cros_test_max_in_shard])
+
         if test.spec.secondary_cros_board:  # pragma: nocover
           assert False, 'Not supported yet'
 

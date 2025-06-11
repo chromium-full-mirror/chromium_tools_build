@@ -182,6 +182,7 @@ TFC_REQUESTS = [
         cros_test_tags_exclude=['informational'],
         cros_test_names_exclude=['tast.disabled.DisabledTest'],
         cros_test_names_exclude_from_file=['dynamically-disabled-tests.txt'],
+        cros_test_max_in_shard=30,
         tast_expr='STUB_STRING_TO_RUN_TAST_TESTS',
         autotest_name='',
     ),
@@ -812,6 +813,8 @@ def GenTests(api):
               'tast.disabled.DisabledTest',
               '--cros-test-names-exclude-from-file',
               'dynamically-disabled-tests.txt',
+              '--cros-test-max-in-shard',
+              '30',
           ]),
       api.post_process(
           post_process.StepCommandContains,

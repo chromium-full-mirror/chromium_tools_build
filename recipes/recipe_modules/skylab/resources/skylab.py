@@ -240,6 +240,8 @@ def schedule_skylab_tests(opts):
         opts.chromium_src, opts.cros_test_names_exclude_from_file, opts.board)):
       req.suite_request.test_suite.test_case_tag_criteria.test_name_excludes.append(
           v)
+    if opts.cros_test_max_in_shard > 0:
+      req.suite_request.max_in_shard = opts.cros_test_max_in_shard
     for test_arg in opts.test_arg:
       arg = req.suite_request.test_suite.execution_metadata.args.add()
       arg.flag = test_arg[0]
@@ -476,6 +478,12 @@ def main(args):
       action='append',
       default=[],
       help='Names to exclude for the tests to run.',
+  )
+  subparser.add_argument(
+      '--cros-test-max-in-shard',
+      type=int,
+      default=0,
+      help='maximum number of tests in a shard',
   )
   subparser.add_argument(
       '--test-arg',
