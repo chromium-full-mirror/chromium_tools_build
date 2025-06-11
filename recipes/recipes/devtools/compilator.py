@@ -83,10 +83,15 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
         if compilation_result.status != common_pb.SUCCESS:
           return compilation_result
 
-    e2e_tests_list = read_test_list(api, builder_config)
-
-    cas_digest = api.devtools.archive_to_cas()
-    emit_compilator_properties(api, cas_digest, e2e_tests_list)
+    emit_compilator_properties(
+        api, {
+            'e2e_test_list':
+                read_test_list(api, builder_config, 'e2e'),
+            'e2e_non_hosted_test_list':
+                read_test_list(api, builder_config, 'e2e_non_hosted'),
+            'cas_digest':
+                api.devtools.archive_to_cas(),
+        })
   finally:
     if api.runtime.in_global_shutdown:
       # pylint: disable=lost-exception
@@ -95,11 +100,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
           status=common_pb.CANCELED, summary_markdown=CANCELLATION_MESSAGE)
 
 
-def emit_compilator_properties(api, cas_digest, e2e_tests_list):
-  properties = dict()
-  properties['cas_digest'] = cas_digest
-  properties['e2e_test_list'] = e2e_tests_list
-
+def emit_compilator_properties(api, properties):
   properties_step = api.step('compilator properties', [])
   properties_step.presentation.properties['compilator_properties'] = properties
   properties_step.presentation.logs['compilator_properties'] = api.json.dumps(
