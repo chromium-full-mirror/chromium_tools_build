@@ -3402,7 +3402,7 @@ class SkylabTest(AbstractSkylabTest, Test):
     for tr in self.test_runner_builds.get(
         self.api.m.test_utils.remove_retry_shards(suffix), []):
       # TODO(b/364830287): Change back to not status in [SUCCESS, FAILURE]
-      if not tr.status in [common_pb2.SUCCESS]:
+      if not tr.status in [common_pb2.SUCCESS] and tr.shard >= 0:
         retry_shards.append(tr.shard)
     self.api.m.skylab.schedule_suite(self, suffix, retry_shards=retry_shards)
 
@@ -3456,7 +3456,8 @@ class SkylabTest(AbstractSkylabTest, Test):
           self.test_runner_builds.get(suffix, []), key=lambda x: x.shard)
       for tr in test_runners:
         with self.api.m.step.nest(
-            f'shard: #{tr.shard}', status='last') as shard_step:
+            f'shard: #{tr.shard}' if tr.shard >= 0 else f'shard: #{tr.name}',
+            status='last') as shard_step:
           if tr.status == common_pb2.FAILURE:
             shard_step.status = self.api.m.step.FAILURE
           elif tr.status != common_pb2.SUCCESS:

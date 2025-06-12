@@ -383,10 +383,11 @@ class SkylabApi(recipe_api.RecipeApi):
         stderr=self.m.raw_io.output(),
         raise_on_failure=False,
         step_test_data=lambda: self.m.json.test_api.output({
-            f'{test.spec.name}-shard-0': {
+            f'{test.spec.name}-tfc-shard-0': {
                 'url':
                     'https://ci.chromium.org/p/chromeos/builders/test_runner/'
                     f'test_runner/b{test.ctp_build_ids[suffix]}0',
+                'shard': None,
                 'log_url':
                     'https://cros-test-analytics.appspot.com/p/chromeos/logs/'
                     'browse/chromeos-test-logs/test-runner/prod/abcd',
@@ -394,12 +395,9 @@ class SkylabApi(recipe_api.RecipeApi):
             }
         }))
     if (hasattr(step_result, 'json') and step_result.json.output):
-      for shard, test_runner in step_result.json.output.items():
+      for key, test_runner in step_result.json.output.items():
         if test_runner:
-          # TODO(b/406664261): We need a good way to handle both autotest
-          # wrapped tests and tast-first-class tests correctly.
-          shard = shard.removeprefix(f'{test.spec.name}-shard-')
-          tr = TestRunner.create(test, shard=int(shard), **test_runner)
+          tr = TestRunner.create(test, name=key, **test_runner)
           test.test_runner_builds.setdefault(suffix, []).append(tr)
 
   def gen_rdb_config(self, test, cros_img):

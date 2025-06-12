@@ -291,8 +291,9 @@ def GenTests(api):
       api.override_step_data(
           'basic_EVE_TOT (retry shards).read_ctp_response',
           api.m.json.output({
-              '2': {
+              'some test 2': {
                   'url': 'http://runner-link/904',
+                  'shard': 2,
                   'log_url': 'https://runner-log-link',
                   'status': common_pb2.Status.Name(common_pb2.SUCCESS),
               }

@@ -20,6 +20,7 @@ import zlib
 
 import requests
 from google.protobuf import json_format
+from collections import namedtuple
 
 # Buildbucket v2 API
 BUILDBUCKET_RPC = 'https://beefy-dot-cr-buildbucket.appspot.com/prpc'
@@ -28,6 +29,7 @@ BUILDBUCKET_SCHEDULE_ENDPOINT = (
     BUILDBUCKET_RPC + '/buildbucket.v2.Builds/ScheduleBuild')
 CONTAINER_METADATA_LOC = 'metadata/containers.jsonpb'
 
+Shard = namedtuple('Shard', ['tr_attempt', 'shard'])
 
 def get_oauth_token(json_creds=None):
   """Get an oauth2 token to access infra services."""
@@ -299,28 +301,48 @@ def read_ctp_results(opts):
     logging.error('Could not find results in build\'s output properties.')
     return
   wire_format = zlib.decompress(base64.b64decode(compressed_proto))
-  tagged_resp = execution_pb2.ExecuteResponses.FromString(
-      wire_format).tagged_responses
+  ctp_resp = execution_pb2.ExecuteResponses.FromString(wire_format)
+  logging.info("CTP Responses:\n%s", ctp_resp)
+  tagged_resp = ctp_resp.tagged_responses
 
   task_results = {}
   for name, exec_resp in tagged_resp.items():
     for consolidated_result in exec_resp.consolidated_results:
-      for attempt in consolidated_result.attempts:
+      if len(consolidated_result.attempts) == 0:
         if '-shard-' in name:  # Legacy autotest
+          shard = int(name.split('-shard-')[1])
+        else:
+          shard = None
+        task_results[name] = Shard(None, shard)
+        continue
+      for attempt in consolidated_result.attempts:
+        shard = None
+        if '-shard-' in name:  # Legacy autotest
+          shard = int(name.split('-shard-')[1])
           k = name
         else:
           k = attempt.name
         is_infra_failure = (_fix_test_runner_status(attempt) == 'INFRA_FAILURE')
-        if k not in task_results or (attempt.attempt > task_results[k].attempt
-                                     and not is_infra_failure):
-          task_results[k] = attempt
+        if k not in task_results or (attempt.attempt
+                                     > task_results[k].tr_attempt.attempt and
+                                     not is_infra_failure):
+          task_results[k] = Shard(attempt, shard)
 
   res = {}
   for k, task_result in task_results.items():
+    if not task_result.tr_attempt:
+      res[k] = {
+          'url': '',
+          'shard': task_result.shard,
+          'log_url': '',
+          'status': 'INFRA_FAILURE',
+      }
+      continue
     res[k] = {
-        'url': task_result.task_url,
-        'log_url': task_result.log_data.testhaus_url,
-        'status': _fix_test_runner_status(task_result),
+        'url': task_result.tr_attempt.task_url,
+        'shard': task_result.shard,
+        'log_url': task_result.tr_attempt.log_data.testhaus_url,
+        'status': _fix_test_runner_status(task_result.tr_attempt),
     }
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:

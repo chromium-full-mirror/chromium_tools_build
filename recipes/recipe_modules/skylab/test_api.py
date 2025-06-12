@@ -30,9 +30,10 @@ class SkylabTestApi(recipe_test_api.RecipeTestApi):
       ]
     res = {}
     for i, (build_id, status) in enumerate(runner_builds):
-      res[str(i)] = {
+      res[f'some test {i}'] = {
           'url': ('https://ci.chromium.org/p/chromeos/builders/test_runner/'
                   f'test_runner/b{build_id}'),
+          'shard': i,
           'log_url':
               ('https://cros-test-analytics.appspot.com/p/chromeos/logs/'
                'browse/chromeos-test-logs/test-runner/prod/2023-12-07/abcd'),
