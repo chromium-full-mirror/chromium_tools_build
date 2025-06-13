@@ -32,6 +32,7 @@ def libyuv_msvc(c):
   c.gn_args.append('is_clang=false')
   c.gn_args.append('use_lld=false')
   c.gn_args.append('use_custom_libcxx=false')
+  c.gn_args.append('use_llvm_libatomic=false')
 
 @CONFIG_CTX(includes=['chromium'])
 def libyuv_ios(c):

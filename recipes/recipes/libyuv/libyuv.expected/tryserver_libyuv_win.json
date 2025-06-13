@@ -287,7 +287,7 @@
       "--root=[CACHE]\\builder\\src",
       "gen",
       "[CACHE]\\builder\\src\\out\\Debug",
-      "--args=is_component_build=false is_clang=false use_lld=false use_custom_libcxx=false symbol_level=2 dcheck_always_on=true use_siso=true is_debug=true target_cpu=\"x86\""
+      "--args=is_component_build=false is_clang=false use_lld=false use_custom_libcxx=false use_llvm_libatomic=false symbol_level=2 dcheck_always_on=true use_siso=true is_debug=true target_cpu=\"x86\""
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
