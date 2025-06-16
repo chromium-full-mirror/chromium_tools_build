@@ -38,7 +38,6 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/time',
     'recipe_engine/url',
-    'reclient',
     'siso',
     'test_utils',
     'v8_tests',
@@ -52,7 +51,7 @@ PROPERTIES = {
             kind=ConfigGroup(
                 # Targets to try to isolate even after compilation errors.
                 always_isolate_targets=List(str),
-                # Whether to use reclient for compilation with the V8 module.
+                # Whether to use RBE for compilation with the V8 module.
                 use_remoteexec=Single(bool),
             ),
             default={},

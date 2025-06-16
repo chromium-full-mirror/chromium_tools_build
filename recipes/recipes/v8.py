@@ -31,7 +31,6 @@ DEPS = [
     'recipe_engine/time',
     'test_utils',
     'depot_tools/tryserver',
-    'reclient',
     'v8',
     'v8_tests',
 ]
@@ -912,11 +911,6 @@ def GenTests(api):
       api.post_process(MustRun, 'initialization.ensure_installed') +
       api.post_process(DropExpectation)
   )
-
-  # Test with legacy properties.
-  yield (api.v8.test('client.v8', 'V8 Foobar - builder', 'reclient') +
-         api.platform('linux', 64) + api.reclient.properties() +
-         api.post_process(DropExpectation))
 
   # Test ios configs.
   yield (

@@ -30,7 +30,6 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
-    'reclient',
     'siso',
     'v8',
 ]
@@ -82,10 +81,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     # Set up dependent modules.
     api.chromium.set_config(chromium_config, BUILD_CONFIG=build_config)
     api.gclient.set_config('node_ci')
-    if api.reclient.instance:
-      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
-    elif api.siso.enabled:
-      api.siso.enable_download_remoteexec_cfg_hook()
+    api.siso.enable_download_remoteexec_cfg_hook()
     revision = api.buildbucket.gitiles_commit.id or 'HEAD'
     if v8_tot:
       api.gclient.c.revisions['node-ci'] = 'HEAD'
@@ -109,8 +105,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
       if api.siso.enabled:
         api.chromium.c.gn_args.append('use_siso=true')
       api.chromium.run_gn(source_dir, build_dir, use_remoteexec=True)
-      raw_result = api.chromium.compile(
-          source_dir, build_dir, use_reclient=bool(api.reclient.instance))
+      raw_result = api.chromium.compile(source_dir, build_dir)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
@@ -326,10 +321,10 @@ def GenTests(api):
   )
 
   yield (test(
-      'node_ci_foobar_rel_reclient',
+      'node_ci_foobar_rel_rbe',
       platform='linux',
       v8_tot=True,
-      **{'$build/v8': {'use_remoteexec': True}}
-  ) + api.reclient.properties() + api.post_process(
-      Filter('initialization.bot_update', 'build.gn')
-  ))
+      **{'$build/v8': {
+          'use_remoteexec': True
+      }}) + api.siso.properties() +
+         api.post_process(Filter('initialization.bot_update', 'build.gn')))

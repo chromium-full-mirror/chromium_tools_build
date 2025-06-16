@@ -584,9 +584,7 @@ class V8Api(recipe_api.RecipeApi):
       revision = f'{branch}:{revision}'
     solution.revision = revision
 
-    if self.m.reclient.instance:
-      self.m.reclient.use_download_remoteexec_cfg_hook(solution)
-    elif self.m.siso.enabled:
+    if self.m.siso.enabled:
       self.m.siso.enable_download_remoteexec_cfg_hook()
 
     with self.m.context(cwd=self.checkout_root):
