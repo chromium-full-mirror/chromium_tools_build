@@ -599,110 +599,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         failure_summary_url=failure_summary_url,
         retcode=ninja_step_result.exc_result.retcode)
 
-  def _run_ninja_with_reclient(self,
-                               source_dir: Path,
-                               ninja_command,
-                               ninja_env,
-                               *,
-                               name=None,
-                               skip_log_upload=False,
-                               reclient_extra_env: dict | None = None,
-                               ninja_invocation_id=None,
-                               include_utr_instruction=False,
-                               builder_id: chromium.BuilderId | None = None,
-                               **kwargs):
-    """
-    Run ninja with reclient.
-    This function starts reclient, calls _run_ninja and stops reclient.
-
-    Args:
-      source_dir: The path to the top-level repo.
-      ninja_command: Command used for build.
-                     This is sent as part of log.
-                     (e.g. ['ninja', '-C', 'out/Release'])
-      ninja_env: Environment for ninja.
-      name: Name of the compile step.
-      skip_log_upload: When true skip log uploading.
-      reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
-      ninja_invocation_id: ID of the build invocation of the compile step.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
-      builder_id: ID for the builder compiling the targets.
-
-    Returns:
-      A named tuple with the fields
-        - failure_summary: string of the error that occurred during the step,
-        - retcode: return code of the step
-
-    Raises:
-      - InfraFailure when an unexpected reclient failure occurs
-    """
-    with self.m.reclient.process(
-        name,
-        ninja_command,
-        source_dir,
-        deps_cache_by_step=self.c.compile_py.reclient_deps_cache_by_step,
-        skip_log_upload=skip_log_upload,
-        skip_ninjalog_upload=True,
-        bootstrap_extra_env=reclient_extra_env,
-        invocation_id=ninja_invocation_id) as p:
-      ninja_result = self._run_ninja(
-          source_dir,
-          ninja_command,
-          name=name,
-          ninja_env=ninja_env,
-          skip_log_upload=skip_log_upload,
-          ninja_invocation_id=ninja_invocation_id,
-          include_utr_instruction=include_utr_instruction,
-          builder_id=builder_id,
-          **kwargs)
-      p.build_exit_status = ninja_result.retcode
-    return ninja_result
-
-  def _run_ninja_without_reclient(self,
-                                  source_dir,
-                                  ninja_command,
-                                  ninja_log_outdir,
-                                  *,
-                                  name=None,
-                                  ninja_env=None,
-                                  include_utr_instruction=False,
-                                  builder_id=None,
-                                  **kwargs):
-    """
-    Run ninja.
-
-    Args:
-      source_dir: The path to the top-level repo.
-      ninja_command: Command used for build.
-                     This is sent as part of log.
-                     (e.g. ['ninja', '-C', 'out/Release'])
-      ninja_log_outdir: Directory of ninja log. (e.g. "out/Release")
-      name: Name of compile step.
-      ninja_env: Environment for ninja.
-      include_utr_instruction: Whether or not to include UTR reproduction
-                               instructions
-      builder_id: ID for the builder compiling the targets.
-
-    Returns:
-      A named tuple with the fields
-        - failure_summary: string of the error that occurred during the step,
-        - retcode: return code of the step
-
-    Raises:
-      InfraFailure from compile step
-      StepFailure from compile confirm no-op step
-    """
-    ninja_result = self._run_ninja(
-        source_dir,
-        ninja_command=ninja_command,
-        name=name or 'compile',
-        ninja_env=ninja_env,
-        include_utr_instruction=include_utr_instruction,
-        builder_id=builder_id,
-        **kwargs)
-    return ninja_result
-
   def check_for_clang_warnings(self, build_dir):
     """
     Scan the compiler output (contained in build_dir / 'siso_output') for any
@@ -868,8 +764,6 @@ class ChromiumApi(recipe_api.RecipeApi):
               *,
               targets=None,
               name=None,
-              use_reclient=False,
-              reclient_extra_env: dict | None = None,
               include_utr_instruction: bool = False,
               builder_id: chromium.BuilderId | None = None,
               extra_ninja_args: list[str] | None = None,
@@ -885,8 +779,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         invokes ninja's behavior to build all targets that do not appear as an
         input to another target.
       name: Name of compile step.
-      use_reclient (bool): If True, use reclient as the remote compiler.
-      reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
       resource_usage_output_file (BasePath): Path to the file which will hold stats related
                                             to resource usage while compiling
       include_utr_instruction: Whether or not to include instructions using utr
@@ -928,9 +820,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.c.compile_py.build_args:
       command.extend(self.c.compile_py.build_args)
 
-    if use_reclient and not self.m.siso.enabled:
-      command += ['-j', self.m.reclient.jobs]
-
     if targets is not None and 'all' not in targets:
       command += targets
 
@@ -942,28 +831,15 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     with self.m.context(cwd=self.m.context.cwd or source_dir):
       ninja_invocation_id = self.m.uuid.random()
-      if use_reclient:
-        ninja_result = self._run_ninja_with_reclient(
-            source_dir,
-            ninja_command=command,
-            ninja_env=ninja_env,
-            name=name or 'compile',
-            reclient_extra_env=reclient_extra_env,
-            ninja_invocation_id=ninja_invocation_id,
-            include_utr_instruction=include_utr_instruction,
-            builder_id=builder_id,
-            **kwargs)
-      else:
-        ninja_result = self._run_ninja_without_reclient(
-            source_dir,
-            ninja_command=command,
-            ninja_env=ninja_env,
-            ninja_log_outdir=build_dir,
-            name=name or 'compile',
-            ninja_invocation_id=ninja_invocation_id,
-            include_utr_instruction=include_utr_instruction,
-            builder_id=builder_id,
-            **kwargs)
+      ninja_result = self._run_ninja(
+          source_dir,
+          name=name or 'compile',
+          ninja_command=command,
+          ninja_env=ninja_env,
+          ninja_invocation_id=ninja_invocation_id,
+          include_utr_instruction=include_utr_instruction,
+          builder_id=builder_id,
+          **kwargs)
 
     if ninja_result.retcode:
       footer = ''

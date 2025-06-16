@@ -19,7 +19,6 @@ DEPS = [
     'builder_group',
     'gn',
     'ninjalog',
-    'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/commit_position',

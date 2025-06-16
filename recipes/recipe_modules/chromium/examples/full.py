@@ -10,7 +10,6 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
-    'reclient',
     'repro_instructions',
     'siso',
     'depot_tools/bot_update',
@@ -26,7 +25,6 @@ DEPS = [
 
 
 def RunSteps(api):
-  use_reclient = api.properties.get('use_reclient', False)
   resource_usage_output_file = api.properties.get('resource_usage_output_file',
                                                   None)
 
@@ -74,7 +72,6 @@ def RunSteps(api):
         source_dir,
         build_dir,
         targets=['All'],
-        use_reclient=use_reclient,
         resource_usage_output_file=resource_usage_output_file,
         include_utr_instruction=True,
         builder_id=builder_id)
@@ -103,22 +100,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'reclient',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      api.properties(use_reclient=True),
-      api.reclient.properties(),
-      api.post_check(
-          lambda check, steps: check({'RBE_server_address', 'RBE_log_dir'}.
-                                     issubset(steps['compile'].env))),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'siso',
       api.chromium.ci_build(
           builder_group='fake-group',
@@ -126,12 +107,7 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      api.properties(use_reclient=True),
-      api.reclient.properties(),
       api.siso.properties(),
-      api.post_check(
-          lambda check, steps: check({'RBE_server_address', 'RBE_log_dir'}.
-                                     issubset(steps['compile'].env))),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -174,7 +150,6 @@ def GenTests(api):
       ),
       api.properties(resource_usage_output_file=api.path.cache_dir /
                      'resource_usage' / 'time_log.txt'),
-      api.reclient.properties(),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['--resource_usage_output_file']),
       api.post_process(post_process.DropExpectation),

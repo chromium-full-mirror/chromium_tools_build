@@ -128,10 +128,6 @@ def _compile(api, tests, source_dir, build_dir, builder_id):
   with api.chromium.guard_compile(build_dir):
     gn_args = api.chromium.mb_lookup(
         source_dir, builder_id, recursive=False, name='lookup_builder_gn_args')
-    args = api.gn.parse_gn_args(gn_args)
-    use_reclient = args.get('use_remoteexec') == 'true' and args.get(
-        'use_reclient') != 'false'
-
     gn_args = gn_args.splitlines()
     # Update gn args with symbol_level=2 is required to get debug symbols for rr
     gn_args.append('symbol_level = 2')
@@ -143,8 +139,7 @@ def _compile(api, tests, source_dir, build_dir, builder_id):
 
     targets = list(
         set(itertools.chain.from_iterable(t.compile_targets() for t in tests)))
-    raw_result = api.chromium.compile(
-        source_dir, build_dir, targets=targets, use_reclient=use_reclient)
+    raw_result = api.chromium.compile(source_dir, build_dir, targets=targets)
     return raw_result
 
 
