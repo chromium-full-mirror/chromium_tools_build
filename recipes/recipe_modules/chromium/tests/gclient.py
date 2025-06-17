@@ -134,26 +134,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'reclient_staging',
-      api.properties(apply_gclient_config='reclient_staging'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
-      'reclient_test',
-      api.properties(apply_gclient_config='reclient_test'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
-      'reclient_experimental',
-      api.properties(apply_gclient_config='reclient_experimental'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
-      'reclient_clang_scan_deps',
-      api.properties(apply_gclient_config='reclient_clang_scan_deps'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
       'siso_latest',
       api.properties(apply_gclient_config='siso_latest'),
       api.post_process(post_process.DropExpectation),

@@ -41,8 +41,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  yield from_config('reclient_deps_cache_by_step')
-
   yield from_config('gcc')
 
   yield from_config('trybot_flavor')

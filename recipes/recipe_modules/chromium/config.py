@@ -39,8 +39,6 @@ def BaseConfig(HOST_PLATFORM, DEFAULT_HOST_PLATFORM, HOST_ARCH, HOST_BITS,
           compiler=Single(str, required=False),
           mode=Single(str, required=False),
           prune_venv=Single(bool, empty_val=False, required=False),
-          reclient_deps_cache_by_step=Single(
-              bool, empty_val=False, required=False),
       ),
       gyp_env=ConfigGroup(
           # VR version is deprecated, use XR version going forward.
@@ -262,11 +260,6 @@ def mb_no_luci_auth(c):
 @config_ctx(group='builder')
 def ninja(c):
   pass
-
-
-@config_ctx()
-def reclient_deps_cache_by_step(c):
-  c.compile_py.reclient_deps_cache_by_step = True
 
 
 @config_ctx(group='builder')

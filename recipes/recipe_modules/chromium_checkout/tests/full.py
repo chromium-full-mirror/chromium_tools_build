@@ -19,7 +19,6 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
-    'reclient',
     'siso',
 ]
 
@@ -76,19 +75,6 @@ def GenTests(api):
           expected)
     check(gclient_config["solutions"][0]["custom_vars"]
           ["download_remoteexec_cfg"] == 'True')
-
-  yield api.test(
-      'set_rbe_instance',
-      api.platform('linux', 64),
-      api.buildbucket.generic_build(),
-      api.reclient.properties(instance='someinstance'),
-      api.post_check(verify_rbe_instance,
-                     'projects/someinstance/instances/default_instance'),
-      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(DropExpectation),
-  )
 
   yield api.test(
       'siso_enabled',

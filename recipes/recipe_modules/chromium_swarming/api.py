@@ -40,7 +40,6 @@ _BUILDER_GROUP_SWARMING_PRIORITIES = collections.defaultdict(
         'chromium.fyi': 35,
         'chromium.fuchsia.fyi': 35,
         'chromium.memory.fyi': 35,
-        'chromium.reclient.fyi': 35,
         'client.v8.chromium': 35,
         'client.v8.fyi': 35,
     },

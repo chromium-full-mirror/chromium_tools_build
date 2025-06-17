@@ -16,8 +16,6 @@ from . import tryserver_v8
 from . import tryserver_webrtc
 from . import migration_testing
 
-# Builders for the chromium.reclient.fyi builder group are all defined
-# src-side in infra/config/subprojects/reclient/reclient.star
 # Builders for the chromium.webrtc builder group are all defined
 # src-side in infra/config/subprojects/webrtc/webrtc.fyi.star
 # Builders for the chromium.webrtc.fyi builder group are all defined

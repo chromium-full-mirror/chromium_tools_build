@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from . import reclient
-
 from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 from RECIPE_MODULES.depot_tools.gclient import api as gclient_api
 from RECIPE_MODULES.depot_tools.gclient.config import (
@@ -481,43 +479,6 @@ def no_kaleidoscope(c):
 @CONFIG_CTX()
 def enable_soda_integration_tests(c):
   c.solutions[0].custom_vars['checkout_soda'] = 'True'
-
-
-# This configuration overrides the default reclient version
-# with the staging version.  This is used for testing new
-# reclient releases.
-@CONFIG_CTX()
-def reclient_staging(c):
-  cv = c.solutions[0].custom_vars
-  cv['reclient_version'] = reclient.STAGING_VERSION
-
-
-# This configuration overrides the default reclient version
-# with the test version.  This is used for testing new
-# reclient releases.
-@CONFIG_CTX()
-def reclient_test(c):
-  cv = c.solutions[0].custom_vars
-  cv['reclient_version'] = reclient.TEST_VERSION
-
-
-# This configuration overrides the default reclient version
-# with the experimental version. This is used for experiments
-# before they're released to reclient
-@CONFIG_CTX()
-def reclient_experimental(c):
-  cv = c.solutions[0].custom_vars
-  cv['reclient_package'] = 'infra_internal/rbe/client/'
-  cv['reclient_version'] = reclient.EXPERIMENTAL_VERSION
-
-
-# This configuration overrides the default reclient version
-# with a clang-scan-deps version.  This is used for doing builds
-# with the clang-scan-deps based input processor.
-@CONFIG_CTX()
-def reclient_clang_scan_deps(c):
-  cv = c.solutions[0].custom_vars
-  cv['reclient_version'] = reclient.CLANG_SCAN_DEPS_VERSION
 
 
 # This configuration overrides the default siso version

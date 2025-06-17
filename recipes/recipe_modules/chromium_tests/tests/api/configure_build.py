@@ -112,28 +112,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'reclient',
-      api.properties(**{
-          '$build/reclient': {
-              'instance': 'fake-reclient-instance',
-          },
-      }),
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'target-platform-incompatible-with-host-platform',
       api.platform('linux', 64),
       api.chromium.generic_build(

@@ -177,12 +177,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
     timeout = int(self.timeout) if self.timeout else timeout
 
-    # TODO: b/292501270 - Remove the Recilent part if all bots use DEPS hook
-    # to download the cfgs.
-    if self.m.reclient.instance:
-      self.m.reclient.use_download_remoteexec_cfg_hook(
-          self.m.gclient.c.solutions[0])
-    elif self.m.siso.enabled:
+    if self.m.siso.enabled:
       self.m.siso.enable_download_remoteexec_cfg_hook()
 
     gclient_config = self.m.gclient.c
