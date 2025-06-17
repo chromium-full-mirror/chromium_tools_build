@@ -251,6 +251,7 @@ def _verify_target_configs(
     if builder_config.targets_spec_directory:
       return success("builder is already using tests in starlark")
 
+    api.chromium.verify_config = False
     chromium_config = api.chromium.make_config(
         builder_config.chromium_config, **builder_config.chromium_config_kwargs)
     for c in builder_config.chromium_apply_config:
