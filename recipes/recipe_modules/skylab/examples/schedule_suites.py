@@ -327,7 +327,11 @@ def RunSteps(api, requests):
     for r in requests:
       step_results.append(
           api.skylab.schedule_suite(
-              r, '', retry_shards=api.properties.get('retry_shards')))
+              r,
+              '',
+              retry_shards=api.properties.get('retry_shards'),
+              runtime_excluded_tests=api.properties.get(
+                  'runtime_excluded_tests')))
       if cpt_id := r.ctp_build_ids.get(''):
         ctp_build_ids.append(cpt_id)
   for result in step_results:
@@ -813,6 +817,46 @@ def GenTests(api):
               'tast.disabled.DisabledTest',
               '--cros-test-names-exclude-from-file',
               'dynamically-disabled-tests.txt',
+              '--cros-test-max-in-shard',
+              '30',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--ash-chrome-gcs-path',
+              f'{LACROS_GCS_PATH}/skylab_runtime_deps.tar.zst',
+              '--ash-chrome-build-output-dir', 'out/Release'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tfc-retry',
+      api.properties(
+          requests=TFC_REQUESTS[:1],
+          runtime_excluded_tests=['tast.already.Passing']),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
+              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--cros-test-tags',
+              'group:mainline',
+              '--cros-test-tags-exclude',
+              'informational',
+              '--cros-test-names-exclude',
+              'tast.disabled.DisabledTest',
+              '--cros-test-names-exclude-from-file',
+              'dynamically-disabled-tests.txt',
+              '--cros-test-names-exclude',
+              'tast.already.Passing',
               '--cros-test-max-in-shard',
               '30',
           ]),

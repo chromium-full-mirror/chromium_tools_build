@@ -120,7 +120,11 @@ class SkylabApi(recipe_api.RecipeApi):
 
     return result
 
-  def schedule_suite(self, test, suffix, retry_shards=None):
+  def schedule_suite(self,
+                     test,
+                     suffix,
+                     retry_shards=None,
+                     runtime_excluded_tests=None):
     """Schedule a Skylab test by invoking the cros_test_platform(CTP) build.
 
     Translate each SkylabTest object into a CTP request and call Buildbucket
@@ -130,6 +134,8 @@ class SkylabApi(recipe_api.RecipeApi):
     * test (step.SkylabTest): a steps.SkylabTest to schedule.
     * suffix: A string suffix.
     * retry_shards (list[str]): the index for shards to retry. None by default.
+    * runtime_excluded_tests (list[str]): additional tests to be excluded. Only
+      for tag criteria based testing.
 
     Returns the StepResult of the skylab.py resource script invocation.
     """
@@ -314,6 +320,10 @@ class SkylabApi(recipe_api.RecipeApi):
           cmd.extend(['--cros-test-names-from-file', t])
         for t in test.spec.cros_test_names_exclude_from_file:
           cmd.extend(['--cros-test-names-exclude-from-file', t])
+
+        if runtime_excluded_tests:
+          for t in runtime_excluded_tests:
+            cmd.extend(['--cros-test-names-exclude', t])
 
         if test.spec.cros_test_max_in_shard > 0:
           cmd.extend(

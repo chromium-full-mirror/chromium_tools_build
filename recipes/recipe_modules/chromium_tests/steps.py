@@ -3340,6 +3340,14 @@ class SkylabTest(AbstractSkylabTest, Test):
     return bool(self.spec.tast_expr)
 
   @property
+  def is_tag_criteria_test(self) -> bool:
+    return bool(self.spec.cros_test_tags or self.spec.cros_test_tags_exclude or
+                self.spec.cros_test_names or
+                self.spec.cros_test_names_exclude or
+                self.spec.cros_test_names_from_file or
+                self.spec.cros_test_names_exclude_from_file)
+
+  @property
   def is_GPU_test(self) -> bool:
     return self.spec.autotest_name == 'chromium_Graphics'
 
@@ -3399,12 +3407,25 @@ class SkylabTest(AbstractSkylabTest, Test):
 
   def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     retry_shards = []
-    for tr in self.test_runner_builds.get(
-        self.api.m.test_utils.remove_retry_shards(suffix), []):
-      # TODO(b/364830287): Change back to not status in [SUCCESS, FAILURE]
-      if not tr.status in [common_pb2.SUCCESS] and tr.shard >= 0:
-        retry_shards.append(tr.shard)
-    self.api.m.skylab.schedule_suite(self, suffix, retry_shards=retry_shards)
+    runtime_excluded_tests = []
+    if self.is_tag_criteria_test:
+      rdb_results = self._rdb_results.get(
+          self.api.m.test_utils.remove_retry_shards(suffix))
+      if rdb_results:
+        for individual_test in rdb_results.expected_tests:
+          runtime_excluded_tests.append(
+              individual_test.test_name.removeprefix(self.test_id_prefix or ''))
+    else:
+      for tr in self.test_runner_builds.get(
+          self.api.m.test_utils.remove_retry_shards(suffix), []):
+        # TODO(b/364830287): Change back to not status in [SUCCESS, FAILURE]
+        if not tr.status in [common_pb2.SUCCESS] and tr.shard >= 0:
+          retry_shards.append(tr.shard)
+    self.api.m.skylab.schedule_suite(
+        self,
+        suffix,
+        retry_shards=retry_shards,
+        runtime_excluded_tests=runtime_excluded_tests)
 
     self._add_instructions(suffix, include_utr_instruction)
 

@@ -261,6 +261,7 @@ class RDBPerSuiteResults:
   unexpected_failing_tests = attrib(set_[RDBPerIndividualTestResults])
   # unexpected_skipped_tests should be a subset of unexpected_failing_tests.
   unexpected_skipped_tests = attrib(set_[RDBPerIndividualTestResults])
+  expected_tests = attrib(set_[RDBPerIndividualTestResults])
   invalid = attrib(bool, default=False)
   # A mapping from test name str to its |RDBPerIndividualTestResults| object
   # for tests without any expected results.
@@ -328,6 +329,7 @@ class RDBPerSuiteResults:
     unexpected_failing_tests = set()
     unexpected_passing_tests = set()
     unexpected_skipped_tests = set()
+    expected_tests = set()
     individual_unexpected_test_by_test_name = {}
     all_tests = []
     for test_id, test_results in results_by_test_id.items():
@@ -346,6 +348,7 @@ class RDBPerSuiteResults:
       # purposes of recipe retry/pass/fail decisions.
       if allow_flaky_passes:
         if any(tr.expected for tr in test_results):
+          expected_tests.add(individual_test)
           continue
       else:
         if any(not tr.expected for tr in test_results):
@@ -354,6 +357,7 @@ class RDBPerSuiteResults:
             unexpected_skipped_tests.add(individual_test)
           continue
       if all(tr.expected for tr in test_results):
+        expected_tests.add(individual_test)
         continue
       individual_unexpected_test_by_test_name[
           individual_test.test_name] = individual_test
@@ -376,6 +380,7 @@ class RDBPerSuiteResults:
         unexpected_passing_tests=unexpected_passing_tests,
         unexpected_failing_tests=unexpected_failing_tests,
         unexpected_skipped_tests=unexpected_skipped_tests,
+        expected_tests=expected_tests,
         invalid=invalid,
         individual_unexpected_test_by_test_name=(
             individual_unexpected_test_by_test_name),

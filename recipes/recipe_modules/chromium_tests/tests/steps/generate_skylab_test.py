@@ -80,7 +80,9 @@ def GenTests(api):
                   ci_only_tests=False,
                   tester='',
                   shards=1,
-                  retries=0):
+                  retries=0,
+                  cros_test_tags=None,
+                  cros_test_max_in_shards=None):
     builders = {
         builder_group: {
             builder:
@@ -136,6 +138,11 @@ def GenTests(api):
         'shards': shards,
         'retries': retries,
     }
+
+    if cros_test_tags:
+      test_spec['cros_test_tags'] = cros_test_tags
+    if cros_test_max_in_shards:
+      test_spec['cros_test_max_in_shards'] = cros_test_max_in_shards
 
     steps = sum([
         build_gen,
@@ -315,6 +322,68 @@ def GenTests(api):
           post_process.StepCommandContains,
           'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
           ['--shard-indexes', '2']),
+      # Only retry the infra failed test runner build 903 and pass.
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),
+      api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #2'),
+      api.post_process(post_process.StepSuccess,
+                       'basic_EVE_TOT (retry shards).shard: #2'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'some shards infra failure and retry succeeded tfc',
+      boilerplate(
+          'chrome-test-builds',
+          cros_test_tags=['group:mainline', 'dep:lacros'],
+          cros_test_max_in_shards=20,
+          retries=1),
+      api.skylab.mock_wait_on_suites(
+          'basic_EVE_TOT',
+          3,
+          runner_builds=[(901, common_pb2.SUCCESS), (902, common_pb2.SUCCESS),
+                         (903, common_pb2.INFRA_FAILURE)]),
+      api.override_step_data(
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
+          api.m.json.output({
+              'ctp_build_id': '889901',
+          })),
+      api.override_step_data(
+          'basic_EVE_TOT (retry shards).read_ctp_response',
+          api.m.json.output({
+              'some test 2': {
+                  'url': 'http://runner-link/904',
+                  'shard': 2,
+                  'log_url': 'https://runner-log-link',
+                  'status': common_pb2.Status.Name(common_pb2.SUCCESS),
+              }
+          })),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT',
+                  passing_tests=['Test.One', 'Test.Three'],
+                  failing_tests=['Test.Four'],
+              ))),
+      api.override_step_data(
+          'basic_EVE_TOT results (2)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.Two', 'Test.Four']))),
+      # Already passing tests are excluded.
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--cros-test-names-exclude',
+              'Test.One',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule', [
+              '--cros-test-names-exclude',
+              'Test.Three',
+          ]),
       # Only retry the infra failed test runner build 903 and pass.
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),

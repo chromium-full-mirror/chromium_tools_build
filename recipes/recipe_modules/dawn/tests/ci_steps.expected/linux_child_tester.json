@@ -1348,7 +1348,7 @@
     "cmd": [],
     "name": "$debug - all results",
     "~followup_annotations": [
-      "@@@STEP_TEXT@1.21 KB@@@",
+      "@@@STEP_TEXT@1.22 KB@@@",
       "@@@STEP_LOG_LINE@serialized results@{@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
@@ -1365,7 +1365,7 @@
       "@@@STEP_LOG_LINE@serialized results@  \"unexpected_failing_suites\": []@@@",
       "@@@STEP_LOG_LINE@serialized results@}@@@",
       "@@@STEP_LOG_END@serialized results@@@",
-      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.21 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.22 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
       "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for dawn_end2end_tests: 1.02 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
