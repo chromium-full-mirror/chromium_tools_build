@@ -789,9 +789,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     targets = sorted(set(targets))
 
     isolate_targets = [t.isolate_target for t in tests if t.isolate_target]
-    generated_isolates = self.gn_gen(properties, builder_id, builder_config,
-                                     preserve_gn_args, source_dir, build_dir,
-                                     builder_recipe, is_cog, isolate_targets)
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
+      generated_isolates = self.gn_gen(properties, builder_id, builder_config,
+                                       preserve_gn_args, source_dir, build_dir,
+                                       builder_recipe, is_cog, isolate_targets)
 
     # Some tests don't require anything to be compiled.
     if not targets:

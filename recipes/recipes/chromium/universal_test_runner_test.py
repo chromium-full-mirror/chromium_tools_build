@@ -85,7 +85,6 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
     test_names = ', '.join(builder_suites.test_names)
     step_name = (
         f'{builder_suites.bucket}:{builder_suites.builder_name} - {test_names}')
-    build_dir = api.chromium_checkout.source_dir / builder_suites.build_dir
     cmd = [
         'vpython3',
         api.chromium_checkout.source_dir.joinpath('tools', 'utr', 'run.py'),
@@ -93,13 +92,16 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
         builder_suites.bucket,
         '--builder',
         builder_suites.builder_name,
-        '--build-dir',
-        build_dir,
         '--recipe-path',
         bundle_dir,
         '--force',
         '-vv',
     ]
+    if builder_suites.build_dir:
+      cmd.extend([
+          '--build-dir',
+          api.chromium_checkout.source_dir / builder_suites.build_dir,
+      ])
     for test_name in builder_suites.test_names:
       cmd.extend(['--test', test_name])
     cmd.append('compile-and-test')
@@ -323,10 +325,10 @@ def GenTests(api: RecipeTestApi):
                          '[CACHE]/builder/src/tools/utr/run.py', \
                          '--bucket', 'fake-bucket',
                          '--builder', 'fake-builder',
-                         '--build-dir', '[CACHE]/builder/src/fake/build',
                          '--recipe-path', '[CLEANUP]/recipe_bundle_tmp_1',
                          '--force',
                          '-vv',
+                         '--build-dir', '[CACHE]/builder/src/fake/build',
                          '--test', 'testA',
                          '--test', 'testB',
                          'compile-and-test',
