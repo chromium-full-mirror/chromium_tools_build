@@ -39,7 +39,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains, 'run ssci tool to merge SBOMs', [
               "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
-              "-ssci-version", "vresolved-instance_id-of-latest----------",
+              "-ssci-version", "vresolved-instance_id-of-prod------------",
               "-output-file", "[CLEANUP]/tmp_tmp_1/spdx-out.json", "-product",
               "merge..merged", "-product-version", "2d7251", "-platform",
               "linux_intel64", "-document-paths", "path1/path.spdx.json",

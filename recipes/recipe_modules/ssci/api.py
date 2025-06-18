@@ -47,16 +47,16 @@ class SsciAPI(recipe_api.RecipeApi):
     self.bqupload = CIPDPkg(
         ensure_version="latest", pkg_path="infra/tools/bqupload/${platform}")
     self.depbot = CIPDPkg(
-        ensure_version=props.depbot_version or "latest",
+        ensure_version=props.depbot_version or "prod",
         pkg_path="infra_internal/tools/security/depbot/${platform}")
     self.partybot = CIPDPkg(
-        ensure_version=props.partybot_version or "latest",
+        ensure_version=props.partybot_version or "prod",
         pkg_path="infra_internal/tools/partybot")
     self.ssci_tool = CIPDPkg(
-        ensure_version=props.ssci_version or "latest",
+        ensure_version=props.ssci_version or "prod",
         pkg_path="infra_internal/tools/ssci")
     self.ssci_sbom = CIPDPkg(
-        ensure_version=props.ssci_sbom_version or "latest",
+        ensure_version=props.ssci_sbom_version or "prod",
         pkg_path="infra_internal/tools/security/ssci_sbom/${platform}")
     self.sbomdiff = CIPDPkg(
         ensure_version=props.sbomdiff_version or "latest",
