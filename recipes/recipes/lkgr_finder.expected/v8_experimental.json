@@ -419,6 +419,55 @@
     "name": "git clean"
   },
   {
+    "cmd": [
+      "git",
+      "fetch",
+      "origin",
+      "lkgr",
+      "--progress"
+    ],
+    "cwd": "[CACHE]/builder",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git fetch (2)"
+  },
+  {
+    "cmd": [
+      "git",
+      "log",
+      "origin",
+      "lkgr",
+      "--format=%H",
+      "-n1"
+    ],
+    "cwd": "[CACHE]/builder",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git log"
+  },
+  {
     "cmd": [],
     "name": "fake lkgr push"
   },

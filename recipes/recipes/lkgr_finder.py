@@ -163,6 +163,9 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
       ref=src_ref,
   )
 
+  api.git('fetch', 'origin', 'lkgr', '--progress')
+  api.git('log', 'origin', 'lkgr', '--format=%H', '-n1')
+
   new_lkgr = step_result.raw_io.output_texts['lkgr_hash']
   if new_lkgr and new_lkgr != current_lkgr:
     with api.context(cwd=checkout_dir / 'workdir'):
