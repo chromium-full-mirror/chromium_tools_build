@@ -20,6 +20,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'code_coverage',
+    'depot_tools/gclient',
     'profiles',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -67,6 +68,9 @@ def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
+
+  if api.reclient.instance:
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
