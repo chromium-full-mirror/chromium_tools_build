@@ -3408,7 +3408,14 @@ class SkylabTest(AbstractSkylabTest, Test):
   def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
     retry_shards = []
     runtime_excluded_tests = []
+    runtime_override_tests = []
     if self.is_tag_criteria_test:
+      if suffix == 'without patch':
+        valid, failures = self.with_patch_failures_including_retry()
+        assert valid, "Invalid with patch result should not trigger without patch"
+        runtime_override_tests = [
+            t.removeprefix(self.test_id_prefix or '') for t in failures
+        ]
       rdb_results = self._rdb_results.get(
           self.api.m.test_utils.remove_retry_shards(suffix))
       if rdb_results:
@@ -3425,6 +3432,7 @@ class SkylabTest(AbstractSkylabTest, Test):
         self,
         suffix,
         retry_shards=retry_shards,
+        runtime_override_tests=runtime_override_tests,
         runtime_excluded_tests=runtime_excluded_tests)
 
     self._add_instructions(suffix, include_utr_instruction)

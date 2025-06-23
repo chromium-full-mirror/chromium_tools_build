@@ -330,6 +330,8 @@ def RunSteps(api, requests):
               r,
               '',
               retry_shards=api.properties.get('retry_shards'),
+              runtime_override_tests=api.properties.get(
+                  'runtime_override_tests'),
               runtime_excluded_tests=api.properties.get(
                   'runtime_excluded_tests')))
       if cpt_id := r.ctp_build_ids.get(''):
@@ -857,6 +859,38 @@ def GenTests(api):
               'dynamically-disabled-tests.txt',
               '--cros-test-names-exclude',
               'tast.already.Passing',
+              '--cros-test-max-in-shard',
+              '30',
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--ash-chrome-gcs-path',
+              f'{LACROS_GCS_PATH}/skylab_runtime_deps.tar.zst',
+              '--ash-chrome-build-output-dir', 'out/Release'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tfc-retry-without-patch',
+      api.properties(
+          requests=TFC_REQUESTS[:1],
+          runtime_override_tests=['tast.already.Failing']),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
+              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
+          ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--cros-test-names',
+              'tast.already.Failing',
               '--cros-test-max-in-shard',
               '30',
           ]),

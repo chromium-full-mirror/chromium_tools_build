@@ -82,7 +82,8 @@ def GenTests(api):
                   shards=1,
                   retries=0,
                   cros_test_tags=None,
-                  cros_test_max_in_shards=None):
+                  cros_test_max_in_shards=None,
+                  has_retry_without_patch=False):
     builders = {
         builder_group: {
             builder:
@@ -174,6 +175,11 @@ def GenTests(api):
           'prepare skylab tests.'
           'collect runtime deps for %s.read isolate file' % target_name,
           api.file.read_text(isolate_content))
+      if has_retry_without_patch:
+        steps += api.step_data(
+            'prepare skylab tests (2).'
+            'collect runtime deps for %s.read isolate file' % target_name,
+            api.file.read_text(isolate_content))
     return steps
 
   def _check_test_args(check, step_odict, step, argument, value):
@@ -614,6 +620,56 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
+
+  yield api.test(
+      'retry_without_patch tfc',
+      boilerplate(
+          'chrome-test-builds',
+          is_ci_build=False,
+          cros_test_tags=['group:mainline', 'dep:lacros'],
+          cros_test_max_in_shards=20,
+          retries=1,
+          has_retry_without_patch=True),
+      api.skylab.mock_wait_on_suites(
+          'basic_EVE_TOT (with patch)',
+          3,
+          runner_builds=[(901, common_pb2.SUCCESS), (902, common_pb2.SUCCESS),
+                         (903, common_pb2.FAILURE)]),
+      api.skylab.mock_wait_on_suites(
+          'basic_EVE_TOT (retry shards with patch)',
+          1,
+          runner_builds=[(909, common_pb2.FAILURE)]),
+      api.override_step_data(
+          'test_pre_run (retry shards with patch).basic_EVE_TOT (retry shards with patch).schedule',
+          api.m.json.output({
+              'ctp_build_id': '889901',
+          })),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT',
+                  passing_tests=['Test.One', 'Test.Three'],
+                  failing_tests=['Test.Two'],
+              ))),
+      api.override_step_data(
+          'basic_EVE_TOT results (2)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', failing_tests=['Test.Two']))),
+      # Retry without patch.
+      api.post_process(post_process.MustRun, 'test_pre_run (without patch)'),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT (without patch)', 1),
+      api.post_process(post_process.DropExpectation),
+      # Already failing tests leads to builder success.
+      api.override_step_data(
+          'basic_EVE_TOT results (3)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', failing_tests=['Test.Two']))),
+      api.expect_status('SUCCESS'),
+  )
+
 
   yield api.test(
       'trigger tester',

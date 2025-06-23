@@ -124,6 +124,7 @@ class SkylabApi(recipe_api.RecipeApi):
                      test,
                      suffix,
                      retry_shards=None,
+                     runtime_override_tests=None,
                      runtime_excluded_tests=None):
     """Schedule a Skylab test by invoking the cros_test_platform(CTP) build.
 
@@ -134,6 +135,8 @@ class SkylabApi(recipe_api.RecipeApi):
     * test (step.SkylabTest): a steps.SkylabTest to schedule.
     * suffix: A string suffix.
     * retry_shards (list[str]): the index for shards to retry. None by default.
+    * runtime_override_tests (list[str]): ignore defined tags, run these tests
+      instead.
     * runtime_excluded_tests (list[str]): additional tests to be excluded. Only
       for tag criteria based testing.
 
@@ -308,18 +311,22 @@ class SkylabApi(recipe_api.RecipeApi):
         cmd.extend(['--autotest-name', test.spec.autotest_name])
         cmd.extend(['--total-shards', test.spec.shards])
       else:
-        for tag in test.spec.cros_test_tags:
-          cmd.extend(['--cros-test-tags', tag])
-        for tag in test.spec.cros_test_tags_exclude:
-          cmd.extend(['--cros-test-tags-exclude', tag])
-        for t in test.spec.cros_test_names:
-          cmd.extend(['--cros-test-names', t])
-        for t in test.spec.cros_test_names_exclude:
-          cmd.extend(['--cros-test-names-exclude', t])
-        for t in test.spec.cros_test_names_from_file:
-          cmd.extend(['--cros-test-names-from-file', t])
-        for t in test.spec.cros_test_names_exclude_from_file:
-          cmd.extend(['--cros-test-names-exclude-from-file', t])
+        if runtime_override_tests:
+          for t in runtime_override_tests:
+            cmd.extend(['--cros-test-names', t])
+        else:
+          for tag in test.spec.cros_test_tags:
+            cmd.extend(['--cros-test-tags', tag])
+          for tag in test.spec.cros_test_tags_exclude:
+            cmd.extend(['--cros-test-tags-exclude', tag])
+          for t in test.spec.cros_test_names:
+            cmd.extend(['--cros-test-names', t])
+          for t in test.spec.cros_test_names_exclude:
+            cmd.extend(['--cros-test-names-exclude', t])
+          for t in test.spec.cros_test_names_from_file:
+            cmd.extend(['--cros-test-names-from-file', t])
+          for t in test.spec.cros_test_names_exclude_from_file:
+            cmd.extend(['--cros-test-names-exclude-from-file', t])
 
         if runtime_excluded_tests:
           for t in runtime_excluded_tests:
