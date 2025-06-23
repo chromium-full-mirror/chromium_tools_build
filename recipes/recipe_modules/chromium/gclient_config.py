@@ -69,11 +69,6 @@ def chromium(c):
   s = c.solutions[0]
   s.custom_deps = mirror_only(c, {})
 
-@CONFIG_CTX(includes=['chromium'])
-def chromium_lkgr(c):
-  s = c.solutions[0]
-  s.revision = 'origin/lkgr'
-
 @CONFIG_CTX(includes=['chromium_bare'])
 def android_bare(c):
   # We inherit from chromium_bare to get the got_revision mapping.

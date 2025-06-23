@@ -20,7 +20,6 @@ TEST_CONFIGS = [
     'chrome_internal',
     'chromedriver',
     'chromium',
-    'chromium_lkgr',
     'chromium_perf',
     'chromium_skia',
     'chromium_webrtc',

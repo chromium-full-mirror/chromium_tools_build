@@ -17,7 +17,6 @@ SPEC = {
             chromium_config='chromium',
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_apply_config=['mb'],
@@ -32,7 +31,6 @@ SPEC = {
             chromium_config='chromium',
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_apply_config=['mb'],
@@ -49,7 +47,6 @@ SPEC = {
             gclient_config='chromium',
             gclient_apply_config=[
                 'android',
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
@@ -137,7 +134,6 @@ SPEC = {
             chromium_apply_config=['mb'],
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
@@ -155,7 +151,6 @@ SPEC = {
             ],
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
@@ -173,7 +168,6 @@ SPEC = {
             ],
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
@@ -191,7 +185,6 @@ SPEC = {
             ],
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
@@ -209,7 +202,6 @@ SPEC = {
             ],
             gclient_config='chromium',
             gclient_apply_config=[
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
@@ -226,7 +218,6 @@ SPEC = {
             gclient_config='chromium',
             gclient_apply_config=[
                 'android',
-                'chromium_lkgr',
                 'show_v8_revision',
             ],
             chromium_config_kwargs={
