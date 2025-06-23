@@ -77,7 +77,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
           api.chromium_checkout.source_dir.joinpath('third_party',
                                                     'depot_tools', 'infra_lib',
                                                     'telemetry'),
-          '--enable',
+          '--bot-enable',
       ])
 
   failed_invocations = 0
