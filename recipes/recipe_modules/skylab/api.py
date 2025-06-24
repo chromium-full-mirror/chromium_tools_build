@@ -124,6 +124,7 @@ class SkylabApi(recipe_api.RecipeApi):
                      test,
                      suffix,
                      retry_shards=None,
+                     runtime_no_retry=False,
                      runtime_override_tests=None,
                      runtime_excluded_tests=None):
     """Schedule a Skylab test by invoking the cros_test_platform(CTP) build.
@@ -135,6 +136,8 @@ class SkylabApi(recipe_api.RecipeApi):
     * test (step.SkylabTest): a steps.SkylabTest to schedule.
     * suffix: A string suffix.
     * retry_shards (list[str]): the index for shards to retry. None by default.
+    * runtime_no_retry (bool): whether to disable retry, regardless of test's
+      retry settings.
     * runtime_override_tests (list[str]): ignore defined tags, run these tests
       instead.
     * runtime_excluded_tests (list[str]): additional tests to be excluded. Only
@@ -241,7 +244,7 @@ class SkylabApi(recipe_api.RecipeApi):
           test_args.append(('test_args_b64',
                             _base64_encode_str(' '.join(test.spec.test_args))))
 
-      if test.spec.shard_level_retries_on_ctp >= 0:
+      if test.spec.shard_level_retries_on_ctp >= 0 and not runtime_no_retry:
         cmd.extend(['--retry', str(test.spec.shard_level_retries_on_ctp)])
 
       lacros_gcs_path = os.path.join(test.lacros_gcs_path,

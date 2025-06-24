@@ -330,6 +330,7 @@ def RunSteps(api, requests):
               r,
               '',
               retry_shards=api.properties.get('retry_shards'),
+              runtime_no_retry=api.properties.get('runtime_no_retry') or False,
               runtime_override_tests=api.properties.get(
                   'runtime_override_tests'),
               runtime_excluded_tests=api.properties.get(
@@ -876,6 +877,7 @@ def GenTests(api):
       'tfc-retry-without-patch',
       api.properties(
           requests=TFC_REQUESTS[:1],
+          runtime_no_retry=True,
           runtime_override_tests=['tast.already.Failing']),
       api.post_process(
           post_process.StepCommandContains,
@@ -900,6 +902,11 @@ def GenTests(api):
               '--ash-chrome-gcs-path',
               f'{LACROS_GCS_PATH}/skylab_runtime_deps.tar.zst',
               '--ash-chrome-build-output-dir', 'out/Release'
+          ]),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
+              '--retry',
           ]),
       api.post_process(post_process.DropExpectation),
   )
