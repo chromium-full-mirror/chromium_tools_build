@@ -518,10 +518,9 @@ def RunSteps(api,
 
         if (api.platform.is_win or api.platform.is_mac) and debug:
           # TODO(crbug.com/42251089): GLSL is ~7x slower on Windows debug builds
-          # TODO(crbug.com/362783220): IR validation is very slow on Windows (and only enabled in debug)
           e2e_test_formats = 'wgsl,spvasm,hlsl'
         else:
-          e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl,hlsl-ir'
+          e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl'
         api.step(
             'Run Tint end-to-end tests', [
                 './tools/run', 'tests', '--tint', tint_exe, '--verbose',
