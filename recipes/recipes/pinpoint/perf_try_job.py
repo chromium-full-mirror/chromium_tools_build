@@ -130,6 +130,18 @@ def _generate_invoker_cmd(api, properties, gerrit_change):
   return cmd
 
 
+def _generate_poller_cmd(api, properties, job_id):
+  cmd = ['vpython3', api.resource('pinpoint_try_job_poller.py')]
+
+  cmd.extend(['--job_id', job_id])
+  token = _generate_access_token(api)
+  cmd.extend(['--token', api.raw_io.input_text(token)])
+  if properties.use_staging:
+    cmd.extend(['--use_staging'])
+
+  return cmd
+
+
 def RunSteps(api, properties):
   api.tryserver.require_is_tryserver()
   with api.chromium.chromium_layout():
@@ -149,6 +161,7 @@ def RunSteps(api, properties):
           status=common_pb2.SUCCESS,
           summary_markdown=('Gerrit result shows no file is changed.'))
 
+    # 1. Use static map to decide whether we need to trigger the try job.
     static_map = _load_static_map(api)
     if not _should_run_perf_on_cq(
         file_names=files,
@@ -160,28 +173,59 @@ def RunSteps(api, properties):
           summary_markdown=(
               'No benchmark is likely to be affected by the files in the CL.'))
 
+    # 2. Trigger a Pinpoint pairwise try job
+    #    Expect the invoke command to return:
+    #    {
+    #      request_url: the url sent to pinpoint.
+    #      params: the params used to create the url.
+    #      ressponse: the pinpoint response json with 'jobId' and 'jobUrl'.
+    #    }
     cmd = _generate_invoker_cmd(api, properties, gerrit_change)
 
     invoke_cmd_result = api.step(
         f'Trigger Performance Test {properties.benchmark}',
         cmd,
         stdout=api.json.output())
-    # invoke command returns:
-    # {
-    #   request_url: the url sent to pinpoint.
-    #   params: the params used to create the url.
-    #   ressponse: the pinpoint response json with 'jobId' and 'jobUrl'.
-    # }
-    if invoke_cmd_result.stdout:
-      url = invoke_cmd_result.stdout.get('response', {}).get('jobUrl')
-      report_step_result = api.step('Try job triggered.', None)
-      report_step_result.presentation.links['Pinpoint job'] = url
+
+    if not invoke_cmd_result.stdout:
       return result_pb2.RawResult(
-          status=common_pb2.SUCCESS,
-          summary_markdown=(f'Pinpoint job created: {url}'))
-    return result_pb2.RawResult(
         status=common_pb2.FAILURE,
         summary_markdown=('Failed to trigger Pinpoint try job.'))
+
+    # 3. Print the Pinpoint try job url.
+    job_id = invoke_cmd_result.stdout.get('response', {}).get('jobId')
+    url = invoke_cmd_result.stdout.get('response', {}).get('jobUrl')
+    report_step_result = api.step('Try job triggered.', None)
+    report_step_result.presentation.links['Pinpoint job'] = url
+
+    # 4. Trigger poller script to wait for Pinpoint try job to finish,
+    #    Expect the poller to return:
+    #    {
+    #      job_id: the pinpoint job id
+    #      status: the job status, which can be one of:
+    #       [Queued, Running, Completed, Failed, Cancelled]
+    #      error: the error message
+    #    }
+    #    Error field will present when Pinpoint cannot finish as expected,
+    #    e.g., service is down, or it takes expected long.
+    poller_cmd = _generate_poller_cmd(api, properties, job_id)
+    poller_cmd_result = api.step(
+        f'Waiting Pinpoint job {job_id} to finish. (Timeout max 2hr)',
+        poller_cmd,
+        timeout=7300,  # the script itself should timeout in 7200 (2 hr)
+        stdout=api.json.output())
+    if not poller_cmd_result.stdout:
+      return result_pb2.RawResult(
+          status=common_pb2.FAILURE,
+          summary_markdown=('Failed to get Pinpoint job status.'))
+    status = poller_cmd_result.stdout.get('status', 'Unknown')
+    if poller_cmd_result.stdout.get('status') != 'Completed':
+      return result_pb2.RawResult(
+          status=common_pb2.FAILURE,
+          summary_markdown=(f'Pinpoint job did not finish. Status: {status}'))
+    api.step('Pinpoint try job finished.', None)
+    # (TODO) 5. Send get analysis request to CABE by the job id.
+
 
 
 def GenTests(api):
@@ -284,7 +328,7 @@ def GenTests(api):
   }]
   ###################################################################
   yield api.test(
-      'trigger',
+      'trigger_complete',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
@@ -292,11 +336,20 @@ def GenTests(api):
           api.json.output(mock_gerrit_cl_info)),
       api.step_data(
           'Trigger Performance Test fake-benchmark',
-          stdout=api.json.output({'response': {
-              'jobUrl': 'fake-pinpoint-link'
-          }})),
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
       api.post_process(
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
@@ -307,8 +360,36 @@ def GenTests(api):
                        'Pinpoint job', 'fake-pinpoint-link'),
       api.post_process(post_process.DropExpectation),
   )
+
   yield api.test(
-      'trigger_staging',
+      'trigger_complete_job_failed',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Failed'})),
+      api.post_process(post_process.MustRun,
+                       'Trigger Performance Test fake-benchmark'),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.MustRun, 'Try job triggered.'),
+      api.post_process(post_process.DoesNotRun, 'Pinpoint try job finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+  yield api.test(
+      'trigger_staging_complete',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties_staging),  # with use_staging
       api.override_step_data(
@@ -316,11 +397,20 @@ def GenTests(api):
           api.json.output(mock_gerrit_cl_info)),
       api.step_data(
           'Trigger Performance Test fake-benchmark',
-          stdout=api.json.output({'response': {
-              'jobUrl': 'fake-pinpoint-link'
-          }})),
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
       api.post_process(
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
@@ -332,7 +422,7 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'trigger_no_user',
+      'trigger_no_user_complete',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
@@ -340,11 +430,20 @@ def GenTests(api):
           api.json.output(mock_gerrit_cl_info_no_email)),
       api.step_data(
           'Trigger Performance Test fake-benchmark',
-          stdout=api.json.output({'response': {
-              'jobUrl': 'fake-pinpoint-link'
-          }})),
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
       # no valid email returned by get gerrit data, and thus a make-up user
       # will be used.
       api.post_process(
@@ -355,13 +454,13 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'trigger_invoker_throw',
+      'trigger_invoker_throws',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
           'gerrit loads current patchset (16) from change 666666',
           api.json.output(mock_gerrit_cl_info)),
-      # The invoking returns 1
+      # The invoking returns 1. The remaining steps will be skipped.
       api.step_data('Trigger Performance Test fake-benchmark', retcode=1),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
@@ -397,7 +496,7 @@ def GenTests(api):
       status='FAILURE',
   )
   yield api.test(
-      'trigger_no_trigger_with_less_impact',
+      'trigger_not_triggered_with_less_impact',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties_less_impact),
       api.override_step_data(
@@ -410,7 +509,7 @@ def GenTests(api):
       status='SUCCESS',
   )
   yield api.test(
-      'trigger_no_trigger_with_no_file_list',
+      'trigger_not_triggered_with_no_file_list',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
@@ -423,7 +522,7 @@ def GenTests(api):
       status='SUCCESS',
   )
   yield api.test(
-      'trigger_no_trigger_with_no_static_map',
+      'trigger_not_triggered_with_no_static_map',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
@@ -434,4 +533,73 @@ def GenTests(api):
                        'Trigger Performance Test fake-benchmark'),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
+  )
+  yield api.test(
+      'trigger_triggered_poller_throws',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)', retcode=1),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.DoesNotRun, 'Pinpoint try job finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+  yield api.test(
+      'trigger_triggered_poller_return_empty_stdout',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      # step 'Waiting Pinpoint job xxxx' is not mocked, a.k.a., no stdout.
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.DoesNotRun, 'Pinpoint try job finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+  yield api.test(
+      'trigger_triggered_poller_incomplete',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Running'})),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(post_process.DoesNotRun, 'Pinpoint try job finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )
