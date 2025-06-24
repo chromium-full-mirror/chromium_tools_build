@@ -39,14 +39,6 @@ CHROME_REQUIRED_FILES = {
         'libwidevinecdmadapter.so',
         'locales',
         'locales/*',
-        'nacl_helper',
-        'nacl_helper_bootstrap',
-        'nacl_helper_nonsfi',
-        'nacl_irt_x86_64.nexe',
-        'PepperFlash',
-        'PepperFlash/*',
-        'pnacl',
-        'pnacl/*',
         'product_logo_48.png',
         'resources',
         'resources/*',
@@ -75,8 +67,6 @@ CHROME_REQUIRED_FILES = {
         'libGLESv2.dll',
         'locales',
         'locales/*',
-        'PepperFlash',
-        'PepperFlash/*',
         'resources.pak',
         'SecondaryTile.png',
         'v8_context_snapshot.bin',
@@ -119,8 +109,6 @@ CHROME_REQUIRED_FILES = {
         'headless_lib_strings.pak',
         'icudtl.dat',
         'metadata.json',
-        'nacl_helper',
-        # nacl_irt*.nexe file is in the whitelist section below.
         'resources.pak',
         'snapshot_blob.bin',
         'locales',
@@ -136,17 +124,12 @@ CHROME_WHITELIST_FILES = {
     'linux': '',
     'win': '^\d+\.\d+\.\d+\.\d+\.manifest$',
     'mac': '',
-    # For amd64, we need "nacl_irt_x86_64.nexe" and
-    # for arm, we need "nacl_irt_arm.nexe". Since there is no way
-    # to specify files per architecture, we use regex to include it.
-    'chromeos': 'nacl_irt_.*',
 }
 
 CHROME_STRIP_LIST = {
   'linux': [
     'chrome',
     'chromedriver',
-    'nacl_helper',
   ],
   'win': [
     # No stripping symbols from win64 archives.
