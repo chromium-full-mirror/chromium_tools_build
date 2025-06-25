@@ -121,7 +121,7 @@ def RunSteps(api):
     test.update_rdb_results(
         '',
         RDBPerSuiteResults(test.name, '', 0, set([]), unexpected_failing_tests,
-                           set([]), set([]),
+                           set([]),
                            not api.properties.get('benchmark_result', True), {},
                            all_tests, ''))
     # shard_merge already ensures the profile_subdir is generated w/ step_name

@@ -3421,9 +3421,11 @@ class SkylabTest(AbstractSkylabTest, Test):
       rdb_results = self._rdb_results.get(
           self.api.m.test_utils.remove_retry_shards(suffix))
       if rdb_results:
-        for individual_test in rdb_results.expected_tests:
-          runtime_excluded_tests.append(
-              individual_test.test_name.removeprefix(self.test_id_prefix or ''))
+        for individual_test in rdb_results.all_tests:
+          if any(individual_test.expectednesses):
+            runtime_excluded_tests.append(
+                individual_test.test_name.removeprefix(self.test_id_prefix or
+                                                       ''))
     else:
       for tr in self.test_runner_builds.get(
           self.api.m.test_utils.remove_retry_shards(suffix), []):
