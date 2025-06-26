@@ -45,8 +45,13 @@ def _generate_try_job_name(api, properties):
 # convert a list of key-value pairs in tags into a json string.
 # e.g. [{'key':'k','value':'v'},{'key':'kk','value':'vv'}]
 #        => '{"k":"v", "kk":"vv"}'
-def _generate_tag_string(tags):
-  tags_dict = {}
+def _generate_tag_string(api, tags):
+  # The default tags to indicate the job source.
+  tags_dict = {
+      'origin': 'CQ',
+      'change': str(api.tryserver.gerrit_change.change),
+      'patchset': str(api.tryserver.gerrit_patchset_number)
+  }
   for tag in tags:
     tags_dict[tag.key] = tag.value
   return json.dumps(tags_dict)
@@ -74,6 +79,15 @@ def _get_current_change_from_gerrit(api):
     return None
 
   return changes[0]
+
+
+def _get_user(api, gerrit_change):
+  user = gerrit_change.get('owner', {}).get('email')
+  if not user:
+    change = api.tryserver.gerrit_change_number
+    patchset = api.tryserver.gerrit_patchset_number
+    user = f'Change {change}/{patchset}'
+  return user
 
 
 def _should_run_perf_on_cq(file_names, static_map, benchmark, story):
@@ -115,13 +129,8 @@ def _generate_invoker_cmd(api, properties, gerrit_change):
   cmd.extend(['--configuration', properties.configuration])
   cmd.extend(['--benchmark', properties.benchmark])
   cmd.extend(['--story', properties.story])
-  user = gerrit_change.get('owner', {}).get('email')
-  if not user:
-    change = api.tryserver.gerrit_change_number
-    patchset = api.tryserver.gerrit_patchset_number
-    user = f'Change {change}/{patchset}'
-  cmd.extend(['--user', user])
-  cmd.extend(['--tags', _generate_tag_string(properties.tags)])
+  cmd.extend(['--user', _get_user(api, gerrit_change)])
+  cmd.extend(['--tags', _generate_tag_string(api, properties.tags)])
   token = _generate_access_token(api)
   cmd.extend(['--token', api.raw_io.input_text(token)])
   if properties.use_staging:
@@ -245,9 +254,6 @@ def GenTests(api):
       'story':
           'fake-story',
       'tags': [{
-          'key': 'origin',
-          'value': 'CQ'
-      }, {
           'key': 'other',
           'value': 'data'
       }],
@@ -283,7 +289,7 @@ def GenTests(api):
       '--user',
       'chr@mium.org',
       '--tags',
-      '{"origin": "CQ", "other": "data"}',
+      '{"origin": "CQ", "change": "666666", "patchset": "16", "other": "data"}',
       '--token',
       '.*',  # any string for oauth token
   ]

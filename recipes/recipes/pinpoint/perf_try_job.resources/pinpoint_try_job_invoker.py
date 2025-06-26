@@ -80,9 +80,7 @@ def parse_args():
   )
   parser.add_argument(
       '--tags',
-      default='{"origin":"Perf On CQ"}',
       help='JSON string of tags for the try job. '
-      'The default value is {"origin":"Perf On CQ"}',
   )
   parser.add_argument(
       '--token',
