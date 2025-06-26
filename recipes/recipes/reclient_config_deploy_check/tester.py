@@ -36,7 +36,6 @@ def RunSteps(api, properties):
   s = gclient_config.solutions.add()
   s.url = api.tryserver.gerrit_change_repo_url
   s.name = s.url.rsplit('/', 1)[-1]
-  s.custom_vars['checkout_nacl'] = True  # to verify nacl config
   gclient_config.got_revision_mapping[s.name] = 'got_revision'
 
   with api.context(cwd=api.path.cache_dir / 'builder'):
