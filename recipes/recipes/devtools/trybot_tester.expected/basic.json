@@ -805,190 +805,6 @@
   },
   {
     "cmd": [],
-    "name": "Run tests.Trigger Tests.Trigger Interactions Tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
-      "spawn-tasks",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-json-input",
-      "{\"requests\": [{\"name\": \"Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Interactions\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:Interactions Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:interactions_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"test/interactions\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0) on ubuntu",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/1\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
-      "@@@STEP_LOG_LINE@json.input@      },@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"bucket:try\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"buildername:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"data:1234567/890\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"gerrit:https://chromium-review.googlesource.com/c/123456/7\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"name:Interactions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"project:project\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:Interactions Tests (Shard #0) on ubuntu\"@@@",
-      "@@@STEP_LOG_LINE@json.input@      ],@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"1234567\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"890\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:interactions_tests\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out/Release/gen/test/run.js\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test/interactions\"@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x64\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              },@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"ubuntu\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              },@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
-      "@@@STEP_LOG_LINE@json.input@          },@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
-      "@@@STEP_LOG_LINE@json.input@        }@@@",
-      "@@@STEP_LOG_LINE@json.input@      ]@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  ]@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Interactions Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (2)",
-    "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/1\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "Run tests.Trigger Tests.Trigger E2E Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1057,10 +873,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/1\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -1161,7 +977,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=2@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=1@@@"
     ]
   },
   {
@@ -1197,10 +1013,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/2\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -1301,7 +1117,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=2@@@"
     ]
   },
   {
@@ -1337,10 +1153,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/3\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -1441,7 +1257,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
     ]
   },
   {
@@ -1477,10 +1293,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"5\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/5\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/4\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -1581,7 +1397,43 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (2)",
+    "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -1693,42 +1545,6 @@
     ]
   },
   {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (6)",
-    "stdin": "{\"addInvocations\": [\"invocations/5\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/5\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Run tests.Trigger Tests.Trigger E2E Tests (non-hosted)",
     "~followup_annotations": [
@@ -1798,10 +1614,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"6\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"5\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/6\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/5\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -1902,7 +1718,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
     ]
   },
   {
@@ -1938,10 +1754,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"7\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"6\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/7\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/6\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2042,7 +1858,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
     ]
   },
   {
@@ -2078,10 +1894,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"8\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"7\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/8\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/7\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2182,7 +1998,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=8@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
     ]
   },
   {
@@ -2218,10 +2034,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"9\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"8\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/8\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2322,7 +2138,43 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=9@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=8@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (6)",
+    "stdin": "{\"addInvocations\": [\"invocations/5\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/5\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -2434,42 +2286,6 @@
     ]
   },
   {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (10)",
-    "stdin": "{\"addInvocations\": [\"invocations/9\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/9\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Run tests.Trigger Tests.Trigger Lint Check",
     "~followup_annotations": [
@@ -2545,10 +2361,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"10\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"9\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/10\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/9\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2644,7 +2460,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=10@@@"
+      "@@@STEP_LINK@task UI: Lint Check (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=9@@@"
     ]
   },
   {
@@ -2668,15 +2484,15 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (11)",
-    "stdin": "{\"addInvocations\": [\"invocations/10\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (10)",
+    "stdin": "{\"addInvocations\": [\"invocations/9\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/10\"@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/9\"@@@",
       "@@@STEP_LOG_LINE@json.input@  ],@@@",
       "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
@@ -2723,10 +2539,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"11\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"10\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/11\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/10\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2827,7 +2643,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=11@@@"
+      "@@@STEP_LINK@task UI: Scripts Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=10@@@"
     ]
   },
   {
@@ -2863,10 +2679,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"12\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"11\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/12\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/11\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -2967,7 +2783,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=12@@@"
+      "@@@STEP_LINK@task UI: Scripts Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=11@@@"
     ]
   },
   {
@@ -3003,10 +2819,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"13\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"12\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/13\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/12\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -3107,7 +2923,43 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=13@@@"
+      "@@@STEP_LINK@task UI: Scripts Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=12@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (11)",
+    "stdin": "{\"addInvocations\": [\"invocations/10\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/10\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -3176,42 +3028,6 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    \"invocations/12\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (14)",
-    "stdin": "{\"addInvocations\": [\"invocations/13\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/13\"@@@",
       "@@@STEP_LOG_LINE@json.input@  ],@@@",
       "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
@@ -3321,44 +3137,14 @@
   },
   {
     "cmd": [],
-    "name": "Run tests.Interactions Tests",
+    "name": "Run tests.E2E Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
-    "cmd": [
-      "git",
-      "commit",
-      "-am",
-      "---"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.commit current patch",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
     "cmd": [],
-    "name": "Run tests.Interactions Tests.Interactions Tests shards results",
+    "name": "Run tests.E2E Tests.E2E Tests shards results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -3392,10 +3178,6 @@
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"1\"}]}"
     ],
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
     "env_prefixes": {
       "PATH": [
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
@@ -3413,10 +3195,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on ubuntu",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update test/interactions```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3456,253 +3238,13 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copytree",
-      "--allow-override",
-      "[CLEANUP]/tmp_tmp_4/1/goldens",
-      "[CACHE]/builder/devtools-frontend/test/interactions/goldens"
-    ],
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.copy golden snapshots",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Run tests.Interactions Tests.upload screenshots",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "add",
-      "test/interactions/goldens"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.upload screenshots.stage goldens",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "diff",
-      "--staged",
-      "--binary",
-      "--output",
-      "[CLEANUP]/screenshots_tmp_1/screenshot.patch",
-      "--",
-      "test/interactions/goldens"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.upload screenshots.create patch",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "reset"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.upload screenshots.unstage goldens",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "checkout",
-      "--",
-      "."
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.upload screenshots.revert golden updates",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "clean",
-      "-dff"
-    ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.upload screenshots.remove newly created goldens",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]/screenshots_tmp_1/screenshot.patch",
-      "gs://devtools-frontend-screenshots/screenshots/dtf_linux_rel/123456/7/screenshot.patch"
-    ],
-    "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True",
-      "THROW_AFTER_GOLDENS_UPDATE": "True"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Interactions Tests.upload screenshots.gsutil upload patch",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@screenshots/dtf_linux_rel/123456/7/screenshot.patch@https://storage.cloud.google.com/devtools-frontend-screenshots/screenshots/dtf_linux_rel/123456/7/screenshot.patch@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Run tests.E2E Tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Run tests.E2E Tests.E2E Tests shards results",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
       "--verbose",
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_5",
+      "[CLEANUP]/tmp_tmp_4",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -3740,7 +3282,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on ubuntu",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -3789,7 +3331,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_5",
+      "[CLEANUP]/tmp_tmp_4",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -3827,7 +3369,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on ubuntu",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -3876,7 +3418,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_5",
+      "[CLEANUP]/tmp_tmp_4",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -3914,7 +3456,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on ubuntu",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -3953,6 +3495,20 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/4/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=4@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.E2E Tests (non-hosted)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -4001,7 +3557,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on ubuntu",
+    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -4043,20 +3599,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Run tests.E2E Tests (non-hosted)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
@@ -4064,7 +3606,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_6",
+      "[CLEANUP]/tmp_tmp_5",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -4102,7 +3644,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #0) on ubuntu",
+    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -4151,7 +3693,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_6",
+      "[CLEANUP]/tmp_tmp_5",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -4189,7 +3731,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #1) on ubuntu",
+    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -4238,7 +3780,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_6",
+      "[CLEANUP]/tmp_tmp_5",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -4276,7 +3818,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #2) on ubuntu",
+    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -4315,6 +3857,20 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/8/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=8@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Lint Check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Lint Check.Lint Check shards results",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -4363,10 +3919,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #3) on ubuntu",
+    "name": "Run tests.Lint Check.Lint Check shards results.Lint Check (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u echo 123```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4406,14 +3962,14 @@
   },
   {
     "cmd": [],
-    "name": "Run tests.Lint Check",
+    "name": "Run tests.Scripts Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Run tests.Lint Check.Lint Check shards results",
+    "name": "Run tests.Scripts Tests.Scripts Tests shards results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -4464,10 +4020,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Lint Check.Lint Check shards results.Lint Check (Shard #0) on ubuntu",
+    "name": "Run tests.Scripts Tests.Scripts Tests shards results.Scripts Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u echo 123```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output scripts/run_on_target.mjs --target=Release gen/test/run.js --skip-ninja scripts/eslint_rules/tests/```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4506,20 +4062,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Run tests.Scripts Tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Run tests.Scripts Tests.Scripts Tests shards results",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
@@ -4527,7 +4069,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_8",
+      "[CLEANUP]/tmp_tmp_7",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -4547,93 +4089,6 @@
       "-verbose",
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"11\"}]}"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Scripts Tests.Scripts Tests shards results.Scripts Tests (Shard #0) on ubuntu",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output scripts/run_on_target.mjs --target=Release gen/test/run.js --skip-ninja scripts/eslint_rules/tests/```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/11\"@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"11\"@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
-      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/11/test-results@@@",
-      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=11@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
-      "--verbose",
-      "-o",
-      "/path/to/tmp/json",
-      "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_8",
-      "--merge-script",
-      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
-      "--merge-script-stdout-file",
-      "/path/to/tmp/merge_script_log",
-      "--merge-additional-args",
-      "[]",
-      "--summary-json-file",
-      "/path/to/tmp/json",
-      "--",
-      "swarming",
-      "collect",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-task-summary-python",
-      "-task-output-stdout",
-      "console",
-      "-verbose",
-      "-requests-json",
-      "{\"tasks\": [{\"task_id\": \"12\"}]}"
     ],
     "env_prefixes": {
       "PATH": [
@@ -4680,17 +4135,17 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/12\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/11\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"12\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"11\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/12/test-results@@@",
-      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=12@@@"
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/11/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=11@@@"
     ]
   },
   {
@@ -4701,7 +4156,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_8",
+      "[CLEANUP]/tmp_tmp_7",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -4720,7 +4175,7 @@
       "console",
       "-verbose",
       "-requests-json",
-      "{\"tasks\": [{\"task_id\": \"13\"}]}"
+      "{\"tasks\": [{\"task_id\": \"12\"}]}"
     ],
     "env_prefixes": {
       "PATH": [
@@ -4767,17 +4222,17 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/13\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/12\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"13\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"12\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/13/test-results@@@",
-      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=13@@@"
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/12/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=12@@@"
     ]
   },
   {
@@ -4949,10 +4404,10 @@
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"14\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"13\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/14\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/13\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
@@ -5055,7 +4510,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=14@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=13@@@"
     ]
   },
   {
@@ -5080,14 +4535,14 @@
       }
     },
     "name": "Detect flakes in new tests.Trigger Tests.resultdb.update_included_invocations",
-    "stdin": "{\"addInvocations\": [\"invocations/14\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "stdin": "{\"addInvocations\": [\"invocations/13\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/14\"@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/13\"@@@",
       "@@@STEP_LOG_LINE@json.input@  ],@@@",
       "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
@@ -5116,7 +4571,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_6",
+      "[CLEANUP]/tmp_tmp_5",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -5135,7 +4590,7 @@
       "console",
       "-verbose",
       "-requests-json",
-      "{\"tasks\": [{\"task_id\": \"14\"}]}"
+      "{\"tasks\": [{\"task_id\": \"13\"}]}"
     ],
     "env_prefixes": {
       "PATH": [
@@ -5182,17 +4637,17 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/14\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/13\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"14\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"13\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/14/test-results@@@",
-      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=14@@@"
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/13/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=13@@@"
     ]
   },
   {
