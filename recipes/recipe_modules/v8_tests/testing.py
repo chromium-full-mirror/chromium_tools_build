@@ -106,135 +106,140 @@ def test_args_from_variants(*variants):
 
 
 TEST_CONFIGS = freeze({
-  'benchmarks': {
-    'name': 'Benchmarks',
-    'tests': ['benchmarks'],
-  },
-  'check-bytecode-baseline': {
-    'tool': 'check-bytecode-baseline',
-    'isolated_target': 'generate-bytecode-expectations',
-  },
-  'd8testing': {
-    'name': 'Check - d8',
-    'tests': ['d8_default'],
-    'suite_mapping': [
-      'debugger',
-      'intl',
-      'message',
-      'mjsunit',
-      'webkit',
-    ],
-  },
-  'd8testing_random_gc': {
-    'name': 'Check - d8',
-    'tests': ['d8_default'],
-    'suite_mapping': [
-      'debugger',
-      'intl',
-      'message',
-      'mjsunit',
-      'webkit',
-    ],
-    'test_args': ['--random-gc-stress'],
-  },
-  'jsfunfuzz': {
-    'tool': 'jsfunfuzz',
-    'isolated_target': 'jsfunfuzz',
-  },
-  'gcmole': {
-    'tool': 'run-gcmole',
-    'isolated_target': 'run-gcmole',
-  },
-  'gcmole_v2': {
-    'tool': 'run-gcmole-v2',
-    'isolated_target': 'run-gcmole',
-  },
-  'gcmole_v3': {
-    'tool': 'run-gcmole-v3',
-    'isolated_target': 'run-gcmole',
-  },
-  'mjsunit': {
-    'name': 'Mjsunit',
-    'tests': ['mjsunit'],
-  },
-  'mjsunit_sp_frame_access': {
-    'name': 'Mjsunit - sp frame access',
-    'tests': ['mjsunit'],
-    'test_args': ['--extra-flags=--turbo_sp_frame_access'],
-    'variants': V8Variant('default'),
-  },
-  'mozilla': {
-    'name': 'Mozilla',
-    'tests': ['mozilla'],
-  },
-  'numfuzz': {
-    'name': 'Num Fuzz',
-    'tool': 'run-num-fuzzer',
-    'isolated_target': 'run-num-fuzzer',
-    'idempotent': False,
-    'use_random_seed': False,
-    'variants': V8Variant('default'),
-    'test_id_prefix' : 'numfuzz//',
-  },
-  'optimize_for_size': {
-    'name': 'OptimizeForSize',
-    'tests': ['optimize_for_size'],
-    'suite_mapping': [
-      'cctest',
-      'debugger',
-      'mjsunit',
-      'inspector',
-      'intl',
-      'webkit',
-    ],
-    'test_args': ['--extra-flags=--optimize-for-size'],
-    'variants': V8Variant('default'),
-  },
-  'perf_integration': {
-    'tool': 'run-perf',
-    'isolated_target': 'perf_integration',
-  },
-  'pgo_instrumentation': {
-    'tool': 'run-perf',
-    'isolated_target': 'd8_pgo',
-  },
-  'test262': {
-    'name': 'Test262',
-    'tests': ['test262'],
-  },
-  'unittests': {
-    'name': 'Unittests',
-    'tests': ['unittests'],
-  },
-  'v8initializers': {
-    'tool': 'check-static-initializers',
-    'isolated_target': 'check-static-initializers',
-  },
-  'fuchsia-unittests': {
-    'tool': 'fuchsia-unittests',
-    'isolated_target': 'fuchsia-unittests',
-  },
-  'v8testing': {
-    'name': 'Check',
-    'tests': ['bot_default'],
-    'suite_mapping': [
-      'cctest',
-      'debugger',
-      'fuzzer',
-      'inspector',
-      'intl',
-      'message',
-      'mjsunit',
-      'mkgrokdump',
-      'unittests',
-      'wasm-spec-tests',
-      'webkit',
-    ],
-  },
-  'webkit': {
-    'name': 'Webkit',
-    'tests': ['webkit'],
-  },
+    'benchmarks': {
+        'name': 'Benchmarks',
+        'tests': ['benchmarks'],
+    },
+    'bigint': {
+        'name': 'Bigint',
+        'tests': ['bigint'],
+    },
+    'check-bytecode-baseline': {
+        'tool': 'check-bytecode-baseline',
+        'isolated_target': 'generate-bytecode-expectations',
+    },
+    'd8testing': {
+        'name': 'Check - d8',
+        'tests': ['d8_default'],
+        'suite_mapping': [
+            'debugger',
+            'intl',
+            'message',
+            'mjsunit',
+            'webkit',
+        ],
+    },
+    'd8testing_random_gc': {
+        'name': 'Check - d8',
+        'tests': ['d8_default'],
+        'suite_mapping': [
+            'debugger',
+            'intl',
+            'message',
+            'mjsunit',
+            'webkit',
+        ],
+        'test_args': ['--random-gc-stress'],
+    },
+    'jsfunfuzz': {
+        'tool': 'jsfunfuzz',
+        'isolated_target': 'jsfunfuzz',
+    },
+    'gcmole': {
+        'tool': 'run-gcmole',
+        'isolated_target': 'run-gcmole',
+    },
+    'gcmole_v2': {
+        'tool': 'run-gcmole-v2',
+        'isolated_target': 'run-gcmole',
+    },
+    'gcmole_v3': {
+        'tool': 'run-gcmole-v3',
+        'isolated_target': 'run-gcmole',
+    },
+    'mjsunit': {
+        'name': 'Mjsunit',
+        'tests': ['mjsunit'],
+    },
+    'mjsunit_sp_frame_access': {
+        'name': 'Mjsunit - sp frame access',
+        'tests': ['mjsunit'],
+        'test_args': ['--extra-flags=--turbo_sp_frame_access'],
+        'variants': V8Variant('default'),
+    },
+    'mozilla': {
+        'name': 'Mozilla',
+        'tests': ['mozilla'],
+    },
+    'numfuzz': {
+        'name': 'Num Fuzz',
+        'tool': 'run-num-fuzzer',
+        'isolated_target': 'run-num-fuzzer',
+        'idempotent': False,
+        'use_random_seed': False,
+        'variants': V8Variant('default'),
+        'test_id_prefix': 'numfuzz//',
+    },
+    'optimize_for_size': {
+        'name': 'OptimizeForSize',
+        'tests': ['optimize_for_size'],
+        'suite_mapping': [
+            'cctest',
+            'debugger',
+            'mjsunit',
+            'inspector',
+            'intl',
+            'webkit',
+        ],
+        'test_args': ['--extra-flags=--optimize-for-size'],
+        'variants': V8Variant('default'),
+    },
+    'perf_integration': {
+        'tool': 'run-perf',
+        'isolated_target': 'perf_integration',
+    },
+    'pgo_instrumentation': {
+        'tool': 'run-perf',
+        'isolated_target': 'd8_pgo',
+    },
+    'test262': {
+        'name': 'Test262',
+        'tests': ['test262'],
+    },
+    'unittests': {
+        'name': 'Unittests',
+        'tests': ['unittests'],
+    },
+    'v8initializers': {
+        'tool': 'check-static-initializers',
+        'isolated_target': 'check-static-initializers',
+    },
+    'fuchsia-unittests': {
+        'tool': 'fuchsia-unittests',
+        'isolated_target': 'fuchsia-unittests',
+    },
+    'v8testing': {
+        'name':
+            'Check',
+        'tests': ['bot_default'],
+        'suite_mapping': [
+            'cctest',
+            'debugger',
+            'fuzzer',
+            'inspector',
+            'intl',
+            'message',
+            'mjsunit',
+            'mkgrokdump',
+            'unittests',
+            'wasm-spec-tests',
+            'webkit',
+        ],
+    },
+    'webkit': {
+        'name': 'Webkit',
+        'tests': ['webkit'],
+    },
 })
 
 
