@@ -10,12 +10,18 @@ from requests import utils
 import sys
 import time
 
+_CABE_URL = 'https://cabe.skia.org'
+_GET_ANALYSIS_ENDPOINT = 'getanalysis'
 _POLL_INTERVAL = 30  # 30 seconds
 _POLL_TIMEOUT = 7200  # 2 hours
 _PINPOINT_URL = 'https://pinpoint-dot-chromeperf.appspot.com'
 _STAGING_PINPOINT_URL = 'https://pinpoint-dot-chromeperf-stage.uc.r.appspot.com'
 _GET_JOB_ENDPOINT = '/api/job/'
 _MAX_RETRY_ON_ERROR = 5
+
+
+def _generate_cabe_request_url(args):
+  return f'{_CABE_URL}/{_GET_ANALYSIS_ENDPOINT}/{args.job_id}'
 
 
 def _generate_legacy_pinpoint_request_url(args):
@@ -30,6 +36,18 @@ def _poll_pinpoint_job(args):
       headers['Authorization'] = 'Bearer %s' % oauth_token_fd.read()
 
   url = _generate_legacy_pinpoint_request_url(args)
+  response = requests.get(url, headers=headers)
+
+  return response
+
+
+def _get_cabe_analysis(args):
+  headers = utils.default_headers()
+  if args.token:
+    with open(args.token, encoding='utf-8') as oauth_token_fd:
+      headers['Authorization'] = 'Bearer %s' % oauth_token_fd.read()
+
+  url = _generate_cabe_request_url(args)
   response = requests.get(url, headers=headers)
 
   return response

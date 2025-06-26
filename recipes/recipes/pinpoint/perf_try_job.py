@@ -151,6 +151,16 @@ def _generate_poller_cmd(api, properties, job_id):
   return cmd
 
 
+def _generate_cabe_analysis_cmd(api, job_id):
+  cmd = ['vpython3', api.resource('cabe_analysis_getter.py')]
+
+  cmd.extend(['--job_id', job_id])
+  token = _generate_access_token(api)
+  cmd.extend(['--token', api.raw_io.input_text(token)])
+
+  return cmd
+
+
 def RunSteps(api, properties):
   api.tryserver.require_is_tryserver()
   with api.chromium.chromium_layout():
@@ -233,7 +243,26 @@ def RunSteps(api, properties):
           status=common_pb2.FAILURE,
           summary_markdown=(f'Pinpoint job did not finish. Status: {status}'))
     api.step('Pinpoint try job finished.', None)
-    # (TODO) 5. Send get analysis request to CABE by the job id.
+
+    # 5. Send get analysis request to CABE by the job id.
+    cabe_cmd = _generate_cabe_analysis_cmd(api, job_id)
+    cabe_cmd_result = api.step(
+        'Getting CABE analysis results.',
+        cabe_cmd,
+        timeout=300,
+        stdout=api.json.output())
+    if cabe_cmd_result.stdout is None:
+      return result_pb2.RawResult(
+          status=common_pb2.FAILURE,
+          summary_markdown=('Failed to get CABE analysis results.'))
+    api.step('CABE analysis finished.', None)
+    regressions = cabe_cmd_result.stdout.get('regressions', {})
+    if len(regressions):
+      return result_pb2.RawResult(
+          status=common_pb2.FAILURE,
+          summary_markdown=(f'Regression detected: {regressions}'))
+    return result_pb2.RawResult(
+        status=common_pb2.SUCCESS, summary_markdown=('No regressions found.'))
 
 
 
@@ -298,6 +327,16 @@ def GenTests(api):
       'chr@mium.org')] = 'Change 666666/16'
   expected_cmd_staging = list(expected_cmd)
   expected_cmd_staging.append('--use_staging')
+  expected_poll_cmd = [
+      'vpython3',
+      '.*pinpoint_try_job_poller.py',
+      '--job_id',
+      '13579',
+      '--token',
+      '.*',  # any string for oauth token
+  ]
+  expected_poll_cmd_staging = list(expected_poll_cmd)
+  expected_poll_cmd_staging.append('--use_staging')
   mock_gerrit_cl_info = [{
       'owner': {
           'email': 'chr@mium.org'
@@ -334,7 +373,7 @@ def GenTests(api):
   }]
   ###################################################################
   yield api.test(
-      'trigger_complete',
+      'trigger_complete_pass',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
@@ -350,12 +389,11 @@ def GenTests(api):
       api.step_data(
           'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
           stdout=api.json.output({'status': 'Completed'})),
+      api.step_data(
+          'Getting CABE analysis results.',
+          stdout=api.json.output({})),  # no regression
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
-      api.post_process(
-          post_process.MustRun,
-          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
-      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
       api.post_process(
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
@@ -364,7 +402,50 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Try job triggered.'),
       api.post_process(post_process.LinkEquals, 'Try job triggered.',
                        'Pinpoint job', 'fake-pinpoint-link'),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(
+          post_process.StepCommandRE,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          expected_poll_cmd,
+      ),
+      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
+      api.post_process(post_process.MustRun, 'Getting CABE analysis results.'),
+      api.post_process(post_process.MustRun, 'CABE analysis finished.'),
       api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'trigger_complete_regressions',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
+      # everything else same as the pass case, except for the cabe result.
+      api.step_data(
+          'Getting CABE analysis results.',
+          stdout=api.json.output({
+              'benchmark': 'fake-benchmark',
+              'regressions': {
+                  'workload-1': {
+                      'p-value': 0.248
+                  }
+              }
+          })),
+      api.post_process(post_process.MustRun, 'CABE analysis finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -381,21 +462,17 @@ def GenTests(api):
                   'jobId': '13579',
                   'jobUrl': 'fake-pinpoint-link'
               }})),
+      # poller return non-completed status
       api.step_data(
           'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
           stdout=api.json.output({'status': 'Failed'})),
-      api.post_process(post_process.MustRun,
-                       'Trigger Performance Test fake-benchmark'),
-      api.post_process(
-          post_process.MustRun,
-          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
       api.post_process(post_process.MustRun, 'Try job triggered.'),
       api.post_process(post_process.DoesNotRun, 'Pinpoint try job finished.'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
   yield api.test(
-      'trigger_staging_complete',
+      'trigger_complete_pass_staging',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties_staging),  # with use_staging
       api.override_step_data(
@@ -411,24 +488,28 @@ def GenTests(api):
       api.step_data(
           'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
           stdout=api.json.output({'status': 'Completed'})),
+      api.step_data(
+          'Getting CABE analysis results.', stdout=api.json.output({})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
-      api.post_process(
-          post_process.MustRun,
-          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
-      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
       api.post_process(
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
           expected_cmd_staging,  # with --use_staging
       ),
-      api.post_process(post_process.MustRun, 'Try job triggered.'),
-      api.post_process(post_process.LinkEquals, 'Try job triggered.',
-                       'Pinpoint job', 'fake-pinpoint-link'),
+      api.post_process(
+          post_process.MustRun,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
+      api.post_process(
+          post_process.StepCommandRE,
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          expected_poll_cmd_staging,  # with --use_staging
+      ),
+      api.post_process(post_process.MustRun, 'CABE analysis finished.'),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'trigger_no_user_complete',
+      'trigger_complete_no_user',
       api.chromium.try_build(**mock_try_build),
       api.properties(**mock_properties),
       api.override_step_data(
@@ -444,12 +525,10 @@ def GenTests(api):
       api.step_data(
           'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
           stdout=api.json.output({'status': 'Completed'})),
+      api.step_data(
+          'Getting CABE analysis results.', stdout=api.json.output({})),
       api.post_process(post_process.MustRun,
                        'Trigger Performance Test fake-benchmark'),
-      api.post_process(
-          post_process.MustRun,
-          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
-      api.post_process(post_process.MustRun, 'Pinpoint try job finished.'),
       # no valid email returned by get gerrit data, and thus a make-up user
       # will be used.
       api.post_process(
@@ -457,6 +536,7 @@ def GenTests(api):
           'Trigger Performance Test fake-benchmark',
           expected_cmd_no_user,
       ),
+      api.post_process(post_process.MustRun, 'CABE analysis finished.'),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -606,6 +686,52 @@ def GenTests(api):
           post_process.MustRun,
           'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)'),
       api.post_process(post_process.DoesNotRun, 'Pinpoint try job finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+  yield api.test(
+      'trigger_cabe_throws',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
+      api.step_data('Getting CABE analysis results.', retcode=1),
+      api.post_process(post_process.MustRun, 'Getting CABE analysis results.'),
+      api.post_process(post_process.DoesNotRun, 'CABE analysis finished.'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+  yield api.test(
+      'trigger_cabe_returns_empty',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
+      # step 'Getting CABE analysis results' is not mocked, a.k.a., no stdout.
+      api.post_process(post_process.MustRun, 'Getting CABE analysis results.'),
+      api.post_process(post_process.DoesNotRun, 'CABE analysis finished.'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
