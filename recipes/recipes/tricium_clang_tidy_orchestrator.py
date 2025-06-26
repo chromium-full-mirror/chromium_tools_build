@@ -175,6 +175,7 @@ def RunSteps(api):
             x,
             swarming_parent_run_id=api.swarming.task_id,
             tags=api.buildbucket.tags(**{'hide-in-gerrit': 'true'}),
+            as_shadow_if_parent_is_led=True,
         ) for x in builders_to_schedule
     ]
 
