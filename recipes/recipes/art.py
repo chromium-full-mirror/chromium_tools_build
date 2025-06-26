@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from PB.recipes.build.art import InputProperties
-from time import sleep
 
 DEPS = [
     'depot_tools/git',
@@ -17,6 +16,7 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/runtime',
     'recipe_engine/step',
+    'recipe_engine/time',
     'recipe_engine/url',
     'repo',
 ]
@@ -89,18 +89,18 @@ def checkout_git(api, branch, repo_root):
       # Search for super-project commit that first mentions the given
       # sub-project commit (either as submodule or in .supermanifest).
       args = ["log", '--pretty=format:%H', f"-S{ref}", f"origin/{branch}"]
-      cmd = api.git(
-          *args,
-          name="find super-project commit",
-          stdout=api.raw_io.output_text())
-      if not cmd.stdout:
+      for retry, delay in enumerate([0, 1, 2, 5, 10, 15]):
         # If the CL was just submitted, the super-project entry might not exist yet.
-        sleep(60)
-        api.git("fetch")
+        if retry > 0:
+          api.time.sleep(delay * 60)
+          api.git("fetch")
         cmd = api.git(
             *args,
-            name="find super-project commit (retry)",
+            name="find super-project commit" +
+            (f" (retry {retry})" if retry else ""),
             stdout=api.raw_io.output_text())
+        if cmd.stdout:
+          break
       assert cmd.stdout, f"Commit {ref} was not found in the git superproject"
       ref = cmd.stdout.strip().split("\n")[-1]
 
@@ -697,13 +697,28 @@ def GenTests(api):
   )
 
   yield api.test(
-      'art.superproject-ci-race',  # tests gitiles_commit path.
+      'art.superproject-ci-retry',  # tests gitiles_commit path.
       api.buildbucket.ci_build(experiments=['art.superproject']),
       api.step_data(
           "checkout.find super-project commit",
           stdout=api.raw_io.output_text("")),
       api.step_data(
-          "checkout.find super-project commit (retry)",
+          "checkout.find super-project commit (retry 1)",
+          stdout=api.raw_io.output_text("42424242")),
+      api.properties(build_only=True),
+  )
+
+  yield api.test(
+      'art.superproject-ci-retry-2',  # tests gitiles_commit path.
+      api.buildbucket.ci_build(experiments=['art.superproject']),
+      api.step_data(
+          "checkout.find super-project commit",
+          stdout=api.raw_io.output_text("")),
+      api.step_data(
+          "checkout.find super-project commit (retry 1)",
+          stdout=api.raw_io.output_text("")),
+      api.step_data(
+          "checkout.find super-project commit (retry 2)",
           stdout=api.raw_io.output_text("42424242")),
       api.properties(build_only=True),
   )

@@ -102,7 +102,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "checkout.find super-project commit (retry)",
+    "name": "checkout.find super-project commit (retry 1)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
