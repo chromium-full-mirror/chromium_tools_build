@@ -58,6 +58,8 @@ def chromium_bare(c):
   # TODO(https://crbug.com/swiftshader/164): Change to main once created.
   p['https://swiftshader.googlesource.com/SwiftShader/'] = (
       'src/third_party/swiftshader', 'refs/heads/master')
+  p['https://boringssl.googlesource.com/boringssl'] = (
+      'src/third_party/boringssl/src', 'HEAD')
 
 
 @CONFIG_CTX(includes=['chromium_bare'])
