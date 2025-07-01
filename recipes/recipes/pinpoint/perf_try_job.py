@@ -129,6 +129,8 @@ def _generate_invoker_cmd(api, properties, gerrit_change):
   cmd.extend(['--configuration', properties.configuration])
   cmd.extend(['--benchmark', properties.benchmark])
   cmd.extend(['--story', properties.story])
+  if properties.attempts_count:
+    cmd.extend(['--attempts_count', str(properties.attempts_count)])
   cmd.extend(['--user', _get_user(api, gerrit_change)])
   cmd.extend(['--tags', _generate_tag_string(api, properties.tags)])
   token = _generate_access_token(api)
@@ -276,12 +278,10 @@ def GenTests(api):
       )
   ]
   mock_properties = {
-      'configuration':
-          'fake-bot-configuration',
-      'benchmark':
-          'fake-benchmark',
-      'story':
-          'fake-story',
+      'configuration': 'fake-bot-configuration',
+      'benchmark': 'fake-benchmark',
+      'story': 'fake-story',
+      'attempts_count': 64,
       'tags': [{
           'key': 'other',
           'value': 'data'
@@ -289,6 +289,8 @@ def GenTests(api):
   }
   mock_properties_staging = dict(mock_properties)
   mock_properties_staging['use_staging'] = True
+  mock_properties_no_attempt = dict(mock_properties)
+  mock_properties_no_attempt.pop('attempts_count')
   mock_properties_less_impact = dict(mock_properties)
   mock_properties_less_impact['benchmark'] = 'fake-benchmark-less'
   mock_properties_less_impact['story'] = 'fake-story-less'
@@ -315,6 +317,8 @@ def GenTests(api):
       'fake-benchmark',
       '--story',
       'fake-story',
+      '--attempts_count',
+      '64',
       '--user',
       'chr@mium.org',
       '--tags',
@@ -325,6 +329,9 @@ def GenTests(api):
   expected_cmd_no_user = list(expected_cmd)
   expected_cmd_no_user[expected_cmd_no_user.index(
       'chr@mium.org')] = 'Change 666666/16'
+  expected_cmd_no_attempt = list(expected_cmd)
+  expected_cmd_no_attempt.remove('--attempts_count')
+  expected_cmd_no_attempt.remove('64')
   expected_cmd_staging = list(expected_cmd)
   expected_cmd_staging.append('--use_staging')
   expected_poll_cmd = [
@@ -535,6 +542,36 @@ def GenTests(api):
           post_process.StepCommandRE,
           'Trigger Performance Test fake-benchmark',
           expected_cmd_no_user,
+      ),
+      api.post_process(post_process.MustRun, 'CABE analysis finished.'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'trigger_complete_no_attempt',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties_no_attempt),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      api.step_data(
+          'Trigger Performance Test fake-benchmark',
+          stdout=api.json.output(
+              {'response': {
+                  'jobId': '13579',
+                  'jobUrl': 'fake-pinpoint-link'
+              }})),
+      api.step_data(
+          'Waiting Pinpoint job 13579 to finish. (Timeout max 2hr)',
+          stdout=api.json.output({'status': 'Completed'})),
+      api.step_data(
+          'Getting CABE analysis results.', stdout=api.json.output({})),
+      api.post_process(post_process.MustRun,
+                       'Trigger Performance Test fake-benchmark'),
+      # no attempts_count is given.
+      api.post_process(
+          post_process.StepCommandRE,
+          'Trigger Performance Test fake-benchmark',
+          expected_cmd_no_attempt,
       ),
       api.post_process(post_process.MustRun, 'CABE analysis finished.'),
       api.post_process(post_process.DropExpectation),

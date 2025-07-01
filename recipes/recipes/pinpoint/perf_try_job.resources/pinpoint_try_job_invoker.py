@@ -74,6 +74,11 @@ def parse_args():
       help='Story to run within the benchmark.',
   )
   parser.add_argument(
+      '--attempts_count',
+      type=int,
+      help='Number of iterations on test runs from each branch.',
+  )
+  parser.add_argument(
       '--user',
       type=str,
       help='User initiating the try job. The default is "Perf On CQ"',
@@ -106,6 +111,7 @@ def generate_params_from_args(args):
   params['configuration'] = args.configuration
   params['benchmark'] = args.benchmark
   params['story'] = args.story
+  params['initial_attempt_count'] = args.attempts_count
   params['repository'] = 'chromium'
   params['user'] = args.user or 'Perf On CQ'
   params['tags'] = args.tags
