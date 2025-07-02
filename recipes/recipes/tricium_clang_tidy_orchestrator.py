@@ -95,15 +95,25 @@ def _note_observed_on(platforms, all_platforms, finding):
   finding.message += f'\n\n({msg})'
 
 
+def _fixup_path(file_path):
+  # Filter out certain third_party paths if present. Chromium will not have
+  # these entries in the results because they are pulled in from Deps. These
+  # show up when running clang-tidy on changes in their respective gerrit
+  # instances where the prefix needs to be stripped.
+  third_party_paths_to_strip = [
+      'third_party/dawn/', 'third_party/boringssl/src/'
+  ]
+  for path_to_strip in third_party_paths_to_strip:
+    file_path = file_path.removeprefix(path_to_strip)
+  return file_path
+
+
 def _fixup_finding_paths(finding):
-  # Filter out third_party/dawn from path if present. Chromium will not have third_party/dawn
-  # entries in the results because Dawn is pulled in from Deps. These show up when running
-  # clang-tidy on changes in the Dawn gerrit where the prefix needs to be stripped.
-  fixup_path = lambda x: x.removeprefix('third_party/dawn/')
-  finding.location.file_path = fixup_path(finding.location.file_path)
+  # Fixup all the paths for a particular finding.
+  finding.location.file_path = _fixup_path(finding.location.file_path)
   for f in finding.fixes:
     for r in f.replacements:
-      r.location.file_path = fixup_path(r.location.file_path)
+      r.location.file_path = _fixup_path(r.location.file_path)
 
 
 def _dedup_findings(api, all_platforms, findings_by_platform):
