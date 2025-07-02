@@ -367,6 +367,7 @@ class Generator:
     kwargs['hard_timeout'] = swarming_spec.get('hard_timeout')
     kwargs['io_timeout'] = swarming_spec.get('io_timeout')
     kwargs['shards'] = swarming_spec.get('shards', 1)
+    kwargs['extra_suffix'] = swarming_spec.get('extra_suffix')
     # If idempotent wasn't explicitly set, let chromium_swarming/api.py apply
     # its default_idempotent val.
     if 'idempotent' in swarming_spec:
