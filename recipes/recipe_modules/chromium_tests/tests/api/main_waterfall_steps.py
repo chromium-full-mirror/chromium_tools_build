@@ -206,6 +206,9 @@ def RunSteps(api, fail_compile):
       api.profiles.profile_dir().joinpath('overall-merged.profdata'))
   api.path.mock_add_paths(api.profiles.profile_dir().joinpath(
       api.pgo.TEMP_PROFDATA_FILENAME))
+  api.path.mock_add_paths(api.profiles.profile_dir().joinpath('orderfile.out'))
+  source_dir = api.path.cache_dir / 'builder/src'
+  api.path.mock_add_paths(source_dir / 'chrome/build/pgo_profiles/profile.pgo')
 
   # override compile_specific_targets to control compile step failure state
   def compile_override(*args, **kwargs):
@@ -714,19 +717,29 @@ def GenTests(api):
 
   yield api.test(
       'orderfile_ci_bots',
-      api.chromium.generic_build(
-          builder_group='fake-group', builder='fake-builder'),
+      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
               builder_group='fake-group',
               builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_config_kwargs={
+                      'TARGET_ARCH': 'arm',
+                      'TARGET_BITS': 64,
+                  },
+              ),
           ).assemble()),
       api.properties(
           swarm_hashes={
               'performance_test_suite':
                   '[dummy hash for performance_test_suite/size]'
           },),
-      api.orderfile(use_orderfile=True, upload_orderfile=True),
+      api.orderfile(
+          use_orderfile=True,
+          upload_orderfile=True,
+          last_uploaded_pgo_filename='profile.pgo'),
       api.platform('linux', 64),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
@@ -744,15 +757,15 @@ def GenTests(api):
               },
           }),
       api.post_process(post_process.MustRun, 'processing generated orderfile'),
-      api.post_process(post_process.MustRunRE,
-                       '.*uploading generated orderfile to CIPD'),
+      api.post_process(
+          post_process.MustRun, 'processing generated orderfile.create '
+          'chromium/chrome/android/orderfiles/arm64'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'pgo_ci_bots',
-      api.chromium.generic_build(
-          builder_group='fake-group', builder='fake-builder'),
+      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
               builder_group='fake-group',

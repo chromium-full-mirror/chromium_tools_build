@@ -130,6 +130,7 @@ def RunSteps(api):
       api.profiles.profile_dir().joinpath('overall-merged.profdata'))
   api.path.mock_add_paths(api.profiles.profile_dir().joinpath(
       api.pgo.TEMP_PROFDATA_FILENAME))
+  api.path.mock_add_paths(api.profiles.profile_dir().joinpath('orderfile.out'))
 
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
@@ -812,6 +813,7 @@ def GenTests(api):
                           chromium_config='android',
                           chromium_config_kwargs={
                               'BUILD_CONFIG': 'Release',
+                              'TARGET_ARCH': 'arm',
                               'TARGET_BITS': 64,
                               'TARGET_PLATFORM': 'android',
                           },

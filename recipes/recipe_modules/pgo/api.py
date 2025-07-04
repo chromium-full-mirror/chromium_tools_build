@@ -69,10 +69,12 @@ class PgoApi(recipe_api.RecipeApi):
   def branch(self):
     """Parse the branch name from ref."""
     ref = self.m.buildbucket.gitiles_commit.ref
+    if not ref:
+      raise self.m.step.StepFailure(
+          f'Missing ref: {self.m.buildbucket.gitiles_commit}')
     # Release ref: refs/branch-heads/4103
     # Main ref: refs/heads/main
-    # If ref is undefined, default it to main
-    return ref.split('/', 3)[2] if ref else 'main'
+    return ref.split('/', 2)[2]
 
   def _get_platform(self):
     """Return the platform name used for the profdata artifact."""
@@ -330,17 +332,17 @@ class PgoApi(recipe_api.RecipeApi):
           test_data='some_profdata_content')
       sha1 = hashlib.sha1(contents).hexdigest()
 
+      if self.skip_profile_upload:
+        return self.m.step.empty(
+            'Skipping upload to GS for this generated profile as '
+            'skip_profile_upload property is enabled.')
+
       # The final profdata artifact name uses the sha1 hash of the contents,
       # so the profdata file is generated first, and then renamed.
       new_filename = self._profdata_artifact_name(source_dir, sha1)
       new_filepath = self.m.profiles.profile_dir().joinpath(new_filename)
       self.m.file.move('Rename the profdata artifact', profdata_artifact,
                        new_filepath)
-
-      if self.skip_profile_upload:
-        return self.m.step.empty(
-            'Skipping upload to GS for this generated profile as '
-            'skip_profile_upload property is enabled.')
 
       self._last_uploaded_pgo_filename = new_filename
 

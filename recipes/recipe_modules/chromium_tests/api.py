@@ -1711,7 +1711,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # workflow do not have upload_orderfile set.
       if (self.m.orderfile.using_orderfile and
           not self.m.orderfile.upload_orderfile):
-        self.m.orderfile.process_orderfile_data(task.source_dir)
+        self.m.orderfile.process_orderfile_data(task.source_dir,
+                                                task.update_result)
 
       # Exit without retries if there were invalid tests or if all tests passed
       if invalid_test_suites or not failing_test_suites:
@@ -1970,6 +1971,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_id,
         builder_config,
         tests,
+        update_result=update_result,
         upload_results=upload_results)
     return tests_result, update_result
 
@@ -3141,6 +3143,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_config,
       tests,
       *,
+      update_result: bot_update.api.Result | None = None,
       upload_results=None,
   ):
     if not tests:
@@ -3173,7 +3176,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.pgo.process_pgo_data(source_dir, tests)
 
       if self.m.orderfile.using_orderfile and self.m.orderfile.upload_orderfile:
-        self.m.orderfile.process_orderfile_data(source_dir)
+        assert update_result is not None
+        self.m.orderfile.process_orderfile_data(source_dir, update_result)
 
       test_success = True
       if test_failure_summary:

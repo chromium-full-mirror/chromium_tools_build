@@ -139,7 +139,7 @@ def GenTests(api):
 
   yield api.test(
       'merged profdata does not exist',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='mac-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('mac', 64),
@@ -160,7 +160,7 @@ def GenTests(api):
 
   yield api.test(
       'basic windows',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64),
@@ -201,7 +201,7 @@ def GenTests(api):
 
   yield api.test(
       'basic windows arm64',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64, arch='arm'),
@@ -242,7 +242,7 @@ def GenTests(api):
 
   yield api.test(
       'basic_android',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='android-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('linux', 32),
@@ -266,8 +266,27 @@ def GenTests(api):
   )
 
   yield api.test(
-      'override_profdata_platform',
+      'missing_refs',
       api.chromium.generic_build(
+          builder_group='chromium.perf', builder='android-builder-perf'),
+      api.pgo(use_pgo=True),
+      api.platform('linux', 32),
+      api.properties(mock_merged_profdata=True),
+      api.override_step_data(
+          'validate benchmark results and profile data.searching for '
+          'profdata files',
+          api.file.listdir([
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
+          ])),
+      api.post_process(post_process.SummaryMarkdownRE, 'Missing ref.*'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'override_profdata_platform',
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='android-builder-perf'),
       api.pgo(use_pgo=True, profdata_platform_override='android-desktop-x64'),
       api.platform('linux', 64),
@@ -292,7 +311,7 @@ def GenTests(api):
 
   yield api.test(
       'basic_mac_arm',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='mac-arm-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('mac', 64, arch='arm'),
@@ -319,7 +338,7 @@ def GenTests(api):
 
   yield api.test(
       'basic_lacros',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chrome.pgo', builder='lacros-eve-pgo'),
       api.pgo(use_pgo=True),
       api.platform('linux', 64, arch='arm'),
@@ -352,7 +371,7 @@ def GenTests(api):
 
   yield api.test(
       'merge errors',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='mac-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('mac', 64),
@@ -382,7 +401,7 @@ def GenTests(api):
 
   yield api.test(
       'missing profdata file',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64),
@@ -396,7 +415,7 @@ def GenTests(api):
 
   yield api.test(
       'one test missing profdata file',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64),
@@ -415,7 +434,7 @@ def GenTests(api):
 
   yield api.test(
       'invalid benchmark test',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64),
@@ -434,7 +453,7 @@ def GenTests(api):
 
   yield api.test(
       'failed benchmark test',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64),
@@ -453,7 +472,7 @@ def GenTests(api):
 
   yield api.test(
       'trybot',
-      api.chromium.generic_build(
+      api.chromium.ci_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True, skip_profile_upload=True),
       api.platform('win', 64),
@@ -471,8 +490,7 @@ def GenTests(api):
 
   yield api.test(
       'weights',
-      api.chromium.generic_build(
-          builder_group='chrome.pgo', builder='mac-arm-pgo'),
+      api.chromium.ci_build(builder_group='chrome.pgo', builder='mac-arm-pgo'),
       api.pgo(use_pgo=True),
       api.platform('mac', 64, arch='arm'),
       api.properties(mock_merged_profdata=True, use_mac_arm=True),
