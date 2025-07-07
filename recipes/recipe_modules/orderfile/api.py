@@ -123,15 +123,6 @@ class OrderfileApi(recipe_api.RecipeApi):
         return self.m.step.empty('skipping upload to CIPD as '
                                  'last_uploaded_pgo_filename is not set')
 
-      pgo_profile_path = (
-          source_dir / 'chrome/build/pgo_profiles' /
-          self.last_uploaded_pgo_filename)
-      presentation.step_text += str(pgo_profile_path) + '<br/>'
-      if not self.m.path.exists(pgo_profile_path):
-        presentation.status = self.m.step.FAILURE
-        raise self.m.step.StepFailure(
-            f'PGO profile not found at {pgo_profile_path}')
-
       pkg_def = self.m.cipd.PackageDefinition(
           package_name=f'chromium/chrome/android/orderfiles/{arch}',
           package_root=self.m.profiles.profile_dir(),
@@ -144,12 +135,23 @@ class OrderfileApi(recipe_api.RecipeApi):
       presentation.step_text += str(new_orderfile_path) + '<br/>'
       pkg_def.add_file(new_orderfile_path)
 
-      new_pgo_profile_path = (
-          self.m.profiles.profile_dir() / f'pgo_profile.{arch}.profdata')
-      presentation.step_text += str(new_pgo_profile_path) + '<br/>'
-      self.m.file.copy('copy over PGO profile', pgo_profile_path,
-                       new_pgo_profile_path)
-      pkg_def.add_file(new_pgo_profile_path)
+      pgo_profile_path = (
+          source_dir / 'chrome/build/pgo_profiles' /
+          self.last_uploaded_pgo_filename)
+      if not self.m.path.exists(pgo_profile_path):
+        # We need to allow orderfile generation without PGO as currently arm32
+        # relies on this. See https://crbug.com/430004881 for context.
+        presentation.step_text += (
+            str(pgo_profile_path) +
+            ' profile does not exist, skipping it for CIPD upload.<br/>')
+      else:
+        presentation.step_text += str(pgo_profile_path) + ' exists.<br/>'
+        new_pgo_profile_path = (
+            self.m.profiles.profile_dir() / f'pgo_profile.{arch}.profdata')
+        presentation.step_text += str(new_pgo_profile_path) + '<br/>'
+        self.m.file.copy('copy over PGO profile', pgo_profile_path,
+                         new_pgo_profile_path)
+        pkg_def.add_file(new_pgo_profile_path)
 
       revision = result.manifest['src']['revision']
       tags = {

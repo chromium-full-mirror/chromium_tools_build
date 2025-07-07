@@ -162,9 +162,9 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
           upload_orderfile=True,
           last_uploaded_pgo_filename='profile.pgo'),
       api.platform('linux', 32),
-      api.post_process(post_process.SummaryMarkdownRE,
-                       'PGO profile not found at.*'),
-      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.StepTextContains, 'processing generated orderfile',
+          ('profile does not exist, skipping it for CIPD upload.',)),
       api.post_process(post_process.DropExpectation),
   )
 
