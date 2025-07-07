@@ -8,7 +8,7 @@ from functools import cached_property
 import re
 
 FLAKE_DETECTION_OPTION = '--repeat=10'
-
+FLAKE_EXONERATION_OPTION = '--grep'
 class E2ETests(ExonerableTests):
 
   @property
@@ -63,6 +63,9 @@ class E2ENonHostedTests(E2ETests):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
       return [self.run_tests_command(*self.owned_new_tests)]
+    is_flake_exoneration_attempt = FLAKE_EXONERATION_OPTION in self.extra_args
+    if is_flake_exoneration_attempt:
+      return [self.run_tests_command('test/e2e_non_hosted')]
     return [
         self.run_tests_command(*test_list)
         for test_list in self.divider.commands('e2e_non_hosted')
