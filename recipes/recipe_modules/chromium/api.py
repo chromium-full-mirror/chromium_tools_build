@@ -663,6 +663,11 @@ class ChromiumApi(recipe_api.RecipeApi):
           output_blob = siso_output[start_match.start():end_match.end()]
           failure_summary = step_text + '\n\n' + output_blob
 
+      # Strip ansi color codes from siso_output text, since they're hard to read
+      ansi_color_regex = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+      log_text = ansi_color_regex.sub('', log_text)
+      failure_summary = ansi_color_regex.sub('', failure_summary)
+
       if len(log_text) > 1024:
         log_text = log_text[:1024] + '...'
 
