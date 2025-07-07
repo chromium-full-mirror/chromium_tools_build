@@ -701,6 +701,25 @@
   },
   {
     "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.Full command",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Debug/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--coverage@@@",
+      "@@@STEP_LOG_LINE@command@front_end@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"

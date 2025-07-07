@@ -169,6 +169,8 @@ class DevToolsAPI(recipe_api.RecipeApi):
       needs_vpy3 = commands[i][0] != 'vpython3'
       full_command = (["vpython3", "-u"]
                       if needs_vpy3 else []) + commands[i] + args
+      task_input = self.m.step.empty('Full command')
+      task_input.presentation.logs['command'] = full_command
       task = self.m.chromium_swarming.task(
           name=f'{step_name} (Shard #{i})',
           raw_cmd=full_command,
@@ -192,7 +194,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
         )
         request_slice = request[0].with_command(wrapped_cmd)
         task.request = request.with_slice(0, request_slice)
-
       self.m.chromium_swarming.trigger_task(task)
 
       tasks.append(task)

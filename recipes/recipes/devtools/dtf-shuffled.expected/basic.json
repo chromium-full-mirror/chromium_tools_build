@@ -706,6 +706,24 @@
   },
   {
     "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.Full command",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "Run tests.Trigger Tests.Trigger E2E Tests.install infra/tools/luci/swarming",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
@@ -940,6 +958,24 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.Full command (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
       "spawn-tasks",
@@ -1086,6 +1122,24 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.Full command (3)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
       "spawn-tasks",
@@ -1229,6 +1283,24 @@
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
       "@@@STEP_LINK@task UI: E2E Tests (Shard #2)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.Full command (4)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
     ]
   },
   {
@@ -1584,6 +1656,24 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Repeat E2E Tests.Full command",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
       "spawn-tasks",
@@ -1727,6 +1817,24 @@
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
       "@@@STEP_LINK@task UI: Repeat E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Repeat E2E Tests.Full command (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
     ]
   },
   {
@@ -1876,6 +1984,24 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Repeat E2E Tests.Full command (3)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
       "spawn-tasks",
@@ -2019,6 +2145,24 @@
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
       "@@@STEP_LINK@task UI: Repeat E2E Tests (Shard #2)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Repeat E2E Tests.Full command (4)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
+      "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
+      "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
+      "@@@STEP_LOG_LINE@command@--verbose=2@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--bail@@@",
+      "@@@STEP_LOG_END@command@@@"
     ]
   },
   {
