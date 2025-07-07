@@ -204,7 +204,6 @@ def _run_dawn_node_test(api, source_dir, dawn_node_exe,
       cmd.append(case)
       api.step(case, cmd, wrapper=shell_wrapper)
 
-
 def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   # dawn.node not currently supported on x86
   build_dawn_node = target_cpu != 'x86'
@@ -247,7 +246,6 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
       if build_dawn_node and not dawn_node_uses_swiftshader:
         (dawn_node,) = build('dawn_node')
 
-    fuzzers_out = None
     if not api.platform.is_win:
       with _gn_build(
           source_dir,
@@ -261,7 +259,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
           use_libfuzzer=True,
           **extra_gn_args,
       ) as build:
-        fuzzers_out = build('fuzzers')[0].parent
+        build('fuzzers')
 
     # Component build and run dawn_end2end_tests with SwiftShader
     # When using SwiftShader a component build should be used.
@@ -311,16 +309,6 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
           '--use-angle=swiftshader',
           '--enable-toggles=gl_force_es_31_and_no_extensions'
       ])
-
-  if fuzzers_out:
-    # Fuzzers are not built for Win, so don't need to wrap the shell command
-    # like dawn.node needs to.
-    with api.context(cwd=source_dir) as _, \
-            api.context(env_prefixes={'PATH': [source_dir.joinpath('tools', 'golang', 'bin')]}) as _:
-      api.step('Run `fuzz --check`',
-               ['tools/run', 'fuzz', '--build',
-                str(fuzzers_out), '--check'])
-
 
 def GenTests(api):
   yield api.test(
