@@ -34,6 +34,7 @@ message InputProperties {
   // version of the SSCI CIPD module to use
   string ssci_version = 8;
 
+  // DEPRECATED.
   // Whether to generate a minimal version of the SPDX file.
   // This currently won't do anything, as minimal support has been removed
   // from the SSCI tool because the likelihood of us needing to use it is
@@ -49,6 +50,7 @@ message InputProperties {
   // Version of the SSCI SBOM Generator to use.
   string ssci_sbom_version = 12;
 
+  // DEPRECATED.
   // Version of the sbomdiff to use.
   string sbomdiff_version = 13;
 }

@@ -22,6 +22,7 @@ def RunSteps(api):
       'infra_internal/tools/security/depbot/${platform}': '123',
       'infra_internal/tools/partybot': '456',
       'infra_internal/tools/ssci': '789',
+      'infra_internal/tools/security/ssci_sbom/${platform}': '1001',
   }
 
   with api.ssci.custom_tool_versions(custom_versions):
@@ -66,8 +67,13 @@ def GenTests(api):
           'SSCI collection.install infra_internal/tools/ssci.ensure_installed',
           'json.output',
           ['"instance_id": "resolved-instance_id-of-789-------------"']),
+      api.post_process(
+          post_process.LogContains,
+          'SSCI collection.install infra_internal/tools/security/ssci_sbom.ensure_installed',
+          'json.output',
+          ['"instance_id": "resolved-instance_id-of-1001------------"']),
       api.override_step_data(
-          'SSCI collection.target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom',
+          'SSCI collection.target specific steps for Example.apk.run SSCI SBOM Generator for Example.apk SBOM',
           api.json.output(
               name='basic.luci-8945511751514863184.example.apk', data={})),
       api.properties(
@@ -80,5 +86,6 @@ def GenTests(api):
                   "partybot_version": "AABBCC",
                   "bq_thirdparty_table": "project.dataset.table",
                   "ssci_version": "latest",
+                  "ssci_sbom_version": "latest",
               }
           }))

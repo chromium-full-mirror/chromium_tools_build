@@ -121,15 +121,15 @@ def GenTests(api):
                   },
               })),
       api.override_step_data(
-          'SSCI collection.target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom',
+          'SSCI collection.target specific steps for Example.apk.run SSCI SBOM Generator for Example.apk SBOM',
           api.json.output(
               name='basic.luci-8945511751514863184.example.apk', data={})),
       api.override_step_data(
-          'SSCI collection.target specific steps for Another.apk.run ssci tool to generate Another.apk SPDX sbom',
+          'SSCI collection.target specific steps for Another.apk.run SSCI SBOM Generator for Another.apk SBOM',
           api.json.output(
               name='basic.luci-8945511751514863184.another.apk', data={})),
       api.override_step_data(
-          'SSCI collection.target specific steps for example.zip.run ssci tool to generate example.zip SPDX sbom',
+          'SSCI collection.target specific steps for example.zip.run SSCI SBOM Generator for example.zip SBOM',
           api.json.output(
               name='basic.luci-8945511751514863184.example.zip', data={})),
       api.post_process(post_process.MustRun,

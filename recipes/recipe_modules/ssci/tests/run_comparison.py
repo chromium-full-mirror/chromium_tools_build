@@ -22,6 +22,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  """Check providing the deprecated run_comparison arg won't fail the build."""
 
   api.gclient.set_config('chromium')
   api.chromium.set_config(
@@ -105,29 +106,9 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   },
               })),
-      api.override_step_data(
-          "SSCI collection.target specific steps for chromium.compare chromium SBOMs",
-          api.json.output(
-              retcode=1,
-              data={
-                  "out": "SBOMs are different",
-              },
-          )),
       api.post_process(
           MustRunRE,
-          r'.+\.run ssci tool to generate .+ SPDX sbom',
-          at_least=4,
-          at_most=4,
-      ),
-      api.post_process(
-          MustRunRE,
-          r'.+\.run SSCI SBOM Generator to generate .+ SPDX SBOM',
-          at_least=4,
-          at_most=4,
-      ),
-      api.post_process(
-          MustRunRE,
-          r'.+\.compare .+ SBOMs',
+          r'.+\.run SSCI SBOM Generator for .+ SBOM',
           at_least=4,
           at_most=4,
       ),

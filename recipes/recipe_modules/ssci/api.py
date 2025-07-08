@@ -58,16 +58,13 @@ class SsciAPI(recipe_api.RecipeApi):
     self.ssci_sbom = CIPDPkg(
         ensure_version=props.ssci_sbom_version or "prod",
         pkg_path="infra_internal/tools/security/ssci_sbom/${platform}")
-    self.sbomdiff = CIPDPkg(
-        ensure_version=props.sbomdiff_version or "latest",
-        pkg_path="infra_internal/tools/security/sbomdiff/${platform}")
     self.ssci_uploader = CIPDPkg(
         ensure_version=props.ssci_uploader_version or "latest",
         pkg_path="infra_internal/tools/security/ssci_uploader/${platform}")
 
     self.ssci_tools = [
         self.depbot, self.bqupload, self.partybot, self.ssci_tool,
-        self.ssci_sbom, self.sbomdiff, self.ssci_uploader
+        self.ssci_sbom, self.ssci_uploader
     ]
 
   @contextlib.contextmanager
@@ -239,7 +236,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
                              filename_postfix, chrome_version, third_party_out,
-                             to_rename, run_comparison):
+                             to_rename):
 
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
@@ -289,80 +286,42 @@ class SsciAPI(recipe_api.RecipeApi):
       product = f'{recipe_name}.{self.execution_id}.{final_artifact_name}'
       p_version = self._get_product_version(chrome_version)
 
-      tmp_out = self.m.path.mkdtemp()
-      spdx_file = tmp_out.joinpath("spdx-out.json")
+      # Get the directory that contains the src directory.
+      parent_dir, _ = self.m.path.split(src_dir)
 
-      # The vPython metadata files are found in the parent directory.
-      with self.m.context(cwd=self.m.path.dirname(self.ssci_tool.tool_path)):
-        # Generate the SBOM using the SSCI tool.
-        self.m.step(
-            f'run ssci tool to generate {display_name} SPDX sbom', [
-                "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
-                "-libraries", library_file, "-artifacts", artifact_file,
-                "-thirdparty", third_party_out, "-depbot-version",
-                self.depbot.resolved_version, "-partybot-version",
-                self.partybot.resolved_version, "-ssci-version",
-                self.ssci_tool.resolved_version, "-output-file", spdx_file,
-                "-chromium-src", src_dir, "-product", product,
-                "-product-version", p_version, "-platform", self.build_platform
-            ],
-            infra_step=True,
-            step_test_data=(lambda: self.m.json.test_api.output(
-                data=[{
-                    "spdx": "yes"
-                }], name="spdx")))
-
-      if run_comparison:
-        # Also generate the SBOM using the SSCI SBOM Generator.
-        ssci_sbom_file = tmp_out.joinpath("ssci_sbom-out.json")
-        self.m.step(
-            f'run SSCI SBOM Generator to generate {display_name} SPDX SBOM', [
-                self.ssci_sbom.tool_path,
-                "-output-file",
-                ssci_sbom_file,
-                "-sbom-generator-version",
-                self.ssci_sbom.resolved_version,
-                "-product",
-                product,
-                "-product-version",
-                p_version,
-                "-platform",
-                self.build_platform,
-                "-partybot-version",
-                self.partybot.resolved_version,
-                "-third-party-file",
-                third_party_out,
-                "-chromium-path",
-                src_dir.parent,
-                "-depbot-version",
-                self.depbot.resolved_version,
-                "-artifacts-file",
-                artifact_file,
-                "-libraries-file",
-                library_file,
-            ],
-            infra_step=True,
-            step_test_data=(lambda: self.m.json.test_api.output(
-                data=[{
-                    "spdx": "yes"
-                }], name="ssci_sbom_spdx")))
-
-        # Compare the SBOMs from the different tools.
-        self.m.step(
-            f'compare {display_name} SBOMs',
-            [
-                self.sbomdiff.tool_path,
-                "-reference",
-                spdx_file,
-                "-candidate",
-                ssci_sbom_file,
-            ],
-            # The step is successful if the SBOMs were able to be compared, even
-            # if there are differences.
-            ok_ret=(0, 1),
-            infra_step=True,
-            step_test_data=(lambda: self.m.raw_io.test_api.stream_output_text(
-                "SBOMs are equal")))
+      # Generate the SBOM using the SSCI SBOM Generator.
+      spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
+      self.m.step(
+          f'run SSCI SBOM Generator for {display_name} SBOM', [
+              self.ssci_sbom.tool_path,
+              "-output-file",
+              spdx_file,
+              "-sbom-generator-version",
+              self.ssci_sbom.resolved_version,
+              "-product",
+              product,
+              "-product-version",
+              p_version,
+              "-platform",
+              self.build_platform,
+              "-partybot-version",
+              self.partybot.resolved_version,
+              "-third-party-file",
+              third_party_out,
+              "-chromium-path",
+              parent_dir,
+              "-depbot-version",
+              self.depbot.resolved_version,
+              "-artifacts-file",
+              artifact_file,
+              "-libraries-file",
+              library_file,
+          ],
+          infra_step=True,
+          step_test_data=(lambda: self.m.json.test_api.output(
+              data=[{
+                  "spdx": "yes"
+              }], name="ssci_sbom_spdx")))
 
       spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
       filename = self._make_filename_from_target(
@@ -402,7 +361,6 @@ class SsciAPI(recipe_api.RecipeApi):
       platform=None,
       to_rename=None,
       archive_names=None,
-      run_comparison=False,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -491,8 +449,7 @@ class SsciAPI(recipe_api.RecipeApi):
                 self.m.futures.spawn(self._target_specific_steps, target,
                                      src_dir, sbom_bucket, sbom_folder,
                                      sbom_filename_postfix, chrome_version,
-                                     third_party_out, to_rename,
-                                     run_comparison))
+                                     third_party_out, to_rename))
           for fut in self.m.futures.iwait(futures):
             fut.result()
 
@@ -512,7 +469,7 @@ class SsciAPI(recipe_api.RecipeApi):
                                               sbom_folder,
                                               sbom_filename_postfix,
                                               chrome_version, third_party_out,
-                                              to_rename, run_comparison)
+                                              to_rename)
 
           self.generated_sbom_artifacts[final].ClearField("target")
           self.generated_sbom_artifacts[final].targets.extend(
@@ -617,8 +574,9 @@ class SsciAPI(recipe_api.RecipeApi):
       build_dir: The path to the build directory.
       gn_targets: A list of GN targets to build the SBOM with.
       platform: The platform the artifact was built for.
-      run_comparison: Whether to also generate the SBOM using the SSCI SBOM
-      Generator, then compare it to the SBOM generated by the SSCI tool.
+      run_comparison: [DEPRECATED] Whether to also generate the SBOM using the
+      SSCI SBOM Generator (Go), then compare it to the SBOM generated by the
+      SSCI tool (Python).
 
     Returns:
       A dict of GeneratedSBOM protobuf message, where the sbom name is the key.
@@ -634,8 +592,7 @@ class SsciAPI(recipe_api.RecipeApi):
           chrome_version=chrome_version,
           targets=gn_targets,
           archive_names=artifacts.keys(),
-          platform=platform,
-          run_comparison=run_comparison)
+          platform=platform)
 
       sboms = {}
 

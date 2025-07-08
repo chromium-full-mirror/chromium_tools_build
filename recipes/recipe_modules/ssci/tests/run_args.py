@@ -38,6 +38,7 @@ def GenTests(api):
                   "partybot_version": "AABBCC",
                   "bq_thirdparty_table": "project.dataset.table",
                   "ssci_version": "latest",
+                  "ssci_sbom_version": "latest",
               }
           }),
   )

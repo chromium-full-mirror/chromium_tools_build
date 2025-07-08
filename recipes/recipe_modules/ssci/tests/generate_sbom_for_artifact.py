@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DoesNotRunRE, DropExpectation, StepCommandContains
+from recipe_engine.post_process import DoesNotRunRE, DropExpectation, MustRunRE, StepCommandContains
 
 from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 
@@ -127,12 +127,10 @@ def GenTests(api):
           ],
       ),
       api.post_process(
-          DoesNotRunRE,
-          r'.+\.run SSCI SBOM Generator to generate .+ SPDX SBOM',
-      ),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.compare .+ SBOMs',
+          MustRunRE,
+          r'.+\.run SSCI SBOM Generator for .+ SBOM',
+          at_least=4,
+          at_most=4,
       ),
       api.post_process(DropExpectation),
   )
@@ -169,14 +167,6 @@ def GenTests(api):
                       "libraries_file_path": "out/Release/libs.json"
                   },
               })),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.run SSCI SBOM Generator to generate .+ SPDX SBOM',
-      ),
-      api.post_process(
-          DoesNotRunRE,
-          r'.+\.compare .+ SBOMs',
-      ),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
