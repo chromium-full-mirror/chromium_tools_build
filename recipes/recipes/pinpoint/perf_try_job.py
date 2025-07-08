@@ -260,11 +260,17 @@ def RunSteps(api, properties):
     api.step('CABE analysis finished.', None)
     regressions = cabe_cmd_result.stdout.get('regressions', {})
     if len(regressions):
+      msg = f'Regression detected: {regressions}'
+      api.step('Regression detected.', None)
+      api.step.active_result.presentation.status = api.step.FAILURE
+      api.step.active_result.presentation.step_text = msg
       return result_pb2.RawResult(
           status=common_pb2.FAILURE,
           summary_markdown=(f'Regression detected: {regressions}'))
+    msg = 'No regressions found.'
+    api.step(msg, None)
     return result_pb2.RawResult(
-        status=common_pb2.SUCCESS, summary_markdown=('No regressions found.'))
+        status=common_pb2.SUCCESS, summary_markdown=(msg))
 
 
 
