@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine import post_process
+from recipe_engine.post_process import StepCommandContains
 
 from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 
@@ -37,14 +37,14 @@ def GenTests(api):
       api.buildbucket.ci_build(
           project='myproject', bucket='mybucket', builder='mybuilder'),
       api.post_process(
-          post_process.StepCommandContains, 'run ssci tool to merge SBOMs', [
-              "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
-              "-ssci-version", "vresolved-instance_id-of-prod------------",
-              "-output-file", "[CLEANUP]/tmp_tmp_1/spdx-out.json", "-product",
-              "merge..merged", "-product-version", "2d7251", "-platform",
-              "linux_intel64", "-document-paths", "path1/path.spdx.json",
-              "path2/path.spdx.json"
+          StepCommandContains, 'run SSCI SBOM Generator to merge SBOMs', [
+              '-output-file', '[CLEANUP]/tmp_tmp_1/spdx-out.json',
+              '-sbom-generator-version',
+              'vresolved-instance_id-of-prod------------', '-product',
+              'merge..merged', '-product-version', '2d7251', '-platform',
+              'linux_intel64', '-document-path', 'path1/path.spdx.json',
+              '-document-path', 'path2/path.spdx.json'
           ]),
       api.override_step_data(
-          'run ssci tool to merge SBOMs',
+          'run SSCI SBOM Generator to merge SBOMs',
           api.json.output(name='[CLEANUP]/tmp_tmp_1/spdx-out.json', data={})))

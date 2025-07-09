@@ -31,6 +31,9 @@ message InputProperties {
   // bq table for third party dependencies collected during the run
   string bq_thirdparty_table = 7;
 
+  // DEPRECATED. This tool has been replaced by the SSCI SBOM Generator; use
+  // ssci_sbom_version (see below) to specify the new tool's version.
+  //
   // version of the SSCI CIPD module to use
   string ssci_version = 8;
 

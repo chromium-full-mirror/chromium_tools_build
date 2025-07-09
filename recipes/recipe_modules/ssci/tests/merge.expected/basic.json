@@ -1,7 +1,7 @@
 [
   {
     "cmd": [],
-    "name": "install infra_internal/tools/ssci"
+    "name": "install infra_internal/tools/security/ssci_sbom"
   },
   {
     "cmd": [
@@ -13,7 +13,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra_internal/tools/ssci/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77"
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77"
     ],
     "infra_step": true,
     "luci_context": {
@@ -28,7 +28,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install infra_internal/tools/ssci.ensure package directory",
+    "name": "install infra_internal/tools/security/ssci_sbom.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -38,9 +38,9 @@
       "cipd",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra_internal/tools/ssci/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77",
       "-ensure-file",
-      "infra_internal/tools/ssci prod",
+      "infra_internal/tools/security/ssci_sbom/${platform} prod",
       "-max-threads",
       "0",
       "-json-output",
@@ -59,7 +59,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install infra_internal/tools/ssci.ensure_installed",
+    "name": "install infra_internal/tools/security/ssci_sbom.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -67,7 +67,7 @@
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-prod------------\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/tools/ssci\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/tools/security/ssci_sbom/resolved-platform\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    ]@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
@@ -79,7 +79,7 @@
     "cmd": [
       "cipd",
       "describe",
-      "infra_internal/tools/ssci",
+      "infra_internal/tools/security/ssci_sbom/${platform}",
       "-version",
       "prod",
       "-json-output",
@@ -98,13 +98,13 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "cipd describe infra_internal/tools/ssci",
+    "name": "cipd describe infra_internal/tools/security/ssci_sbom/${platform}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"pin\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"instance_id\": \"resolved-instance_id-of-prod------------\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra_internal/tools/ssci\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra_internal/tools/security/ssci_sbom/resolved-platform\"@@@",
       "@@@STEP_LOG_LINE@json.output@    },@@@",
       "@@@STEP_LOG_LINE@json.output@    \"refs\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
@@ -140,26 +140,22 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "--vpython-spec=.vpython3",
-      "-m",
-      "ssci",
-      "spdx",
-      "-ssci-version",
-      "vresolved-instance_id-of-prod------------",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77/ssci_sbom",
       "-output-file",
       "[CLEANUP]/tmp_tmp_1/spdx-out.json",
+      "-sbom-generator-version",
+      "vresolved-instance_id-of-prod------------",
       "-product",
       "merge..merged",
       "-product-version",
       "2d7251",
       "-platform",
       "linux_intel64",
-      "-document-paths",
+      "-document-path",
       "path1/path.spdx.json",
+      "-document-path",
       "path2/path.spdx.json"
     ],
-    "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/ssci/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -173,7 +169,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "run ssci tool to merge SBOMs"
+    "name": "run SSCI SBOM Generator to merge SBOMs"
   },
   {
     "cmd": [

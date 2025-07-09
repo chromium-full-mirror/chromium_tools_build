@@ -21,6 +21,8 @@ def RunSteps(api):
   custom_versions = {
       'infra_internal/tools/security/depbot/${platform}': '123',
       'infra_internal/tools/partybot': '456',
+      # The ssci tool has been deprecated, but specifying its version should not
+      # break anything.
       'infra_internal/tools/ssci': '789',
       'infra_internal/tools/security/ssci_sbom/${platform}': '1001',
   }
@@ -62,11 +64,6 @@ def GenTests(api):
           'SSCI collection.install infra_internal/tools/partybot.ensure_installed',
           'json.output',
           ['"instance_id": "resolved-instance_id-of-456-------------"']),
-      api.post_process(
-          post_process.LogContains,
-          'SSCI collection.install infra_internal/tools/ssci.ensure_installed',
-          'json.output',
-          ['"instance_id": "resolved-instance_id-of-789-------------"']),
       api.post_process(
           post_process.LogContains,
           'SSCI collection.install infra_internal/tools/security/ssci_sbom.ensure_installed',

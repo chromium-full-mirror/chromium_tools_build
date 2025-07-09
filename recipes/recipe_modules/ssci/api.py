@@ -52,9 +52,6 @@ class SsciAPI(recipe_api.RecipeApi):
     self.partybot = CIPDPkg(
         ensure_version=props.partybot_version or "prod",
         pkg_path="infra_internal/tools/partybot")
-    self.ssci_tool = CIPDPkg(
-        ensure_version=props.ssci_version or "prod",
-        pkg_path="infra_internal/tools/ssci")
     self.ssci_sbom = CIPDPkg(
         ensure_version=props.ssci_sbom_version or "prod",
         pkg_path="infra_internal/tools/security/ssci_sbom/${platform}")
@@ -63,8 +60,8 @@ class SsciAPI(recipe_api.RecipeApi):
         pkg_path="infra_internal/tools/security/ssci_uploader/${platform}")
 
     self.ssci_tools = [
-        self.depbot, self.bqupload, self.partybot, self.ssci_tool,
-        self.ssci_sbom, self.ssci_uploader
+        self.depbot, self.bqupload, self.partybot, self.ssci_sbom,
+        self.ssci_uploader
     ]
 
   @contextlib.contextmanager
@@ -501,7 +498,7 @@ class SsciAPI(recipe_api.RecipeApi):
       platform=None,
   ):
 
-    self._setup_ssci_tools(tools=[self.ssci_tool])
+    self._setup_ssci_tools(tools=[self.ssci_sbom])
 
     if platform is None:
       platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
@@ -512,32 +509,31 @@ class SsciAPI(recipe_api.RecipeApi):
 
     spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
 
-    with self.m.context(cwd=self.m.path.dirname(self.ssci_tool.tool_path)):
-      self.m.step(
-          'run ssci tool to merge SBOMs',
-          [
-              "vpython3",
-              "--vpython-spec=.vpython3",
-              "-m",
-              "ssci",
-              "spdx",
-              "-ssci-version",
-              self.ssci_tool.resolved_version,
-              "-output-file",
-              spdx_file,
-              "-product",
-              product,
-              "-product-version",
-              p_version,
-              "-platform",
-              platform,
-              "-document-paths",
-          ] + sbom_paths,
-          infra_step=True,
-          step_test_data=(lambda: self.m.json.test_api.output(
-              data=[{
-                  "spdx": "yes"
-              }], name="spdx")))
+    document_path_args = []
+    for sbom_path in sbom_paths:
+      document_path_args.extend(["-document-path", sbom_path])
+
+    # Merge SBOMs using the SSCI SBOM Generator.
+    self.m.step(
+        'run SSCI SBOM Generator to merge SBOMs',
+        [
+            self.ssci_sbom.tool_path,
+            "-output-file",
+            spdx_file,
+            "-sbom-generator-version",
+            self.ssci_sbom.resolved_version,
+            "-product",
+            product,
+            "-product-version",
+            p_version,
+            "-platform",
+            platform,
+        ] + document_path_args,
+        infra_step=True,
+        step_test_data=(lambda: self.m.json.test_api.output(
+            data=[{
+                "spdx": "yes"
+            }], name="ssci_sbom_spdx")))
 
     spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
 
