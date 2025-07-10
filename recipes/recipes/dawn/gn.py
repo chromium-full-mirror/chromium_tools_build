@@ -37,7 +37,7 @@ PROPERTIES = {
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
-def _checkout_steps(api, build_dawn_node):
+def _checkout_steps(api, debug, build_dawn_node):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
@@ -52,6 +52,8 @@ def _checkout_steps(api, build_dawn_node):
     # then to 'dawn' on bots here:
     api.gclient.c.solutions[0].custom_vars = {
         'dawn_root': 'dawn',
+        # Enable building WASM on Mac bots so that we have some coverage.
+        'dawn_wasm': 'True' if api.platform.is_mac and debug else 'False',
         'dawn_node': 'True' if build_dawn_node else 'False',
     }
     if api.siso.enabled:
@@ -211,7 +213,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   # On Windows, we use D3D12 WARP for dawn_node, otherwise we use SwiftShader
   dawn_node_uses_swiftshader = not api.platform.is_win
 
-  update_result = _checkout_steps(api, build_dawn_node)
+  update_result = _checkout_steps(api, debug, build_dawn_node)
   source_dir = update_result.source_root.path
   if gen_fuzz_corpus:
     _generate_fuzz_corpus(
@@ -342,6 +344,14 @@ def GenTests(api):
       'mac',
       api.siso.properties(),
       api.platform('mac', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='mac', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'mac_dbg',
+      api.siso.properties(),
+      api.platform('mac', 64),
+      api.properties(debug=True),
       api.buildbucket.ci_build(
           project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
