@@ -136,7 +136,7 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
   sw_kv.key = 'chromeos_build'
   sw_kv.value = opts.image
   req.pool = opts.pool
-  if opts.pool == 'DUT_POOL_QUOTA':
+  if opts.pool in ('DUT_POOL_QUOTA', 'chrome-gpu'):
     req.scheduler_info.scheduler = ctpv2.SchedulerInfo.SCHEDUKE
   else:
     req.scheduler_info.scheduler = ctpv2.SchedulerInfo.QSCHEDULER
