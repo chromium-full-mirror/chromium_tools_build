@@ -404,8 +404,10 @@ class SisoApi(recipe_api.RecipeApi):
   @contextlib.contextmanager
   def context(self):
     """Provides siso context for the step."""
-    with self.m.context(env={
-        'SISO_PROJECT': self.project,
-        'SISO_REAPI_INSTANCE': self.reapi_instance,
-    }):
+    env = {}
+    if self.project:
+      env['SISO_PROJECT'] = self.project
+    if self.reapi_instance:
+      env['SISO_REAPI_INSTANCE'] = self.reapi_instance
+    with self.m.context(env=env):
       yield
