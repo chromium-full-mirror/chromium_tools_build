@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import contextlib
 import itertools
 import traceback
@@ -1281,7 +1282,6 @@ class SwarmingGroup(TestGroup):
   def __init__(self, test_suites, resultdb):
     super().__init__(test_suites, resultdb)
     self._task_ids_to_test = {}
-    self._server = None
 
   def pre_run(self, api, suffix, include_utr_instruction=False):
     """Executes the |pre_run| method of each test."""
@@ -1304,12 +1304,6 @@ class SwarmingGroup(TestGroup):
         continue
       task = t.get_task(suffix)
 
-      if self._server is None:
-        self._server = task.server
-      elif self._server != task.server:
-        raise NotImplementedError(
-            'SwarmingGroups across multiple servers not supported.')
-
       task_ids = tuple(task.get_task_ids())
       self._task_ids_to_test[task_ids] = t
 
@@ -1329,18 +1323,28 @@ class SwarmingGroup(TestGroup):
       nest_name = 'collect tasks'
       if suffix:
         nest_name += ' (%s)' % suffix
+      all_finished_sets = []
       with api.step.nest(nest_name):
-        finished_sets, attempts = (
-            api.chromium_swarming.wait_for_finished_task_set(
-                list(self._task_ids_to_test),
-                suffix=((' (%s)' % suffix) if suffix else ''),
-                attempts=attempts,
-                server=self._server))
-        for task_set in finished_sets:
-          test = self._task_ids_to_test[tuple(task_set)]
-          api.test_utils.fetch_rdb_results(test, suffix)
+        server_to_task_ids = collections.defaultdict(list)
+        for task_ids, test in self._task_ids_to_test.items():
+          server_to_task_ids[test.get_task(suffix).server].append(task_ids)
+        # Dumbly invoke wait_for_finished_task_set() once for each server.
+        # Ideally we'd invoke it just once and it'd interleave finished_sets
+        # across multiple servers. As-is, it will likely return finished_sets
+        # in an unbalanced order.
+        for server, server_task_ids in server_to_task_ids.items():
+          finished_sets, attempts = (
+              api.chromium_swarming.wait_for_finished_task_set(
+                  server_task_ids,
+                  suffix=((' (%s)' % suffix) if suffix else ''),
+                  attempts=attempts,
+                  server=server))
+          all_finished_sets.extend(finished_sets)
+          for task_set in finished_sets:
+            test = self._task_ids_to_test[tuple(task_set)]
+            api.test_utils.fetch_rdb_results(test, suffix)
 
-      for task_set in finished_sets:
+      for task_set in all_finished_sets:
         test = self._task_ids_to_test[tuple(task_set)]
         test.run(checkout_dir, source_dir, build_dir, suffix)
         del self._task_ids_to_test[task_set]

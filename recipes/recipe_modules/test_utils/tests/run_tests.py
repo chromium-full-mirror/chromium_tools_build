@@ -635,9 +635,10 @@ def GenTests(api):
                   'server': 'swarming2.com'
               },
           }),
-      api.expect_exception('NotImplementedError'),
-      api.post_process(post_process.StatusException),
-      api.post_process(post_process.SummaryMarkdownRE,
-                       'SwarmingGroups across multiple servers not supported.'),
+      # Two "wait for tasks" steps, one for each server.
+      api.post_check(post_process.MustRun, 'collect tasks.wait for tasks'),
+      api.post_check(post_process.MustRun, 'collect tasks.wait for tasks (2)'),
+      api.post_check(post_process.MustRun, 'base_unittests'),
+      api.post_check(post_process.MustRun, 'base_unittests_2'),
       api.post_process(post_process.DropExpectation),
   )
