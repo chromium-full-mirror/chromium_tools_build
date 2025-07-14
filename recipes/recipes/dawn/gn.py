@@ -127,7 +127,7 @@ def _gn_build(source_dir, flavor, api, **kwargs):
   yield build
 
 
-def _generate_fuzz_corpus(api, source_dir, **kwargs):
+def _generate_dawn_corpus(api, source_dir, **kwargs):
   # SwiftShader builds must be a component build
   kwargs.update({
       'is_component_build': True,
@@ -179,6 +179,45 @@ def _generate_fuzz_corpus(api, source_dir, **kwargs):
         parallel_upload=True,
         multithreaded=True,
         name='Upload to the {} seed corpus'.format(fuzzer_name))
+
+
+def _generate_tint_corpus(api, source_dir, name, cmd_flags=None):
+  if cmd_flags is None:
+    cmd_flags = []
+
+  generator_script = source_dir.joinpath('src', 'tint', 'cmd', 'fuzz',
+                                         'generate_tint_corpus.py')
+  input_dir = source_dir.joinpath('test', 'tint')
+  output_dir = api.path.tmp_base_dir / name
+  api.file.ensure_directory('mkdir {}'.format(output_dir), output_dir)
+  gen_cmd = (['python3', generator_script, input_dir, output_dir] + cmd_flags)
+  api.step('Generate tint_{}_fuzzer corpus'.format(name), gen_cmd)
+  api.gsutil.upload(
+      output_dir,
+      'clusterfuzz-corpus',
+      'libfuzzer/tint_{}_fuzzer'.format(name),
+      args=['-r'],  # recursive
+      parallel_upload=True,
+      multithreaded=True,
+      name='Upload to the tint_{}_fuzzer seed corpus'.format(name))
+
+
+def _generate_fuzz_corpus(api, source_dir, **kwargs):
+  _generate_dawn_corpus(api, source_dir, **kwargs)
+
+  # WGSL generation does not need any additional binaries
+  _generate_tint_corpus(api, source_dir, 'wgsl')
+
+  # IR generation needs ir_fuzz_as
+  kwargs.update({
+      'dawn_use_swiftshader': False,
+      'tint_has_fuzzers': True,
+      'tint_build_ir_binary': True,
+  })
+  with _gn_build(source_dir, 'tint corpus tools', api, **kwargs) as build:
+    ir_fuzz_as = build('ir_fuzz_as')[0]
+  _generate_tint_corpus(api, source_dir, 'ir',
+                        ['--ir_as={}'.format(ir_fuzz_as)])
 
 
 def _run_dawn_node_test(api, source_dir, dawn_node_exe,

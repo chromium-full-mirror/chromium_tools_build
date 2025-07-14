@@ -462,6 +462,234 @@
     ]
   },
   {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[TMP_BASE]/wgsl"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "mkdir [TMP_BASE]/wgsl"
+  },
+  {
+    "cmd": [
+      "python3",
+      "[CACHE]/builder/dawn/src/tint/cmd/fuzz/generate_tint_corpus.py",
+      "[CACHE]/builder/dawn/test/tint",
+      "[TMP_BASE]/wgsl"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Generate tint_wgsl_fuzzer corpus"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "-o",
+      "GSUtil:parallel_composite_upload_threshold=50M",
+      "-m",
+      "----",
+      "cp",
+      "-r",
+      "[TMP_BASE]/wgsl",
+      "gs://clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil Upload to the tint_wgsl_fuzzer seed corpus",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "--root=[CACHE]/builder/dawn",
+      "gen",
+      "//out/a518e441c1f274243c5cc1919cbfba93a3ea1e00",
+      "--args=is_debug=false dawn_use_swiftshader=false tint_has_fuzzers=true tint_build_ir_binary=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_siso=true use_remoteexec=true use_reclient=false"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gn gen (2)"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/dawn/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-C",
+      "[CACHE]/builder/dawn/out/a518e441c1f274243c5cc1919cbfba93a3ea1e00",
+      "ir_fuzz_as"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile tint corpus tools with siso"
+  },
+  {
+    "cmd": [],
+    "name": "upload siso reports (2)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@compile tint corpus tools with siso@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[TMP_BASE]/ir"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "mkdir [TMP_BASE]/ir"
+  },
+  {
+    "cmd": [
+      "python3",
+      "[CACHE]/builder/dawn/src/tint/cmd/fuzz/generate_tint_corpus.py",
+      "[CACHE]/builder/dawn/test/tint",
+      "[TMP_BASE]/ir",
+      "--ir_as=[CACHE]/builder/dawn/out/a518e441c1f274243c5cc1919cbfba93a3ea1e00/ir_fuzz_as"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Generate tint_ir_fuzzer corpus"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "-o",
+      "GSUtil:parallel_composite_upload_threshold=50M",
+      "-m",
+      "----",
+      "cp",
+      "-r",
+      "[TMP_BASE]/ir",
+      "gs://clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil Upload to the tint_ir_fuzzer seed corpus",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]
