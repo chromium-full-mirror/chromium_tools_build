@@ -7,6 +7,7 @@ DEPS = [
     'chromium_rts',
     'chromium_tests',
     'recipe_engine/json',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/swarming',
@@ -31,18 +32,15 @@ def RunSteps(api):
   api.m.chromium_rts.rts_model = 'smart-test-selection'
   assert (api.m.chromium_rts.enabled)
 
-  api.m.chromium_rts.setup_tests(tests)
-  api.m.chromium_rts.generate_filter_files(tests)
-  if supports_rts:
-    assert (tests[0].is_rts)
-
-  api.m.chromium_rts.setup_tests(tests)
-
   mb_args = api.m.chromium_rts.mb_args()
   assert (mb_args[0] == '--rts-model')
   assert (mb_args[1] == 'smart-test-selection')
   assert (mb_args[2] == '--sts-config-file')
 
+  api.m.chromium_rts.setup_tests(tests)
+  if supports_rts:
+    assert (tests[0].is_rts)
+  api.m.chromium_rts.generate_filter_files(api.path.cleanup_dir, tests)
 
 def GenTests(api):
 
@@ -69,6 +67,11 @@ def GenTests(api):
                   "patchset": 12
               })
           ]),
+      api.post_process(post_process.MustRun,
+                       'fetch RTS results.Fetch test selection results'),
+      api.post_process(post_process.StepCommandContains,
+                       'fetch RTS results.Fetch test selection results',
+                       ['--filter-file-dir']),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -97,6 +100,11 @@ def GenTests(api):
                   "patchset": 12
               })
           ]),
+      api.post_process(post_process.MustRun,
+                       'fetch RTS results.Fetch test selection results'),
+      api.post_process(post_process.StepCommandContains,
+                       'fetch RTS results.Fetch test selection results',
+                       ['--filter-file-dir']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -125,5 +133,20 @@ def GenTests(api):
                   "patchset": 12
               })
           ]),
+      api.post_process(post_process.MustRun,
+                       'fetch RTS results.Fetch test selection results'),
+      api.post_process(post_process.StepCommandContains,
+                       'fetch RTS results.Fetch test selection results',
+                       ['--filter-file-dir']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'skip_test_selection',
+      api.chromium.try_build(
+          experiments=['chromium_rts.rts'], build_id=_COMPILATOR_BUILD_ID),
+      api.properties(supports_rts=False),
+      api.post_process(post_process.MustRun,
+                       'No candidate test targets for smart test selection'),
       api.post_process(post_process.DropExpectation),
   )
