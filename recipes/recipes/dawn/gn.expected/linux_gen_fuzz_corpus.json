@@ -522,7 +522,7 @@
       "----",
       "cp",
       "-r",
-      "[TMP_BASE]/wgsl",
+      "[TMP_BASE]/wgsl/*",
       "gs://clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer"
     ],
     "infra_step": true,
@@ -668,7 +668,7 @@
       "----",
       "cp",
       "-r",
-      "[TMP_BASE]/ir",
+      "[TMP_BASE]/ir/*",
       "gs://clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer"
     ],
     "infra_step": true,

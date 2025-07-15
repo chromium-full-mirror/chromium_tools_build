@@ -193,7 +193,7 @@ def _generate_tint_corpus(api, source_dir, name, cmd_flags=None):
   gen_cmd = (['python3', generator_script, input_dir, output_dir] + cmd_flags)
   api.step('Generate tint_{}_fuzzer corpus'.format(name), gen_cmd)
   api.gsutil.upload(
-      output_dir,
+      output_dir.joinpath('*'),
       'clusterfuzz-corpus',
       'libfuzzer/tint_{}_fuzzer'.format(name),
       args=['-r'],  # recursive
