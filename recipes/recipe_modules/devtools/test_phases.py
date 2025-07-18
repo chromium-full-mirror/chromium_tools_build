@@ -143,5 +143,5 @@ class FlakeDetectionPhase(TestRunPhase):
   def _query_git(self, command):
     """ Find files that were changed in the current patch."""
     filter_deleted = '--diff-filter=d'
-    return self.api.v8.git_output(command, '--name-only', '--format=""',
+    return self.api.v8.git_output(command, '--name-only', '--format=',
                                   filter_deleted).splitlines()

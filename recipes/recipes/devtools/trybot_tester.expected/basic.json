@@ -4541,7 +4541,7 @@
       "git",
       "diff",
       "--name-only",
-      "--format=\"\"",
+      "--format=",
       "--diff-filter=d"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
@@ -4569,7 +4569,7 @@
       "git",
       "show",
       "--name-only",
-      "--format=\"\"",
+      "--format=",
       "--diff-filter=d"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
