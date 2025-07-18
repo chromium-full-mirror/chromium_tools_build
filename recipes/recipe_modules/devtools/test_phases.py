@@ -119,11 +119,7 @@ class FlakeDetectionPhase(TestRunPhase):
   def init_phase(self):
     with self.api.step.nest("find new tests") as presentation:
       with self.api.context(cwd=self.api.devtools.source_dir):
-        git_show = self.api.v8.git_output('show', '--name-only',
-                                          '--format=').splitlines()
-        self.test_files = [
-            file for file in git_show if file.endswith('test.ts')
-        ]
+        self.test_files = self._find_touched_tests()
         presentation.logs['tests'] = self.test_files
 
   def nesting_name(self):
@@ -134,3 +130,18 @@ class FlakeDetectionPhase(TestRunPhase):
 
   def process_results(self, runner):
     runner.process_flake_detection_results(self.test_files)
+
+  def _find_touched_tests(self):
+    """ Diff should not find anything since the current patch is applied on ToT,
+    and normally show is what reveals the current changes. In some cases though
+    (b/431698126), diff will find the changes, probably because in those
+    situations the current patch is not applied correctly on bot checkouts.
+    """
+    git_changes = self._query_git('diff') or self._query_git('show')
+    return [file for file in git_changes if file.endswith('test.ts')]
+
+  def _query_git(self, command):
+    """ Find files that were changed in the current patch."""
+    filter_deleted = '--diff-filter=d'
+    return self.api.v8.git_output(command, '--name-only', '--format=""',
+                                  filter_deleted).splitlines()
