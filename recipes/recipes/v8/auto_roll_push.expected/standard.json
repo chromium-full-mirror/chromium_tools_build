@@ -106,6 +106,9 @@
       "[CACHE]/workdir"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "SKIP_GCE_AUTH_FOR_GIT": "1"
+    },
     "name": "push candidate"
   },
   {

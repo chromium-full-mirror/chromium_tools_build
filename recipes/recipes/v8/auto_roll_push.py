@@ -22,10 +22,9 @@ def RunSteps(api):
   update_result = api.v8.checkout()
 
   source_dir = update_result.source_root.path
-  with api.context(cwd=source_dir):
+  with api.context(cwd=source_dir, env={'SKIP_GCE_AUTH_FOR_GIT': '1'}):
     safe_buildername = ''.join(
         c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
-    push_arg = ['--push']
     push_account = (
         # TODO(sergiyb): Replace with api.service_account.default().get_email()
         # when https://crbug.com/846923 is resolved.
@@ -33,8 +32,9 @@ def RunSteps(api):
     api.v8.python(
         'push candidate',
         source_dir.joinpath('tools', 'release', 'auto_push.py'),
-        push_arg + [
-            '--author', push_account, '--reviewer', push_account, '--work-dir',
+        [
+            '--push', '--author', push_account, '--reviewer', push_account,
+            '--work-dir',
             api.path.cache_dir.joinpath(safe_buildername, 'workdir')
         ],
     )
