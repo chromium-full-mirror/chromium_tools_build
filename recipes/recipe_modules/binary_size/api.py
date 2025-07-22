@@ -244,8 +244,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
       self.m.chromium_tests.check_builder_cache(
           self.m.chromium_checkout.default_checkout_dir)
       gs_zip_path = None
+      checkout_kwargs = {'set_output_commit': True}
       if not try_gs_analysis:
-        update_result = self.m.chromium_checkout.ensure_checkout()
+        update_result = self.m.chromium_checkout.ensure_checkout(
+            **checkout_kwargs)
       else:
         patch_parent_revision = revision_info['commit']['parents'][0]['commit']
         gs_zip_path, recent_upload_revision = self._get_recent_tot_analysis_path(
@@ -255,6 +257,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
         try:
           update_result = self.m.chromium_checkout.ensure_checkout(
+              **checkout_kwargs,
               # Make sure that the git cache is refreshed with another origin
               # fetch to get a correct diff of the patch
               enforce_fetch=True)
@@ -263,7 +266,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
           # analysis. Use the most recent trunk commit instead.
           self.m.gclient.c.solutions[0].revision = None
           gs_zip_path = None
-          update_result = self.m.chromium_checkout.ensure_checkout()
+          update_result = self.m.chromium_checkout.ensure_checkout(
+              **checkout_kwargs)
 
       checkout_dir = update_result.checkout_dir
       source_dir = update_result.source_root.path
