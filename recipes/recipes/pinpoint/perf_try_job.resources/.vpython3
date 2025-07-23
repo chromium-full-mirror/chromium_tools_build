@@ -104,3 +104,7 @@ wheel: <
   name: "infra/python/wheels/pyasn1-py2_py3"
   version: "version:0.4.8"
 >
+wheel: <
+  name: "infra/python/wheels/charset_normalizer-py3"
+  version: "version:3.3.2"
+>

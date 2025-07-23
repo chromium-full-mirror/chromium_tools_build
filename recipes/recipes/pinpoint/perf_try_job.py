@@ -90,6 +90,22 @@ def _get_user(api, gerrit_change):
   return user
 
 
+def _ask_gemini(api):
+  ask_gemini = api.properties.get('ask_gemini')
+  # Remove API KEY after switching to keyless authentication.
+  gemini_api_key = api.properties.get('gemini_api_key')
+  if ask_gemini and gemini_api_key:
+    cmd = [
+        'vpython3',
+        api.resource('ask_gemini.py'),
+        '--gemini_api_key',
+        gemini_api_key,
+    ]
+    api.step('Use Gemini to analyze changes', cmd, infra_step=True)
+    return
+  api.step.empty('Skip Gemini!')
+
+
 def _should_run_perf_on_cq(file_names, static_map, benchmark, story):
   for file in file_names:
     affected_benchmakrs = static_map.get(file, {})
@@ -182,6 +198,9 @@ def RunSteps(api, properties):
           status=common_pb2.SUCCESS,
           summary_markdown=('Gerrit result shows no file is changed.'))
 
+    # 0. Experimenting with Gemini to predict and log performance regressions.
+    _ask_gemini(api)
+
     # 1. Use static map to decide whether we need to trigger the try job.
     static_map = _load_static_map(api)
     if not _should_run_perf_on_cq(
@@ -210,8 +229,8 @@ def RunSteps(api, properties):
 
     if not invoke_cmd_result.stdout:
       return result_pb2.RawResult(
-        status=common_pb2.FAILURE,
-        summary_markdown=('Failed to trigger Pinpoint try job.'))
+          status=common_pb2.FAILURE,
+          summary_markdown=('Failed to trigger Pinpoint try job.'))
 
     # 3. Print the Pinpoint try job url.
     job_id = invoke_cmd_result.stdout.get('response', {}).get('jobId')
@@ -300,6 +319,9 @@ def GenTests(api):
   mock_properties_less_impact = dict(mock_properties)
   mock_properties_less_impact['benchmark'] = 'fake-benchmark-less'
   mock_properties_less_impact['story'] = 'fake-story-less'
+  mock_properties_gemini = dict(mock_properties_less_impact)
+  mock_properties_gemini['ask_gemini'] = True
+  mock_properties_gemini['gemini_api_key'] = 'fake_api_key'
   mock_try_build = {
       'builder_group': 'fake-try-group',
       'builder': 'fake-perf',
@@ -777,4 +799,19 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'CABE analysis finished.'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
+  )
+  yield api.test(
+      'run_ask_gemini',
+      api.chromium.try_build(**mock_try_build),
+      api.properties(**mock_properties_gemini),
+      api.override_step_data(
+          'Use Gemini to analyze changes', stdout=api.raw_io.output('foo')),
+      api.override_step_data(
+          'gerrit loads current patchset (16) from change 666666',
+          api.json.output(mock_gerrit_cl_info)),
+      # the file has less impact than the threshold
+      api.post_process(post_process.DoesNotRun,
+                       'Trigger Performance Test fake-benchmark'),
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )
