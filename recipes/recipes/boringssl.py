@@ -74,6 +74,11 @@ PROPERTIES = {
     'run_ssl_tests':
         Property(
             default=True, kind=bool, help='whether to run SSL protocol tests'),
+    'rust':
+        Property(
+            default=False,
+            kind=bool,
+            help='whether to build and test the Rust crates'),
     'sde':
         Property(default=False, kind=bool, help='whether to run tests on SDE'),
 }
@@ -114,7 +119,8 @@ def _GetHostCMakeArgs(platform, bot_utils):
 class _Config:
 
   def __init__(self, android, buildername, clang, cmake_args, gclient_vars,
-               msvc_target, runner_args, run_ssl_tests, run_unit_tests, sde):
+               msvc_target, runner_args, run_ssl_tests, run_unit_tests, rust,
+               sde):
     self.android = android
     self.buildername = buildername
     self.clang = clang
@@ -124,6 +130,7 @@ class _Config:
     self.runner_args = runner_args
     self.run_ssl_tests = run_ssl_tests
     self.run_unit_tests = run_unit_tests
+    self.rust = rust
     self.sde = sde
 
     if self.has_token('android'):
@@ -141,6 +148,8 @@ class _Config:
     ret = {}
     if self.clang:
       ret['checkout_clang'] = True
+    if self.rust:
+      ret['checkout_rust'] = True
     if self.sde:
       ret['checkout_sde'] = True
     if platform.is_win:
@@ -201,7 +210,7 @@ def _CleanupMSVC(api):
 
 def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
              check_stack, clang, cmake_args, gclient_vars, msvc_target,
-             runner_args, run_ssl_tests, run_unit_tests, sde):
+             runner_args, run_ssl_tests, run_unit_tests, rust, sde):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
       android=android,
@@ -213,7 +222,17 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
       runner_args=runner_args,
       run_ssl_tests=run_ssl_tests,
       run_unit_tests=run_unit_tests,
+      rust=rust,
       sde=sde)
+
+  # Validate the Rust configuration.
+  if config.rust:
+    rust_bindings_found = 'RUST_BINDINGS' in config.cmake_args
+    api.step.empty(
+        'check for RUST_BINDINGS',
+        status=(api.step.SUCCESS if rust_bindings_found else api.step.FAILURE),
+        step_text=('RUST_BINDINGS %s found in cmake_args' %
+                   ('was' if rust_bindings_found else 'was not')))
 
   # Print the kernel version on Linux builders. BoringSSL is sensitive to
   # whether the kernel has getrandom support.
@@ -241,6 +260,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   build_dir = src.joinpath('build')
   runner_dir = src.joinpath('ssl', 'test', 'runner')
   ninja_path = bot_utils.joinpath('ninja', 'ninja')
+  rust_dir = src.joinpath('rust')
 
   env = {}
   env_prefixes = {}
@@ -253,6 +273,11 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   # Disable modifications to go.mod so missing entries are treated as an error
   # instead.
   env['GOFLAGS'] = '-mod=readonly'
+  if config.rust:
+    # Point to packaged copy of Rust toolchain, containing bindgen and cargo.
+    env_prefixes['PATH'].append(bot_utils / 'rust-toolchain' / 'bin')
+    # Point to the build directory where bindgen output is expected.
+    env['BORINGSSL_BUILD_DIR'] = build_dir
   with api.context(
       env=env,
       env_prefixes=env_prefixes), api.osx_sdk('ios'), _CleanupMSVC(api):
@@ -381,6 +406,15 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
             defer(api.step, 'ssl tests',
                   msvc_prefix + ['go', 'test'] + runner_args)
 
+      # Build and test the Rust crates.
+      if config.rust:
+        cargo = 'cargo' + _GetHostExeSuffix(api.platform)
+        with api.context(cwd=rust_dir):
+          defer(api.step, 'build Rust crates',
+                [cargo, 'build', '--tests', '--keep-going'])
+          defer(api.step, 'test Rust crates',
+                [cargo, 'test', '--all-targets', '--no-fail-fast'])
+
 
 def _CIBuild(api, builder):
   return api.buildbucket.ci_build(
@@ -428,6 +462,12 @@ def GenTests(api):
               "BUILD_SHARED_LIBS": "1",
           },
           "check_imported_libraries": True,
+      }),
+      ('linux_rust', api.platform('linux', 64), {
+          "cmake_args": {
+              "RUST_BINDINGS": "x86_64-unknown-linux-gnu",
+          },
+          "rust": True,
       }),
   ]
   for (buildername, host_platform, props) in tests:
@@ -491,6 +531,14 @@ def GenTests(api):
       api.properties(
           cmake_args={"CMAKE_BUILD_TYPE": "RelWithAsserts"},
           run_ssl_tests=False),
+  )
+
+  yield api.test(
+      'failed_rust_bindings_missing',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.properties(rust=True),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
