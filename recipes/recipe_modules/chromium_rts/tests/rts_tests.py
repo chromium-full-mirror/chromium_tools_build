@@ -40,7 +40,8 @@ def RunSteps(api):
   api.m.chromium_rts.setup_tests(tests)
   if supports_rts:
     assert (tests[0].is_rts)
-  api.m.chromium_rts.generate_filter_files(api.path.cleanup_dir, tests)
+  api.m.chromium_rts.generate_filter_files(api.path.cleanup_dir,
+                                           api.path.cleanup_dir, tests)
 
 def GenTests(api):
 
@@ -67,11 +68,12 @@ def GenTests(api):
                   "patchset": 12
               })
           ]),
-      api.post_process(post_process.MustRun,
-                       'fetch RTS results.Fetch test selection results'),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
       api.post_process(post_process.StepCommandContains,
-                       'fetch RTS results.Fetch test selection results',
-                       ['--filter-file-dir']),
+                       'Fetch test selection results',
+                       ['--test-selection-phase', 'FETCH']),
+      api.post_process(post_process.StepCommandContains,
+                       'Fetch test selection results', ['--filter-file-dir']),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -100,11 +102,12 @@ def GenTests(api):
                   "patchset": 12
               })
           ]),
-      api.post_process(post_process.MustRun,
-                       'fetch RTS results.Fetch test selection results'),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
       api.post_process(post_process.StepCommandContains,
-                       'fetch RTS results.Fetch test selection results',
-                       ['--filter-file-dir']),
+                       'Fetch test selection results',
+                       ['--test-selection-phase', 'FETCH']),
+      api.post_process(post_process.StepCommandContains,
+                       'Fetch test selection results', ['--filter-file-dir']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -133,11 +136,12 @@ def GenTests(api):
                   "patchset": 12
               })
           ]),
-      api.post_process(post_process.MustRun,
-                       'fetch RTS results.Fetch test selection results'),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
       api.post_process(post_process.StepCommandContains,
-                       'fetch RTS results.Fetch test selection results',
-                       ['--filter-file-dir']),
+                       'Fetch test selection results',
+                       ['--test-selection-phase', 'FETCH']),
+      api.post_process(post_process.StepCommandContains,
+                       'Fetch test selection results', ['--filter-file-dir']),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -16,6 +16,7 @@ _SMART_TEST_SELECTION_MODEL = 'smart-test-selection'
 _API_KEY_HOLDER_PROJECT = 'findit-for-me'
 _API_KEY_SECRET = 'decisiongraph_api_key'
 
+_DGI_SCRIPT_PATH = 'tools/test_selection/decisiongraph_invoker.py'
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
   """A module for interacting with rts."""
@@ -55,7 +56,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         disabled = footer_vals[-1].lower() == 'true'
     return disabled
 
-  def generate_filter_files(self, build_dir, tests):
+  def generate_filter_files(self, src_dir, build_dir, tests):
     """Generates .filter files for the given tests.
     """
     if self._rts_model == _SMART_TEST_SELECTION_MODEL:
@@ -63,29 +64,17 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       if not target_set:
         self.m.step.empty('No candidate test targets for smart test selection')
         return
-      gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
-      with self.m.secret_manager.fetch(
-          project=_API_KEY_HOLDER_PROJECT,
-          secret=_API_KEY_SECRET,
-          step_name='fetch RTS results') as api_key:
-        key_file = self.m.path.mkstemp()
-        self.m.file.write_text(
-            name='write api_key to disk',
-            dest=key_file,
-            text_data=api_key,
-            include_log=False)
-        filter_file_dir = (build_dir / 'gen' / 'rts')
-        cmd = ['vpython3', self.resource('decisiongraph_invoker.py')]
-        cmd.append('--test-targets')
-        cmd.extend(target_set)
-        cmd.extend([
-            '--build-id', self.test_executor_build_id, '--change',
-            gerrit_change.change, '--patchset', gerrit_change.patchset,
-            '--builder', self.m.buildbucket.build.builder.builder,
-            '--filter-file-dir', filter_file_dir, '--api-key-file', key_file
-        ])
-        self.m.step('Fetch test selection results', cmd)
-        self.m.file.remove('remove api_key file', source=key_file)
+      sts_input_json_path = self._create_sts_input_json()
+      filter_file_dir = (build_dir / 'gen' / 'rts')
+      dgi_script_path = (src_dir / _DGI_SCRIPT_PATH)
+      cmd = ['vpython3', self.resource(dgi_script_path)]
+      cmd.append('--test-targets')
+      cmd.extend(target_set)
+      cmd.extend([
+          '--sts-config-file', sts_input_json_path, '--test-selection-phase',
+          'FETCH', '--filter-file-dir', filter_file_dir
+      ])
+      self.m.step('Fetch test selection results', cmd)
 
   def setup_tests(self, tests):
     """Sets the given tests up to be run with RTS

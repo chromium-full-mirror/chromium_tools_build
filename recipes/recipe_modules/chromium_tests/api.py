@@ -2802,7 +2802,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         tests = []
 
     tests = self.m.chromium_rts.setup_tests(tests)
-    self.m.chromium_rts.generate_filter_files(build_dir, tests)
+    self.m.chromium_rts.generate_filter_files(source_dir, build_dir, tests)
 
     task = Task(
         builder_config=builder_config,
