@@ -141,11 +141,6 @@ class _Config:
     self.rust = rust
     self.sde = sde
 
-    if self.has_token('android'):
-      self.android = True
-    if self.has_token('sde'):
-      self.sde = True
-
   def has_token(self, token):
     # Builder names are a sequence of tokens separated by underscores.
     #
@@ -461,6 +456,7 @@ def GenTests(api):
           'msvc_target': 'x64'
       }),
       ('android_aarch64', api.platform('linux', 64), {
+          "android": True,
           "cmake_args": {
               "ANDROID_ABI": "arm64-v8a",
               "ANDROID_PLATFORM": "android-21",
@@ -543,7 +539,8 @@ def GenTests(api):
       mock_go_tests,
       api.properties(
           cmake_args={"CMAKE_BUILD_TYPE": "RelWithAsserts"},
-          run_ssl_tests=False),
+          run_ssl_tests=False,
+          sde=True),
   )
 
   yield api.test(
