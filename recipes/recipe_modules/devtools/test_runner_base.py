@@ -189,7 +189,7 @@ class DevToolsTests(ABC):
         '--artifacts-dir=${ISOLATED_OUTDIR}',
         '--skip-ninja',
         '--verbose=2',
-        '--on-diff=update',  # only used for screenshots tests; nop for others
+        '--on-diff=throw',  # only used for screenshots tests; nop for others
     ]
     if self.coverage:
       command.append('--coverage')

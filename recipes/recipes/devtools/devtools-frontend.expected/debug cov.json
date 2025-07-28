@@ -712,7 +712,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_LINE@command@--coverage@@@",
       "@@@STEP_LOG_LINE@command@front_end@@@",
       "@@@STEP_LOG_END@command@@@"
@@ -814,7 +814,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Unit Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:Unit\", \"project:devtools\", \"spec_name:devtools.ci:linux\", \"stepname:Unit Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"--coverage\", \"front_end\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Unit Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:Unit\", \"project:devtools\", \"spec_name:devtools.ci:linux\", \"stepname:Unit Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--coverage\", \"front_end\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -909,7 +909,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--coverage\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"front_end\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -1059,7 +1059,7 @@
     "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Debug/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update --coverage front_end```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Debug/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --coverage front_end```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

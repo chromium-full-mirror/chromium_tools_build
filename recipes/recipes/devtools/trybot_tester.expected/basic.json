@@ -560,7 +560,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_LINE@command@front_end@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
@@ -651,7 +651,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Unit Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Unit\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:Unit Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"front_end\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Unit Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Unit\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:Unit Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"front_end\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -741,7 +741,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"front_end\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
@@ -871,7 +871,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -882,7 +882,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -972,7 +972,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1028,7 +1028,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -1039,7 +1039,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1129,7 +1129,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1185,7 +1185,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -1196,7 +1196,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1286,7 +1286,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1342,7 +1342,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -1353,7 +1353,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1443,7 +1443,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1680,7 +1680,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -1691,7 +1691,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1781,7 +1781,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1837,7 +1837,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -1848,7 +1848,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1938,7 +1938,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1994,7 +1994,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -2005,7 +2005,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2095,7 +2095,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -2151,7 +2151,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -2162,7 +2162,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2252,7 +2252,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -3314,7 +3314,7 @@
     "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update front_end```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw front_end```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3415,7 +3415,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3502,7 +3502,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3589,7 +3589,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3676,7 +3676,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3777,7 +3777,7 @@
     "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3864,7 +3864,7 @@
     "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3951,7 +3951,7 @@
     "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4038,7 +4038,7 @@
     "name": "Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4630,7 +4630,7 @@
       "@@@STEP_LOG_LINE@command@--artifacts-dir=${ISOLATED_OUTDIR}@@@",
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
-      "@@@STEP_LOG_LINE@command@--on-diff=update@@@",
+      "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
       "@@@STEP_LOG_LINE@command@--repeat=10@@@",
       "@@@STEP_LOG_LINE@command@test/e2e_non_hosted/performance/selector-stats-tracing_test.ts@@@",
       "@@@STEP_LOG_END@command@@@"
@@ -4643,7 +4643,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=update\", \"--repeat=10\", \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--repeat=10\", \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -4733,7 +4733,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=update\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--repeat=10\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -4877,7 +4877,7 @@
     "name": "Detect flakes in new tests.E2E Tests (non-hosted) (flake detection).E2E Tests (non-hosted) (flake detection) shards results.E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=update --repeat=10 test/e2e_non_hosted/performance/selector-stats-tracing_test.ts```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --repeat=10 test/e2e_non_hosted/performance/selector-stats-tracing_test.ts```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
