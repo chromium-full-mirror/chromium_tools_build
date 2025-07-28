@@ -317,6 +317,42 @@
   },
   {
     "cmd": [
+      "cargo",
+      "build",
+      "--all-targets",
+      "--keep-going"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/rust",
+    "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
+      "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin",
+        "[CACHE]/builder/boringssl/util/bot/rust-toolchain/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "cargo build"
+  },
+  {
+    "cmd": [
       "go",
       "run",
       "[CACHE]/builder/boringssl/util/check_filenames.go"
@@ -506,42 +542,6 @@
   {
     "cmd": [
       "cargo",
-      "build",
-      "--tests",
-      "--keep-going"
-    ],
-    "cwd": "[CACHE]/builder/boringssl/rust",
-    "env": {
-      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
-      "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
-      "GOCACHE": "[CACHE]/gocache",
-      "GOFLAGS": "-mod=readonly",
-      "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/boringssl/util/bot/golang/bin",
-        "[CACHE]/builder/boringssl/util/bot/rust-toolchain/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "boringssl:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "build Rust crates"
-  },
-  {
-    "cmd": [
-      "cargo",
       "test",
       "--all-targets",
       "--no-fail-fast"
@@ -573,7 +573,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test Rust crates"
+    "name": "rust tests"
   },
   {
     "name": "$result"

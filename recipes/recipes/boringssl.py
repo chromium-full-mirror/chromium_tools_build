@@ -324,6 +324,13 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
           ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] + [src])
     api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir])
 
+    # Build the Rust crates.
+    cargo = 'cargo' + _GetHostExeSuffix(api.platform)
+    if config.rust:
+      with api.context(cwd=rust_dir):
+        api.step('cargo build',
+                 [cargo, 'build', '--all-targets', '--keep-going'])
+
     with api.defer.context() as defer:
       if check_imported_libraries:
         defer(api.step, 'check imported libraries', [
@@ -414,13 +421,10 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
             defer(api.step, 'ssl tests',
                   msvc_prefix + ['go', 'test'] + runner_args)
 
-      # Build and test the Rust crates.
+      # Run the Rust tests.
       if config.rust:
-        cargo = 'cargo' + _GetHostExeSuffix(api.platform)
         with api.context(cwd=rust_dir):
-          defer(api.step, 'build Rust crates',
-                [cargo, 'build', '--tests', '--keep-going'])
-          defer(api.step, 'test Rust crates',
+          defer(api.step, 'rust tests',
                 [cargo, 'test', '--all-targets', '--no-fail-fast'])
 
 
