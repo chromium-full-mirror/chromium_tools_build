@@ -147,6 +147,25 @@
   },
   {
     "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/llvm-build/bin/clang",
+      "-print-resource-dir"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "get clang resource dir"
+  },
+  {
+    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
@@ -156,6 +175,7 @@
       "[CACHE]/builder/boringssl/build"
     ],
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -196,6 +216,7 @@
       "[CACHE]/builder/boringssl/build"
     ],
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -233,6 +254,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl/build",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -266,6 +288,7 @@
       "[CACHE]/builder/boringssl/build"
     ],
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -300,6 +323,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -339,6 +363,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -381,6 +406,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -415,6 +441,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -449,6 +476,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl/ssl/test/runner",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -484,6 +512,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl/rust",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -519,6 +548,7 @@
     ],
     "cwd": "[CACHE]/builder/boringssl/rust",
     "env": {
+      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
       "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",

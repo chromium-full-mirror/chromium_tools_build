@@ -18,6 +18,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
 
@@ -116,6 +117,13 @@ def _GetHostCMakeArgs(platform, bot_utils):
   return args
 
 
+def _GetClangPath(platform, bot_utils, cxx):
+  if platform.is_win:
+    return bot_utils.joinpath('llvm-build', 'bin', 'clang-cl.exe')
+  return bot_utils.joinpath('llvm-build', 'bin',
+                            ('clang++' if cxx else 'clang'))
+
+
 class _Config:
 
   def __init__(self, android, buildername, clang, cmake_args, gclient_vars,
@@ -161,15 +169,11 @@ class _Config:
     bot_utils = src.joinpath('util', 'bot')
     args = {'CMAKE_MAKE_PROGRAM': ninja_path}
     if self.clang:
-      if platform.is_win:
-        args['CMAKE_C_COMPILER'] = _WindowsCMakeWorkaround(
-            bot_utils.joinpath('llvm-build', 'bin', 'clang-cl.exe'))
-        args['CMAKE_CXX_COMPILER'] = _WindowsCMakeWorkaround(
-            bot_utils.joinpath('llvm-build', 'bin', 'clang-cl.exe'))
-      else:
-        args['CMAKE_C_COMPILER'] = bot_utils / 'llvm-build' / 'bin' / 'clang'
-        args['CMAKE_CXX_COMPILER'] = bot_utils.joinpath('llvm-build', 'bin',
-                                                        'clang++')
+      adjust_path = _WindowsCMakeWorkaround if platform.is_win else lambda x: x
+      args['CMAKE_C_COMPILER'] = adjust_path(
+          _GetClangPath(platform, bot_utils, cxx=False))
+      args['CMAKE_CXX_COMPILER'] = adjust_path(
+          _GetClangPath(platform, bot_utils, cxx=True))
     if self.android:
       args['CMAKE_TOOLCHAIN_FILE'] = bot_utils.joinpath(
           'android_ndk', 'build', 'cmake', 'android.toolchain.cmake')
@@ -273,11 +277,20 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   # Disable modifications to go.mod so missing entries are treated as an error
   # instead.
   env['GOFLAGS'] = '-mod=readonly'
+  # Set up the environment for the Rust toolchain.
   if config.rust:
     # Point to packaged copy of Rust toolchain, containing bindgen and cargo.
     env_prefixes['PATH'].append(bot_utils / 'rust-toolchain' / 'bin')
     # Point to the build directory where bindgen output is expected.
     env['BORINGSSL_BUILD_DIR'] = build_dir
+    # Ask clang for its resource directory, and pass it to bindgen so it can
+    # find the right system header files.
+    clang_path = _GetClangPath(api.platform, bot_utils, cxx=False)
+    resource_dir = api.step(
+        'get clang resource dir', [clang_path, '-print-resource-dir'],
+        stdout=api.raw_io.output_text()).stdout.strip()
+    env['BINDGEN_EXTRA_CLANG_ARGS'] = '-resource-dir=' + resource_dir
+
   with api.context(
       env=env,
       env_prefixes=env_prefixes), api.osx_sdk('ios'), _CleanupMSVC(api):
@@ -435,6 +448,12 @@ def GenTests(api):
       'read go tests',
       api.file.read_text("./util/ar\n./util/fipstools/delocate\n"))
 
+  mock_clang_resource_dir = api.step_data(
+      'get clang resource dir',
+      # This would be an absolute path in production.
+      stdout=api.raw_io.output_text(
+          'boringssl/util/bot/llvm-build/lib/clang/99\n'))
+
   tests = [
       ('linux', api.platform('linux', 64), {}),
       ('mac', api.platform('mac', 64), {}),
@@ -462,12 +481,6 @@ def GenTests(api):
               "BUILD_SHARED_LIBS": "1",
           },
           "check_imported_libraries": True,
-      }),
-      ('linux_rust', api.platform('linux', 64), {
-          "cmake_args": {
-              "RUST_BINDINGS": "x86_64-unknown-linux-gnu",
-          },
-          "rust": True,
       }),
   ]
   for (buildername, host_platform, props) in tests:
@@ -531,6 +544,18 @@ def GenTests(api):
       api.properties(
           cmake_args={"CMAKE_BUILD_TYPE": "RelWithAsserts"},
           run_ssl_tests=False),
+  )
+
+  yield api.test(
+      'linux_rust',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux_rust'),
+      api.properties(
+          rust=True, cmake_args={
+              "RUST_BINDINGS": "x86_64-unknown-linux-gnu",
+          }),
+      mock_clang_resource_dir,
+      mock_go_tests,
   )
 
   yield api.test(
