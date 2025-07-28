@@ -94,25 +94,17 @@ class DevToolsTests(ABC):
 
   def process_results(self):
     with self.api.step.nest(self.step_name):
-      with self._collection_context():
-        new_results = self.collect()
-        if not new_results.infra_failures:
-          try:
-            self._post_collect()
-          except self.api.step.StepFailure:
-            new_results.add_infra_failure(
-                f'Failed in post collect for {self.step_name}')
+      new_results = self.collect()
+      if not new_results.infra_failures:
+        try:
+          self._post_collect()
+        except self.api.step.StepFailure:
+          new_results.add_infra_failure(
+              f'Failed in post collect for {self.step_name}')
     if self.results.exonerable() and new_results.can_exonerate():
       new_results.exonerated_failures = self.results.task_failures
       self.results.task_failures = []
     self.results += new_results
-
-  @contextmanager
-  def _collection_context(self):
-    """
-    Provides a context for the collection of the tasks.
-    """
-    yield
 
   def _post_collect(self):
     """

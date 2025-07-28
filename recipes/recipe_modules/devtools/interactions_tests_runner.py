@@ -38,11 +38,6 @@ class InteractionsTests(ExonerableTests, GoldensCollector):
   def commands(self):
     return [self.run_tests_command('test/interactions')]
 
-  @contextmanager
-  def _collection_context(self):
-    with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
-      yield
-
   def _post_collect(self):
     self.copy_golden_snapshots()
 

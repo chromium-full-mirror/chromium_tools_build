@@ -40,8 +40,6 @@ def RunSteps(api, builder_config, clobber, parallel, force_host_cpu):
         '{os} {cpu}'.format(**api.devtools.get_dimensions_for_platform()))
     if not parallel:
       api.devtools.run_e2e(builder_config)
-      with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
-        api.step('Nothing', [])
     else:
       # No function; called for complete coverage.
       command = api.devtools.lookup_command('lint')

@@ -200,51 +200,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
     return tasks
 
-  @contextmanager
-  def collect_screenshots_on_trybot(self, bucket):
-    if self.m.tryserver.is_tryserver:
-      with self.collect_screenshots(bucket):
-        yield
-    else:
-      yield
-
-  @contextmanager
-  def collect_screenshots(self, bucket):
-    update_env = {
-      "FORCE_UPDATE_ALL_GOLDENS": True,
-      "THROW_AFTER_GOLDENS_UPDATE": True,
-    }
-    with self.m.context(env=update_env):
-      self.m.git(
-          'commit', '-am', '---', name='commit current patch', ok_ret='any')
-      yield
-      with self.m.step.nest('upload screenshots'):
-        self.m.git('add', 'test/interactions/goldens', name='stage goldens')
-        tmp_dir = self.m.path.mkdtemp('screenshots')
-        patch_file = tmp_dir / 'screenshot.patch'
-        self.m.git(
-            'diff',
-            '--staged',
-            '--binary',
-            '--output',
-            patch_file,
-            '--',
-            'test/interactions/goldens',
-            name='create patch')
-        self.m.git('reset', name='unstage goldens')
-        self.m.git('checkout', '--', '.', name='revert golden updates')
-        self.m.git('clean', '-dff', name='remove newly created goldens')
-        upload_name = self.m.url.join(
-            'screenshots', self.m.buildbucket.builder_name,
-            str(self.m.tryserver.gerrit_change.change),
-            str(self.m.tryserver.gerrit_change.patchset), 'screenshot.patch')
-        self.m.gsutil.upload(
-            source=patch_file,
-            bucket=bucket,
-            dest=upload_name,
-            link_name=upload_name,
-            name='upload patch',
-        )
 
   def _configure_source(self, force_host_cpu=None):
     src_cfg = self.m.gclient.make_config()
