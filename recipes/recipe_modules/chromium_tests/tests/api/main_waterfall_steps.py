@@ -1206,11 +1206,14 @@ def GenTests(api):
               },
           })),
       api.step_data('snoop: report_stage', retcode=1),
+      api.step_data('snoop: report_stage (2)', retcode=1),
+      api.step_data('snoop: report_stage (3)', retcode=1),
+      api.step_data('snoop: report_stage (4)', retcode=1),
       api.post_process(
           post_process.LogContains,
           'snoopy failure',
           'exception',
-          ['Step(\'snoop: report_stage\') (retcode: 1)'],
+          ['Step(\'snoop: report_stage (4)\') (retcode: 1)'],
       ),
       api.post_process(post_process.DropExpectation),
   )
