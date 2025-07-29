@@ -9,10 +9,12 @@ from recipe_engine.post_process import Filter
 
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.chromium_tests_builder_config import builder_spec
 
 DEPS = [
     'chromium',
+    'chromium_rts',
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
@@ -57,10 +59,28 @@ BUILDERS = ctbc.BuilderDatabase.create({
                 android_config='base_config',
                 execution_mode=builder_spec.COMPILE_AND_TEST,
                 simulation_platform='linux',
+            ),
+        'chromium-rel':
+            ctbc.BuilderSpec.create(
+                chromium_config='chromium',
+                gclient_config='chromium',
             )
     }
 })
 
+_TEST_TRYBOTS = ctbc.TryDatabase.create({
+    'tryserver.chromium.test': {
+        'rts-rel':
+            ctbc.TrySpec.create(
+                mirrors=[
+                    ctbc.TryMirror.create(
+                        builder_group='fake.group',
+                        buildername='chromium-rel',
+                        tester='chromium-rel',
+                    ),
+                ],),
+    }
+})
 
 def RunSteps(api):
   # Create a nested step so that setup steps can be easily filtered out
@@ -76,7 +96,7 @@ def RunSteps(api):
     tests.append(
         steps.SwarmingGTestTestSpec.create('base_unittests').get_test(
             api.chromium_tests))
-
+  api.chromium_rts.init_rts_options(builder_config)
   return api.chromium_tests.compile_specific_targets(
       build_dir,
       builder_id,
@@ -354,5 +374,165 @@ def GenTests(api):
       api.step_data('cleandead', retcode=1),
       api.post_check(post_process.MustRun,
                      'generate_build_files (with patch) (2)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_always_enabled_build_full_run',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder(
+              regression_test_selection=try_spec.ALWAYS).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.properties(swarming_gtest=True),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_always_enabled_build_dry_run',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder(
+              regression_test_selection=try_spec.ALWAYS).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.properties(swarming_gtest=True),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_experimentally_enabled_build_full_run',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium_rts.rts'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarming_gtest=True),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_experimentally_enabled_build_dry_run',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium_rts.rts'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarming_gtest=True),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.MustRun, 'Fetch test selection results'),
       api.post_process(post_process.DropExpectation),
   )

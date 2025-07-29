@@ -875,6 +875,23 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # When Siso build enables `without bytes` option, `isolate tests` step
     # needs to use `siso isolate` command.
     use_siso_isolate = self.m.siso.enabled and self.m.siso.without_bytes
+
+
+    # If RTS is enabled, create .filter files with test names, and create
+    # command lines to filter tests as per those files.
+    rts_command_lines = None
+    if self.m.chromium_rts.enabled:
+      rts_command_lines = self.find_swarming_command_lines(
+          name_suffix, build_dir, rts=True)
+      if rts_command_lines:
+        for test in tests:
+          rts_command_line = rts_command_lines.get(test.target_name, [])
+          if rts_command_line:
+            test.rts_raw_cmd = rts_command_line
+      rts_tests = self.m.chromium_rts.setup_tests(tests)
+      self.m.chromium_rts.generate_filter_files(source_dir, build_dir,
+                                                rts_tests)
+
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
@@ -888,10 +905,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         use_siso_isolate=use_siso_isolate)
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
-    rts_command_lines = None
-    if self.m.chromium_rts.enabled:
-      rts_command_lines = self.find_swarming_command_lines(
-          name_suffix, build_dir, rts=True)
     return self.set_swarming_test_execution_info(
         source_dir,
         build_dir,
@@ -2800,9 +2813,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         tests = [t for t in tests if not t.compile_targets()]
       else:
         tests = []
-
-    tests = self.m.chromium_rts.setup_tests(tests)
-    self.m.chromium_rts.generate_filter_files(source_dir, build_dir, tests)
 
     task = Task(
         builder_config=builder_config,
