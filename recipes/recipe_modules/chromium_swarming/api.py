@@ -8,6 +8,7 @@ import copy
 import datetime
 import decimal
 import functools
+import itertools
 
 from recipe_engine import recipe_api
 from recipe_engine import util as recipe_util
@@ -711,7 +712,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     trigger_output = {
         'tasks' : tasks
     }
-    task._trigger_output = trigger_output
+    task.raw_trigger_output = trigger_output
 
   def _generate_trigger_task_tags(self, task, task_slice):
     """Generates the tags for the triggered task.
@@ -954,7 +955,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     """Triggers all shards as a single step.
 
     This method adds links to the presentation, and updates
-    task._trigger_output.
+    task.raw_trigger_output.
 
     Returns:
       StepResult from the step.
@@ -1003,7 +1004,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       step_result.presentation.tags[
           'resultdb.instruction.id'] = task.instructions_tag
 
-    task._trigger_output = step_result.json.output
+    task.raw_trigger_output = step_result.json.output
     links = step_result.presentation.links
     for shard_index in shard_indices:
       url = task.get_shard_view_url(shard_index, step_result.json.output)
@@ -1066,7 +1067,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     # While it might make more sense to update all presentation links in
     # trigger_task(), this is currently not possible. Steps are run in series,
     # and once a step is finalized, it becomes immutable.
-    # Update the presentation links now that _trigger_output has been generated.
+    # Update the presentation links now that trigger_output has been generated.
     if step_result.presentation != self.m.step.FAILURE:
       links = step_result.presentation.links
       url = task.get_shard_view_url(shard_index, step_result.json.output)
@@ -1180,9 +1181,10 @@ class SwarmingApi(recipe_api.RecipeApi):
     result.presentation.logs['detailed stats'] = detailed_stats
 
   @staticmethod
-  def _display_time_stats(shards, step_presentation):
+  def _display_time_stats(step_result):
     """Shows max pending time in seconds across all shards if it exceeds 10s,
     and also displays the min and max shard duration across all shards."""
+    shards = step_result.chromium_swarming.summary['shards']
     max_pending = (-1, None)
     ShardStats = collections.namedtuple(
         'ShardStats', ['duration', 'runtime', 'overhead', 'index'])
@@ -1225,27 +1227,27 @@ class SwarmingApi(recipe_api.RecipeApi):
     if max_pending[0] > 10:
       prefix = 'P' if len(shards) <= 1 else 'Max p'
       suffix = '' if len(shards) <= 1 else ' (shard #%d)' % max_pending[1]
-      step_presentation.step_text += (
+      step_result.presentation.step_text += (
           '<br>%sending time: %s%s' %
           (prefix, _fmt_time(max_pending[0]), suffix))
 
     if max_duration.duration is not None and max_duration.duration > 0:
       prefix = 'S' if len(shards) <= 1 else 'Max s'
       suffix = '' if len(shards) <= 1 else ' (shard #%d)' % max_duration.index
-      step_presentation.step_text += (
+      step_result.presentation.step_text += (
           '<br>%shard runtime (%s) + overhead (%s): %s%s' %
           (prefix, _fmt_time(max_duration.runtime),
            _fmt_time(max_duration.overhead), _fmt_time(
                max_duration.duration), suffix))
 
     if min_duration.duration is not None and len(shards) > 1:
-      step_presentation.step_text += (
+      step_result.presentation.step_text += (
           '<br>Min shard runtime (%s) + overhead (%s): %s (shard #%d)' %
           (_fmt_time(min_duration.runtime), _fmt_time(min_duration.overhead),
            _fmt_time(min_duration.duration), min_duration.index))
 
     if len(shards) > 1:
-      step_presentation.step_text += (
+      step_result.presentation.step_text += (
           '<br>Total shard runtime (%s) + overhead(%s): %s' %
           (_fmt_time(runtime_sum), _fmt_time(overhead_sum),
            _fmt_time(duration_sum)))
@@ -1307,7 +1309,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     task_ids = []
     invocations = []
     for index in task.shard_indices:
-      for shard_dict in task._trigger_output['tasks'].values():
+      for shard_dict in task.raw_trigger_output['tasks'].values():
         if shard_dict['shard_index'] == index:
           task_ids.append(shard_dict['task_id'])
           invocations.append(shard_dict.get('invocation'))
@@ -1406,6 +1408,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
         **kwargs)
 
+    has_valid_results = self._handle_summary_json(task, step_result)
+
     test_suite_name = task.test_suite_name
     instructions = task.get_local_instruction()
     if test_suite_name and task.include_utr_instruction:
@@ -1418,6 +1422,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         instructions = remote_instruction + '<br/>' + instructions
     step_result.presentation.step_text += (
         task.text_for_step() + '<br/>' + instructions)
+    self._display_time_stats(step_result)
 
     if task.instructions_tag:
       step_result.presentation.tags[
@@ -1429,8 +1434,6 @@ class SwarmingApi(recipe_api.RecipeApi):
       links = step_result.json.output.get('links', {})
     for k, v in links.items():
       step_result.presentation.links[k] = v
-
-    has_valid_results = self._handle_summary_json(task, step_result)
     return step_result, has_valid_results
 
   def run_collect_task_script(self, name, task_args, **kwargs):
@@ -1567,10 +1570,13 @@ class SwarmingApi(recipe_api.RecipeApi):
     # the bot dying. Completing execution, but failing, gives valid results.
     has_valid_results = True
     failed_shards = []
+    bot_dimensions_sets = []
 
     summary_shards = summary['shards']
     links = step_result.presentation.links
     for index, shard in enumerate(summary_shards):
+      if shard and shard.get('bot_dimensions'):
+        bot_dimensions_sets.append(shard['bot_dimensions'])
       url = task.get_shard_view_url(index)
       if shard and shard.get('duration'):
         if shard.get('deduped_from'):
@@ -1653,7 +1659,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       if shard and task.task_to_retry:
         task_id = shard.get('task_id')
         dispatched_task_ids = set()
-        for task_dict in task._trigger_output['tasks'].values():
+        for task_dict in task.raw_trigger_output['tasks'].values():
           dispatched_task_ids.add(task_dict['task_id'])
         should_show_shard = task_id in dispatched_task_ids
 
@@ -1679,8 +1685,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     # here.
     task.failed_shards = failed_shards
     task.has_incomplete_shards = has_incomplete_shards
-
-    self._display_time_stats(summary_shards, step_result.presentation)
+    task.bot_dimensions_sets = bot_dimensions_sets
 
     if unexpected_errors:
       template = 'Shard #%s failed: %s'
@@ -1865,7 +1870,8 @@ class SwarmingTask:
           instructions
     """
     self.server = server
-    self._trigger_output = None
+    self._raw_trigger_output = None
+    self._bot_dimensions_sets = []
     self.base_command = request[0].command
     self.build_properties = build_properties
     self.builder_info = builder_info
@@ -1922,12 +1928,13 @@ class SwarmingTask:
     attempt. The actual triggered shards from this attempt can be obtained by
     directly accessing the member.
     """
-    if not self._trigger_output:
+    if not self._raw_trigger_output:
       return None
     # JSON results of 'trigger' step converted for luci-go client.
     # This is used for isolated script tasks.
-    tasks = sorted(self._trigger_output['tasks'].values(),
-                   key=lambda x: x['shard_index'])
+    tasks = sorted(
+        self._raw_trigger_output['tasks'].values(),
+        key=lambda x: x['shard_index'])
     if self.task_to_retry:
       old_tasks = copy.deepcopy(self.task_to_retry.trigger_output['tasks'])
 
@@ -1940,6 +1947,22 @@ class SwarmingTask:
     return {
         'tasks': {task['shard_index']: task for task in tasks},
     }
+
+  @property
+  def raw_trigger_output(self):
+    return self._raw_trigger_output
+
+  @raw_trigger_output.setter
+  def raw_trigger_output(self, trigger_output_json):
+    self._raw_trigger_output = trigger_output_json
+
+  @property
+  def bot_dimensions_sets(self):
+    return self._bot_dimensions_sets
+
+  @bot_dimensions_sets.setter
+  def bot_dimensions_sets(self, bot_dimensions_sets):
+    self._bot_dimensions_sets = bot_dimensions_sets
 
   @property
   def test_suite_name(self) -> str | None:
@@ -1968,8 +1991,19 @@ class SwarmingTask:
     # select the test device.
     if dimensions.get('device_os'):
       lines.append('Run on Device OS: %r' % dimensions['device_os'])
-    elif dimensions.get('os'):
-      lines.append('Run on OS: %r' % dimensions['os'])
+    else:
+      # Some tasks don't target a device_os since it may move/autoroll
+      # frequently. But we still want to display the device_os of the bots
+      # that ran the shards.
+      device_os_values = set()
+      for d in itertools.chain.from_iterable(self.bot_dimensions_sets):
+        if d['key'] == 'device_os':
+          device_os_values.add(d["value"][-1])
+      if device_os_values:
+        lines.append('Run on Device OS(es): %s' %
+                     ', '.join(sorted(device_os_values)))
+      elif dimensions.get('os'):
+        lines.append('Run on OS: %r' % dimensions['os'])
     lines.append('')
     return '<br/>'.join(lines)
 

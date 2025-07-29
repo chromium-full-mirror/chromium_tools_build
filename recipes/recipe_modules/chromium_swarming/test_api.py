@@ -15,6 +15,7 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
       invocations=None,
       failure=False,
       internal_failure=False,
+      bot_dimensions_sets=None,
   ):
     """Get the summary json object.
 
@@ -32,6 +33,8 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
         form invocations/<task-ID>. If the invocation name for a shard
         is None then the summary entry for the shard will not have an
         invocation.
+      bot_dimensions: A list of list of dicts corresponding to the dimensions
+        of the bots that ran each shard.
     """
     if shard_indices is None:
       shard_indices = range(shards)
@@ -41,13 +44,20 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
     if invocations is None:
       invocations = [f'invocations/{i}' for i in shard_indices]
     assert len(invocations) == len(shard_indices)
+    if bot_dimensions_sets is None:
+      bot_dimensions_sets = [[{
+          'key': 'os',
+          'value': ['Linux']
+      }] for i in shard_indices]
+    assert len(bot_dimensions_sets) == len(shard_indices)
 
     cas_hash = (
         '24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca')
 
-    def shard_entry(task_id, invocation):
+    def shard_entry(task_id, invocation, bot_dimensions):
       entry = {
           'bot_id': 'vm30',
+          'bot_dimensions': bot_dimensions,
           'completed_ts': '2014-09-25T01:43:11.123',
           'created_ts': '2014-09-25T01:41:00.123',
           'duration': 31.5,
@@ -79,8 +89,9 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
 
     return {
         'shards': [
-            shard_entry(task_id, invocation)
-            for task_id, invocation in zip(task_ids, invocations)
+            shard_entry(task_id, invocation, bot_dimensions)
+            for task_id, invocation, bot_dimensions in zip(
+                task_ids, invocations, bot_dimensions_sets)
         ],
     }
 

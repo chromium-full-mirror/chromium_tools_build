@@ -30,20 +30,20 @@ def RunSteps(api, task_to_retry, expected_value):
     kwargs['task_to_retry'] = FakeTask()
   task = api.chromium_swarming.task(
       name='test-task', cas_input_root='00deadbeef00/size', **kwargs)
-  task._trigger_output = {
+  task.raw_trigger_output = {
       'tasks': {
-        0: {
-            'shard_index': 0,
-            'task_id': '10',
-        },
-        1: {
-            'shard_index': 1,
-            'task_id': '11',
-        },
-        2: {
-            'shard_index': 2,
-            'task_id': '12',
-        },
+          0: {
+              'shard_index': 0,
+              'task_id': '10',
+          },
+          1: {
+              'shard_index': 1,
+              'task_id': '11',
+          },
+          2: {
+              'shard_index': 2,
+              'task_id': '12',
+          },
       },
   }
   api.assertions.assertEqual(

@@ -938,8 +938,8 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LINK@custom_link@http://example.com@@@",
-      "@@@STEP_LINK@shard #0@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@shard #0@https://example.swarmingserver.appspot.com/task?id=0@@@",
+      "@@@STEP_LINK@custom_link@http://example.com@@@"
     ]
   },
   {

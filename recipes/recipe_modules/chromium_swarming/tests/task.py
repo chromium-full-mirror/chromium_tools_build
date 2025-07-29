@@ -159,3 +159,41 @@ def GenTests(api):
         api.step_data('task', api.chromium_swarming.summary(None, data)),
         api.post_process(post_process.DropExpectation),
     )
+
+  yield api.test(
+      'bot-dimensions-step-text',
+      api.properties(task_name='task'),
+      api.step_data(
+          'task',
+          api.chromium_swarming.summary(
+              None,
+              api.chromium_swarming.canned_summary_output_raw(
+                  shards=2,
+                  bot_dimensions_sets=[
+                      [
+                          {
+                              "key": "device_os",
+                              "value": [
+                                  "ABC",
+                                  "ABC123",
+                              ],
+                          },
+                      ],
+                      [
+                          {
+                              "key": "device_os",
+                              "value": [
+                                  "XYZ",
+                                  "XYZ789",
+                              ],
+                          },
+                      ],
+                  ],
+              ))),
+      api.post_check(
+          post_process.StepTextContains,
+          'task',
+          ['Run on Device OS(es): ABC123, XYZ789'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

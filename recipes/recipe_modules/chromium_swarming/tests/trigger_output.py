@@ -33,7 +33,7 @@ def RunSteps(api, task_to_retry, none_trigger_output, expected_value,
     kwargs['task_to_retry'] = FakeTask()
   task = api.chromium_swarming.task(
       name='test-task', cas_input_root='00deadbeef00/size', **kwargs)
-  task._trigger_output = None if none_trigger_output else {
+  task.raw_trigger_output = None if none_trigger_output else {
       'tasks': {
           '0': {
               'shard_index': 0,
