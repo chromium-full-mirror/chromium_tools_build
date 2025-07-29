@@ -218,7 +218,6 @@
       "update",
       "--init",
       "--force",
-      "--recursive",
       "--depth",
       "1",
       "--jobs",

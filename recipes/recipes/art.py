@@ -109,8 +109,8 @@ def checkout_git(api, branch, repo_root):
     api.git("show")
     api.step("patch .gitmodules",
              ["sed", "-i", "/submodule/ s:/:-:g", ".gitmodules"])
-    api.git("submodule", "update", "--init", "--force", "--recursive",
-            "--depth", "1", "--jobs", "32", "--checkout")
+    api.git("submodule", "update", "--init", "--force", "--depth", "1",
+            "--jobs", "32", "--checkout")
     api.git("status", "--ignore-submodules=none")
 
     for cl in api.buildbucket.build.input.gerrit_changes:
