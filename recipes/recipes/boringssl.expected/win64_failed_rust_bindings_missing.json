@@ -1,0 +1,17 @@
+[
+  {
+    "cmd": [],
+    "name": "check for RUST_BINDINGS",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@RUST_BINDINGS was not found in cmake_args@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "failure": {
+      "failure": {},
+      "humanReason": "Step('check for RUST_BINDINGS') (retcode: 0)"
+    },
+    "name": "$result"
+  }
+]

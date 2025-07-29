@@ -79,7 +79,8 @@ PROPERTIES = {
         Property(
             default=False,
             kind=bool,
-            help='whether to build and test the Rust crates'),
+            help='whether to build the Rust crates, and test them (if run_unit_tests is also True)'
+        ),
     'sde':
         Property(default=False, kind=bool, help='whether to run tests on SDE'),
 }
@@ -328,8 +329,9 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     cargo = 'cargo' + _GetHostExeSuffix(api.platform)
     if config.rust:
       with api.context(cwd=rust_dir):
-        api.step('cargo build',
-                 [cargo, 'build', '--all-targets', '--keep-going'])
+        api.step(
+            'cargo build',
+            msvc_prefix + [cargo, 'build', '--all-targets', '--keep-going'])
 
     with api.defer.context() as defer:
       if check_imported_libraries:
@@ -422,10 +424,11 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
                   msvc_prefix + ['go', 'test'] + runner_args)
 
       # Run the Rust tests.
-      if config.rust:
+      if config.rust and config.run_unit_tests:
         with api.context(cwd=rust_dir):
-          defer(api.step, 'rust tests',
-                [cargo, 'test', '--all-targets', '--no-fail-fast'])
+          defer(
+              api.step, 'rust tests',
+              msvc_prefix + [cargo, 'test', '--all-targets', '--no-fail-fast'])
 
 
 def _CIBuild(api, builder):
@@ -547,25 +550,50 @@ def GenTests(api):
           sde=True),
   )
 
-  yield api.test(
-      'linux_rust',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux_rust'),
-      api.properties(
-          rust=True, cmake_args={
-              "RUST_BINDINGS": "x86_64-unknown-linux-gnu",
-          }),
-      mock_clang_resource_dir,
-      mock_go_tests,
-  )
+  rust_tests = [
+      ('linux', api.platform('linux', 64), "x86_64-unknown-linux-gnu", {}),
+      ('win64', api.platform('win', 64), "x86_64-pc-windows-msvc", {
+          "msvc_target": "x64"
+      }),
+  ]
+  for (builder_prefix, host_platform, rust_bindings_target_triple,
+       addl_props) in rust_tests:
+    yield api.test(
+        builder_name := builder_prefix + '_rust',
+        host_platform,
+        _CIBuild(api, builder_name),
+        api.properties(
+            rust=True,
+            cmake_args={
+                "RUST_BINDINGS": rust_bindings_target_triple,
+            },
+            **addl_props),
+        mock_clang_resource_dir,
+        mock_go_tests,
+    )
 
-  yield api.test(
-      'failed_rust_bindings_missing',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      api.properties(rust=True),
-      api.expect_status('FAILURE'),
-  )
+    yield api.test(
+        builder_name := builder_prefix + '_rust_compile_only',
+        host_platform,
+        _CIBuild(api, builder_name),
+        api.properties(
+            rust=True,
+            cmake_args={
+                "RUST_BINDINGS": rust_bindings_target_triple,
+            },
+            run_unit_tests=False,
+            **addl_props),
+        mock_clang_resource_dir,
+        mock_go_tests,
+    )
+
+    yield api.test(
+        builder_name := builder_prefix + '_failed_rust_bindings_missing',
+        host_platform,
+        _CIBuild(api, builder_name),
+        api.properties(rust=True, **addl_props),
+        api.expect_status('FAILURE'),
+    )
 
   yield api.test(
       'failed_imported_libraries',
