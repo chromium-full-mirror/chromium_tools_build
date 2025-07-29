@@ -108,6 +108,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
     }
 
   def archive_to_cas(self):
+    self.m.file.rmglob('Clean up SISO files', self.source_dir, '**/siso*.INFO')
     return self.m.cas.archive('archive', self.source_dir)
 
   def divided_e2e_commands(self,
