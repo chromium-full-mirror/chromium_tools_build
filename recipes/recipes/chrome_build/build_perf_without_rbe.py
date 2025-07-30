@@ -71,79 +71,79 @@ def _compile(
     return step_result, rusage
 
 
-def _analyze_includes(
-    api,
-    target: str,
-    source_dir: Path,
-    staging_dir: Path,
-    build_log: Path,
-):
-  with api.step.nest('analyze includes') as parent_step:
-    result_js_file = staging_dir / 'include-analysis.js'
-    cmd = [
-        'python3',
-        'tools/clang/scripts/analyze_includes.py',
-        '--target=%s' % target,
-        '--revision=%s' % api.buildbucket.build.input.gitiles_commit.id,
-        '--json-out=%s' % result_js_file,
-        build_log,
-    ]
-    with api.context(cwd=source_dir):
-      api.step('analyze includes', cmd)
-
-    # It starts with `data = ` to be included as JS file.
-    # https://source.chromium.org/chromium/chromium/src/+/main:tools/clang/scripts/analyze_includes.py;l=438-440;drc=b9664d07c6b204b35a6e42141ba9581e261624fb
-    test_js_data = 'data = ' + json.dumps({
-        'target': target,
-        'revision': 'abcd',
-        'date': None,
-        'files': [
-            'a.cc',
-            'a.h',
-        ],
-        'roots': [0],
-        'includes': [[1]],
-        'included_by': [[], [0]],
-        'sizes': [10, 20],
-        'tsizes': [30, 20],
-    })
-    js_data_raw = api.file.read_text(
-        'read include analysis result', result_js_file, test_data=test_js_data)
-    if js_data_raw.startswith('data = '):
-      result_json = js_data_raw[len('data = '):]
-    analysis_result = json.loads(result_json)
-
-    # Read include-analysis.html and replace <script> tag with the JS data.
-    analysis_html = api.file.read_text(
-        'read include-analysis.html',
-        source_dir / 'tools/clang/scripts/include-analysis.html')
-    analysis_html = analysis_html.replace(
-        '<script src="include-analysis.js"></script>',
-        f'<script>{js_data_raw}</script>')
-    archive_file = api.path.mkstemp()
-    api.file.write_text('write archive file', archive_file, analysis_html)
-
-    # Upload include-analysis.html to GCS.
-    upload_path = 'chrome-includes-analysis/%s/%d/%s' % (
-        api.buildbucket.builder_full_name,
-        api.buildbucket.build.number,
-        'include-analysis.html',
-    )
-    upload_result = api.gsutil.upload(
-        archive_file,
-        _GS_BUCKET,
-        upload_path,
-        link_name="include-analysis.html",
-        metadata={'Content-Type': 'text/html'},
-        name='upload include-analysis.html')
-
-    archive_link = upload_result.presentation.links['include-analysis.html']
-    analysis_result['archive_link'] = archive_link
-    parent_step.links['include-analysis.html'] = archive_link
-    parent_step.logs['analysis_result'] = api.json.dumps(
-        analysis_result, indent=2)
-
-    return analysis_result
+# def _analyze_includes(
+#     api,
+#     target: str,
+#     source_dir: Path,
+#     staging_dir: Path,
+#     build_log: Path,
+# ):
+#   with api.step.nest('analyze includes') as parent_step:
+#     result_js_file = staging_dir / 'include-analysis.js'
+#     cmd = [
+#         'python3',
+#         'tools/clang/scripts/analyze_includes.py',
+#         '--target=%s' % target,
+#         '--revision=%s' % api.buildbucket.build.input.gitiles_commit.id,
+#         '--json-out=%s' % result_js_file,
+#         build_log,
+#     ]
+#     with api.context(cwd=source_dir):
+#       api.step('analyze includes', cmd)
+#
+#     # It starts with `data = ` to be included as JS file.
+#     # https://source.chromium.org/chromium/chromium/src/+/main:tools/clang/scripts/analyze_includes.py;l=438-440;drc=b9664d07c6b204b35a6e42141ba9581e261624fb
+#     test_js_data = 'data = ' + json.dumps({
+#         'target': target,
+#         'revision': 'abcd',
+#         'date': None,
+#         'files': [
+#             'a.cc',
+#             'a.h',
+#         ],
+#         'roots': [0],
+#         'includes': [[1]],
+#         'included_by': [[], [0]],
+#         'sizes': [10, 20],
+#         'tsizes': [30, 20],
+#     })
+#     js_data_raw = api.file.read_text(
+#         'read include analysis result', result_js_file, test_data=test_js_data)
+#     if js_data_raw.startswith('data = '):
+#       result_json = js_data_raw[len('data = '):]
+#     analysis_result = json.loads(result_json)
+#
+#     # Read include-analysis.html and replace <script> tag with the JS data.
+#     analysis_html = api.file.read_text(
+#         'read include-analysis.html',
+#         source_dir / 'tools/clang/scripts/include-analysis.html')
+#     analysis_html = analysis_html.replace(
+#         '<script src="include-analysis.js"></script>',
+#         f'<script>{js_data_raw}</script>')
+#     archive_file = api.path.mkstemp()
+#     api.file.write_text('write archive file', archive_file, analysis_html)
+#
+#     # Upload include-analysis.html to GCS.
+#     upload_path = 'chrome-includes-analysis/%s/%d/%s' % (
+#         api.buildbucket.builder_full_name,
+#         api.buildbucket.build.number,
+#         'include-analysis.html',
+#     )
+#     upload_result = api.gsutil.upload(
+#         archive_file,
+#         _GS_BUCKET,
+#         upload_path,
+#         link_name="include-analysis.html",
+#         metadata={'Content-Type': 'text/html'},
+#         name='upload include-analysis.html')
+#
+#     archive_link = upload_result.presentation.links['include-analysis.html']
+#     analysis_result['archive_link'] = archive_link
+#     parent_step.links['include-analysis.html'] = archive_link
+#     parent_step.logs['analysis_result'] = api.json.dumps(
+#         analysis_result, indent=2)
+#
+#     return analysis_result
 
 
 def RunSteps(api):
@@ -179,10 +179,11 @@ def RunSteps(api):
       build_log,
   )
 
-  include_analysis = _analyze_includes(api, target, source_dir, staging_dir,
-                                       build_log)
-
-  api.chromium_build_perf.upload_build_stats_to_bq(rusage, include_analysis)
+  # TODO: b/435081375 - Include analysis doesn't work with clang modules.
+  # include_analysis = _analyze_includes(api, target, source_dir, staging_dir,
+  #                                      build_log)
+  api.chromium_build_perf.upload_build_stats_to_bq(
+      rusage, include_analysis=None)
 
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
