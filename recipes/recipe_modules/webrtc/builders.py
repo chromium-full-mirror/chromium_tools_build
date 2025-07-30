@@ -506,9 +506,9 @@ _CLIENT_WEBRTC_PERF_SPECS = {
                 'BUILD_CONFIG': 'Release',
                 'TARGET_BITS': 64,
             }),
-    'Perf Linux Bionic':
+    'Perf Linux':
         WebRTCBuilderSpec.create(
-            perf_id='webrtc-linux-tests-bionic',
+            perf_id='webrtc-linux-tests',
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             execution_mode=builder_spec.TEST,

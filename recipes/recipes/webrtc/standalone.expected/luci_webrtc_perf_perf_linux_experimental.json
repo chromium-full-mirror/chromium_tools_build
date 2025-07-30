@@ -71,7 +71,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/perf/Perf Linux Bionic/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/perf/Perf Linux/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -229,14 +229,14 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"perf:Perf Linux Bionic\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"perf:Perf Linux\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"perf:Perf Linux Bionic\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"perf:Perf Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
@@ -284,7 +284,7 @@
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/infra/specs/client.webrtc.perf.json@@@",
       "@@@STEP_LOG_LINE@client.webrtc.perf.json@{@@@",
-      "@@@STEP_LOG_LINE@client.webrtc.perf.json@  \"Perf Linux Bionic\": {@@@",
+      "@@@STEP_LOG_LINE@client.webrtc.perf.json@  \"Perf Linux\": {@@@",
       "@@@STEP_LOG_LINE@client.webrtc.perf.json@    \"gtest_tests\": [@@@",
       "@@@STEP_LOG_LINE@client.webrtc.perf.json@      {@@@",
       "@@@STEP_LOG_LINE@client.webrtc.perf.json@        \"swarming\": {@@@",
@@ -310,7 +310,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/perf/Perf Linux Bionic/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/perf/Perf Linux/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -496,7 +496,7 @@
       "-m",
       "client.webrtc.perf",
       "-b",
-      "Perf Linux Bionic",
+      "Perf Linux",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--quiet"
@@ -531,14 +531,14 @@
       "-m",
       "client.webrtc.perf",
       "-b",
-      "Perf Linux Bionic",
+      "Perf Linux",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "[CACHE]/builder/src/out/Perf_Linux_Bionic"
+      "[CACHE]/builder/src/out/Perf_Linux"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -575,7 +575,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/Perf_Linux_Bionic/gn_logs.txt",
+      "[CACHE]/builder/src/out/Perf_Linux/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -624,7 +624,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux Bionic\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux_Bionic```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -656,7 +656,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux Bionic\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux_Bionic```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -689,7 +689,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/Perf_Linux_Bionic",
+      "[CACHE]/builder/src/out/Perf_Linux",
       "webrtc_dashboard_upload"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -729,7 +729,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/Perf_Linux_Bionic/.ninja_log",
+      "[CACHE]/builder/src/out/Perf_Linux/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -830,7 +830,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/src/out/Perf_Linux_Bionic",
+      "[CACHE]/builder/src/out/Perf_Linux",
       "webrtc_dashboard_upload",
       "-d",
       "explain",
@@ -984,7 +984,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Perf Linux Bionic/-1\", \"priority\": \"40\", \"realm\": \"webrtc:perf\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:perf\", \"build_is_experimental:true\", \"builder_group:client.webrtc.perf\", \"buildername:Perf Linux Bionic\", \"data:[dummy hash for dummy_test/1]\", \"name:dummy_test\", \"ninja_target:\", \"project:webrtc\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:webrtc.perf:Perf Linux Bionic\", \"stepname:dummy_test on Ubuntu-16.04\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:dummy_test\", \"waterfall_builder_group:client.webrtc.perf\", \"waterfall_buildername:Perf Linux Bionic\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"1]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:Perf Linux Bionic\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Ubuntu-16.04\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"perf:Perf Linux Bionic\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"./dummy_cmd\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"out/Linux64_Builder\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Perf Linux/-1\", \"priority\": \"40\", \"realm\": \"webrtc:perf\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:perf\", \"build_is_experimental:true\", \"builder_group:client.webrtc.perf\", \"buildername:Perf Linux\", \"data:[dummy hash for dummy_test/1]\", \"name:dummy_test\", \"ninja_target:\", \"project:webrtc\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:webrtc.perf:Perf Linux\", \"stepname:dummy_test on Ubuntu-16.04\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:dummy_test\", \"waterfall_builder_group:client.webrtc.perf\", \"waterfall_buildername:Perf Linux\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"1]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:Perf Linux\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Ubuntu-16.04\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"perf:Perf Linux\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"./dummy_cmd\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"out/Linux64_Builder\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1008,7 +1008,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Perf Linux Bionic/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Perf Linux/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1023,7 +1023,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Perf Linux Bionic/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Perf Linux/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"40\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"webrtc:perf\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1035,20 +1035,20 @@
       "@@@STEP_LOG_LINE@json.input@        \"bucket:perf\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:true\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"builder_group:client.webrtc.perf\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"buildername:Perf Linux Bionic\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:Perf Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for dummy_test/1]\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:dummy_test\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"ninja_target:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"project:webrtc\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"spec_name:webrtc.perf:Perf Linux Bionic\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:webrtc.perf:Perf Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"stepname:dummy_test on Ubuntu-16.04\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_phase:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:dummy_test\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_builder_group:client.webrtc.perf\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:Perf Linux Bionic\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:Perf Linux\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1065,7 +1065,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"builder:Perf Linux Bionic\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:Perf Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"os:Ubuntu-16.04\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
@@ -1080,7 +1080,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"perf:Perf Linux Bionic\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"perf:Perf Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"result_adapter\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"gtest\",@@@",
@@ -1130,7 +1130,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: dummy_test/Ubuntu-16.04/[dummy has/Perf Linux Bionic/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: dummy_test/Ubuntu-16.04/[dummy has/Perf Linux/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -1191,7 +1191,7 @@
       }
     },
     "name": "update invocation instructions (4)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux Bionic\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux_Bionic```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```./dummy_cmd --test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/1] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```./dummy_cmd --test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/1] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1223,7 +1223,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux Bionic\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux_Bionic```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc.perf -b \\\"Perf Linux\\\" --config-file tools_webrtc/mb/mb_config.pyl out/Perf_Linux```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1573,7 +1573,7 @@
       "--merge-additional-args",
       "[]",
       "--build-properties",
-      "{\"bot\": \"webrtc-linux-tests-bionic\", \"build_page_url\": \"https://ci.chromium.org/p/webrtc/builders/luci.webrtc.perf/Perf%20Linux%20Bionic/0\", \"builder_group\": \"client.webrtc.perf\", \"buildername\": \"Perf Linux Bionic\", \"buildnumber\": 1337, \"commit_position\": 170242, \"dashboard_url\": \"https://chromeperf.appspot.com\", \"got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"got_revision_cp\": \"refs/heads/main@{#1337}\", \"outdir\": \"[CACHE]/builder/src/out/Perf_Linux_Bionic\", \"perf_dashboard_machine_group\": \"ExperimentalWebRTCPerf\", \"webrtc_git_hash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+      "{\"bot\": \"webrtc-linux-tests\", \"build_page_url\": \"https://ci.chromium.org/p/webrtc/builders/luci.webrtc.perf/Perf%20Linux/0\", \"builder_group\": \"client.webrtc.perf\", \"buildername\": \"Perf Linux\", \"buildnumber\": 1337, \"commit_position\": 170242, \"dashboard_url\": \"https://chromeperf.appspot.com\", \"got_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"got_revision_cp\": \"refs/heads/main@{#1337}\", \"outdir\": \"[CACHE]/builder/src/out/Perf_Linux\", \"perf_dashboard_machine_group\": \"ExperimentalWebRTCPerf\", \"webrtc_git_hash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
       "--summary-json-file",
       "/path/to/tmp/json",
       "--",
@@ -1664,7 +1664,7 @@
       "@@@STEP_LOG_LINE@step_metadata@    \"0\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  ],@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_builder_group\": \"client.webrtc.perf\",@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_buildername\": \"Perf Linux Bionic\"@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_buildername\": \"Perf Linux\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@}@@@",
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",

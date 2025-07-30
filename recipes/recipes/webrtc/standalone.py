@@ -143,7 +143,7 @@ def GenTests(api):
           {'No-Iwyu': ['skip']})
 
   builder_id = chromium.BuilderId.create_for_group('client.webrtc.perf',
-                                                   'Perf Linux Bionic')
+                                                   'Perf Linux')
   yield generate_builder(
       builder_id, is_experimental=True, suffix='_experimental')
 
