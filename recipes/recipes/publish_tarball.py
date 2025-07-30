@@ -36,34 +36,6 @@ DEPS = [
 # version.  This denylist exists to exclude those broken versions so the bot
 # doesn't keep retrying and sending build failure emails out.
 DENYLISTED_VERSIONS = [
-    # crbug.com/1493085: https://crrev.com/c/4952605 introduced a cherry-pick
-    # from a rust-lang/rust GitHub fork, but the commit was force-pushed on
-    # 2023-10-26 and the "download rustc sources" step was broken until
-    # https://crrev.com/c/4983487, which is part of 120.0.6098.0.
-    '120.0.6087.2',
-    '120.0.6089.1',
-    '120.0.6089.2',
-    '120.0.6089.3',
-    '120.0.6090.0',
-    '120.0.6090.1',
-    '120.0.6091.0',
-    '120.0.6091.1',
-    '120.0.6091.2',
-    '120.0.6091.3',
-    '120.0.6091.4',
-    '120.0.6091.6',
-    '120.0.6092.0',
-    '120.0.6092.1',
-    '120.0.6093.0',
-    '120.0.6093.1',
-    '120.0.6094.0',
-    '120.0.6094.1',
-    '120.0.6095.0',
-    '120.0.6095.1',
-    '120.0.6096.0',
-    '120.0.6096.1',
-    '120.0.6097.0',
-    '120.0.6097.1',
     # crbug.com/374696520: https://crrev.com/c/5926131 (#1367659) changed a
     # cherry-pick to use a revision that did not apply cleanly with the current
     # RUST_REVISION, breaking the "download rustc sources" step. This was fixed
@@ -197,6 +169,32 @@ DENYLISTED_VERSIONS = [
     '132.0.6794.1',
     '132.0.6794.2',
     '132.0.6795.0',
+    # crbug.com/433513424: https://crrev.com/c/6781967 (140.0.7317.0)
+    # introduced a Rust cherry-pick that did not apply. This was fixed in
+    # https://crrev.com/c/6796139 (140.0.7327.0).
+    '140.0.7317.0',
+    '140.0.7317.1',
+    '140.0.7318.0',
+    '140.0.7318.1',
+    '140.0.7319.0',
+    '140.0.7319.1',
+    '140.0.7320.0',
+    '140.0.7320.1',
+    '140.0.7321.0',
+    '140.0.7321.1',
+    '140.0.7322.0',
+    '140.0.7322.1',
+    '140.0.7323.0',
+    '140.0.7323.1',
+    '140.0.7324.0',
+    '140.0.7324.1',
+    '140.0.7324.2',
+    '140.0.7325.0',
+    '140.0.7325.1',
+    '140.0.7325.2',
+    '140.0.7326.0',
+    '140.0.7326.1',
+    '140.0.7326.2',
 ]
 
 # NaCl support was removed from the Linux builds in
