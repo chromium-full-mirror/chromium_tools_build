@@ -445,6 +445,14 @@ def trigger_publish_tarball_jobs(api):
 def publish_tarball(api):
   version = api.properties['version']
 
+  # Although trigger_publish_tarball_jobs() filters versions in
+  # DENYLISTED_VERSIONS, it may have already triggered multiple jobs before a
+  # version is added to the list. The check here prevents these jobs that will
+  # inevitably fail from being run in the first place.
+  if version in DENYLISTED_VERSIONS:
+    api.step.empty(f'Version {version} is in DENYLISTED_VERSIONS. Skipping.')
+    return
+
   ls_result = api.gsutil(
       ['ls', 'gs://chromium-browser-official/'],
       stdout=api.raw_io.output_text(add_output_log=True)).stdout
@@ -723,6 +731,10 @@ def GenTests(api):
           'chromium-103.0.5060.114-testdata.tar.xz\n'
           'gs://chromium-browser-official/chromium-103.0.5060.114-nacl.tar.xz\n'
       )))
+
+  yield (api.test('triggered-in-denylisted_versions') +
+         api.buildbucket.generic_build() +
+         api.properties(version='140.0.7325.0') + api.platform('linux', 64))
 
   yield (api.test('trigger') + api.buildbucket.generic_build() +
          api.platform('linux', 64) +
