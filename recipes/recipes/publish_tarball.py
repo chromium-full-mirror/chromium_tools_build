@@ -36,6 +36,34 @@ DEPS = [
 # version.  This denylist exists to exclude those broken versions so the bot
 # doesn't keep retrying and sending build failure emails out.
 DENYLISTED_VERSIONS = [
+    # crbug.com/1493085: https://crrev.com/c/4952605 introduced a cherry-pick
+    # from a rust-lang/rust GitHub fork, but the commit was force-pushed on
+    # 2023-10-26 and the "download rustc sources" step was broken until
+    # https://crrev.com/c/4983487, which is part of 120.0.6098.0.
+    '120.0.6087.2',
+    '120.0.6089.1',
+    '120.0.6089.2',
+    '120.0.6089.3',
+    '120.0.6090.0',
+    '120.0.6090.1',
+    '120.0.6091.0',
+    '120.0.6091.1',
+    '120.0.6091.2',
+    '120.0.6091.3',
+    '120.0.6091.4',
+    '120.0.6091.6',
+    '120.0.6092.0',
+    '120.0.6092.1',
+    '120.0.6093.0',
+    '120.0.6093.1',
+    '120.0.6094.0',
+    '120.0.6094.1',
+    '120.0.6095.0',
+    '120.0.6095.1',
+    '120.0.6096.0',
+    '120.0.6096.1',
+    '120.0.6097.0',
+    '120.0.6097.1',
     # crbug.com/374696520: https://crrev.com/c/5926131 (#1367659) changed a
     # cherry-pick to use a revision that did not apply cleanly with the current
     # RUST_REVISION, breaking the "download rustc sources" step. This was fixed
