@@ -227,7 +227,7 @@ _AddBuildSpec(
 _AddBuildSpec(
     'mac-arm-builder-perf-pgo',
     'mac',
-    bisect_archive_build=True,
+    bisect_archive_build=False,
     target_arch='arm',
 )
 _AddBuildSpec(

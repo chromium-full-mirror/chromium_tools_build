@@ -48,7 +48,7 @@ _AddBuildSpec(
 _AddBuildSpec(
     'fuchsia-builder-perf-arm64',
     'fuchsia',
-    bisect_archive_build=True,
+    bisect_archive_build=False,
     target_arch='arm',
     extra_gclient_apply_config=[
         'fuchsia_arm64',
