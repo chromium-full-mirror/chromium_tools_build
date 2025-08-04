@@ -504,8 +504,14 @@ def RunSteps(api,
       if build_fuzzers and not asan:
         with api.context(cwd=source_dir):
           api.step(
-              'Check fuzzers',
+              'Check WGSL fuzzer',
               ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
+              wrapper=shell_wrapper)
+          api.step(
+              'Check IR fuzzer', [
+                  './tools/run', 'fuzz', '--check', '--ir', '--build',
+                  rel_build_path
+              ],
               wrapper=shell_wrapper)
 
       with api.context(cwd=source_dir):

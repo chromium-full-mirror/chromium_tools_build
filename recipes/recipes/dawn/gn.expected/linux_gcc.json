@@ -252,7 +252,7 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/dawn/out/2afda240ab207323b063306bf696ba742a23ed8c",
-      "fuzzers"
+      "fuzzer_corpus_tools"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -621,7 +621,36 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run `fuzz --check`"
+    "name": "Run WGSL `fuzz --check`"
+  },
+  {
+    "cmd": [
+      "tools/run",
+      "fuzz",
+      "--build",
+      "[CACHE]/builder/dawn/out/2afda240ab207323b063306bf696ba742a23ed8c",
+      "--check",
+      "--ir"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run IR `fuzz --check`"
   },
   {
     "name": "$result"

@@ -181,43 +181,41 @@ def _generate_dawn_corpus(api, source_dir, **kwargs):
         name='Upload to the {} seed corpus'.format(fuzzer_name))
 
 
-def _generate_tint_corpus(api, source_dir, name, cmd_flags=None):
-  if cmd_flags is None:
-    cmd_flags = []
-
-  generator_script = source_dir.joinpath('src', 'tint', 'cmd', 'fuzz',
-                                         'generate_tint_corpus.py')
-  input_dir = source_dir.joinpath('test', 'tint')
-  output_dir = api.path.tmp_base_dir / name
-  api.file.ensure_directory('mkdir {}'.format(output_dir), output_dir)
-  gen_cmd = (['python3', generator_script, input_dir, output_dir] + cmd_flags)
-  api.step('Generate tint_{}_fuzzer corpus'.format(name), gen_cmd)
-  api.gsutil.upload(
-      output_dir.joinpath('*'),
-      'clusterfuzz-corpus',
-      'libfuzzer/tint_{}_fuzzer'.format(name),
-      args=['-r'],  # recursive
-      parallel_upload=True,
-      multithreaded=True,
-      name='Upload to the tint_{}_fuzzer seed corpus'.format(name))
+def _generate_tint_corpus(api, source_dir, name, build_out):
+  go_path = source_dir.joinpath('tools', 'golang', 'bin')
+  with api.context(cwd=source_dir), \
+        api.context(env_prefixes={'PATH': [go_path]}):
+    gen_cmd = ['tools/run', 'fuzz', '--build', str(build_out), '--generate']
+    output_dir = api.path.tmp_base_dir / (name + "_corpus")
+    api.file.ensure_directory('mkdir {}'.format(output_dir), output_dir)
+    gen_cmd.extend(['-out', output_dir])
+    if name == 'ir':
+      gen_cmd.append('--ir')
+    api.step('Generate tint_{}_fuzzer corpus'.format(name), gen_cmd)
+    api.gsutil.upload(
+        output_dir.joinpath('*'),
+        'clusterfuzz-corpus',
+        'libfuzzer/tint_{}_fuzzer'.format(name),
+        args=['-r'],  # recursive
+        parallel_upload=True,
+        multithreaded=True,
+        name='Upload to the tint_{}_fuzzer seed corpus'.format(name))
 
 
 def _generate_fuzz_corpus(api, source_dir, **kwargs):
   _generate_dawn_corpus(api, source_dir, **kwargs)
 
-  # WGSL generation does not need any additional binaries
-  _generate_tint_corpus(api, source_dir, 'wgsl')
-
-  # IR generation needs ir_fuzz_as
+  # IR generation needs ir_fuzz_as from 'fuzzer_corpus_tools'
   kwargs.update({
       'dawn_use_swiftshader': False,
       'tint_has_fuzzers': True,
       'tint_build_ir_binary': True,
   })
   with _gn_build(source_dir, 'tint corpus tools', api, **kwargs) as build:
-    ir_fuzz_as = build('ir_fuzz_as')[0]
-  _generate_tint_corpus(api, source_dir, 'ir',
-                        ['--ir_as={}'.format(ir_fuzz_as)])
+    build_out = build('fuzzer_corpus_tools')[0].parent
+
+  _generate_tint_corpus(api, source_dir, 'wgsl', build_out)
+  _generate_tint_corpus(api, source_dir, 'ir', build_out)
 
 
 def _run_dawn_node_test(api, source_dir, dawn_node_exe,
@@ -302,7 +300,9 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
           use_libfuzzer=True,
           **extra_gn_args,
       ) as build:
-        fuzzers_out = build('fuzzers')[0].parent
+        fuzzers_out = build(
+            'fuzzer_corpus_tools'
+        )[0].parent  # 'fuzzer_corpus_tools' builds the fuzzers plus any tooling required for using --check later
 
     # Component build and run dawn_end2end_tests with SwiftShader
     # When using SwiftShader a component build should be used.
@@ -358,9 +358,9 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
     # complexities, and this is meant to be just a smoke test.
     with api.context(cwd=source_dir) as _, \
             api.context(env_prefixes={'PATH': [source_dir.joinpath('tools', 'golang', 'bin')]}) as _:
-      api.step('Run `fuzz --check`',
-               ['tools/run', 'fuzz', '--build',
-                str(fuzzers_out), '--check'])
+      check_cmd = ['tools/run', 'fuzz', '--build', str(fuzzers_out), '--check']
+      api.step('Run WGSL `fuzz --check`', check_cmd)
+      api.step('Run IR `fuzz --check`', check_cmd + ['--ir'])
 
 
 def GenTests(api):

@@ -364,7 +364,7 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/dawn/out/7b37738bcc5c0c3f0936d3af45a221b0f2238c24",
-      "fuzzers"
+      "fuzzer_corpus_tools"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {

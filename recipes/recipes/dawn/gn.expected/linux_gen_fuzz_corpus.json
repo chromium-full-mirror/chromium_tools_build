@@ -463,88 +463,6 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[TMP_BASE]/wgsl"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "mkdir [TMP_BASE]/wgsl"
-  },
-  {
-    "cmd": [
-      "python3",
-      "[CACHE]/builder/dawn/src/tint/cmd/fuzz/generate_tint_corpus.py",
-      "[CACHE]/builder/dawn/test/tint",
-      "[TMP_BASE]/wgsl"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Generate tint_wgsl_fuzzer corpus"
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "-o",
-      "GSUtil:parallel_composite_upload_threshold=50M",
-      "-m",
-      "----",
-      "cp",
-      "-r",
-      "[TMP_BASE]/wgsl/*",
-      "gs://clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "gsutil Upload to the tint_wgsl_fuzzer seed corpus",
-    "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/dawn",
@@ -582,7 +500,7 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/dawn/out/a518e441c1f274243c5cc1919cbfba93a3ea1e00",
-      "ir_fuzz_as"
+      "fuzzer_corpus_tools"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -616,8 +534,14 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[TMP_BASE]/ir"
+      "[TMP_BASE]/wgsl_corpus"
     ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -631,16 +555,128 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "mkdir [TMP_BASE]/ir"
+    "name": "mkdir [TMP_BASE]/wgsl_corpus"
+  },
+  {
+    "cmd": [
+      "tools/run",
+      "fuzz",
+      "--build",
+      "[CACHE]/builder/dawn/out/a518e441c1f274243c5cc1919cbfba93a3ea1e00",
+      "--generate",
+      "-out",
+      "[TMP_BASE]/wgsl_corpus"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Generate tint_wgsl_fuzzer corpus"
   },
   {
     "cmd": [
       "python3",
-      "[CACHE]/builder/dawn/src/tint/cmd/fuzz/generate_tint_corpus.py",
-      "[CACHE]/builder/dawn/test/tint",
-      "[TMP_BASE]/ir",
-      "--ir_as=[CACHE]/builder/dawn/out/a518e441c1f274243c5cc1919cbfba93a3ea1e00/ir_fuzz_as"
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "-o",
+      "GSUtil:parallel_composite_upload_threshold=50M",
+      "-m",
+      "----",
+      "cp",
+      "-r",
+      "[TMP_BASE]/wgsl_corpus/*",
+      "gs://clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer"
     ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil Upload to the tint_wgsl_fuzzer seed corpus",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[TMP_BASE]/ir_corpus"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "mkdir [TMP_BASE]/ir_corpus"
+  },
+  {
+    "cmd": [
+      "tools/run",
+      "fuzz",
+      "--build",
+      "[CACHE]/builder/dawn/out/a518e441c1f274243c5cc1919cbfba93a3ea1e00",
+      "--generate",
+      "-out",
+      "[TMP_BASE]/ir_corpus",
+      "--ir"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -668,9 +704,15 @@
       "----",
       "cp",
       "-r",
-      "[TMP_BASE]/ir/*",
+      "[TMP_BASE]/ir_corpus/*",
       "gs://clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer"
     ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
