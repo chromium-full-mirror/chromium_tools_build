@@ -55,8 +55,9 @@ def GenTests(api):
           'get time',
           stdout=api.raw_io.output_text('2023-10-23 09:00:00.000000-07:00'),
       ),
-      api.post_process(post_process.MustRun,
-                       'need to wait for off-peak hours; sleeping for 39600s'),
+      api.post_process(
+          post_process.MustRun,
+          'need to wait for off-peak hours; sleeping for 11:00:00'),
       api.post_process(post_process.DropExpectation),
   )
 

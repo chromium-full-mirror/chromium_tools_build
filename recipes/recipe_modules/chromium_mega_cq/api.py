@@ -70,8 +70,9 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
     if now.weekday() < 5 and peak_start < now < peak_end:
       gerrit_change = self.m.tryserver.gerrit_change
       diff_s = (peak_end - now).seconds
-      self.m.step('need to wait for off-peak hours; sleeping for %ds' % diff_s,
-                  None)
+      self.m.step(
+          'need to wait for off-peak hours; sleeping for %s' %
+          datetime.timedelta(seconds=diff_s), None)
       self.m.time.sleep(diff_s)
       # We've seen CLs get deleted after triggering the mega CQ but before the CQ
       # wakes up from its sleep. So make sure the CL still exists before
