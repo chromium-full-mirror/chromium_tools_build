@@ -21,7 +21,8 @@ from .profile_track import (
     VersionProfileTrack,
 )
 
-JET_STREAM_PATH = 'benchmarks/JetStream2'
+JET_STREAM_BASE_PATH = 'benchmarks/JetStream'
+JET_STREAM_PATH = 'benchmarks/JetStream/v2.2-custom'
 BUCKET_NAME = 'chromium-v8-builtins-pgo'
 GERRIT_HOST = 'https://chromium-review.googlesource.com'
 GERRIT_PROJECT = 'v8/v8'
@@ -225,6 +226,9 @@ class BaseProfileBuilder(ABC):
                 platform.profile_only_path,
                 '--d8-path',
                 platform.d8_out_path,
+                # Needs to match the location from merge_isolate_with_benchmark
+                # above, relative to the root workdir.
+                '--benchmark_path=./JetStream2/cli.js',
                 '--output-dir',
                 '${ISOLATED_OUTDIR}',
             ],
@@ -277,13 +281,28 @@ class BaseProfileBuilder(ABC):
         '--sparse',
         V8_PERF_REPO_URL,
     )
+
+    config = self.api.gclient.make_config()
+    solution = config.solutions.add()
+    solution.name = 'v8-perf'
+    solution.url = V8_PERF_REPO_URL
+    solution.managed = False
+    self.api.gclient(
+        'setup',
+        ['config', '--spec',
+         self.api.gclient.config_to_pythonish(config)])
+
+    # We only check out the JetStream root. With `gclient sync`, all three
+    # JetStream benchmarks are synced.
     checkout_path = self.work_dir / 'v8-perf'
     with self.api.context(cwd=checkout_path):
       self.api.v8.git_output(
           'sparse-checkout',
           'set',
-          JET_STREAM_PATH,
+          JET_STREAM_BASE_PATH,
       )
+
+      self.api.gclient.sync(cfg=config)
       self.perf_code_path = checkout_path / JET_STREAM_PATH
 
   @contextlib.contextmanager

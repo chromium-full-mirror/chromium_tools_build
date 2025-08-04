@@ -906,10 +906,46 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "config",
+      "--spec",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': False, 'name': 'v8-perf', 'url': 'https://chrome-internal.googlesource.com/v8/v8-perf'}]"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/ci-hp/builder/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download benchmark code.gclient setup",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
       "git",
       "sparse-checkout",
       "set",
-      "benchmarks/JetStream2"
+      "benchmarks/JetStream"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1/v8-perf",
     "infra_step": true,
@@ -929,6 +965,60 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "sync",
+      "--verbose",
+      "--nohooks",
+      "-j8",
+      "--reset",
+      "--force",
+      "--upstream",
+      "--no-nag-max",
+      "--with_branch_heads",
+      "--with_tags",
+      "--delete_unversioned_trees",
+      "--output-json",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1/v8-perf",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "project/ci-hp/builder/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download benchmark code.gclient sync",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"solutions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"v8-perf/\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"1421fd69d2610d290c1c747c0507b279d48997a9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
@@ -1784,7 +1874,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_18/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -1884,7 +1974,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_19/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -1984,7 +2074,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_20/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2084,7 +2174,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_21/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2184,7 +2274,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_22/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2284,7 +2374,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_23/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2384,7 +2474,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_24/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2484,7 +2574,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
       "[CLEANUP]/tmp_tmp_25/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2649,7 +2739,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2716,6 +2806,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools/builtins-pgo/profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out/build/d8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -2774,7 +2865,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2841,6 +2932,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools/builtins-pgo/profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out/build/d8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -2899,7 +2991,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2966,6 +3058,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools\\\\builtins-pgo\\\\profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out\\\\build\\\\d8.exe\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -3024,7 +3117,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3091,6 +3184,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools\\\\builtins-pgo\\\\profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out\\\\build\\\\d8.exe\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -3149,7 +3243,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3216,6 +3310,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools/builtins-pgo/profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out/build/d8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -3274,7 +3369,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools/builtins-pgo/profile_only.py\", \"--d8-path\", \"out/build/d8\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3341,6 +3436,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools/builtins-pgo/profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out/build/d8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -3399,7 +3495,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3466,6 +3562,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools\\\\builtins-pgo\\\\profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out\\\\build\\\\d8.exe\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -3524,7 +3621,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64-rl/Ubuntu 31.41/e3b0c44298/builder/-1\", \"priority\": \"25\", \"realm\": \"project:ci-hp\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci-hp\", \"build_is_experimental:false\", \"buildername:builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"project:project\", \"spec_name:project.ci-hp:builder\", \"stepname:pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"tools\\\\builtins-pgo\\\\profile_only.py\", \"--d8-path\", \"out\\\\build\\\\d8.exe\", \"--benchmark_path=./JetStream2/cli.js\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3591,6 +3688,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"tools\\\\builtins-pgo\\\\profile_only.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--d8-path\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out\\\\build\\\\d8.exe\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--benchmark_path=./JetStream2/cli.js\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output-dir\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
@@ -3706,7 +3804,7 @@
     "name": "collect profiles.1.1.2.0 x86.pgo profile 1.1.2.0 x86 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3804,7 +3902,7 @@
     "name": "collect profiles.1.1.2.0 x64.pgo profile 1.1.2.0 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3902,7 +4000,7 @@
     "name": "collect profiles.1.1.2.0 x86-rl.pgo profile 1.1.2.0 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4000,7 +4098,7 @@
     "name": "collect profiles.1.1.2.0 x64-rl.pgo profile 1.1.2.0 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4098,7 +4196,7 @@
     "name": "collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4196,7 +4294,7 @@
     "name": "collect profiles.1.1.1.4 x64.pgo profile 1.1.1.4 x64 on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools/builtins-pgo/profile_only.py --d8-path out/build/d8 --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4294,7 +4392,7 @@
     "name": "collect profiles.1.1.1.4 x86-rl.pgo profile 1.1.1.4 x86-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -4392,7 +4490,7 @@
     "name": "collect profiles.1.1.1.4 x64-rl.pgo profile 1.1.1.4 x64-rl on Ubuntu 31.41",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u tools\\builtins-pgo\\profile_only.py --d8-path out\\build\\d8.exe --benchmark_path=./JetStream2/cli.js --output-dir tmp```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
