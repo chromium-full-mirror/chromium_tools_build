@@ -4,15 +4,12 @@
 
 from recipe_engine import recipe_api
 
-from . import builders as builders_module
-from . import trybots as trybots_module
-
 
 class DawnApi(recipe_api.RecipeApi):
 
   def _get_builder_id_and_config(self):
-    trybots = trybots_module.TRYBOTS
-    builders = builders_module.BUILDERS
+    trybots = None
+    builders = None
 
     if self._test_data.enabled:
       if 'builders' in self._test_data:
