@@ -17,7 +17,7 @@ DEPS = [
 CONFIG = {
     "subject": "Update DevTools DEPS",
     "manual_roll_reviewers": [
-        "devtools-waterfall-sheriff-onduty@rotations.google.com",
+        "chrome-devtools-waterfall-gardener-emea-oncall@google.com",
     ],
     "excludes": [
         "extensions/cxx_debugging/third_party/lldb-eval/src",
