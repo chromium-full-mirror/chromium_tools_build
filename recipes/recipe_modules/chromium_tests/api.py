@@ -979,83 +979,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return execution_info
 
-  def package_build(
-      self,
-      builder_id,
-      update_result: bot_update.Result,
-      builder_config,
-      reasons=None,
-  ):
-    """Zip and upload the build to google storage.
-
-    This is currently used for transfer between builder and tester,
-    including bisect testers.
-
-    Note that:
-      - this will only upload when called from pure builders. On builder_testers
-        and testers, this is a no-op.
-      - this is a no-op for builders that upload to clusterfuzz; those are
-        handled in archive_clusterfuzz.
-      - this may upload twice on perf builders.
-    """
-    builder_spec = builder_config.builder_db[builder_id]
-
-    assert builder_spec.execution_mode == ctbc.COMPILE_AND_TEST, (
-        'Called package_build for %s:%s, which is has execution mode %r. '
-        'Only %r is supported by package_build. '
-        'This is a bug in your recipe.' %
-        (builder_id.group, builder_id.builder, builder_spec.execution_mode,
-         ctbc.COMPILE_AND_TEST))
-
-    source_dir = update_result.source_root.path
-
-    if not builder_spec.cf_archive_build:
-      build_revision = update_result.properties.get(
-          'got_revision', update_result.properties.get('got_src_revision'))
-
-      # For archiving 'chromium.perf', the builder also archives a version
-      # without perf test files for manual bisect.
-      # (https://bugs.chromium.org/p/chromium/issues/detail?id=604452)
-      if builder_spec.bisect_archive_build:
-        bisect_package_step = self.m.archive.zip_and_upload_build(
-            'package build for bisect',
-            self.m.chromium.c.build_config_fs,
-            source_dir,
-            build_url=self._build_bisect_gs_archive_url(builder_spec),
-            build_revision=build_revision,
-            update_properties=update_result.properties,
-            exclude_perf_test_files=True,
-            store_by_hash=False,
-            platform=self.m.chromium.c.TARGET_PLATFORM)
-        bisect_reasons = list(reasons or [])
-        bisect_reasons.extend([
-            ' - %s is a bisect builder' % builder_id.builder,
-            ' - bisect_gs_bucket is configured to %s' %
-            builder_spec.bisect_gs_bucket,
-        ])
-        bisect_package_step.presentation.logs['why is this running?'] = (
-            bisect_reasons)
-
-      if builder_spec.build_gs_bucket:
-        package_step = self.m.archive.zip_and_upload_build(
-            'package build',
-            self.m.chromium.c.build_config_fs,
-            source_dir,
-            build_url=self._build_gs_archive_url(builder_spec, builder_id.group,
-                                                 builder_id.builder),
-            build_revision=build_revision,
-            # TODO(machenbach): Make asan a configuration switch.
-            package_dsym_files=(self.m.chromium.c.runtests.enable_asan and
-                                self.m.chromium.c.HOST_PLATFORM == 'mac'),
-        )
-        standard_reasons = list(reasons or [])
-        standard_reasons.extend([
-            ' - build_gs_bucket is configured to %s' %
-            builder_spec.build_gs_bucket,
-        ])
-        package_step.presentation.logs['why is this running?'] = (
-            standard_reasons)
-
   def archive_build(
       self,
       build_dir: Path,
@@ -1416,60 +1339,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.repro_instructions.update_invocation_instructions()
       return ret
 
-  def download_and_unzip_build(self,
-                               build_dir: Path,
-                               builder_id,
-                               update_result: bot_update.Result,
-                               builder_config,
-                               *,
-                               build_archive_url=None,
-                               build_revision=None,
-                               override_execution_mode=None,
-                               read_gn_args=True):
-    assert isinstance(builder_config, ctbc.BuilderConfig), \
-        "builder_config argument %r was not a BuilderConfig" % builder_config
-    # We only want to do this for tester bots (i.e. those which do not compile
-    # locally).
-    builder_spec = builder_config.builder_db[builder_id]
-    execution_mode = override_execution_mode or builder_spec.execution_mode
-    if execution_mode != ctbc.TEST:  # pragma: no cover
-      return
-
-    legacy_build_url = None
-    build_revision = (
-        build_revision or self.m.properties.get('parent_got_revision') or
-        update_result.properties.get('got_revision') or
-        update_result.properties.get('got_src_revision'))
-    build_archive_url = build_archive_url or self.m.properties.get(
-        'parent_build_archive_url')
-    if not build_archive_url:
-      legacy_build_url = self._make_legacy_build_url(builder_spec,
-                                                     builder_id.group)
-
-    self.m.archive.download_and_unzip_build(
-        source_dir=update_result.source_root.path,
-        step_name='extract build',
-        target=self.m.chromium.c.build_config_fs,
-        build_url=legacy_build_url,
-        build_revision=build_revision,
-        build_archive_url=build_archive_url)
-
-    if read_gn_args:
-      self.m.gn.get_args(build_dir)
-
-  def _make_legacy_build_url(self, builder_spec, builder_group):
-    # The group where the build was zipped and uploaded from.
-    source_group = self.m.builder_group.for_parent
-    # TODO(gbeaty) I think this can be removed, this method is only used when
-    # downloading and unzipping a build, which should always be on a builder
-    # triggered, which will have the parent_builder_group property set
-    if not source_group:
-      source_group = self.m.builder_group.for_current  # pragma: no cover
-    return self.m.archive.legacy_download_url(
-        builder_spec.build_gs_bucket,
-        extra_url_components=(None if builder_group.startswith('chromium.perf')
-                              else source_group))
-
   @contextlib.contextmanager
   def wrap_chromium_tests(self,
                           checkout_dir: Path,
@@ -1770,32 +1639,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       return None, self.summarize_test_failures(task.test_suites,
                                                 failing_test_suites)
 
-  def _build_bisect_gs_archive_url(self, builder_spec):
-    return self.m.archive.legacy_upload_url(
-        builder_spec.bisect_gs_bucket,
-        extra_url_components=builder_spec.bisect_gs_extra)
-
-  def _build_gs_archive_url(self, builder_spec, builder_group, buildername):
-    """Returns the archive URL to pass to self.m.archive.zip_and_upload_build.
-
-    Most builders on most groups use a standard format for the build archive
-    URL, but some builders on some groups may specify custom places to upload
-    builds to. These special cases include:
-      'chromium.perf' or 'chromium.perf.fyi':
-        Exclude the name of the group from the url.
-      'tryserver.chromium.perf', or
-          linux_full_bisect_builder on 'tryserver.chromium.linux':
-        Return None so that the archive url specified in build_properties
-        (as set on the group's configuration) is used instead.
-    """
-    if builder_group.startswith('chromium.perf'):
-      return self.m.archive.legacy_upload_url(
-          builder_spec.build_gs_bucket, extra_url_components=None)
-
-    return self.m.archive.legacy_upload_url(
-        builder_spec.build_gs_bucket,
-        extra_url_components=self.m.builder_group.for_current)
-
   def get_common_args_for_scripts(self, source_dir: Path, build_dir: Path):
     args = []
 
@@ -1996,15 +1839,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                         execution_info=None):
     """Handles the builder half of the builder->tester transfer flow.
 
-    We support three different transfer mechanisms:
+    We support two different transfer mechanisms:
      - Isolate transfer: builders upload tests + any required runtime
        dependencies to isolate, then pass the isolate hashes and command line
        information to testers via properties. Testers use those hashes and
        command line information to trigger swarming tasks but do not directly
        download the isolates.
-     - Package transfer: builders package and upload some of the output
-       directory (see package_build for details). Testers download the zip
-       and proceed to run tests.
      - Skylab transfer: properties required for trigger the tests already
        uploaded to gcs are passed through as additional trigger properties
 
@@ -2034,22 +1874,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     isolate_transfer = any(
         t.uses_isolate for t in targets_config.tests_triggered_by(builder_id))
-    non_isolated_tests = [
-        t for t in targets_config.tests_triggered_by(builder_id)
-        if not t.uses_isolate
-    ]
-    package_transfer = (
-        bool(non_isolated_tests) or builder_config.bisect_archive_build)
-
-    if (package_transfer and
-        builder_config.execution_mode == ctbc.COMPILE_AND_TEST):
-      self.package_build(
-          builder_id,
-          bot_update_step,
-          builder_config,
-          reasons=self._explain_package_transfer(builder_config,
-                                                 non_isolated_tests))
-
     trigger_properties = {}
     if isolate_transfer and execution_info:
       trigger_properties = execution_info.ensure_command_lines_archived(
@@ -2107,21 +1931,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     self.m.file.rmtree('remove build directory', build_dir)
 
     if set(tests_using_isolates + tests_using_skylab) != set(tests):
-      # There are some tests which don't run via swarming. These need the source
-      # checkout in order to execute.
-      self.download_and_unzip_build(
-          build_dir,
-          builder_id,
-          update_result,
-          targets_config.builder_config,
-          read_gn_args=False)
-      self.m.step.empty(
-          'explain extract build',
-          log_name='why is this running?',
-          log_text=self._explain_package_transfer(builder_config, [
-              t for t in tests
-              if t not in set(tests_using_isolates + tests_using_skylab)
-          ]))
+      raise self.m.step.StepFailure(
+          'Only isolated and/or Skylab tests are allowed on child testers.')
 
     self.download_command_lines_for_tests(
         update_result.source_root.path,
@@ -2194,14 +2005,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           rel_cwd,
           expose_to_properties=builder_config.expose_trigger_properties,
           rts_command_lines=rts_command_lines)
-
-  def _explain_package_transfer(self, builder_config, non_isolated_tests):
-    package_transfer_reasons = [
-        'This builder is doing the full package transfer because:'
-    ]
-    for t in non_isolated_tests:
-      package_transfer_reasons.append(" - %s doesn't use isolate" % t.name)
-    return package_transfer_reasons
 
   def archive_command_lines(self, command_lines):
     command_lines_file = self.m.path.cleanup_dir / 'command_lines.json'

@@ -48,7 +48,6 @@ _AddBuildSpec(
 _AddBuildSpec(
     'fuchsia-builder-perf-arm64',
     'fuchsia',
-    bisect_archive_build=False,
     target_arch='arm',
     extra_gclient_apply_config=[
         'fuchsia_arm64',
@@ -58,7 +57,6 @@ _AddBuildSpec(
 _AddBuildSpec(
     'fuchsia-builder-perf-arm64-pgo',
     'fuchsia',
-    bisect_archive_build=False,
     target_arch='arm',
     extra_gclient_apply_config=[
         'fuchsia_arm64',
@@ -70,7 +68,6 @@ _AddBuildSpec('win-arm64-builder-perf', 'win', target_arch='arm')
 _AddBuildSpec(
     'linux-chromium-builder-perf',
     'linux',
-    bisect_archive_build=False,
     chromium_config='chromium_public_perf',
     gclient_config='chromium')
 

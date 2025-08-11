@@ -88,7 +88,6 @@ def GenTests(api):
               ),
               android_version_file = "//android/version/file",
               clobber = True,
-              build_gs_bucket = "build-gs-bucket",
               run_tests_serially = True,
               perf_isolate_upload = True,
               expose_trigger_properties = True,
@@ -101,10 +100,6 @@ def GenTests(api):
                   gs_acl = "clusterfuzz-gs-acl",
                   archive_name_prefix = "clusterfuzz-archive-name-prefix",
                   archive_subdir = "clusterfuzz-archive-subdir",
-              ),
-              bisect_archive = builder_config.bisect_archive(
-                  gs_bucket = "bisect-gs-bucket",
-                  archive_subdir = "bisect-archive-subdir",
               ),
           ),
 
@@ -188,7 +183,6 @@ def GenTests(api):
                           ],
                           android_version='//android/version/file',
                           clobber=True,
-                          build_gs_bucket='build-gs-bucket',
                           serialize_tests=True,
                           perf_isolate_upload=True,
                           expose_trigger_properties=True,
@@ -199,9 +193,6 @@ def GenTests(api):
                           cf_gs_acl="clusterfuzz-gs-acl",
                           cf_archive_name="clusterfuzz-archive-name-prefix",
                           cf_archive_subdir_suffix="clusterfuzz-archive-subdir",
-                          bisect_archive_build=True,
-                          bisect_gs_bucket="bisect-gs-bucket",
-                          bisect_gs_extra="bisect-archive-subdir",
                       ),
                   'foo-tester':
                       ctbc.BuilderSpec.create(

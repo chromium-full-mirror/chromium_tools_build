@@ -7,7 +7,6 @@ from .. import builder_spec
 
 def _client_v8_fyi_spec(**kwargs):
   return builder_spec.BuilderSpec.create(
-      build_gs_bucket='chromium-v8',
       **kwargs)
 
 

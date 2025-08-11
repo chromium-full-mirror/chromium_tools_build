@@ -435,9 +435,6 @@ def _migrate_builder_spec(
     if builder_spec.clobber:
       spec_fact.set_raw_arg('clobber', 'True')
 
-    if build_gs_bucket := builder_spec.build_gs_bucket:
-      spec_fact.set_string_arg('build_gs_bucket', build_gs_bucket)
-
     if builder_spec.serialize_tests:
       spec_fact.set_raw_arg('run_tests_serially', 'True')
 
@@ -468,15 +465,6 @@ def _migrate_builder_spec(
                                builder_spec.cf_archive_name)
         if archive_subdir := builder_spec.cf_archive_subdir_suffix:
           ca_fact.set_string_arg('archive_subdir', archive_subdir)
-
-    if builder_spec.bisect_archive_build:
-      with spec_fact.start_call_arg(
-          'bisect_archive',
-          'builder_config.bisect_archive',
-      ) as ba_fact:
-        ba_fact.set_string_arg('gs_bucket', builder_spec.bisect_gs_bucket)
-        if archive_subdir := builder_spec.bisect_gs_extra:
-          ba_fact.set_string_arg('archive_subdir', archive_subdir)
 
 
 _DEFAULT_TRY_SPEC = ctbc.TrySpec.create_for_single_mirror(

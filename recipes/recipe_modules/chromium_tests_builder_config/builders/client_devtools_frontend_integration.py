@@ -7,7 +7,6 @@ from .. import builder_spec
 
 def _client_devtools_frontend_integration_spec(**kwargs):
   return builder_spec.BuilderSpec.create(
-      build_gs_bucket='devtools-frontend',
       **kwargs)
 
 

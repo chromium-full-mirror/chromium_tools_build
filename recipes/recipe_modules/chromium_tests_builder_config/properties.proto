@@ -108,13 +108,8 @@ message BuilderSpec {
   // outputs
   bool clobber = 10;
 
-  // Name of a Google Storage bucket to use when using the legacy package
-  // transfer where build outputs are uploaded to Google Storage and then
-  // downloaded by the tester
-  //
-  // This must be set for builders with the BUILDER bot type that trigger
-  // testers that will run non-isolated tests.
-  string build_gs_bucket = 11;
+  reserved 11;
+  reserved "build_gs_bucket";
 
   // The 'mb' phase that the compiling-builder used to compile any tests.
   string mb_phase_for_tests = 18;

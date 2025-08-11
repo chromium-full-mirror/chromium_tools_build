@@ -39,8 +39,7 @@ def _long_test_name():
   return 'a' * 701
 
 def _builder_spec(**kwargs):
-  return ctbc.BuilderSpec.create(
-      build_gs_bucket='chromium-example-archive', **kwargs)
+  return ctbc.BuilderSpec.create(**kwargs)
 
 
 CUSTOM_BUILDERS = ctbc.BuilderDatabase.create({
@@ -279,42 +278,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'tester',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
-              ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec('fake-group', {
-          'fake-tester': {
-              'gtest_tests': [{
-                  'test': 'base_unittests',
-              }],
-          },
-      }),
-      api.post_process(post_process.StepSuccess, 'extract build'),
-      api.post_process(post_process.DoesNotRun, 'compile'),
-      api.post_process(post_process.StepSuccess, 'base_unittests'),
-      api.post_process(post_process.StepCommandContains, 'base_unittests', [
-          '--builder-name=fake-tester',
-      ]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'failed_test_on_tester',
       api.platform('linux', 64),
       api.chromium.ci_build(
@@ -328,7 +291,6 @@ def GenTests(api):
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
           ).with_parent(
               builder_group='fake-group',
@@ -374,7 +336,6 @@ def GenTests(api):
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
               retry_failed_shards=True,
           ).with_parent(
@@ -468,7 +429,6 @@ def GenTests(api):
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
               retry_failed_shards=True,
               retry_invalid_shards=True,
@@ -517,7 +477,6 @@ def GenTests(api):
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
           ).with_parent(
               builder_group='fake-group',
@@ -917,7 +876,6 @@ def GenTests(api):
                   },],
               },
           }),
-      api.post_process(post_process.DoesNotRun, 'extract build'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -951,52 +909,6 @@ def GenTests(api):
           TriggersBuilderWithProperties,
           builder='Isolated Transfer: mixed builder, isolated tester (tester)',
           properties=['swarm_hashes']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'package_transfer_builder',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.example',
-          builder='Packaged Transfer Builder',
-          build_number=123,
-          bot_id='packaged_transfer_builder_id',
-          builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_targets_spec(
-          'chromium.example', {
-              'Packaged Transfer Tester': {
-                  'gtest_tests': [{
-                      'args': ['--sample-argument'],
-                      'test': 'base_unittests',
-                  },],
-              },
-          }),
-      api.post_process(post_process.MustRun, 'package build'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'package_transfer_tester',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.example',
-          builder='Packaged Transfer Tester',
-          parent_buildername='Packaged Transfer Builder',
-          build_number=123,
-          bot_id='packaged_transfer_tester_id',
-          builder_db=CUSTOM_BUILDERS),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
-      api.chromium_tests.read_targets_spec(
-          'chromium.example', {
-              'Packaged Transfer Tester': {
-                  'gtest_tests': [{
-                      'args': ['--sample-argument'],
-                      'test': 'base_unittests',
-                  },],
-              },
-          }),
-      api.post_process(post_process.MustRun, 'extract build'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -126,8 +126,6 @@ class _PropertiesAssembler:
             builder_spec.android_version,
         'clobber':
             builder_spec.clobber,
-        'build_gs_bucket':
-            builder_spec.build_gs_bucket,
         'mb_phase_for_tests':
             builder_spec.mb_phase_for_tests,
         'run_tests_serially':
@@ -138,8 +136,6 @@ class _PropertiesAssembler:
             self._get_skylab_upload_location(builder_spec),
         'clusterfuzz_archive':
             self._get_clusterfuzz_archive(builder_spec),
-        'bisect_archive':
-            self._get_bisect_archive(builder_spec),
         'perf_isolate_upload':
             builder_spec.perf_isolate_upload,
     }
@@ -217,20 +213,6 @@ class _PropertiesAssembler:
       if val is not None:
         kwargs[dst] = val
     return properties_pb.BuilderSpec.ClusterfuzzArchive(**kwargs)
-
-  @staticmethod
-  def _get_bisect_archive(builder_spec):
-    if not builder_spec.bisect_archive_build:
-      return None
-    kwargs = {}
-    for (src, dst) in (
-        ('bisect_gs_bucket', 'gs_bucket'),
-        ('bisect_gs_extra', 'archive_subdir'),
-    ):
-      val = getattr(builder_spec, src)
-      if val is not None:
-        kwargs[dst] = val
-    return properties_pb.BuilderSpec.BisectArchive(**kwargs)
 
 
 class _CiBuilderPropertiesAssembler:

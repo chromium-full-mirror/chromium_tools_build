@@ -11,7 +11,7 @@
     "cmd": [],
     "name": "Report target_platform",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@target_platform@\"linux\"@@@"
+      "@@@SET_BUILD_PROPERTY@target_platform@\"win\"@@@"
     ]
   },
   {
@@ -26,11 +26,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]/builder"
+      "[CACHE]\\builder"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -60,7 +60,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@config@{@@@",
       "@@@STEP_LOG_LINE@config@  \"USE_MIRROR\": true,@@@",
-      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]/git\",@@@",
+      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]\\\\git\",@@@",
       "@@@STEP_LOG_LINE@config@  \"delete_unversioned_trees\": true,@@@",
       "@@@STEP_LOG_LINE@config@  \"deps_os\": {},@@@",
       "@@@STEP_LOG_LINE@config@  \"got_revision_mapping\": {},@@@",
@@ -169,15 +169,15 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]",
       "--revision_mapping_file",
       "{\"got_angle_revision\": \"src/third_party/angle\", \"got_buildtools_revision\": \"src/buildtools\", \"got_dawn_revision\": \"src/third_party/dawn\", \"got_nacl_revision\": \"src/native_client\", \"got_revision\": \"src\", \"got_swiftshader_revision\": \"src/third_party/swiftshader\", \"got_v8_revision\": \"src/v8\", \"got_webrtc_revision\": \"src/third_party/webrtc\"}",
       "--git-cache-dir",
-      "[CACHE]/git",
+      "[CACHE]\\git",
       "--cleanup-dir",
-      "[CLEANUP]/bot_update",
+      "[CLEANUP]\\bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
@@ -186,7 +186,7 @@
       "refs/heads/main",
       "--no_fetch_tags"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
       "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/fake-builder/8945511751514863184",
@@ -195,10 +195,10 @@
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800",
       "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
-      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
-      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE2_EVENT": "[CLEANUP]\\trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]\\trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]\\trace-packet"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -376,7 +376,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -497,10 +497,10 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
+      "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/fake-builder/8945511751514863184"
@@ -535,7 +535,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -593,11 +593,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/testing/buildbot/fake-group.json",
+      "[CACHE]\\builder\\src\\testing\\buildbot\\fake-group.json",
       "/path/to/tmp/"
     ],
     "env": {
@@ -618,12 +618,12 @@
     },
     "name": "read test spec (fake-group.json)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/fake-group.json@@@",
+      "@@@STEP_TEXT@path: [CACHE]\\builder\\src\\testing\\buildbot\\fake-group.json@@@",
       "@@@STEP_LOG_LINE@fake-group.json@{@@@",
-      "@@@STEP_LOG_LINE@fake-group.json@  \"fake-tester\": {@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@  \"fake-builder\": {@@@",
       "@@@STEP_LOG_LINE@fake-group.json@    \"gtest_tests\": [@@@",
       "@@@STEP_LOG_LINE@fake-group.json@      {@@@",
-      "@@@STEP_LOG_LINE@fake-group.json@        \"test\": \"base_unittests\"@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"test\": \"aura_unittests\"@@@",
       "@@@STEP_LOG_LINE@fake-group.json@      },@@@",
       "@@@STEP_LOG_LINE@fake-group.json@      {@@@",
       "@@@STEP_LOG_LINE@fake-group.json@        \"test\": \"browser_tests\"@@@",
@@ -638,13 +638,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/src/out/Release"
+      "[CACHE]\\builder\\src\\out\\Release"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -668,12 +668,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/src/out/Release/CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\Release\\CR_COMPILE_GUARD.txt"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -705,12 +705,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "ninja",
-      "[CACHE]/builder/src/out/Release/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]\\builder\\src\\out\\Release\\LAST_BUILD_SYSTEM.txt"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -738,17 +738,17 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb.py",
       "lookup",
       "-m",
       "fake-group",
       "-b",
       "fake-builder",
       "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--recursive"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -773,19 +773,19 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb.py",
       "gen",
       "-m",
       "fake-group",
       "-b",
       "fake-builder",
       "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "[CACHE]\\builder\\src\\out\\Release"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -814,11 +814,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/Release/gn_logs.txt",
+      "[CACHE]\\builder\\src\\out\\Release\\gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -867,7 +867,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -899,7 +899,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -919,17 +919,19 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
+      "RECIPE_MODULE[build::chromium]\\resources\\ninja_wrapper.py",
       "--ninja_info_output",
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
       "--",
-      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/src/out/Release"
+      "[CACHE]\\builder\\src\\out\\Release",
+      "aura_unittests",
+      "browser_tests"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -959,7 +961,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -977,7 +979,7 @@
       }
     },
     "name": "update invocation instructions (4)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1009,7 +1011,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1061,14 +1063,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/Release/.ninja_log",
+      "[CACHE]\\builder\\src\\out\\Release\\.ninja_log",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -1091,14 +1093,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -1121,15 +1123,15 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
       "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -1154,14 +1156,16 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/src/out/Release",
+      "[CACHE]\\builder\\src\\out\\Release",
+      "aura_unittests",
+      "browser_tests",
       "-d",
       "explain",
       "-n"
     ],
-    "cwd": "[CACHE]/builder/src",
+    "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -1204,7 +1208,7 @@
       }
     },
     "name": "update invocation instructions (5)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1236,7 +1240,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1288,11 +1292,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/src/out/Release/CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\Release\\CR_COMPILE_GUARD.txt"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -1311,6 +1315,472 @@
       }
     },
     "name": "remove compile guard"
+  },
+  {
+    "cmd": [],
+    "name": "test_pre_run"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions (6)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m fake-group -b fake-builder --config-file tools\\\\mb\\\\mb_config.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"compile instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"compile_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                {@@@",
+      "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                  \"invocationId\": \"build-8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                }@@@",
+      "@@@STEP_LOG_LINE@json.input@              ],@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                {@@@",
+      "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                  \"invocationId\": \"build-8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                }@@@",
+      "@@@STEP_LOG_LINE@json.input@              ],@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:fake-builder",
+      "-var",
+      "test_suite:aura_unittests",
+      "-tag",
+      "step_name:aura_unittests",
+      "-tag",
+      "target_platform:win",
+      "-coerce-negative-duration",
+      "-new",
+      "-realm",
+      "chromium:ci",
+      "-include",
+      "-exonerate-unexpected-pass",
+      "-inherit-sources",
+      "-baseline-id",
+      "ci:fake-builder",
+      "--",
+      "[CACHE]\\builder\\src\\tools\\resultdb\\result_adapter.exe",
+      "gtest",
+      "-result-file",
+      "[CLEANUP]\\tmp_tmp_1",
+      "--",
+      "python3",
+      "RECIPE_REPO[build]\\recipes\\runtest.py",
+      "--build-dir",
+      "[CACHE]\\builder\\src\\out\\Release",
+      "--parse-gtest-output",
+      "--test-type=aura_unittests",
+      "--test-launcher-summary-output",
+      "[CLEANUP]\\tmp_tmp_1",
+      "--builder-name=fake-builder",
+      "--builder-group=fake-group",
+      "--build-number=571",
+      "aura_unittests.exe"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "aura_unittests",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[stderr]@rdb-stream: included \"invocations/some-inv-name\" in \"invocations/parent-inv-name\"@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[stderr]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.ResultDB",
+      "QueryTestResultStatistics"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "aura_unittests stats",
+    "stdin": "{\"invocations\": [\"invocations/some-inv-name\"]}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "query",
+      "-json",
+      "-n",
+      "0",
+      "-u",
+      "-tr-fields",
+      "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
+      "some-inv-name"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "aura_unittests results",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:fake-builder",
+      "-var",
+      "test_suite:browser_tests",
+      "-tag",
+      "step_name:browser_tests",
+      "-tag",
+      "target_platform:win",
+      "-coerce-negative-duration",
+      "-new",
+      "-realm",
+      "chromium:ci",
+      "-include",
+      "-exonerate-unexpected-pass",
+      "-inherit-sources",
+      "-baseline-id",
+      "ci:fake-builder",
+      "--",
+      "[CACHE]\\builder\\src\\tools\\resultdb\\result_adapter.exe",
+      "gtest",
+      "-result-file",
+      "[CLEANUP]\\tmp_tmp_2",
+      "--",
+      "python3",
+      "RECIPE_REPO[build]\\recipes\\runtest.py",
+      "--build-dir",
+      "[CACHE]\\builder\\src\\out\\Release",
+      "--parse-gtest-output",
+      "--test-type=browser_tests",
+      "--test-launcher-summary-output",
+      "[CLEANUP]\\tmp_tmp_2",
+      "--builder-name=fake-builder",
+      "--builder-group=fake-group",
+      "--build-number=571",
+      "browser_tests.exe"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "browser_tests",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[stderr]@rdb-stream: included \"invocations/some-inv-name\" in \"invocations/parent-inv-name\"@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[stderr]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.ResultDB",
+      "QueryTestResultStatistics"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "browser_tests stats",
+    "stdin": "{\"invocations\": [\"invocations/some-inv-name\"]}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "query",
+      "-json",
+      "-n",
+      "0",
+      "-u",
+      "-tr-fields",
+      "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
+      "some-inv-name"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "browser_tests results",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]\\builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "include local test invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/some-inv-name\", \"invocations/some-inv-name\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/some-inv-name\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "$debug - all results",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@2.22 KB@@@",
+      "@@@STEP_LOG_LINE@serialized results@{@@@",
+      "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [@@@",
+      "@@@STEP_LOG_LINE@serialized results@    {@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"invalid\": \"False\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"aura_unittests\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 0,@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"unexpected_passing_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"unexpected_skipped_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"variant_hash\": \"\"@@@",
+      "@@@STEP_LOG_LINE@serialized results@    },@@@",
+      "@@@STEP_LOG_LINE@serialized results@    {@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"invalid\": \"False\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"browser_tests\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 0,@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"unexpected_passing_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"unexpected_skipped_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"variant_hash\": \"\"@@@",
+      "@@@STEP_LOG_LINE@serialized results@    }@@@",
+      "@@@STEP_LOG_LINE@serialized results@  ],@@@",
+      "@@@STEP_LOG_LINE@serialized results@  \"unexpected_failing_suites\": []@@@",
+      "@@@STEP_LOG_LINE@serialized results@}@@@",
+      "@@@STEP_LOG_END@serialized results@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 2.22 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for aura_unittests: 1.01 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
+      "@@@STEP_LOG_LINE@memory usage@@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for browser_tests: 1.01 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
+      "@@@STEP_LOG_END@memory usage@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_status@{\"aura_unittests\": \"Success\", \"browser_tests\": \"Success\"}@@@"
+    ]
   },
   {
     "name": "$result"

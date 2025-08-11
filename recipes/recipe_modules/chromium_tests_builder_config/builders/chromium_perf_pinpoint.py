@@ -42,7 +42,6 @@ def _common_kwargs(execution_mode, config_name, platform, target_bits):
 def _BuildSpec(config_name,
                platform,
                target_bits,
-               bisect_archive_build=False,
                cros_boards=None,
                target_arch=None,
                extra_gclient_apply_config=None):
@@ -63,12 +62,6 @@ def _BuildSpec(config_name,
       'checkout_pgo_profiles',
       'chromium_with_telemetry_dependencies',
   ]
-
-  kwargs['bisect_archive_build'] = bisect_archive_build
-  if bisect_archive_build:
-    # Bucket for storing builds for manual bisect
-    kwargs['bisect_gs_bucket'] = 'chrome-test-builds'
-    kwargs['bisect_gs_extra'] = 'official-by-commit'
 
   return builder_spec.BuilderSpec.create(**kwargs)
 
@@ -135,78 +128,51 @@ def _AddPinpointTestSpec(name,
 def _AddBuildSpec(name,
                   platform,
                   target_bits=64,
-                  bisect_archive_build=False,
                   target_arch=None,
                   gclient_apply_config=None):
   SPEC[name] = _BuildSpec(
       'chromium_perf',
       platform,
       target_bits,
-      bisect_archive_build=bisect_archive_build,
       target_arch=target_arch,
       extra_gclient_apply_config=gclient_apply_config)
 
 
 # LUCI builder
-_AddBuildSpec(
-    'android-builder-perf',
-    'android',
-    target_bits=32,
-    bisect_archive_build=True)
+_AddBuildSpec('android-builder-perf', 'android', target_bits=32)
+
+# LUCI builder
+_AddBuildSpec('android-builder-perf-pgo', 'android', target_bits=32)
+
+# LUCI builder
+_AddBuildSpec('android_arm64-builder-perf', 'android', target_bits=64)
+
+_AddBuildSpec('android_arm64-builder-perf-pgo', 'android', target_bits=64)
+
+_AddBuildSpec('android_arm64_high_end-builder-perf', 'android', target_bits=64)
 
 # LUCI builder
 _AddBuildSpec(
-    'android-builder-perf-pgo',
-    'android',
-    target_bits=32,
-    bisect_archive_build=True)
+    'android_arm64_high_end-builder-perf-pgo', 'android', target_bits=64)
 
-# LUCI builder
-_AddBuildSpec(
-    'android_arm64-builder-perf',
-    'android',
-    target_bits=64,
-    bisect_archive_build=True)
-
-_AddBuildSpec(
-    'android_arm64-builder-perf-pgo',
-    'android',
-    target_bits=64,
-    bisect_archive_build=True)
-
-_AddBuildSpec(
-    'android_arm64_high_end-builder-perf',
-    'android',
-    target_bits=64,
-    bisect_archive_build=True)
-
-# LUCI builder
-_AddBuildSpec(
-    'android_arm64_high_end-builder-perf-pgo',
-    'android',
-    target_bits=64,
-    bisect_archive_build=True)
-
-_AddBuildSpec('win64-builder-perf', 'win', bisect_archive_build=True)
-_AddBuildSpec('win64-builder-perf-pgo', 'win', bisect_archive_build=True)
+_AddBuildSpec('win64-builder-perf', 'win')
+_AddBuildSpec('win64-builder-perf-pgo', 'win')
 _AddBuildSpec('win-arm64-builder-perf', 'win', target_arch='arm')
-_AddBuildSpec('mac-builder-perf', 'mac', bisect_archive_build=True)
-_AddBuildSpec('mac-builder-perf-pgo', 'mac', bisect_archive_build=True)
+_AddBuildSpec('mac-builder-perf', 'mac')
+_AddBuildSpec('mac-builder-perf-pgo', 'mac')
 _AddBuildSpec(
     'mac-arm-builder-perf',
     'mac',
-    bisect_archive_build=True,
     target_arch='arm',
 )
 _AddBuildSpec(
     'mac-arm-builder-perf-pgo',
     'mac',
-    bisect_archive_build=True,
     target_arch='arm',
 )
 
-_AddBuildSpec('linux-builder-perf', 'linux', bisect_archive_build=True)
-_AddBuildSpec('linux-builder-perf-pgo', 'linux', bisect_archive_build=True)
+_AddBuildSpec('linux-builder-perf', 'linux')
+_AddBuildSpec('linux-builder-perf-pgo', 'linux')
 
 _AddIsolatedTestSpec('android-pixel4-perf', 'android',
                      'android_arm64-builder-perf')

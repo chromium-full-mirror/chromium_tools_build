@@ -178,8 +178,7 @@ def GenTests(api):
                   execution_mode=ctbc.TEST,
                   parent_buildername=fake_builder,
                   chromium_config='chromium',
-                  gclient_config='chromium',
-                  build_gs_bucket='chromium-example-archive'),
+                  gclient_config='chromium'),
       }
   })
 
@@ -265,8 +264,10 @@ def GenTests(api):
                   'name': fake_test,
               }],
           }}),
-      api.post_process(post_process.DoesNotRun, 'read command lines'),
-      api.post_process(post_process.MustRun, 'extract build'),
+      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Only isolated and/or Skylab tests are allowed on child testers.'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -43,49 +43,6 @@ def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
-      'dynamic_gtest',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
-              ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [
-                      {
-                          'test': 'base_unittests',
-                      },
-                      {
-                          'test': 'browser_tests',
-                          'shard_index': 0,
-                          'total_shards': 2
-                      },
-                      {
-                          'test': 'content_unittests',
-                          'name': 'renamed_content_unittests',
-                          'use_xvfb': False,
-                      },
-                  ],
-              },
-          }),
-  )
-
-  yield api.test(
       'dynamic_swarmed_gtest',
       api.platform('linux', 64),
       api.chromium.ci_build(
@@ -925,8 +882,6 @@ def GenTests(api):
                       },
                       {
                           'test': 'browser_tests',
-                          'shard_index': 0,
-                          'total_shards': 2
                       },
                   ],
               },
@@ -934,37 +889,30 @@ def GenTests(api):
   )
 
   yield api.test(
-      'dynamic_gtest_win',
+      'dynamic_local_gtest_win',
       api.chromium.ci_build(
           builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder',
+          builder='fake-builder',
       ),
       api.platform('win', 64),
       api.chromium_tests_builder_config.properties(
-          api.chromium_tests_builder_config.properties_assembler_for_ci_tester(
+          api.chromium_tests_builder_config.properties_assembler_for_ci_builder(
               builder_group='fake-group',
-              builder='fake-tester',
+              builder='fake-builder',
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
           ).assemble()),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
-              'fake-tester': {
+              'fake-builder': {
                   'gtest_tests': [
                       {
                           'test': 'aura_unittests',
                       },
                       {
                           'test': 'browser_tests',
-                          'shard_index': 0,
-                          'total_shards': 2
                       },
                   ],
               },
@@ -976,100 +924,42 @@ def GenTests(api):
       api.platform('linux', 64),
       api.chromium.ci_build(
           builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder',
+          builder='fake-builder',
           build_number=0,
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
+          ctbc_api.properties_assembler_for_ci_builder(
               builder_group='fake-group',
-              builder='fake-tester',
+              builder='fake-builder',
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [
-                      {
-                          'test': 'base_unittests',
-                      },
-                      {
-                          'test': 'browser_tests',
-                          'shard_index': 0,
-                          'total_shards': 2
-                      },
-                  ],
-              },
-          }),
+      api.chromium_tests.read_targets_spec('fake-group', {
+          'fake-builder': {
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              },],
+          },
+      }),
   )
 
   yield api.test(
-      'one_failure_keeps_going_dynamic_tests',
+      'dynamic_local_script_test_failure',
       api.platform('linux', 64),
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-tester',
-          parent_buildername='fake-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
+          ctbc_api.properties_assembler_for_ci_builder(
               builder_group='fake-group',
               builder='fake-tester',
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
               ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [
-                      {
-                          'test': 'base_unittests',
-                      },
-                      {
-                          'test': 'browser_tests',
-                          'shard_index': 0,
-                          'total_shards': 2
-                      },
-                  ],
-              },
-          }),
-      api.override_step_data('base_unittests', retcode=1),
-      api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'dynamic_script_test_failure',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-                  build_gs_bucket='fake-gs-bucket',
-              ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
           ).assemble()),
       api.chromium_tests.read_targets_spec(
           'fake-group', {

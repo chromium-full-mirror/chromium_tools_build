@@ -72,7 +72,6 @@ the chrome project.
                 build_config = builder_config.build_config.RELEASE,
                 target_bits = 32,
             ),
-            build_gs_bucket = "chromium-win-archive",
         ),
 
     chromium.win:Win Builder
@@ -88,7 +87,6 @@ the chrome project.
                 build_config = builder_config.build_config.RELEASE,
                 target_bits = 32,
             ),
-            build_gs_bucket = "chromium-win-archive",
         ),
 
     chromium.win:Win7 (32) Tests
@@ -105,7 +103,6 @@ the chrome project.
                 build_config = builder_config.build_config.RELEASE,
                 target_bits = 32,
             ),
-            build_gs_bucket = "chromium-win-archive",
         ),
 
     chromium.win:Win7 Tests (1)
@@ -122,7 +119,6 @@ the chrome project.
                 build_config = builder_config.build_config.RELEASE,
                 target_bits = 32,
             ),
-            build_gs_bucket = "chromium-win-archive",
         ),
 
     tryserver.chromium.win:win7-rel

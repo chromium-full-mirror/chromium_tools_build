@@ -87,7 +87,6 @@ def GenTests(api):
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
-                  build_gs_bucket=None,
               ),
               **builder).assemble()),
       api.reclient.properties(),
@@ -103,7 +102,6 @@ def GenTests(api):
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='ios',
                   chromium_config='chromium',
-                  build_gs_bucket=None,
                   chromium_config_kwargs={
                       'TARGET_PLATFORM': 'ios',
                   },

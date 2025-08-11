@@ -150,9 +150,6 @@ def GenTests(api):
                   cf_gs_acl='cf-gs-acl',
                   cf_archive_name='cf-archive-name',
                   cf_archive_subdir_suffix='cf-archive-subdir-suffix',
-                  bisect_archive_build=True,
-                  bisect_gs_bucket='bisect-gs-bucket',
-                  bisect_gs_extra='bisect-gs-extra',
               ),
           ).with_tester(
               builder_group='fake-group',
@@ -179,9 +176,6 @@ def GenTests(api):
                       cf_gs_acl='cf-gs-acl',
                       cf_archive_name='cf-archive-name',
                       cf_archive_subdir_suffix='cf-archive-subdir-suffix',
-                      bisect_archive_build=True,
-                      bisect_gs_bucket='bisect-gs-bucket',
-                      bisect_gs_extra='bisect-gs-extra',
                   ),
               tester_id:
                   ctbc.BuilderSpec.create(
@@ -203,9 +197,6 @@ def GenTests(api):
                       cf_gs_acl='cf-gs-acl',
                       cf_archive_name='cf-archive-name',
                       cf_archive_subdir_suffix='cf-archive-subdir-suffix',
-                      bisect_archive_build=True,
-                      bisect_gs_bucket='bisect-gs-bucket',
-                      bisect_gs_extra='bisect-gs-extra',
                   ),
           },
       ),
