@@ -33,6 +33,12 @@ class ResultDB:
     * base_variant - Dict of Variant key-value pairs to attach to all test
       results by default.
     * test_id_prefix - Prefix to prepend to test IDs of all test results.
+    * module_name - Module name to upload results to for
+      ResultSink's ReportTestResults RPC. Do not set in conjunction with
+      test_id_prefix.
+    * module_scheme - A specific scheme to use for results such as gtest or
+      junit with ResultSink's ReportTestResults RPC. Do not set in conjunction
+      with test_id_prefix.
     * coerce_negative_duration - If True, negative duration values will
       be coerced to 0. If false, tests results with negative duration values
       will be rejected with an error.
@@ -66,6 +72,8 @@ class ResultDB:
   base_variant = attrib(mapping[str, str], default=None)
   coerce_negative_duration = attrib(bool, default=True)
   test_id_prefix = attrib(str, default='')
+  module_name = attrib(str, default='')
+  module_scheme = attrib(str, default='')
   result_file = attrib(str, default='${ISOLATED_OUTDIR}/output.json')
   artifact_directory = attrib((str, Placeholder, Path),
                               default='${ISOLATED_OUTDIR}')
@@ -193,13 +201,28 @@ class ResultDB:
           api.buildbucket.build.builder.bucket, api.buildbucket.builder_name)
       configs = attr.evolve(configs, baseline_id=baseline_id)
 
+    test_id_prefix = configs.test_id_prefix
+    previous_test_id_prefix = None
+    module_name = None
+    module_scheme = None
+
+    if 'chromium_tests.resultdb_module' in api.buildbucket.build.input.experiments:
+      if configs.module_scheme and configs.module_name:
+        previous_test_id_prefix = configs.test_id_prefix
+        test_id_prefix = None
+        module_name = configs.module_name
+        module_scheme = configs.module_scheme
+
     # wrap it with rdb-stream
     return api.resultdb.wrap(
         cmd,
         base_tags=list(tags),
         base_variant=var,
         coerce_negative_duration=configs.coerce_negative_duration,
-        test_id_prefix=configs.test_id_prefix,
+        test_id_prefix=test_id_prefix,
+        previous_test_id_prefix=previous_test_id_prefix,
+        module_name=module_name,
+        module_scheme=module_scheme,
         test_location_base=configs.test_location_base,
         location_tags_file=configs.location_tags_file,
         require_build_inv=require_build_inv,

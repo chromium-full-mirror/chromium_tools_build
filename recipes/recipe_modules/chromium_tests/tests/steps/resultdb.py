@@ -75,6 +75,25 @@ def RunSteps(api):
       ] + cmd,
   )
 
+  # Checks module name and module scheme integration.
+  api.buildbucket.build.input.experiments.append(
+      'chromium_tests.resultdb_module')
+  api.assertions.assertEqual(
+      rdb.wrap(
+          api,
+          cmd,
+          test_id_prefix='blink_web_tests',
+          module_name='//chrome/build:foo_bar',
+          module_scheme='gtest'),
+      [
+          'rdb', 'stream', '-module-name', '//chrome/build:foo_bar',
+          '-module-scheme', 'gtest', '-inherit-sources', '-baseline-id',
+          'ci:Linux Tests', '-previous-test-id-prefix', 'blink_web_tests', '--'
+      ] + cmd,
+  )
+  api.buildbucket.build.input.experiments.remove(
+      'chromium_tests.resultdb_module')
+
   # step_name
   rdb = ResultDB.create(
       enable=True,
