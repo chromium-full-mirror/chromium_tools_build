@@ -224,6 +224,12 @@ _AddIsolatedTestSpec('android-pixel9-pro-perf', 'android',
 _AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
+# Pixel 2025
+_AddIsolatedTestSpec('android-pixel25-ultra-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel25-ultra-xl-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+
 # AL
 _AddIsolatedTestSpec('android-brya-kano-i5-8gb-perf', 'android',
                      'android-desktop-x64-builder-perf')
