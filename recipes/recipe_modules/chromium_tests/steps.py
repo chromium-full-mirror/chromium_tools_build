@@ -1459,8 +1459,8 @@ class CiOnlyTest(TestWrapper):
     if self.api.m.tryserver.is_tryserver:
       return ('This test is being run due to the'
               f' {INCLUDE_CI_FOOTER} gerrit footer')
-    return ('This test will not be run on try builders by default,'
-            f" add '{self._footer_to_enable}' to CL footers to override")
+    return ('This test will not be run on try builders by default, add the '
+            f'following CL footer to override: `{self._footer_to_enable}`\n')
 
 
 class SuccessReuseTestSpec(TestWrapperSpec):
