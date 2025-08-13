@@ -35,7 +35,8 @@ def RunSteps(api):
       source_dir,
       build_dir,
       targets=api.properties.get('targets'),
-      extra_ninja_args=api.properties.get('extra_ninja_args'))
+      extra_ninja_args=api.properties.get('extra_ninja_args'),
+      ninja_path=api.properties.get('ninja_path'))
 
 
 def GenTests(api):
@@ -321,10 +322,15 @@ def GenTests(api):
   )
 
   yield api.test(
-      'extra_ninja_args',
+      'extra_ninja_args_and_path',
       api.chromium.generic_build(builder_group='test_group'),
-      api.properties(extra_ninja_args=['-j', '100']),
+      api.properties(
+          extra_ninja_args=['-j', '100'],
+          ninja_path='/some/ninja/path',
+      ),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['-j', '100']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['/some/ninja/path']),
       api.post_process(post_process.DropExpectation),
   )

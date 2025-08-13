@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipe_modules.build.chromium_utr;
 
-// Next ID: 14
+// Next ID: 15
 message Request {
   // Required, the directory where chromium is checked out not including the src
   // dir
@@ -91,4 +91,8 @@ message Request {
 
   // When true, forces siso to not be used
   bool no_siso = 11;
+
+  // If set, will compile using this path rather than the builder's normal
+  // behavior.
+  string autoninja_path = 14;
 }

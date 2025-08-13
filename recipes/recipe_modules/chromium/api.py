@@ -190,7 +190,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.m.buildbucket.build.builder.builder.split())[:15])
     return source_dir / 'out' / (hash_part + '-' + builder_name_part)
 
-  def _ninja_path(self, source_dir: Path) -> Path:
+  def _default_ninja_path(self, source_dir: Path) -> Path:
     """The path to the ninja executable.
 
     Args:
@@ -755,7 +755,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     ninja_env = self.get_env(source_dir)
     ninja_env.update(self.m.context.env)
 
-    command = [str(self._ninja_path(source_dir))]
+    command = [str(self._default_ninja_path(source_dir))]
     if self.m.siso.enabled:
       command = [str(self.m.siso.siso_path(source_dir)), 'ninja']
     command += ['-C', build_dir, '-t', 'cleandead']
@@ -771,6 +771,7 @@ class ChromiumApi(recipe_api.RecipeApi):
               name=None,
               include_utr_instruction: bool = False,
               builder_id: chromium.BuilderId | None = None,
+              ninja_path: str = None,
               extra_ninja_args: list[str] | None = None,
               **kwargs):
     """Return a compile.py invocation.
@@ -788,6 +789,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                             to resource usage while compiling
       include_utr_instruction: Whether or not to include instructions using utr
       builder_id: BuilderId for the compile being run
+      ninja_path: Custom path to ninja binary.
       extra_ninja_args: Additional Ninja args.
 
     Returns:
@@ -818,9 +820,15 @@ class ChromiumApi(recipe_api.RecipeApi):
       # needed.
       if self.c.TARGET_PLATFORM == 'win':
         ninja_env['PATH'] = self.m.path.pathsep.join(
-            ('%(PATH)s', str(self._ninja_path(source_dir).parent)))
+            ('%(PATH)s', str(self._default_ninja_path(source_dir).parent)))
 
-    command = [str(self._ninja_path(source_dir)), '-C', str(build_dir)]
+    if ninja_path:
+      command = [ninja_path, '-C', str(build_dir)]
+    else:
+      command = [
+          str(self._default_ninja_path(source_dir)), '-C',
+          str(build_dir)
+      ]
 
     if self.c.compile_py.build_args:
       command.extend(self.c.compile_py.build_args)

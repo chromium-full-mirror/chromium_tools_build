@@ -798,9 +798,22 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if not targets:
       return None, generated_isolates
 
-    return self.m.chromium.compile(
-        source_dir, build_dir, targets=targets,
-        skip_log_upload=True), generated_isolates
+    def _run_compile():
+      return self.m.chromium.compile(
+          source_dir,
+          build_dir,
+          targets=targets,
+          skip_log_upload=True,
+          ninja_path=properties.autoninja_path), generated_isolates
+
+    # We disable siso via recipes here in order to force chromium.compile() to
+    # invoke our specified autoninja directly. However, siso will likely get
+    # re-enabled within autoninja itself.
+    if properties.autoninja_path:
+      with self.m.siso.disable():
+        return _run_compile()
+    else:
+      return _run_compile()
 
 
   def create_tests(

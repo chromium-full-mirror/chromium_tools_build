@@ -361,6 +361,16 @@ solutions = [
   )
 
   yield api.test(
+      'custom_ninja_path',
+      boilerplate(
+          run_type=Request.RunType.RUN_TYPE_COMPILE,
+          autoninja_path='/some/autoninja/path',
+      ),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'skip_test',
       boilerplate(run_type=Request.RunType.RUN_TYPE_COMPILE),
       api.post_process(post_process.MustRun, 'compile'),
