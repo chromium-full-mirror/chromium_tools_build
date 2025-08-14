@@ -119,6 +119,8 @@ class Generator:
       if result_format:
         kwargs.setdefault('result_format', result_format)
     kwargs.setdefault('test_id_prefix', raw_test_spec.get('test_id_prefix'))
+    kwargs.setdefault('module_name', raw_test_spec.get('module_name', None))
+    kwargs.setdefault('module_scheme', raw_test_spec.get('module_scheme', None))
     base_variant = self._chromium_tests_api.base_variant_getter(test_spec)
     kwargs.setdefault('base_variant', {}).update(base_variant)
     return attr.evolve(test_spec, resultdb=steps.ResultDB.create(**kwargs))
