@@ -113,18 +113,6 @@ _AddIsolatedTestSpec(
     parent_builder_group='chromium.perf')
 
 _AddIsolatedTestSpec(
-    'win-10_laptop_high_end-perf_Lenovo-P51',
-    'win',
-    parent_buildername='win64-builder-perf',
-    parent_builder_group='chromium.perf')
-
-_AddIsolatedTestSpec(
-    'win-10_laptop_high_end-perf_Dell-Precision',
-    'win',
-    parent_buildername='win64-builder-perf',
-    parent_builder_group='chromium.perf')
-
-_AddIsolatedTestSpec(
     'win-10_laptop_low_end-perf_HP-Candidate',
     'win',
     parent_buildername='win64-builder-perf',
