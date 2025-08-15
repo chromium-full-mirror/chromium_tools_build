@@ -335,6 +335,9 @@ class SkylabApi(recipe_api.RecipeApi):
           for t in runtime_excluded_tests:
             cmd.extend(['--cros-test-names-exclude', t])
 
+        if test.spec.cros_ctp_suite_name:
+          cmd.extend(['--cros-ctp-suite-name', test.spec.cros_ctp_suite_name])
+
         if test.spec.cros_test_max_in_shard > 0:
           cmd.extend(
               ['--cros-test-max-in-shard', test.spec.cros_test_max_in_shard])

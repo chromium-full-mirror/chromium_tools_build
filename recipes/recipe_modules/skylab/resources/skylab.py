@@ -230,7 +230,10 @@ def schedule_skylab_tests(opts):
   else:
     req = v2req.requests.add()
     _populate_req_common(opts, req, True)
-    req.suite_request.test_suite.name = opts.chromium_suite_name
+    if opts.cros_ctp_suite_name:
+      req.suite_request.test_suite.name = opts.cros_ctp_suite_name
+    else:
+      req.suite_request.test_suite.name = opts.chromium_suite_name
     for v in opts.cros_test_tags:
       req.suite_request.test_suite.test_case_tag_criteria.tags.append(v)
     for v in opts.cros_test_tags_exclude:
@@ -506,6 +509,12 @@ def main(args):
       type=int,
       default=0,
       help='maximum number of tests in a shard',
+  )
+  subparser.add_argument(
+      '--cros-ctp-suite-name',
+      type=str,
+      default='',
+      help='Use a different suite name in CTP than --chromium-suite-name',
   )
   subparser.add_argument(
       '--test-arg',

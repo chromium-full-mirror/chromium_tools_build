@@ -3255,6 +3255,7 @@ class SkylabTestSpec(TestSpec):
   cros_test_names_from_file = attrib(sequence[str], default=())
   cros_test_names_exclude_from_file = attrib(sequence[str], default=())
   cros_test_max_in_shard = attrib(int, default=0)
+  cros_ctp_suite_name = attrib(str, default='')
 
   # Generic arguments to pass to the test command run in skylab.
   test_args = attrib(command_args, default=())
