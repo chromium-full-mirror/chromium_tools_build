@@ -24,10 +24,11 @@ class DawnApi(recipe_api.RecipeApi):
 
   def ci_steps(self):
     builder_id, builder_config = self._get_builder_id_and_config()
-    self.m.chromium_tests.main_waterfall_steps(builder_id, builder_config)
+    return self.m.chromium_tests.main_waterfall_steps(builder_id,
+                                                      builder_config)
 
   def try_steps(self):
     self.m.tryserver.require_is_tryserver()
 
     builder_id, builder_config = self._get_builder_id_and_config()
-    self.m.chromium_tests.trybot_steps(builder_id, builder_config)
+    return self.m.chromium_tests.trybot_steps(builder_id, builder_config)

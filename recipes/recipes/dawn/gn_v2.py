@@ -16,7 +16,8 @@ DEPS = [
 
 
 def RunSteps(api):
-  return api.dawn.ci_steps()
+  build_result, _ = api.dawn.ci_steps()
+  return build_result
 
 
 _TEST_BUILDERS = builder_db.BuilderDatabase.create({
