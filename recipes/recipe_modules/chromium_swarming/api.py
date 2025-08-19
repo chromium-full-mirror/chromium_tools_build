@@ -1108,6 +1108,10 @@ class SwarmingApi(recipe_api.RecipeApi):
       kv = t.split(':', 1)
       assert len(kv) == 2
       tags_dict[kv[0]].append(kv[1])
+    tags_dict.update({
+        'shard_index': [str(shard_index)],
+        'shard_count': [str(task.shards)],
+    })
 
     slices = [req_slice]
     if task.optional_dimensions:
