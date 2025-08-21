@@ -27,7 +27,7 @@ message InputProperties {
   string action_salt = 4;
 
   // Siso experiments ids.
-  // https://chromium.googlesource.com/infra/infra/+/bdc94f6a432b49b0c8412994c095901f816532b8/go/src/infra/build/siso/build/experiments.go#17
+  // https://chromium.googlesource.com/build/+/refs/heads/main/siso/build/experiments.go#:~:text=var%20knownExperiments
   repeated string experiments = 5;
 
   // monitoring/observability
@@ -51,7 +51,7 @@ message InputProperties {
   int32 remote_jobs = 10;
 
   // Siso limits overrides.
-  // https://chromium.googlesource.com/infra/infra/+/ae10b30365d4cb300fefa1e8696dee68b164b8e7/go/src/infra/build/siso/build/limits.go#58
+  // https://chromium.googlesource.com/build/+/fac028f33f398558bd6e73380eb3327545751171/siso/build/limits.go#60
   // e.g. limits: "fastlocal=0"
   string limits = 15;
 
