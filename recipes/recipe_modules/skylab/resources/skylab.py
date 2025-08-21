@@ -324,6 +324,10 @@ def read_ctp_results(opts):
           shard = int(name.split('-shard-')[1])
           k = name
         else:
+          try:
+            shard = int(attempt.name.split('-shard-')[1])
+          except:  # pylint: disable=bare-except
+            pass
           k = attempt.name
         is_infra_failure = (_fix_test_runner_status(attempt) == 'INFRA_FAILURE')
         if k not in task_results or (attempt.attempt
