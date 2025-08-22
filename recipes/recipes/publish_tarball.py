@@ -223,6 +223,10 @@ DENYLISTED_VERSIONS = [
     '140.0.7326.0',
     '140.0.7326.1',
     '140.0.7326.2',
+    # This specific version contains https://crrev.com/c/6868589, which
+    # introduced a bug in the build.py clang script, but lacks
+    # https://crrev.com/c/6872233, which contains the fix for the bug.
+    '141.0.7370.0',
 ]
 
 # NaCl support was removed from the Linux builds in
