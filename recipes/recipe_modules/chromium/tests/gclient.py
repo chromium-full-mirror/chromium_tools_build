@@ -103,6 +103,11 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+      'tot_rust',
+      api.properties(apply_gclient_config='rust_tot'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'ios_webkit_tot',
       api.properties(apply_gclient_config='ios_webkit_tot'),
       api.post_process(post_process.DropExpectation),

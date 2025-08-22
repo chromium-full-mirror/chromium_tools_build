@@ -446,6 +446,11 @@ def use_clang_tidy(c):
 def clang_tot(c):
   c.solutions[0].custom_vars['llvm_force_head_revision'] = 'True'
 
+
+@CONFIG_CTX()
+def rust_tot(c):
+  c.solutions[0].custom_vars['rust_force_head_revision'] = 'True'
+
 @CONFIG_CTX(includes=['chromium'])
 def openscreen_tot(c):
   c.revisions['src/third_party/openscreen/src'] = 'HEAD'
