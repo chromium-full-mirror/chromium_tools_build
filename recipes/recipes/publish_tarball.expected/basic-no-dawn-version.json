@@ -1339,92 +1339,6 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/native_client",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune native_client"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/native_client_sdk",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune native_client_sdk"
-  },
-  {
-    "cmd": [
-      "find",
       "[CLEANUP]/tmp_tmp_1/src/third_party/android_platform",
       "-type",
       "f,l",
@@ -1980,6 +1894,92 @@
       }
     },
     "name": "prune third_party/webgl"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/native_client",
+      "-type",
+      "f,l",
+      "-regextype",
+      "egrep",
+      "!",
+      "-regex",
+      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
+      "!",
+      "(",
+      "(",
+      "-iname",
+      "*COPYING*",
+      "-o",
+      "-iname",
+      "*Copyright*",
+      "-o",
+      "-iname",
+      "*LICENSE*",
+      ")",
+      "!",
+      "-iregex",
+      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
+      ")",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune native_client"
+  },
+  {
+    "cmd": [
+      "find",
+      "[CLEANUP]/tmp_tmp_1/src/native_client_sdk",
+      "-type",
+      "f,l",
+      "-regextype",
+      "egrep",
+      "!",
+      "-regex",
+      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
+      "!",
+      "(",
+      "(",
+      "-iname",
+      "*COPYING*",
+      "-o",
+      "-iname",
+      "*Copyright*",
+      "-o",
+      "-iname",
+      "*LICENSE*",
+      ")",
+      "!",
+      "-iregex",
+      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
+      ")",
+      "-delete"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "prune native_client_sdk"
   },
   {
     "cmd": [

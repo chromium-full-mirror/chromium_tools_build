@@ -329,8 +329,6 @@ def export_lite_tarball(api, source_dir, version):
         'chrome/android',
         'chromecast',
         'ios',
-        'native_client',
-        'native_client_sdk',
         'third_party/android_platform',
         'third_party/angle/third_party/VK-GL-CTS',
         'third_party/apache-linux',
@@ -350,6 +348,12 @@ def export_lite_tarball(api, source_dir, version):
     ]:
       if api.path.exists(api.path.join(dest_dir, directory)):
         directories.append(directory)  # pragma: no cover
+
+    if version_ships_nacl(version):
+      directories.extend([
+          'native_client',
+          'native_client_sdk',
+      ])
 
     for directory in directories:
       try:
