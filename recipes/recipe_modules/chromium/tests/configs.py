@@ -61,6 +61,8 @@ def GenTests(api):
 
   yield from_config('clang_tot_linux')
 
+  yield from_config('rust_tot_linux')
+
   yield api.test(
       'clang_tot_mac',
       api.platform('mac', 64),

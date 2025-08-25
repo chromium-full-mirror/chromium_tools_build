@@ -274,6 +274,9 @@ def _clang_common(c):
   c.gyp_env.GYP_DEFINES['clang'] = 1  # Read by api.py.
 
 
+def _rust_common(c):
+  c.gyp_env.GYP_DEFINES['rust'] = 1  # Read by api.py.
+
 @config_ctx(group='compiler')
 def clang(c):
   _clang_common(c)
@@ -290,6 +293,11 @@ def default_compiler(c):
   if c.TARGET_PLATFORM in ('mac', 'ios'):
     _clang_common(c)
 
+
+@config_ctx()
+def rust(c):
+  _clang_common(c)
+  _rust_common(c)
 
 @config_ctx()
 def dcheck(c, invert=False):
@@ -456,6 +464,10 @@ def chromium_win_clang_asan_tot(_):
 def clang_tot_linux(_):
   pass
 
+
+@config_ctx(includes=['ninja', 'rust'])
+def rust_tot_linux(_):
+  pass
 
 # mac_toolchain causes the bots to download system Xcode. The clang tot
 # bots need system Xcode to build clang; hermetic Xcode isn't sufficient.
