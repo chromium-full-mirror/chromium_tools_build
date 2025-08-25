@@ -117,12 +117,15 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     """
     self._set_paths(update_result.checkout_dir, update_result.source_root.path)
 
-  def get_files_affected_by_patch(self, relative_to='src/', cwd=None,
+  def get_files_affected_by_patch(self,
+                                  relative_to=None,
+                                  cwd=None,
                                   report_via_property=False):
     """Returns list of POSIX paths of files affected by patch for "analyze".
 
-    Paths are relative to `relative_to` which for analyze should be 'src/'.
-    Paths always use '/' as a path delimiter, no matter the OS.
+    Paths are relative to `relative_to` which for analyze in Chromium should be
+    'src/' (the default value). Paths always use '/' as a path delimiter, no
+    matter the OS.
     """
     if not self.m.tryserver.gerrit_change:
       # There is no patch to begin with.
@@ -141,7 +144,9 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       )
     return self.format_affected_file_paths(files, relative_to=relative_to)
 
-  def format_affected_file_paths(self, files, relative_to='src/'):
+  def format_affected_file_paths(self, files, relative_to=None):
+    if relative_to is None:
+      relative_to = 'src/'
     for i, path in enumerate(files):
       path = str(path)
       files[i] = self.m.path.relpath(path, relative_to)

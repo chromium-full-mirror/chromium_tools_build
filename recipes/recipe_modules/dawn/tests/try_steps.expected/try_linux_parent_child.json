@@ -698,7 +698,7 @@
       "--isolate-map-file",
       "[CACHE]/builder/dawn/infra/specs/gn_isolate_map.pyl",
       "[CACHE]/builder/dawn/out/Release",
-      "{\"additional_compile_targets\": [], \"files\": [\"../dawn/foo.cc\"], \"test_targets\": [\"dawn_end2end_tests\"]}",
+      "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": [\"dawn_end2end_tests\"]}",
       "/path/to/tmp/json",
       "--json-output",
       "/path/to/tmp/json"

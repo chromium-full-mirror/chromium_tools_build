@@ -31,4 +31,5 @@ class DawnApi(recipe_api.RecipeApi):
     self.m.tryserver.require_is_tryserver()
 
     builder_id, builder_config = self._get_builder_id_and_config()
-    return self.m.chromium_tests.trybot_steps(builder_id, builder_config)
+    return self.m.chromium_tests.trybot_steps(
+        builder_id, builder_config, files_relative_to='dawn/')

@@ -2114,7 +2114,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def trybot_steps(self,
                    builder_id,
                    builder_config,
-                   root_solution_revision=None):
+                   root_solution_revision=None,
+                   files_relative_to=None):
     """Compiles and runs tests for chromium recipe.
 
     Args:
@@ -2123,6 +2124,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         Used by bots on CQs of projects which are Chromium components,
         like ANGLE CQ, to run tests with a known good version of Chromium.
         If omitted, ToT Chromium is checked out.
+      files_relative_to: Directory that files should be made relative to.
+        Passed down to chromium_checkout.get_files_affected_by_patch. If
+        omitted, the default value set by that function will be used.
 
     Returns:
       - A RawResult object with the status of the build
@@ -2133,7 +2137,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_id,
         builder_config,
         deapply_changes=self.deapply_patch,
-        root_solution_revision=root_solution_revision)
+        root_solution_revision=root_solution_revision,
+        files_relative_to=files_relative_to)
 
   def raise_failure_if_cq_depends_footer_exists(self):
     # CrOS CQ supports linking & testing CLs across different repos in one
@@ -2153,7 +2158,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                          builder_id,
                                          builder_config,
                                          deapply_changes,
-                                         root_solution_revision=None):
+                                         root_solution_revision=None,
+                                         files_relative_to=None):
     """Compile and run tests for chromium_trybot recipe.
 
     Args:
@@ -2163,6 +2169,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       deapply_changes: A function which deapplies changes to the code being
         tested.
       root_solution_revision: Git revision of Chromium to check out.
+      files_relative_to: Directory that files should be made relative to.
+        Passed down to chromium_checkout.get_files_affected_by_patch. If
+        omitted, the default value set by that function will be used.
 
     Returns:
       - A RawResult object with the status of the build and
@@ -2177,7 +2186,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     raw_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
-        root_solution_revision=root_solution_revision)
+        root_solution_revision=root_solution_revision,
+        files_relative_to=files_relative_to)
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -2504,6 +2514,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       isolate_output_files_for_coverage: bool = False,
       additional_compile_targets: Iterable[str] = None,
       skip_analysis_reasons: Iterable[str] | None = None,
+      files_relative_to: str | None = None,
   ):
     """Builds targets affected by change.
 
@@ -2524,6 +2535,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         value, then instead of executing analyze, all configured targets will be
         returned and an empty step will be emitted indicating why analyze wasn't
         executed.
+      files_relative_to: Directory that files should be made relative to.
+        Passed down to chromium_checkout.get_files_affected_by_patch. If
+        omitted, the default value set by that function will be used.
 
     Returns:
       A Tuple of
@@ -2546,8 +2560,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         root_solution_revision=root_solution_revision)
 
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
-        report_via_property=True
-    )
+        report_via_property=True, relative_to=files_relative_to)
     is_deps_only_change = affected_files == ["DEPS"]
 
     # Must happen before without patch steps.
