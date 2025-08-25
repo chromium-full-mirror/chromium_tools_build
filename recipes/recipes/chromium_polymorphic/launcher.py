@@ -19,7 +19,6 @@ from PB.recipe_modules.build.chromium_polymorphic.properties \
     import BuilderGroupAndName, TesterFilter
 from PB.recipes.build.chromium_polymorphic.launcher import InputProperties
 
-PYTHON_VERSION_COMPATIBILITY = 'PY3'
 
 PROPERTIES = InputProperties
 

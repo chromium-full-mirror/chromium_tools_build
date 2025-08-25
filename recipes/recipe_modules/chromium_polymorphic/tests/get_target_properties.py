@@ -13,7 +13,6 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from PB.recipe_modules.build.chromium_polymorphic.properties \
     import BuilderGroupAndName, TesterFilter
 
-PYTHON_VERSION_COMPATIBILITY = 'PY3'
 
 DEPS = [
     'chromium_polymorphic',
