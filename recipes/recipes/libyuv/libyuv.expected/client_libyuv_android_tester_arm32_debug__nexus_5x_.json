@@ -431,7 +431,8 @@
     },
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@logcat dump@https://storage.cloud.google.com/chromium-libyuv/logcat_dumps/Android%20Tester%20ARM32%20Debug%20(Nexus%205X)/1337@@@"
+      "@@@STEP_LINK@logcat dump@https://storage.cloud.google.com/chromium-libyuv/logcat_dumps/Android%20Tester%20ARM32%20Debug%20(Nexus%205X)/1337@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-libyuv/logcat_dumps/Android Tester ARM32 Debug (Nexus 5X)/1337\"}@@@"
     ]
   },
   {

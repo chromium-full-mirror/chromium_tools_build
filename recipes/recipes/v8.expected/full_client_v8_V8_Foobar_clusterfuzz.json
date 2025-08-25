@@ -167,7 +167,8 @@
     },
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/v8_clusterfoo/linux64-release/d8_bar-linux64-release-v8-component-50110.zip@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/v8_clusterfoo/linux64-release/d8_bar-linux64-release-v8-component-50110.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://v8_clusterfoo/linux64-release/d8_bar-linux64-release-v8-component-50110.zip\"}@@@"
     ]
   }
 ]

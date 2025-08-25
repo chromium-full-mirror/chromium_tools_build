@@ -239,7 +239,8 @@
     },
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@custom-lkgr-status.html@https://storage.cloud.google.com/custom/lkgr-status/custom-lkgr-status.html@@@"
+      "@@@STEP_LINK@custom-lkgr-status.html@https://storage.cloud.google.com/custom/lkgr-status/custom-lkgr-status.html@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://custom/lkgr-status/custom-lkgr-status.html\"}@@@"
     ]
   },
   {

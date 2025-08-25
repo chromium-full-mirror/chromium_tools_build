@@ -29,7 +29,8 @@
     "name": "make archive.gsutil upload",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"make archive|gsutil upload\": \"gs://chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip\"}@@@"
     ]
   },
   {
@@ -62,7 +63,8 @@
     "name": "make archive.gsutil upload json",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/canary/v8-linux64-rel-latest.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/canary/v8-linux64-rel-latest.json@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"make archive|gsutil upload json\": \"gs://chromium-v8/official/canary/v8-linux64-rel-latest.json\"}@@@"
     ]
   }
 ]

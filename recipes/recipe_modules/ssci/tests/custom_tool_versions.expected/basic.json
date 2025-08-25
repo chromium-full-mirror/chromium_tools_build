@@ -918,7 +918,8 @@
     "name": "SSCI collection.target specific steps for Example.apk.gsutil upload ExampleStable.apk.spdx.json SBOM",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for Example.apk|gsutil upload ExampleStable.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json\"}@@@"
     ]
   },
   {

@@ -388,7 +388,8 @@
     },
     "name": "gsutil Upload to the dawn_wire_server_and_frontend_fuzzer seed corpus",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_frontend_fuzzer@@@"
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_frontend_fuzzer@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload to the dawn_wire_server_and_frontend_fuzzer seed corpus\": \"gs://clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_frontend_fuzzer\"}@@@"
     ]
   },
   {
@@ -423,7 +424,8 @@
     },
     "name": "gsutil Upload to the dawn_wire_server_and_vulkan_backend_fuzzer seed corpus",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_vulkan_backend_fuzzer@@@"
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_vulkan_backend_fuzzer@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload to the dawn_wire_server_and_vulkan_backend_fuzzer seed corpus\": \"gs://clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_vulkan_backend_fuzzer\"}@@@"
     ]
   },
   {
@@ -458,7 +460,8 @@
     },
     "name": "gsutil Upload to the dawn_wire_server_and_d3d12_backend_fuzzer seed corpus",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_d3d12_backend_fuzzer@@@"
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_d3d12_backend_fuzzer@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload to the dawn_wire_server_and_d3d12_backend_fuzzer seed corpus\": \"gs://clusterfuzz-corpus/libfuzzer/dawn_wire_server_and_d3d12_backend_fuzzer\"}@@@"
     ]
   },
   {
@@ -624,7 +627,8 @@
     },
     "name": "gsutil Upload to the tint_wgsl_fuzzer seed corpus",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer@@@"
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload to the tint_wgsl_fuzzer seed corpus\": \"gs://clusterfuzz-corpus/libfuzzer/tint_wgsl_fuzzer\"}@@@"
     ]
   },
   {
@@ -728,7 +732,8 @@
     },
     "name": "gsutil Upload to the tint_ir_fuzzer seed corpus",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer@@@"
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload to the tint_ir_fuzzer seed corpus\": \"gs://clusterfuzz-corpus/libfuzzer/tint_ir_fuzzer\"}@@@"
     ]
   },
   {

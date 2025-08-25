@@ -164,7 +164,8 @@
     "name": "make archive.gsutil upload",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/3.4/v8-android-arm64-rel-3.4.3.17.zip@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/3.4/v8-android-arm64-rel-3.4.3.17.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"make archive|gsutil upload\": \"gs://chromium-v8/official/3.4/v8-android-arm64-rel-3.4.3.17.zip\"}@@@"
     ]
   },
   {
@@ -336,7 +337,8 @@
     "name": "make archive (libs).gsutil upload",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/3.4/v8-android-arm64-libs-rel-3.4.3.17.zip@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/3.4/v8-android-arm64-libs-rel-3.4.3.17.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"make archive (libs)|gsutil upload\": \"gs://chromium-v8/official/3.4/v8-android-arm64-libs-rel-3.4.3.17.zip\"}@@@"
     ]
   }
 ]

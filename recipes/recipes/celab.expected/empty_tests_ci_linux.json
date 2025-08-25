@@ -374,7 +374,8 @@
     },
     "name": "gsutil upload CELab binaries",
     "~followup_annotations": [
-      "@@@STEP_LINK@CELab binaries@https://storage.cloud.google.com/celab/builder/2012/05/14/8945511751514863184/cel.zip@@@"
+      "@@@STEP_LINK@CELab binaries@https://storage.cloud.google.com/celab/builder/2012/05/14/8945511751514863184/cel.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload CELab binaries\": \"gs://celab/builder/2012/05/14/8945511751514863184/cel.zip\"}@@@"
     ]
   },
   {

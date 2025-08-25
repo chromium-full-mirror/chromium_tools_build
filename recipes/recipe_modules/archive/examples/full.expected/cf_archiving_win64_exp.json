@@ -72,7 +72,8 @@
     "infra_step": true,
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456-experimental.zip@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456-experimental.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456-experimental.zip\"}@@@"
     ]
   },
   {

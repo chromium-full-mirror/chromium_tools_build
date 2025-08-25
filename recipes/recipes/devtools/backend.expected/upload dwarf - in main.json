@@ -503,7 +503,8 @@
     },
     "name": "gsutil upload dwarf binary",
     "~followup_annotations": [
-      "@@@STEP_LINK@builds/cxx_dwarf_extension-1.2.456.0.zip@https://storage.cloud.google.com/devtools-internal-dwarf-extension/builds/cxx_dwarf_extension-1.2.456.0.zip@@@"
+      "@@@STEP_LINK@builds/cxx_dwarf_extension-1.2.456.0.zip@https://storage.cloud.google.com/devtools-internal-dwarf-extension/builds/cxx_dwarf_extension-1.2.456.0.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload dwarf binary\": \"gs://devtools-internal-dwarf-extension/builds/cxx_dwarf_extension-1.2.456.0.zip\"}@@@"
     ]
   },
   {

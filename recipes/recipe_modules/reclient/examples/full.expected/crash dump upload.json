@@ -27,7 +27,8 @@
     "name": "postprocess for reclient.gsutil upload reproxy crash dumps",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_crash_dumps.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_crash_dumps.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload reproxy crash dumps\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_crash_dumps.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz\"}@@@"
     ]
   }
 ]

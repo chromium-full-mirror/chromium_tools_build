@@ -124,7 +124,8 @@
     "infra_step": true,
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium/linux-release/chrome-asan-linux-release-refs_heads_B1-123456.zip@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium/linux-release/chrome-asan-linux-release-refs_heads_B1-123456.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium/linux-release/chrome-asan-linux-release-refs_heads_B1-123456.zip\"}@@@"
     ]
   },
   {

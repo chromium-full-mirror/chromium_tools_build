@@ -282,7 +282,8 @@
     },
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/fuzzer-archives/fuzz-results-deafbeefdeafbeefdeafbeefdeafbeefdeafbeef.tar.bz2@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/fuzzer-archives/fuzz-results-deafbeefdeafbeefdeafbeefdeafbeefdeafbeef.tar.bz2@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-v8/fuzzer-archives/fuzz-results-deafbeefdeafbeefdeafbeefdeafbeefdeafbeef.tar.bz2\"}@@@"
     ]
   },
   {

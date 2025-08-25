@@ -1603,7 +1603,8 @@
     "name": "CMake build default targets.postprocess for reclient.gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets|postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\"}@@@"
     ]
   },
   {
@@ -1758,7 +1759,8 @@
     "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets|postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\"}@@@"
     ]
   },
   {
@@ -1854,7 +1856,8 @@
     "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets|postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO\"}@@@"
     ]
   },
   {
@@ -1950,7 +1953,8 @@
     "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets|postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log\"}@@@"
     ]
   },
   {
@@ -2046,7 +2050,8 @@
     "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets|postprocess for reclient|upload logs|gsutil upload reclient logs\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz\"}@@@"
     ]
   },
   {
@@ -3125,7 +3130,8 @@
     "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets with dawn.node enabled|postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
     ]
   },
   {
@@ -3280,7 +3286,8 @@
     "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets with dawn.node enabled|postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\"}@@@"
     ]
   },
   {
@@ -3376,7 +3383,8 @@
     "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets with dawn.node enabled|postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO\"}@@@"
     ]
   },
   {
@@ -3472,7 +3480,8 @@
     "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets with dawn.node enabled|postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log\"}@@@"
     ]
   },
   {
@@ -3568,7 +3577,8 @@
     "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build default targets with dawn.node enabled|postprocess for reclient|upload logs|gsutil upload reclient logs\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz\"}@@@"
     ]
   },
   {
@@ -4825,7 +4835,8 @@
     "name": "CMake build _other.cc files.postprocess for reclient.gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build _other.cc files|postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {
@@ -4980,7 +4991,8 @@
     "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build _other.cc files|postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\"}@@@"
     ]
   },
   {
@@ -5076,7 +5088,8 @@
     "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build _other.cc files|postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO\"}@@@"
     ]
   },
   {
@@ -5172,7 +5185,8 @@
     "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build _other.cc files|postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log\"}@@@"
     ]
   },
   {
@@ -5268,7 +5282,8 @@
     "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build _other.cc files|postprocess for reclient|upload logs|gsutil upload reclient logs\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz\"}@@@"
     ]
   },
   {
@@ -6347,7 +6362,8 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build disabled readers and writers|postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz\"}@@@"
     ]
   },
   {
@@ -6502,7 +6518,8 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build disabled readers and writers|postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\"}@@@"
     ]
   },
   {
@@ -6598,7 +6615,8 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build disabled readers and writers|postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO\"}@@@"
     ]
   },
   {
@@ -6694,7 +6712,8 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build disabled readers and writers|postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log\"}@@@"
     ]
   },
   {
@@ -6790,7 +6809,8 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"CMake build disabled readers and writers|postprocess for reclient|upload logs|gsutil upload reclient logs\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz\"}@@@"
     ]
   },
   {

@@ -438,7 +438,8 @@
     "infra_step": true,
     "name": "gsutil archive model data",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-rts/rts-chromium-model-data/0@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-rts/rts-chromium-model-data/0@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil archive model data\": \"gs://chrome-rts/rts-chromium-model-data/0\"}@@@"
     ]
   },
   {
