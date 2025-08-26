@@ -25,7 +25,6 @@ CONFIG = {
         "third_party/cmake",
         "third_party/esbuild",
         "scripts/ai_assistance/suite/outputs",
-        "third_party/siso",
     ],
     "show_commit_log": False,
 }
