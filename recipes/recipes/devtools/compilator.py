@@ -25,9 +25,16 @@ from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import read_test_list
 
 DEPS = [
-    'chromium', 'devtools', 'recipe_engine/buildbucket', 'recipe_engine/file',
-    'recipe_engine/json', 'recipe_engine/properties', 'recipe_engine/resultdb',
-    'recipe_engine/runtime', 'recipe_engine/step', 'chromium_checkout'
+    'chromium',
+    'devtools',
+    'recipe_engine/buildbucket',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/properties',
+    'recipe_engine/resultdb',
+    'recipe_engine/runtime',
+    'recipe_engine/step',
+    'chromium_checkout',
 ]
 
 PROPERTIES = {
@@ -57,6 +64,11 @@ PROPERTIES = {
             help='Force host_cpu variable in DEPS to a specific value. '
             '(Forces Node and CfT binaries to be downloaded for the specific CPU)',
             default=None),
+    'devtools_bundle':
+        Property(
+            kind=bool,
+            help='Turn the devtools_bundle gn flag off (default on)',
+            default=True),
 }
 
 CANCELLATION_MESSAGE = (
@@ -64,10 +76,11 @@ CANCELLATION_MESSAGE = (
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber, force_host_cpu):
+             clobber, force_host_cpu, devtools_bundle):
   try:
     api.devtools.configure(builder_config, is_official_build,
-                           devtools_skip_typecheck, force_host_cpu)
+                           devtools_skip_typecheck, force_host_cpu,
+                           devtools_bundle)
     update_result = api.devtools.update()
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(
@@ -77,9 +90,9 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       api.devtools.clean_out_dir(builder_config, clobber)
       with api.chromium.guard_compile(build_dir):
         api.chromium.run_gn(api.devtools.source_dir, build_dir)
-
-        compilation_result = api.chromium.compile(api.devtools.source_dir,
-                                                  build_dir)
+        targets = None if devtools_bundle else ['assert_grd']
+        compilation_result = api.chromium.compile(
+            api.devtools.source_dir, build_dir, targets=targets)
         if compilation_result.status != common_pb.SUCCESS:
           return compilation_result
 

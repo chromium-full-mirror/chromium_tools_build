@@ -7,6 +7,7 @@ from recipe_engine.recipe_api import Property
 from recipe_engine.recipe_api import StepFailure
 
 DEPS = [
+    'chromium',
     'chromium_swarming',
     'devtools',
     'recipe_engine/buildbucket',
@@ -22,20 +23,25 @@ PROPERTIES = {
     'clobber': Property(kind=bool, default=False),
     'parallel': Property(kind=bool, default=False),
     'force_host_cpu': Property(kind=str, default=None),
+    'devtools_bundle': Property(kind=bool, default=True),
 }
 
 
-def RunSteps(api, builder_config, clobber, parallel, force_host_cpu):
+def RunSteps(api, builder_config, clobber, parallel, force_host_cpu,
+             devtools_bundle):
 
   api.devtools.configure(
       builder_config,
       is_official_build=True,
       devtools_skip_typecheck=True,
-      force_host_cpu=force_host_cpu)
+      force_host_cpu=force_host_cpu,
+      devtools_bundle=devtools_bundle)
   api.devtools.update()
 
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
+    build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+    api.chromium.run_gn(api.devtools.source_dir, build_dir)
     api.step.empty(
         '{os} {cpu}'.format(**api.devtools.get_dimensions_for_platform()))
     if not parallel:
@@ -160,5 +166,13 @@ def GenTests(api):
       api.platform('mac', 64, 'arm'),
       api.post_process(post_process.MustRun, 'Mac-15 arm64'),
       api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'no bundle',
+      api.properties(devtools_bundle=False),
+      try_build(),
+      #api.post_process(post_process.DropExpectation),
       status='SUCCESS',
   )
