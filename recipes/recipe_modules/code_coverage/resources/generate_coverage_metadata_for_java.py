@@ -572,7 +572,11 @@ def main():
     if not os.path.exists(jacococli_jar):
       jacococli_jar = os.path.join(params.src_path, 'third_party', 'jacoco',
                                    'lib', 'jacococli.jar')
-    cmd = ['java', '-jar', jacococli_jar, 'report']
+    java_path = os.path.join(params.src_path, 'third_party', 'jdk', 'current',
+                             'bin', 'java')
+    if not os.path.exists(java_path):
+      java_path = 'java'
+    cmd = [java_path, '-jar', jacococli_jar, 'report']
     host_coverage_files = [
         f for f in coverage_files if f.endswith('junit_tests.exec') and
         re.match(params.exec_filename_pattern, f)
