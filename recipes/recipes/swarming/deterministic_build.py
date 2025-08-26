@@ -31,6 +31,8 @@ DEPS = [
     'siso',
 ]
 
+# TODO(crbug.com/441328364): Migrate these configs src-side and read them in
+# from input props.
 DETERMINISTIC_BUILDERS = freeze({
     'Mac deterministic': {
         'chromium_config': 'chromium',
@@ -122,13 +124,80 @@ DETERMINISTIC_BUILDERS = freeze({
         'platform': 'linux',
         'targets': ['all'],
     },
+    'android-desktop-arm64-deterministic-rel': {
+        'chromium_config': 'main_builder',
+        'android_config': 'base_config',
+        'gclient_config': 'chromium',
+        'gclient_apply_config': ['android'],
+        'chromium_config_kwargs': {
+            'BUILD_CONFIG': 'Release',
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'android',
+            'TARGET_ARCH': 'arm',
+        },
+        'platform': 'linux',
+        'targets': ['all'],
+    },
+    'android-desktop-arm64-deterministic-dbg': {
+        'chromium_config': 'main_builder',
+        'android_config': 'base_config',
+        'gclient_config': 'chromium',
+        'gclient_apply_config': ['android'],
+        'chromium_config_kwargs': {
+            'BUILD_CONFIG': 'Debug',
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'android',
+            'TARGET_ARCH': 'arm',
+        },
+        'platform': 'linux',
+        'targets': ['all'],
+    },
+    'android-desktop-x64-deterministic-rel': {
+        'chromium_config': 'main_builder',
+        'android_config': 'base_config',
+        'gclient_config': 'chromium',
+        'gclient_apply_config': ['android'],
+        'chromium_config_kwargs': {
+            'BUILD_CONFIG': 'Release',
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'android',
+            'TARGET_ARCH': 'intel',
+        },
+        'platform': 'linux',
+        'targets': ['all'],
+    },
+    'android-desktop-x64-deterministic-dbg': {
+        'chromium_config': 'main_builder',
+        'android_config': 'base_config',
+        'gclient_config': 'chromium',
+        'gclient_apply_config': ['android'],
+        'chromium_config_kwargs': {
+            'BUILD_CONFIG': 'Debug',
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'android',
+            'TARGET_ARCH': 'intel',
+        },
+        'platform': 'linux',
+        'targets': ['all'],
+    },
 })
 
 # Trybots to mirror the actions of builders
 DETERMINISTIC_TRYBOTS = freeze({
-    'android-deterministic-rel': 'Deterministic Android',
-    'android-deterministic-dbg': 'Deterministic Android (dbg)',
-    'fuchsia-deterministic-dbg': 'Deterministic Fuchsia (dbg)',
+    'android-deterministic-rel':
+        'Deterministic Android',
+    'android-deterministic-dbg':
+        'Deterministic Android (dbg)',
+    'fuchsia-deterministic-dbg':
+        'Deterministic Fuchsia (dbg)',
+    'android-desktop-arm64-deterministic-rel':
+        'android-desktop-arm64-deterministic-rel',
+    'android-desktop-arm64-deterministic-dbg':
+        'android-desktop-arm64-deterministic-dbg',
+    'android-desktop-x64-deterministic-rel':
+        'android-desktop-x64-deterministic-rel',
+    'android-desktop-x64-deterministic-dbg':
+        'android-desktop-x64-deterministic-dbg',
 })
 
 def MoveBuildDirectory(api, src_dir, dst_dir):
@@ -275,14 +344,15 @@ def _sanitize_nonalpha(text):
 def GenTests(api):
   builder_group = 'chromium.swarm'
   for buildername in DETERMINISTIC_BUILDERS:
-    test_name = 'full_%s_%s' % (_sanitize_nonalpha(builder_group),
-                                _sanitize_nonalpha(buildername))
+    test_name = 'full_ci_%s_%s' % (_sanitize_nonalpha(builder_group),
+                                   _sanitize_nonalpha(buildername))
     yield api.test(
         test_name,
         api.chromium.ci_build(builder_group=builder_group, builder=buildername),
         api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
         api.properties(
             buildername=buildername, buildnumber=571, configuration='Release'),
+        api.post_process(post_process.DropExpectation),
     )
     yield api.test(
         test_name + '_fail',
@@ -292,11 +362,12 @@ def GenTests(api):
             buildername=buildername, buildnumber=571, configuration='Release'),
         api.step_data('compare_build_artifacts', retcode=1),
         api.expect_status('FAILURE'),
+        api.post_process(post_process.DropExpectation),
     )
 
   for trybotname in DETERMINISTIC_TRYBOTS:
-    test_name = 'full_%s_%s' % (_sanitize_nonalpha(builder_group),
-                                _sanitize_nonalpha(trybotname))
+    test_name = 'full_try_%s_%s' % (_sanitize_nonalpha(builder_group),
+                                    _sanitize_nonalpha(trybotname))
     yield api.test(
         test_name,
         api.chromium.try_build(builder_group=builder_group, builder=trybotname),
@@ -305,6 +376,7 @@ def GenTests(api):
             DETERMINISTIC_BUILDERS[DETERMINISTIC_TRYBOTS[trybotname]]
             ['platform'], 64),
         api.properties(configuration='Release'),
+        api.post_process(post_process.DropExpectation),
     )
     yield api.test(
         test_name + '_fail',
@@ -316,6 +388,7 @@ def GenTests(api):
         api.properties(configuration='Release'),
         api.step_data('compare_build_artifacts', retcode=1),
         api.expect_status('FAILURE'),
+        api.post_process(post_process.DropExpectation),
     )
 
   yield api.test(
