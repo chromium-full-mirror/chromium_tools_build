@@ -1,0 +1,13 @@
+# Copyright 2025 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
+
+
+@CONFIG_CTX(includes=['dawn'])
+def dawn_node(c):
+  for soln in c.solutions:
+    if soln.name == 'dawn':
+      soln.custom_vars['dawn_node'] = True
+      break
