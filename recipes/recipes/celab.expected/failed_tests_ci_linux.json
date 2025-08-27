@@ -666,7 +666,7 @@
     "name": "gsutil upload CELab Test Logs",
     "~followup_annotations": [
       "@@@STEP_LINK@CELab Test Logs@https://storage.cloud.google.com/celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload CELab Test Logs\": \"gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload CELab Test Logs\": \"gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip\", \"gsutil upload CELab binaries\": \"gs://celab/builder/2012/05/14/8945511751514863184/cel.zip\"}@@@"
     ]
   },
   {
@@ -820,7 +820,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@Compute logs@https://storage.cloud.google.com/celab-ci-logs/builder/2012/05/14/8945511751514863184/1st%20test.zip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"test summary|1st test|gsutil upload Compute logs\": \"gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/1st test.zip\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload CELab Test Logs\": \"gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip\", \"gsutil upload CELab binaries\": \"gs://celab/builder/2012/05/14/8945511751514863184/cel.zip\", \"test summary|1st test|gsutil upload Compute logs\": \"gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/1st test.zip\"}@@@"
     ]
   },
   {

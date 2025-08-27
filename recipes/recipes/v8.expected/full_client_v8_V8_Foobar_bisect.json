@@ -1601,7 +1601,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001349.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001349.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001349.gz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001349.gz\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {
@@ -2390,7 +2390,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001355.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001355.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a2|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001355.gz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001349.gz\", \"Bisect a2|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001355.gz\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {
@@ -3206,7 +3206,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-000000001361.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-000000001361.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a1|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-000000001361.gz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001349.gz\", \"Bisect a1|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-000000001361.gz\", \"Bisect a2|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001355.gz\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {

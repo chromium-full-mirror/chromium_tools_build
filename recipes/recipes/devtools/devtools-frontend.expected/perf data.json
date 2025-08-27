@@ -1834,7 +1834,7 @@
     "name": "gsutil Upload perf data",
     "~followup_annotations": [
       "@@@STEP_LINK@ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json@https://storage.cloud.google.com/devtools-frontend-perf/ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload perf data\": \"gs://devtools-frontend-perf/ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil Upload perf data\": \"gs://devtools-frontend-perf/ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
     ]
   },
   {

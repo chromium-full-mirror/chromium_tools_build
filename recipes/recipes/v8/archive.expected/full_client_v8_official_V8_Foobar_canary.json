@@ -30,7 +30,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"make archive|gsutil upload\": \"gs://chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\", \"make archive|gsutil upload\": \"gs://chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip\"}@@@"
     ]
   },
   {
@@ -64,7 +64,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/official/canary/v8-linux64-rel-latest.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"make archive|gsutil upload json\": \"gs://chromium-v8/official/canary/v8-linux64-rel-latest.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\", \"make archive|gsutil upload\": \"gs://chromium-v8/official/canary/v8-linux64-rel-3.4.3.1.zip\", \"make archive|gsutil upload json\": \"gs://chromium-v8/official/canary/v8-linux64-rel-latest.json\"}@@@"
     ]
   }
 ]

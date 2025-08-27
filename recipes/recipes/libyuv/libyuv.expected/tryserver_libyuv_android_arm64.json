@@ -733,7 +733,7 @@
     "name": "gsutil upload",
     "~followup_annotations": [
       "@@@STEP_LINK@logcat dump@https://storage.cloud.google.com/chromium-libyuv/logcat_dumps/android_arm64/1337@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-libyuv/logcat_dumps/android_arm64/1337\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-libyuv/logcat_dumps/android_arm64/1337\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {

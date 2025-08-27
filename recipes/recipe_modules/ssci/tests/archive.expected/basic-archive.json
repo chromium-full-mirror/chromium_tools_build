@@ -1050,7 +1050,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for Another.apk|gsutil upload AnotherCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for Another.apk|gsutil upload AnotherCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json\", \"SSCI collection|target specific steps for Example.apk|gsutil upload ExampleCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json\"}@@@"
     ]
   },
   {
@@ -1162,7 +1162,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for example.zip|gsutil upload exampleCanary.zip.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for Another.apk|gsutil upload AnotherCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json\", \"SSCI collection|target specific steps for Example.apk|gsutil upload ExampleCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json\", \"SSCI collection|target specific steps for example.zip|gsutil upload exampleCanary.zip.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json\"}@@@"
     ]
   },
   {
@@ -1274,7 +1274,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for example2.zip|gsutil upload example2Canary.zip.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"SSCI collection|target specific steps for Another.apk|gsutil upload AnotherCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json\", \"SSCI collection|target specific steps for Example.apk|gsutil upload ExampleCanary.apk.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json\", \"SSCI collection|target specific steps for example.zip|gsutil upload exampleCanary.zip.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json\", \"SSCI collection|target specific steps for example2.zip|gsutil upload example2Canary.zip.spdx.json SBOM\": \"gs://my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json\"}@@@"
     ]
   },
   {

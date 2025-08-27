@@ -1057,7 +1057,7 @@
     "name": "gsutil upload kythe index pack",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-internal-codesearch/prod/chrome_chromiumos_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload kythe index pack\": \"gs://chrome-internal-codesearch/prod/chrome_chromiumos_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload kythe index pack\": \"gs://chrome-internal-codesearch/prod/chrome_chromiumos_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {
@@ -1088,7 +1088,7 @@
     "name": "gsutil upload compile_commands.json",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-internal-codesearch/debug/compile_commands_chromiumos_170242.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload compile_commands.json\": \"gs://chrome-internal-codesearch/debug/compile_commands_chromiumos_170242.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload compile_commands.json\": \"gs://chrome-internal-codesearch/debug/compile_commands_chromiumos_170242.json\", \"gsutil upload kythe index pack\": \"gs://chrome-internal-codesearch/prod/chrome_chromiumos_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {
@@ -1119,7 +1119,7 @@
     "name": "gsutil upload gn_targets.json",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-internal-codesearch/debug/gn_targets_chromiumos_170242.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload gn_targets.json\": \"gs://chrome-internal-codesearch/debug/gn_targets_chromiumos_170242.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload compile_commands.json\": \"gs://chrome-internal-codesearch/debug/compile_commands_chromiumos_170242.json\", \"gsutil upload gn_targets.json\": \"gs://chrome-internal-codesearch/debug/gn_targets_chromiumos_170242.json\", \"gsutil upload kythe index pack\": \"gs://chrome-internal-codesearch/prod/chrome_chromiumos_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
     ]
   },
   {

@@ -4881,7 +4881,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\"}@@@"
     ]
   },
   {
@@ -4914,7 +4914,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\"}@@@"
     ]
   },
   {
@@ -4947,7 +4947,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\"}@@@"
     ]
   },
   {
@@ -4980,7 +4980,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\", \"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
     ]
   },
   {
@@ -5013,7 +5013,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\", \"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
     ]
   },
   {
@@ -5046,7 +5046,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\", \"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
     ]
   },
   {
@@ -5079,7 +5079,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\", \"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
     ]
   },
   {
@@ -5112,7 +5112,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64-rl.profile@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64-rl.profile\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile\", \"upload to gs|gsutil upload 1.1.1.4 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\", \"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
     ]
   },
   {
@@ -5145,7 +5145,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/meta.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload metadata 1.1.1.4\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/meta.json\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"upload to gs|gsutil upload 1.1.1.4 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile\", \"upload to gs|gsutil upload 1.1.1.4 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile\", \"upload to gs|gsutil upload 1.1.1.4 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile\", \"upload to gs|gsutil upload 1.1.2.0 x64-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x64-rl.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile\", \"upload to gs|gsutil upload 1.1.2.0 x86-rl\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/x86-rl.profile\", \"upload to gs|gsutil upload metadata 1.1.1.4\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/meta.json\", \"upload to gs|gsutil upload metadata 1.1.2.0\": \"gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json\"}@@@"
     ]
   },
   {

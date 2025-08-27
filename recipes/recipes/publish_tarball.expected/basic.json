@@ -826,7 +826,7 @@
     "name": "gsutil upload chromium-128.0.6534.0.tar.xz.hashes",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz\", \"gsutil upload chromium-128.0.6534.0.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes\"}@@@"
     ]
   },
   {
@@ -968,7 +968,7 @@
     "name": "gsutil upload chromium-128.0.6534.0-testdata.tar.xz",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-testdata.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-testdata.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz\", \"gsutil upload chromium-128.0.6534.0.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz\", \"gsutil upload chromium-128.0.6534.0.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes\"}@@@"
     ]
   },
   {
@@ -1022,7 +1022,7 @@
     "name": "gsutil upload chromium-128.0.6534.0-testdata.tar.xz.hashes",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz.hashes@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-testdata.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz.hashes\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-testdata.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz\", \"gsutil upload chromium-128.0.6534.0-testdata.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz.hashes\", \"gsutil upload chromium-128.0.6534.0.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz\", \"gsutil upload chromium-128.0.6534.0.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes\"}@@@"
     ]
   },
   {
@@ -2021,7 +2021,7 @@
     "name": "gsutil upload chromium-128.0.6534.0-lite.tar.xz",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-lite.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-lite.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz\", \"gsutil upload chromium-128.0.6534.0-testdata.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz\", \"gsutil upload chromium-128.0.6534.0-testdata.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz.hashes\", \"gsutil upload chromium-128.0.6534.0.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz\", \"gsutil upload chromium-128.0.6534.0.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes\"}@@@"
     ]
   },
   {
@@ -2075,7 +2075,7 @@
     "name": "gsutil upload chromium-128.0.6534.0-lite.tar.xz.hashes",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz.hashes@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-lite.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz.hashes\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload chromium-128.0.6534.0-lite.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz\", \"gsutil upload chromium-128.0.6534.0-lite.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0-lite.tar.xz.hashes\", \"gsutil upload chromium-128.0.6534.0-testdata.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz\", \"gsutil upload chromium-128.0.6534.0-testdata.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0-testdata.tar.xz.hashes\", \"gsutil upload chromium-128.0.6534.0.tar.xz\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz\", \"gsutil upload chromium-128.0.6534.0.tar.xz.hashes\": \"gs://chromium-browser-official/chromium-128.0.6534.0.tar.xz.hashes\"}@@@"
     ]
   },
   {

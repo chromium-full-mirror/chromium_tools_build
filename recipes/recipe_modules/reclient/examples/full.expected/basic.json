@@ -506,7 +506,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz\", \"postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\"}@@@"
     ]
   },
   {
@@ -572,7 +572,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz\", \"postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\", \"postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\"}@@@"
     ]
   },
   {
@@ -609,7 +609,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz\", \"postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\", \"postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\", \"postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO\"}@@@"
     ]
   },
   {
@@ -646,7 +646,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz\", \"postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\", \"postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\", \"postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO\", \"postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log\"}@@@"
     ]
   },
   {
@@ -683,7 +683,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|upload logs|gsutil upload reclient logs\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"postprocess for reclient|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125324.00000000-0000-0000-0000-00000000133a.gz\", \"postprocess for reclient|gsutil upload reproxy RPL\": \"gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz\", \"postprocess for reclient|upload logs|gsutil upload reclient logs\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz\", \"postprocess for reclient|upload logs|gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256\", \"postprocess for reclient|upload logs|gsutil upload reproxy.INFO\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO\", \"postprocess for reclient|upload logs|gsutil upload reproxy_stderr.log\": \"gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log\"}@@@"
     ]
   },
   {
