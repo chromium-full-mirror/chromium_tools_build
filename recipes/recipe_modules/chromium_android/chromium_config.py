@@ -24,7 +24,8 @@ def main_builder(c):
 def clang_builder(c):
   c.runtests.enable_asan = True
 
-@CONFIG_CTX(includes=['clobber'])
+
+@CONFIG_CTX()
 def cronet_builder(c):
   # From //tools/mb/mb_config.pyl's "cronet_common":
   c.gn_args.append('is_cronet_build=true')
@@ -49,7 +50,8 @@ def cronet_builder(c):
       'cronet_unittests_android',
       'net_unittests']
 
-@CONFIG_CTX()
+
+@CONFIG_CTX(includes=['clobber'])
 def cronet_official(c):
   c.gn_args.append('is_official_build=true')
 
