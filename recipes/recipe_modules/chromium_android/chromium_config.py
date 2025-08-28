@@ -42,7 +42,6 @@ def cronet_builder(c):
 
   c.compile_py.default_targets=[
       'cronet_package',
-      'cronet_perf_test_apk',
       'cronet_sample_test_apk',
       'cronet_smoketests_missing_native_library_instrumentation_apk',
       'cronet_smoketests_platform_only_instrumentation_apk',
