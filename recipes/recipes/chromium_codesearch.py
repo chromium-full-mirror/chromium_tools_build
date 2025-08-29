@@ -308,18 +308,8 @@ def RunSteps(api, properties):
   # Process annotations and add kythe metadata.
   api.codesearch.add_kythe_metadata()
 
-  # Create the initial kythe index pack.
-  initial_index_pack_path = api.codesearch.create_kythe_index_pack()
-
-  # Create the Rust index pack.
-  # Not ready for use yet, we only want to run this right now as a smoke test.
-  # TODO(b/420540280): Merge it into the index pack.
-  api.codesearch.run_rust_project_extractor(source_dir=source_dir)
-
-  # Upload the initial kythe index pack.
-  # TODO(b/420540280): Upload the combined index pack.
-  api.codesearch.upload_kythe_index_pack(
-      index_pack_kythe_path=initial_index_pack_path,
+  # Create the kythe index pack and upload it to google storage.
+  api.codesearch.create_and_upload_kythe_index_pack(
       commit_hash=properties.codesearch_mirror_revision or _get_revision(api),
       commit_timestamp=int(properties.codesearch_mirror_revision_timestamp or
                            properties.root_solution_revision_timestamp or
