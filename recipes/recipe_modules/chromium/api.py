@@ -954,16 +954,18 @@ class ChromiumApi(recipe_api.RecipeApi):
       source_dir: The path to the top-level repo.
     """
     with self.m.context(env=self.get_env(source_dir)):
-      args = ['--src-dir', source_dir, '--output-json', self.m.json.output()]
+      update_script = source_dir / 'tools' / 'clang' / 'scripts' / 'update.py'
+      cmd = ['python3', update_script, '--print-revision']
       if self.c.use_tot_clang:
-        args.append('--use-tot-clang')
+        cmd.append('--llvm-force-head-revision')
       step_result = self.m.step(
           name='clang_revision',
-          cmd=['python3', self.resource('clang_revision.py')] + args,
-          step_test_data=lambda: self.m.json.test_api.output(
-              {'clang_revision': '123456-7'}),
+          cmd=cmd,
+          stdout=self.m.raw_io.output_text(),
+          step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+              'llvmorg-whatever-g123456-7'),
           **kwargs)
-      clang_revision = step_result.json.output['clang_revision']
+      clang_revision = step_result.stdout.strip()
       step_result.presentation.properties['clang_revision'] = clang_revision
       step_result.presentation.step_text = clang_revision
     return clang_revision

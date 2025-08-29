@@ -73,7 +73,6 @@ _PY3_8_FILES = (
     'recipes/recipe_modules/chromium_tests_builder_config/migration/scripts/tests/migrate_unit_test.py',
     'recipes/recipe_modules/chromium_tests/resources/archive_layout_test_results.py',
     'recipes/recipe_modules/chromium_tests/resources/find_command_lines.py',
-    'recipes/recipe_modules/chromium/resources/clang_revision.py',
     'recipes/recipe_modules/chromium/resources/export_tarball.py',
     'recipes/recipe_modules/chromium/resources/generate_hashes.py',
     'recipes/recipe_modules/chromium/resources/ninja_wrapper_test.py',

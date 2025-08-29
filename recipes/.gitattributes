@@ -1,7 +1,6 @@
 /__init__.py                      recipes
 /bot_utils.py                     recipes
 /build_directory.py               recipes
-/clang_revision.py                recipes
 /cloudtail_utils.py               recipes
 /crash_utils.py                   recipes
 /daemonizer.py                    recipes

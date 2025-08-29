@@ -133,7 +133,7 @@ def GenTests(api):
       'clang_tot',
       api.properties(chromium_apply_config=['clang_tot']),
       api.post_process(post_process.StepCommandContains, 'clang_revision',
-                       ['--use-tot-clang']),
+                       ['--llvm-force-head-revision']),
       api.post_process(post_process.DropExpectation),
   )
 

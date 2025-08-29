@@ -563,11 +563,8 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::chromium]/resources/clang_revision.py",
-      "--src-dir",
-      "[CACHE]/builder/src",
-      "--output-json",
-      "/path/to/tmp/json"
+      "[CACHE]/builder/src/tools/clang/scripts/update.py",
+      "--print-revision"
     ],
     "env": {
       "CHROME_HEADLESS": "1",
@@ -589,12 +586,8 @@
     },
     "name": "clang_revision",
     "~followup_annotations": [
-      "@@@STEP_TEXT@123456-7@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"clang_revision\": \"123456-7\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@SET_BUILD_PROPERTY@clang_revision@\"123456-7\"@@@"
+      "@@@STEP_TEXT@llvmorg-whatever-g123456-7@@@",
+      "@@@SET_BUILD_PROPERTY@clang_revision@\"llvmorg-whatever-g123456-7\"@@@"
     ]
   },
   {
