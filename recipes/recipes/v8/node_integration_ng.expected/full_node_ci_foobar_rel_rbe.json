@@ -142,7 +142,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "luci_context": {

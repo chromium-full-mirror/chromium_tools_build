@@ -241,7 +241,7 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,
@@ -275,7 +275,7 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,
@@ -315,7 +315,7 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,
@@ -353,7 +353,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "luci_context": {
@@ -398,7 +398,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "luci_context": {
@@ -446,7 +446,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,
@@ -484,7 +484,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,
@@ -523,7 +523,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,
@@ -573,7 +573,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "luci_context": {
@@ -616,7 +616,7 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/node-ci/third_party/depot_tools"
+        "[CACHE]/builder/node-ci/buildtools/linux64"
       ]
     },
     "infra_step": true,

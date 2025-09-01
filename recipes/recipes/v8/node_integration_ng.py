@@ -99,8 +99,8 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     api.v8.runhooks(source_dir, build_dir)
 
   with api.step.nest('build'):
-    depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
-    with (api.context(env_prefixes={'PATH': [depot_tools_path]}),
+    buildtools_installation_path = source_dir.joinpath('buildtools', 'linux64')
+    with (api.context(env_prefixes={'PATH': [buildtools_installation_path]}),
           api.chromium.guard_compile(build_dir)):
       if api.siso.enabled:
         api.chromium.c.gn_args.append('use_siso=true')
