@@ -9,6 +9,7 @@ import sys
 from . import canonical
 from google.protobuf import json_format
 
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
@@ -250,6 +251,7 @@ class RDBPerSuiteResults:
   # NOTE: If you add an attribute here, make sure to reflect the change in
   # update get_size_in_mem() below.
   suite_name = attrib(str)
+  variant = attrib(common_pb2.Variant)
   variant_hash = attrib(str)
   # NOTE: total_tests_ran is the total number of test results in the suite,
   # *not* test cases. So if there were 10 test cases in a suite, and they
@@ -303,6 +305,7 @@ class RDBPerSuiteResults:
     exists_unexpected_failing_result = False
     results_by_test_id = collections.defaultdict(list)
     test_id_to_invocation_id = {}
+    variant = common_pb2.Variant()
     variant_hash = ''
     total_results = 0
     test_id_prefix = test_id_prefix or ''
@@ -317,6 +320,7 @@ class RDBPerSuiteResults:
         if inv_name and suite_name:
           assert inv_name == suite_name, "Mismatched invocations, %s vs %s" % (
               inv_name, suite_name)
+        variant = tr.variant
         variant_hash = tr.variant_hash
         results_by_test_id[tr.test_id].append(tr)
         test_id_to_invocation_id[tr.test_id] = inv_id
@@ -371,6 +375,7 @@ class RDBPerSuiteResults:
 
     return cls(
         suite_name=suite_name,
+        variant=variant,
         variant_hash=variant_hash,
         total_tests_ran=total_tests_ran,
         unexpected_passing_tests=unexpected_passing_tests,
@@ -430,6 +435,13 @@ class RDBPerSuiteResults:
   def get_size_in_mem(self):
     total = sys.getsizeof(self)
     total += sys.getsizeof(self.suite_name)
+    total += sys.getsizeof(self.variant)
+    variant_def = getattr(self.variant, 'def')
+    if variant_def is not None:
+      total += sys.getsizeof(variant_def)
+      for key in variant_def:
+        total += sys.getsizeof(key)
+        total += sys.getsizeof(variant_def[key])
     total += sys.getsizeof(self.variant_hash)
     total += sys.getsizeof(self.total_tests_ran)
     # The elements in the unexpected_*_tests sets contain test names, whose

@@ -4,6 +4,7 @@
 
 from recipe_engine import post_process
 
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
@@ -120,8 +121,8 @@ def RunSteps(api):
     # Preprocessing for test
     test.update_rdb_results(
         '',
-        RDBPerSuiteResults(test.name, '', 0, set([]), unexpected_failing_tests,
-                           set([]),
+        RDBPerSuiteResults(test.name, common_pb2.Variant(), '', 0, set([]),
+                           unexpected_failing_tests, set([]),
                            not api.properties.get('benchmark_result', True), {},
                            all_tests, ''))
     # shard_merge already ensures the profile_subdir is generated w/ step_name

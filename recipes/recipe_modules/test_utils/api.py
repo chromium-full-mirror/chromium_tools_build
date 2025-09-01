@@ -466,7 +466,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
           exonerations.append(
               test_result_pb2.TestExoneration(
                   test_id=t.test_id,
-                  variant_hash=results.variant_hash,
+                  variant=results.variant,
                   explanation_html=explanation_html,
                   reason=test_result_pb2.ExonerationReason.NOT_CRITICAL,
               ))
@@ -494,7 +494,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
           exonerations.append(
               test_result_pb2.TestExoneration(
                   test_id=t.test_id,
-                  variant_hash=results.variant_hash,
+                  variant=results.variant,
                   explanation_html=updated_html,
                   reason=test_result_pb2.ExonerationReason.OCCURS_ON_MAINLINE,
               ))
@@ -506,7 +506,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
               test_result_pb2.TestExoneration(
                   test_id=(results.individual_unexpected_test_by_test_name[
                       known_flake].test_id),
-                  variant_hash=results.variant_hash,
+                  variant=results.variant,
                   # TODO(crbug.com/1076096): add deep link to the Milo UI to
                   #  display the exonerated test results.
                   explanation_html=(
