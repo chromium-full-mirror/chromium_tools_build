@@ -96,3 +96,9 @@ message Request {
   // behavior.
   string autoninja_path = 14;
 }
+
+message EnvProperties {
+  // Used so that the UTR can detect when we're running inside Gemini CLI and
+  // change its behavior (eg: limiting output lines).
+  string GEMINI_CLI = 1;
+}

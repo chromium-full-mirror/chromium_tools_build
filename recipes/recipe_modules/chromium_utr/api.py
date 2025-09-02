@@ -42,6 +42,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
   # Special sub-log names added by the UTR recipe to surface to users.
   UTR_LOG_NAME = 'utr_log'
 
+  def __init__(self, env_properties, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self._is_inside_gemini = env_properties.GEMINI_CLI
+
   def run(
       self,
       properties: Request,
@@ -799,11 +803,15 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return None, generated_isolates
 
     def _run_compile():
+      extra_ninja_args = []
+      if self._is_inside_gemini:
+        extra_ninja_args.append('--quiet')
       return self.m.chromium.compile(
           source_dir,
           build_dir,
           targets=targets,
           skip_log_upload=True,
+          extra_ninja_args=extra_ninja_args,
           ninja_path=properties.autoninja_path), generated_isolates
 
     # We disable siso via recipes here in order to force chromium.compile() to

@@ -385,6 +385,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  *,
                  name=None,
                  ninja_env=None,
+                 ninja_extra_args=None,
                  siso_args=None,
                  skip_log_upload=False,
                  resource_usage_output_file=None,
@@ -451,6 +452,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       if self.m.siso.enabled:
         # TODO(b/288534744): support ninja_info with Siso.
         cmd = ['ninja', '-failure_summary', failure_output] + ninja_command[1:]
+        if ninja_extra_args:
+          cmd.extend(ninja_extra_args)
         ninja_step_result = self.m.siso.run_ninja(
             source_dir,
             cmd,
@@ -478,6 +481,8 @@ class ChromiumApi(recipe_api.RecipeApi):
           cmd.append(resource_usage_output_file)
         cmd.append('--')
         cmd.extend(ninja_command)
+        if ninja_extra_args:
+          cmd.extend(ninja_extra_args)
         with self.m.context(env=ninja_env):
           ninja_step_result = self.m.step(
               name or 'compile', cmd, step_test_data=step_test_data, **kwargs)
@@ -836,9 +841,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if targets is not None and 'all' not in targets:
       command += targets
 
-    if extra_ninja_args:
-      command += extra_ninja_args
-
     assert 'env' not in kwargs
     assert 'cwd' not in kwargs
 
@@ -848,6 +850,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           source_dir,
           name=name or 'compile',
           ninja_command=command,
+          ninja_extra_args=extra_ninja_args,
           ninja_env=ninja_env,
           ninja_invocation_id=ninja_invocation_id,
           include_utr_instruction=include_utr_instruction,

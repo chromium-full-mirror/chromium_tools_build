@@ -243,6 +243,7 @@ def GenTests(api):
 
   yield api.test(
       'siso',
+      api.properties(extra_ninja_args=['-j', '100'],),
       api.chromium.generic_build(builder_group='test_group'),
       api.siso.properties(),
       api.path.exists(
