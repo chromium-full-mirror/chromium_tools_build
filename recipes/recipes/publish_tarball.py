@@ -227,6 +227,11 @@ DENYLISTED_VERSIONS = [
     # introduced a bug in the build.py clang script, but lacks
     # https://crrev.com/c/6872233, which contains the fix for the bug.
     '141.0.7370.0',
+    # https://crrev.com/c/6896856 introduced a git revert call on the Rust
+    # source code that fails to work correctly. This was fixed in 141.0.7384.0
+    # by https://crrev.com/c/6899997.
+    '141.0.7382.0',
+    '141.0.7383.0',
 ]
 
 # NaCl support was removed from the Linux builds in
