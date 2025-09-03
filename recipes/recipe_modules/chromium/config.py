@@ -331,6 +331,21 @@ def official_no_clobber(c):
   c.cros_sdk.external = False
 
 
+@config_ctx(includes=['mac_toolchain'])
+# Common config for rust and clang tot bots. They need both the system xcode
+# (from mac_toolchain) to build clang, and hermetic xcode to build chrome.
+def _tot_mac_common(c):
+  fastbuild(c, final=False)  # final=False so clang_tot_mac_asan can override.
+
+  # The 'ios' kind includes both mac and ios sdks. The clang tot bots need
+  # the iOS SDK to be able to build compiler-rt runtimes for both mac and ios.
+  c.mac_toolchain.kind = 'ios'
+
+  # Despite the tot bots needing system xcode for building clang, they still
+  # also need hermetic xcode for building chrome.
+  c.env.FORCE_MAC_TOOLCHAIN = 1
+
+
 @config_ctx(deps=['compiler'])
 def asan(c):
   if 'clang' not in c.compile_py.compiler:  # pragma: no cover
@@ -440,6 +455,11 @@ def chromium_win_clang_tot(c):
   fastbuild(c)
 
 
+@config_ctx(includes=['ninja', 'rust'])
+def chromium_win_rust_tot(c):
+  fastbuild(c)
+
+
 @config_ctx(includes=['chromium_win_clang', 'official'])
 def chromium_win_clang_official(_):
   pass
@@ -469,20 +489,15 @@ def clang_tot_linux(_):
 def rust_tot_linux(_):
   pass
 
-# mac_toolchain causes the bots to download system Xcode. The clang tot
-# bots need system Xcode to build clang; hermetic Xcode isn't sufficient.
-@config_ctx(includes=['ninja', 'clang', 'clang_tot',
-                      'mac_toolchain'])
+
+@config_ctx(includes=['ninja', 'clang', 'clang_tot'])
 def clang_tot_mac(c):
-  fastbuild(c, final=False)  # final=False so clang_tot_mac_asan can override.
+  _tot_mac_common(c)
 
-  # The 'ios' kind includes both mac and ios sdks. The clang tot bots need
-  # the iOS SDK to be able to build compiler-rt runtimes for both mac and ios.
-  c.mac_toolchain.kind = 'ios'
 
-  # Despite the tot bots needing system xcode for building clang, they still
-  # also need hermetic xcode for building chrome.
-  c.env.FORCE_MAC_TOOLCHAIN = 1
+@config_ctx(includes=['ninja', 'rust'])
+def rust_tot_mac(c):
+  _tot_mac_common(c)
 
 
 @config_ctx(includes=['ninja', 'clang', 'clang_tot'])
