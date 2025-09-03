@@ -51,6 +51,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     self._build_properties = None
     self._version = None
     self._clang_version = None
+    self._rust_version = None
     self._verify_config = True
     # TODO(yueshe@) - migrate this property to xcode module once downstream
     # no longer sets this property
@@ -803,9 +804,13 @@ class ChromiumApi(recipe_api.RecipeApi):
     targets = targets or self.c.compile_py.default_targets.as_jsonish()
     assert isinstance(targets, (list, tuple)), type(targets)
 
-    if self.c.use_gyp_env and self.c.gyp_env.GYP_DEFINES.get('clang', 0) == 1:
-      # Get the Clang revision before compiling.
-      self._clang_version = self.get_clang_version(source_dir)
+    if self.c.use_gyp_env:
+      # Get the Clang and/or Rust revisions before compiling
+      if self.c.gyp_env.GYP_DEFINES.get('clang', 0) == 1:
+        self._clang_version = self.get_clang_version(source_dir)
+
+      if self.c.gyp_env.GYP_DEFINES.get('rust', 0) == 1:
+        self._rust_version = self.get_rust_version(source_dir)
 
     ninja_env = self.get_env(source_dir)
     ninja_env.update(self.m.context.env)
@@ -972,6 +977,28 @@ class ChromiumApi(recipe_api.RecipeApi):
       step_result.presentation.properties['clang_revision'] = clang_revision
       step_result.presentation.step_text = clang_revision
     return clang_revision
+
+  @_with_chromium_layout
+  def get_rust_version(self, source_dir: Path, **kwargs):
+    """Get the installed version of rust.
+
+    Args:
+      source_dir: The path to the top-level repo.
+    """
+    with self.m.context(env=self.get_env(source_dir)):
+      update_script = source_dir / 'tools' / 'rust' / 'update_rust.py'
+      cmd = ['python3', update_script, '--print-revision', 'installed']
+      step_result = self.m.step(
+          name='rust_revision',
+          cmd=cmd,
+          stdout=self.m.raw_io.output_text(),
+          step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+              '1234-5-llvmorg-whatever-g123456'),
+          **kwargs)
+      rust_revision = step_result.stdout.strip()
+      step_result.presentation.properties['rust_revision'] = rust_revision
+      step_result.presentation.step_text = rust_revision
+    return rust_revision
 
   def get_mac_toolchain_installer(self):
     assert self.c.mac_toolchain.installer_cipd_package

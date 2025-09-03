@@ -137,6 +137,13 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'rust_revision',
+      api.properties(chromium_apply_config=['rust']),
+      api.post_process(post_process.StepSuccess, 'rust_revision'),
+      api.post_process(post_process.DropExpectation),
+  )
+
   gomacc_path = ('/b/s/w/ir/cache/goma/client/gomacc '
         '../../third_party/llvm-build/Release+Asserts/bin/clang++ '
         'long string of commands\n'
