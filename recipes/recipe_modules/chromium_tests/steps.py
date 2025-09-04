@@ -1868,18 +1868,12 @@ class LocalGTestTestSpec(TestSpec):
 
   Attributes:
     * args - Arguments to be passed to the test.
-    * android_shard_timeout - For tests on Android, the timeout to be
-      applied to the shards.
-    * commit_position_property - The name of the property containing
-      chromium's commit position.
     * use_xvfb - Whether to use the X virtual frame buffer. Only has an
       effect on Linux. Mostly harmless to set this, except on GPU
       builders.
   """
 
   args = attrib(command_args, default=())
-  android_shard_timeout = attrib(int, default=None)
-  commit_position_property = attrib(str, default='got_revision_cp')
   use_xvfb = attrib(bool, default=True)
 
   @property
