@@ -145,7 +145,17 @@ def GenTests(api):
                              })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(_has_no_finding),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp'),
+              message='warning: building this file or its dependencies failed; '
+              'no diagnostics will be issued.',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -160,7 +170,17 @@ def GenTests(api):
               {'failed_tidy_files': ['path/to/some/cc/file.cpp']})),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(_has_no_finding),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp'),
+              message='warning: clang-tidy failed on this file; no diagnostics '
+              'will be issued.',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -226,6 +246,46 @@ def GenTests(api):
               '(https://clang.llvm.org/extra/clang-tidy/checks/moderately/'
               'cool-diag.html)\n\n(Note: You can add '
               '`Skip-Clang-Tidy-Checks: moderately-cool-diag` footer to '
+              'the CL description to skip the check)',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'analyze_cpp_check_name_without_hyphen',
+      with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.chromium.try_build(),
+      api.reclient.properties(),
+      api.step_data(
+          'clang-tidy.generate-warnings.read tidy output',
+          api.file.read_json({
+              'diagnostics': [{
+                  'file_path': 'path/to/some/cc/file.cpp',
+                  'line_number': 10,
+                  'diag_name': 'readability',
+                  'message': 'a simple message',
+                  'replacements': [],
+                  'expansion_locs': [],
+              },]
+          })),
+      api.post_process(post_process.StepSuccess,
+                       'clang-tidy.generate-warnings'),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp',
+                  range=findings_pb.Location.Range(
+                      start_line=10,
+                      end_line=10,
+                  )),
+              message='check: readability\n\na simple message '
+              '(https://clang.llvm.org/extra/clang-tidy/checks/'
+              'readability.html)\n\n(Note: You can add '
+              '`Skip-Clang-Tidy-Checks: readability` footer to '
               'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
@@ -319,7 +379,17 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(_has_no_finding),
+      api.post_process(
+          _has_finding,
+          findings_pb.Finding(
+              category='clang-tidy',
+              location=findings_pb.Location(
+                  gerrit_change_ref=gerrit_change_ref,
+                  file_path='path/to/some/cc/file.cpp'),
+              message='warning: building this file or its dependencies failed; '
+              'no diagnostics will be issued.',
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+          )),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -349,17 +419,9 @@ def GenTests(api):
               category='clang-tidy',
               location=findings_pb.Location(
                   gerrit_change_ref=gerrit_change_ref,
-                  file_path='path/to/some/cc/file.cpp',
-                  range=findings_pb.Location.Range(
-                      start_line=2,
-                      end_line=2,
-                  )),
-              message='check: b\n\na '
-              '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
-              '(Note: You can add `Skip-Clang-Tidy-Checks: b` footer to '
-              'the CL description to skip the check)\n\n'
-              '(Note: building this file or its dependencies failed; this '
-              'diagnostic might be incorrect as a result.)',
+                  file_path='path/to/some/cc/file.cpp'),
+              message='warning: building this file or its dependencies failed; '
+              'no diagnostics will be issued.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(post_process.DropExpectation),
@@ -392,17 +454,9 @@ def GenTests(api):
               category='clang-tidy',
               location=findings_pb.Location(
                   gerrit_change_ref=gerrit_change_ref,
-                  file_path='path/to/some/cc/file.cpp',
-                  range=findings_pb.Location.Range(
-                      start_line=2,
-                      end_line=2,
-                  )),
-              message='check: b\n\na '
-              '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
-              '(Note: You can add `Skip-Clang-Tidy-Checks: b` footer to '
-              'the CL description to skip the check)\n\n'
-              '(Note: building this file or its dependencies failed; this '
-              'diagnostic might be incorrect as a result.)',
+                  file_path='path/to/some/cc/file.cpp'),
+              message='warning: building this file or its dependencies failed; '
+              'no diagnostics will be issued.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(post_process.DropExpectation),
@@ -434,17 +488,9 @@ def GenTests(api):
               category='clang-tidy',
               location=findings_pb.Location(
                   gerrit_change_ref=gerrit_change_ref,
-                  file_path='path/to/some/cc/file.cpp',
-                  range=findings_pb.Location.Range(
-                      start_line=2,
-                      end_line=2,
-                  )),
-              message='check: b\n\na '
-              '(https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
-              '(Note: You can add `Skip-Clang-Tidy-Checks: b` footer to '
-              'the CL description to skip the check)\n\n'
-              '(Note: running clang-tidy on this file failed; this '
-              'diagnostic might be incorrect as a result.)',
+                  file_path='path/to/some/cc/file.cpp'),
+              message='warning: clang-tidy failed on this file; no diagnostics '
+              'will be issued.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(post_process.DropExpectation),

@@ -68,6 +68,19 @@ class _SourceFileComments:
       message = ('warning: clang-tidy timed out on this file; issuing '
                  'diagnostics is impossible.')
       yield '', message, 0, ()
+      return
+
+    if self._build_failed:
+      message = ('warning: building this file or its dependencies failed; '
+                 'no diagnostics will be issued.')
+      yield '', message, 0, ()
+      return
+
+    if self._tidy_failed:
+      message = ('warning: clang-tidy failed on this file; no diagnostics '
+                 'will be issued.')
+      yield '', message, 0, ()
+      return
 
     def fix_message(message, check_name):
       if '-' in check_name:
@@ -83,20 +96,9 @@ class _SourceFileComments:
               f'`{TriciumClangTidyApi.SKIP_CHECKS_FOOTER_KEY}: {check_name}` '
               'footer to the CL description to skip the check)')
 
-    if self._build_failed:
-      failure_suffix = ('\n\n(Note: building this file or its dependencies '
-                        'failed; this diagnostic might be incorrect as a '
-                        'result.)')
-    elif self._tidy_failed:
-      failure_suffix = ('\n\n(Note: running clang-tidy on this file failed; '
-                        'this diagnostic might be incorrect as a result.)')
-    else:
-      failure_suffix = ''
-
     for (message, line_number,
          check_name), suggestions in self._source_comments:
-      message = fix_message(
-          message, check_name) + skip_suffix(check_name) + failure_suffix
+      message = fix_message(message, check_name) + skip_suffix(check_name)
       yield check_name, message, line_number, suggestions
 
     macro_comments = sorted(self._macro_comments.items())
@@ -116,7 +118,7 @@ class _SourceFileComments:
       else:
         suffix += ', and %d other places.' % (len(expansions) - 1)
 
-      message += suffix + skip_suffix(check_name) + failure_suffix
+      message += suffix + skip_suffix(check_name)
       yield check_name, message, line_number, ()
 
 
