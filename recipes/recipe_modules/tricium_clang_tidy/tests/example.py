@@ -145,17 +145,7 @@ def GenTests(api):
                              })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(
-          _has_finding,
-          findings_pb.Finding(
-              category='clang-tidy',
-              location=findings_pb.Location(
-                  gerrit_change_ref=gerrit_change_ref,
-                  file_path='path/to/some/cc/file.cpp'),
-              message='warning: building this file or its dependencies failed; '
-              'no diagnostics will be issued.',
-              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
-          )),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -170,17 +160,7 @@ def GenTests(api):
               {'failed_tidy_files': ['path/to/some/cc/file.cpp']})),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(
-          _has_finding,
-          findings_pb.Finding(
-              category='clang-tidy',
-              location=findings_pb.Location(
-                  gerrit_change_ref=gerrit_change_ref,
-                  file_path='path/to/some/cc/file.cpp'),
-              message='warning: clang-tidy failed on this file; no diagnostics '
-              'will be issued.',
-              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
-          )),
+      api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -379,6 +359,31 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
+      api.post_process(_has_no_finding),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'prefer_complaints_about_timeout_over_tidy_failures',
+      with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.chromium.try_build(),
+      api.reclient.properties(),
+      api.step_data(
+          'clang-tidy.generate-warnings.read tidy output',
+          api.file.read_json({
+              'timed_out_src_files': ['path/to/some/cc/file.cpp'],
+              'failed_tidy_files': ['path/to/some/cc/file.cpp'],
+              'diagnostics': [{
+                  'file_path': 'path/to/some/cc/file.cpp',
+                  'line_number': 2,
+                  'diag_name': 'b',
+                  'message': 'a',
+                  'replacements': [],
+                  'expansion_locs': [],
+              },],
+          })),
+      api.post_process(post_process.StepWarning,
+                       'clang-tidy.generate-warnings'),
       api.post_process(
           _has_finding,
           findings_pb.Finding(
@@ -386,8 +391,8 @@ def GenTests(api):
               location=findings_pb.Location(
                   gerrit_change_ref=gerrit_change_ref,
                   file_path='path/to/some/cc/file.cpp'),
-              message='warning: building this file or its dependencies failed; '
-              'no diagnostics will be issued.',
+              message='warning: clang-tidy timed out on this file; issuing '
+              'diagnostics is impossible.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
           )),
       api.post_process(post_process.DropExpectation),

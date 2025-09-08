@@ -70,6 +70,9 @@ class _SourceFileComments:
       yield '', message, 0, ()
       return
 
+    if not self._source_comments and not self._macro_comments:
+      return
+
     if self._build_failed:
       message = ('warning: building this file or its dependencies failed; '
                  'no diagnostics will be issued.')
