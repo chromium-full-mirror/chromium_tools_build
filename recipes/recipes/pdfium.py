@@ -488,29 +488,36 @@ class _Swarming:
     self._ensure_test_inputs()
 
     # Construct the task request with a single slice.
+    priority = self.properties.get('priority', _DEFAULT_SWARMING_TEST_PRIORITY)
+    service_account = self.properties.get('service_account', '')
+    # yapf: disable
     task_request = (
-        self.api.swarming.task_request().with_name(
-            test_request.step_name).with_priority(
-                self.properties.get('priority', _DEFAULT_SWARMING_TEST_PRIORITY)
-            ).with_resultdb().with_service_account(
-                self.properties.get('service_account', '')))
+        self.api.swarming.task_request().
+            with_name(test_request.step_name).
+            with_priority(priority).
+            with_resultdb().
+            with_service_account(service_account))
+    # yapf: enable
 
     # TODO(crbug.com/1465963): Try to make this idempotent after switching to
     # `task_template_deployment`.
+    expiration_secs = self.properties.get('expiration_secs',
+                                          _DEFAULT_SWARMING_EXPIRATION_SECS)
+    execution_timeout_secs = self.properties.get(
+        'execution_timeout_secs', _DEFAULT_SWARMING_EXECUTION_TIMEOUT_SECS)
     task_slice = task_request[0]
+    # yapf: disable
     task_slice = (
-        task_slice.with_command(test_request.command).with_cas_input_root(
-            self.test_inputs_digest).with_dimensions(
-                **self.properties['dimensions']).with_cipd_ensure_file(
-                    self.ensure_file).with_env_vars(**env)
-        .with_env_prefixes(**_SWARMING_ENV_PREFIXES).with_expiration_secs(
-            self.properties.get(
-                'expiration_secs',
-                _DEFAULT_SWARMING_EXPIRATION_SECS)).with_execution_timeout_secs(
-                    self.properties.get(
-                        'execution_timeout_secs',
-                        _DEFAULT_SWARMING_EXECUTION_TIMEOUT_SECS)
-                ).with_named_caches(_SWARMING_NAMED_CACHES))
+        task_slice.
+            with_command(test_request.command).
+            with_cas_input_root(self.test_inputs_digest).
+            with_dimensions(**self.properties['dimensions']).
+            with_cipd_ensure_file(self.ensure_file).
+            with_env_vars(**env).with_env_prefixes(**_SWARMING_ENV_PREFIXES).
+            with_expiration_secs(expiration_secs).
+            with_execution_timeout_secs(execution_timeout_secs).
+            with_named_caches(_SWARMING_NAMED_CACHES))
+    # yapf: enable
 
     # Start tracking the task.
     request = _Swarming._TestTask(
