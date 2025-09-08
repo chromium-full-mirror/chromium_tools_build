@@ -42,6 +42,15 @@ DEPS = [
 # Regular expression to identify a Git hash.
 GIT_COMMIT_HASH_RE = re.compile(r'[a-zA-Z0-9]{40}')
 
+# Regular expression for filenames produced by `kythe view -extract`.
+KYTHE_CU_FILENAME_RE = re.compile(r'.+-([0-9a-f]+)\.unit$')
+
+# Known safe Rust CUs.
+KYTHE_RUST_CU_ALLOWLIST = [
+    # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (linux)
+    "a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b",
+]
+
 # Defines the trybots and the mirrored CI builder
 # The trybot will use the parameters from the mirrored CI builder.
 # It has the following strcture:
@@ -137,6 +146,79 @@ def generate_gn_target_list(api,
         ],
         stdout=api.raw_io.output_text()).stdout
   api.file.write_raw('write gn target list', gn_targets_json_file, output)
+
+
+def extract_minimal_rust_kzip(api, rust_index_pack_path):
+  """Extracts a minimal .kzip from the full Rust .kzip.
+
+  The full Rust .kzip is known to crash the Kythe Rust ingester, so in order
+  to have some Rust xrefs at all, extract a minimal .kzip with a known safe CU
+  so that we start feeding the Kythe Rust pipeline.
+
+  Over time this function should be deleted as we discover the root cause
+  of the ingestion crashes and safely increase the amount of CUs we send to
+  Kythe.
+  TODO(b/420540280): Debug the Rust kzip issues so this function can be
+  deleted.
+
+  Because we don't want this function to prevent the rest of .kzip generation
+  to work, skip remaining work and return None there's any issues.
+  """
+  kythe_dir = api.codesearch.ensure_kythe()
+
+  # Workaround for `kzip view` (without -extract) not outputting the digests
+  # for the CUs themselves.
+  # Because this entire function should not exist if the Rust indexer pipeline
+  # was able to ingest the full Rust .kzip, we consider this tradeoff
+  # acceptable (adds ~1min to a 1.5-2h builder)
+  extract_cus_dir = api.path.mkdtemp()
+  extract_cus_args = [
+      kythe_dir.joinpath('tools', 'kzip'),
+      'view',
+      '-extract',
+      extract_cus_dir,
+      rust_index_pack_path,
+  ]
+  try:
+    api.step('extract CUs', extract_cus_args)
+  except api.step.StepFailure as e:
+    e.result.presentation.step_text = 'kzip view failed, skipping'
+    return None
+
+  cu_files = api.file.glob_paths('list CU metadata', extract_cus_dir, '*.unit')
+  if not cu_files:
+    api.step.empty('no CUs found, skipping')
+    return None
+
+  allowed_cus = []
+  for cu_file in cu_files:
+    cu_filename_match = KYTHE_CU_FILENAME_RE.match(cu_file.name)
+    if not cu_filename_match:
+      continue
+    digest = cu_filename_match.group(1)
+    if digest in KYTHE_RUST_CU_ALLOWLIST:
+      allowed_cus.append(digest)
+
+  if not allowed_cus:
+    api.step.empty('no allowed CUs found, skipping')
+    return None
+
+  # Create a minimal kzip with only this CU.
+  filtered_kzip_path = api.path.mkstemp()
+  filter_kzip_args = [
+      kythe_dir.joinpath('tools', 'kzip'),
+      'filter',
+      '-input',
+      rust_index_pack_path,
+      '-output',
+      filtered_kzip_path,
+  ] + allowed_cus
+  try:
+    api.step('create minimal kzip', filter_kzip_args)
+  except api.step.StepFailure as e:
+    e.result.presentation.step_text = 'kzip filter failed, skipping'
+    return None
+  return filtered_kzip_path
 
 
 def RunSteps(api, properties):
@@ -311,17 +393,26 @@ def RunSteps(api, properties):
   # Create the initial kythe index pack.
   initial_index_pack_path = api.codesearch.create_kythe_index_pack()
 
-  # Create the Rust index pack.
-  # Not ready for use yet, we only want to run this right now as a smoke test.
+  # Create and merge the Rust index pack if it can be successfully generated.
   # It also only runs on Linux right now.
-  # TODO(b/420540280): Merge it into the index pack.
+  rust_index_pack_path = None
   if api.platform.is_linux:
-    api.codesearch.run_rust_project_extractor(source_dir=source_dir)
+    with api.step.nest('create minimal rust kzip'):
+      full_rust_index_pack_path = api.codesearch.run_rust_project_extractor(
+          source_dir=source_dir)
+      rust_index_pack_path = extract_minimal_rust_kzip(
+          api, full_rust_index_pack_path)
+
+  # Merge the Rust index pack if it was successfully generated.
+  final_index_pack_path = initial_index_pack_path
+  if rust_index_pack_path:
+    final_index_pack_path = api.codesearch.run_kzip_merge(
+        initial_index_pack_path, rust_index_pack_path)
 
   # Upload the initial kythe index pack.
   # TODO(b/420540280): Upload the combined index pack.
   api.codesearch.upload_kythe_index_pack(
-      index_pack_kythe_path=initial_index_pack_path,
+      index_pack_kythe_path=final_index_pack_path,
       commit_hash=properties.codesearch_mirror_revision or _get_revision(api),
       commit_timestamp=int(properties.codesearch_mirror_revision_timestamp or
                            properties.root_solution_revision_timestamp or
@@ -506,4 +597,61 @@ def GenTests(api):
       api.step_data('sync generated files', retcode=1),
       api.step_data('generate gn target list',
                     api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+  )
+
+  yield api.test(
+      'rust_kzip_extract_cus_fail',
+      api.platform('linux', 64),
+      props('linux'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.step_data('create minimal rust kzip.extract CUs', retcode=1),
+  )
+
+  yield api.test(
+      'rust_kzip_no_cu_files',
+      api.platform('linux', 64),
+      props('linux'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.step_data('create minimal rust kzip.list CU metadata',
+                    api.file.glob_paths([])),
+  )
+
+  yield api.test(
+      'rust_kzip_no_allowed_cus',
+      api.platform('linux', 64),
+      props('linux'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.step_data(
+          'create minimal rust kzip.list CU metadata',
+          api.file.glob_paths([
+              '/tmp/hello-0123456789abcdef.txt',
+              '/tmp/foo-0123456789abcdef.unit'
+          ])),
+  )
+
+  yield api.test(
+      'rust_kzip_filter_fail',
+      api.platform('linux', 64),
+      props('linux'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.step_data(
+          'create minimal rust kzip.list CU metadata',
+          api.file.glob_paths([
+              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+          ])),
+      api.step_data('create minimal rust kzip.create minimal kzip', retcode=1),
+  )
+
+  yield api.test(
+      'rust_kzip_filter_pass',
+      api.platform('linux', 64),
+      props('linux'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.step_data(
+          'create minimal rust kzip.list CU metadata',
+          api.file.glob_paths([
+              '/tmp/foo-0123456789abcdef.unit',
+              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+          ])),
+      api.step_data('create minimal rust kzip.create minimal kzip'),
   )
