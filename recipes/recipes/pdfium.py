@@ -80,6 +80,9 @@ _DEFAULT_SWARMING_EXECUTION_TIMEOUT_SECS = 20 * 60
 # Default swarming expiration for scheduling test tasks (in seconds).
 _DEFAULT_SWARMING_EXPIRATION_SECS = 5 * 60
 
+# Default swarming time when a task can be silent (in seconds).
+_DEFAULT_SWARMING_IO_TIMEOUT_SECS = 3 * 60
+
 # Relative path for CIPD packages installed by swarming tasks.
 _SWARMING_CIPD_PATH = 'packages'
 
@@ -516,6 +519,7 @@ class _Swarming:
             with_env_vars(**env).with_env_prefixes(**_SWARMING_ENV_PREFIXES).
             with_expiration_secs(expiration_secs).
             with_execution_timeout_secs(execution_timeout_secs).
+            with_io_timeout_secs(_DEFAULT_SWARMING_IO_TIMEOUT_SECS).
             with_named_caches(_SWARMING_NAMED_CACHES))
     # yapf: enable
 
