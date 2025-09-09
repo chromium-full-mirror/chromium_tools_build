@@ -578,19 +578,6 @@ def _parse_compile_commands(stream: io.TextIOWrapper, clang_cl: bool
   for action in compile_commands:
     command = action['command']
 
-    # Skip all pnacl compile commands: crbug.com/1041079
-    pnacl = 'pnacl-'
-    if pnacl in command:
-      pieces = shlex.split(command)
-      if pieces:
-        first_piece = os.path.basename(pieces[0])
-        if pnacl in first_piece:
-          continue
-
-        if (len(pieces) > 1 and 'rewrapper' in first_piece and
-            pnacl in os.path.basename(pieces[1])):
-          continue
-
     is_clang_cl_command = clang_cl and ('cl ' in command or
                                         'cl.exe ' in command)
     if is_clang_cl_command:

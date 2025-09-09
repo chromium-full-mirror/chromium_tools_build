@@ -123,15 +123,8 @@ class Tests(unittest.TestCase):
 
     input_json = json.dumps([
         compile_command('/path/to/clang-cl.exe foo /Fo foo.o'),
-        compile_command('/path/to/pnacl-clang++.exe foo /Fo foo-1.o'),
         compile_command(
             '/path/to/rewrapper.exe /path/to/clang-cl.exe foo /Fo foo-2.o'),
-        compile_command(
-            '/path/to/rewrapper.exe /path/to/pnacl-clang++.exe foo /Fo foo-3.o'
-        ),
-        compile_command('/path/to/nacl-clang++.exe foo -o foo-4.o'),
-        compile_command(
-            '/path/to/rewrapper.exe /path/to/nacl-clang++.exe foo -o foo-5.o'),
     ])
 
     results = list(
@@ -152,76 +145,6 @@ class Tests(unittest.TestCase):
             directory='/dir/ect/ory',
             command='/path/to/rewrapper.exe /path/to/clang-cl.exe foo /Fo foo-2.o',
             is_clang_cl_command=True,
-        ),
-        tidy._CompileCommand(
-            target_name='foo-4.o',
-            file_abspath='/dir/ect/ory/foo.cc',
-            file='foo.cc',
-            directory='/dir/ect/ory',
-            command='/path/to/nacl-clang++.exe foo -o foo-4.o',
-            is_clang_cl_command=False,
-        ),
-        tidy._CompileCommand(
-            target_name='foo-5.o',
-            file_abspath='/dir/ect/ory/foo.cc',
-            file='foo.cc',
-            directory='/dir/ect/ory',
-            command='/path/to/rewrapper.exe /path/to/nacl-clang++.exe foo -o '
-            'foo-5.o',
-            is_clang_cl_command=False,
-        ),
-    ])
-
-  def test_parse_compile_commands_skips_pnacl(self):
-
-    def compile_command(command):
-      return {
-          'command': command,
-          'directory': '/dir/ect/ory',
-          'file': 'foo.cc',
-      }
-
-    input_json = json.dumps([
-        compile_command('/path/to/clang++ foo -o foo.o'),
-        compile_command('/path/to/pnacl-clang foo -o foo-1.o'),
-        compile_command('/path/to/pnacl-clang++ foo -o foo-2.o'),
-        compile_command(
-            '/path/to/rewrapper /path/to/pnacl-clang foo -o foo-3.o'),
-        compile_command(
-            '/path/to/rewrapper /path/to/pnacl-clang++ foo -o foo-4.o'),
-        compile_command('/some/clang /path/to/pnacl-helpers.c -o foo-5.o'),
-        compile_command(
-            '/path/to/rewrapper /some/clang /path/to/pnacl-helpers.c -o foo-6.o'
-        ),
-    ])
-
-    results = list(
-        tidy._parse_compile_commands(_to_stringio(input_json), clang_cl=False))
-    self.assertEqual(results, [
-        tidy._CompileCommand(
-            target_name='foo.o',
-            file_abspath='/dir/ect/ory/foo.cc',
-            file='foo.cc',
-            directory='/dir/ect/ory',
-            command='/path/to/clang++ foo -o foo.o',
-            is_clang_cl_command=False,
-        ),
-        tidy._CompileCommand(
-            target_name='foo-5.o',
-            file_abspath='/dir/ect/ory/foo.cc',
-            file='foo.cc',
-            directory='/dir/ect/ory',
-            command='/some/clang /path/to/pnacl-helpers.c -o foo-5.o',
-            is_clang_cl_command=False,
-        ),
-        tidy._CompileCommand(
-            target_name='foo-6.o',
-            file_abspath='/dir/ect/ory/foo.cc',
-            file='foo.cc',
-            directory='/dir/ect/ory',
-            command='/path/to/rewrapper /some/clang /path/to/pnacl-helpers.c -o '
-            'foo-6.o',
-            is_clang_cl_command=False,
         ),
     ])
 
