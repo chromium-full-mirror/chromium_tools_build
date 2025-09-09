@@ -8,6 +8,7 @@ to get the last changed revision of files.
 """
 
 import collections
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import multiprocessing
 import os
@@ -209,20 +210,27 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   timer.End('Finding correct checkout')
 
   timer.Start()
-  # Leave 5 cpus for other system or infra processes.
-  pool = multiprocessing.Pool(processes=max(5, multiprocessing.cpu_count() - 5))
-  future_results = pool.map(_RetrieveRevisionFromGit, file_data, 100)
-  pool.close()
-  pool.join()
-  timer.End('Multiprocess _RetrieveRevisionFromGit')
-
-  all_result = {}
-  for result in future_results:
-    if not result:
-      continue
-    path, git_hash, timestamp = result
-    all_result[path] = (git_hash, timestamp)
-  return all_result
+  # Scale threads linearly with core count (approximately). Note that threads
+  # in all but the newest CPython implementations compete to acquire the Global
+  # Interpreter Lock (GIL) [0] when executing bytecode. However, because:
+  #   * A thread releases the GIL when blocked on I/O,
+  #   * ... and `_RetrieveRevisionFromGit()` is I/O-bound waiting for `git
+  #     log` subprocesses to join,
+  #
+  # ... a thread pool is still an effective way to parallelize
+  # `_RetrieveRevisionFromGit()`.
+  #
+  # [0]: https://docs.python.org/3/glossary.html#term-global-interpreter-lock
+  max_workers = max(5, multiprocessing.cpu_count() - 5)
+  revisions_by_path = {}
+  with ThreadPoolExecutor(max_workers=max_workers) as pool:
+    for result in pool.map(_RetrieveRevisionFromGit, file_data):
+      if not result:
+        continue
+      path, git_hash, timestamp = result
+      revisions_by_path[path] = git_hash, timestamp
+  timer.End('Multithreaded _RetrieveRevisionFromGit')
+  return revisions_by_path
 
 
 def AddGitRevisionsToCoverageFilesMetadata(files_coverage_data, src_path,
