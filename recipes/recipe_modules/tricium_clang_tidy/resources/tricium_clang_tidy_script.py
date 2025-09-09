@@ -1264,7 +1264,7 @@ def _run_all_tidy_actions(
     if exit_code:
       logging.error(
           'Clang-tidy on %r with flags %r exited with '
-          'code %d; stdout/stderr: %r', src_file, flags, exit_code, stdout)
+          'code %d; stdout/stderr:\n%s', src_file, flags, exit_code, stdout)
       failed_actions.add(action)
 
     # (If memory use becomes important, there's _a ton_ of duplicated
