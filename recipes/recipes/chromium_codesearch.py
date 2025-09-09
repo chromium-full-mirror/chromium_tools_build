@@ -6,6 +6,9 @@ import re
 
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
+from recipe_engine.post_process import (DoesNotRun, MustRun,
+                                        StepCommandContains, StepTextEquals,
+                                        StatusSuccess)
 from RECIPE_MODULES.build import chromium
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -600,24 +603,48 @@ def GenTests(api):
   )
 
   yield api.test(
-      'rust_kzip_extract_cus_fail',
+      'rust_kzip_ignore_extract_cus_fail',
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
       api.step_data('create minimal rust kzip.extract CUs', retcode=1),
+      api.post_process(StepTextEquals, 'create minimal rust kzip.extract CUs',
+                       'kzip view failed, skipping'),
+      api.post_process(DoesNotRun, ('create minimal rust kzip.'
+                                    'create minimal kzip')),
+      api.post_process(DoesNotRun, 'merge kzips'),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the non-merged kzip output.
+          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_no_cu_files',
+      'rust_kzip_ignore_zero_rust_cus',
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
       api.step_data('create minimal rust kzip.list CU metadata',
                     api.file.glob_paths([])),
+      api.post_process(MustRun,
+                       'create minimal rust kzip.no CUs found, skipping'),
+      api.post_process(DoesNotRun, ('create minimal rust kzip.'
+                                    'create minimal kzip')),
+      api.post_process(DoesNotRun, 'merge kzips'),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the non-merged kzip output.
+          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_no_allowed_cus',
+      'rust_kzip_ignore_no_allowed_cus',
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
@@ -627,10 +654,22 @@ def GenTests(api):
               '/tmp/hello-0123456789abcdef.txt',
               '/tmp/foo-0123456789abcdef.unit'
           ])),
+      api.post_process(MustRun, ('create minimal rust kzip.'
+                                 'no allowed CUs found, skipping')),
+      api.post_process(DoesNotRun, ('create minimal rust kzip.'
+                                    'create minimal kzip')),
+      api.post_process(DoesNotRun, 'merge kzips'),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the non-merged kzip output.
+          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_filter_fail',
+      'rust_kzip_filter_ignore_filter_fail',
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
@@ -640,10 +679,21 @@ def GenTests(api):
               '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
           ])),
       api.step_data('create minimal rust kzip.create minimal kzip', retcode=1),
+      api.post_process(StepTextEquals, ('create minimal rust kzip.'
+                                        'create minimal kzip'),
+                       'kzip filter failed, skipping'),
+      api.post_process(DoesNotRun, 'merge kzips'),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the non-merged kzip output.
+          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_filter_pass',
+      'rust_kzip_success',
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
@@ -654,4 +704,15 @@ def GenTests(api):
               '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
           ])),
       api.step_data('create minimal rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'merge kzips'),
+      api.post_process(StepCommandContains, 'merge kzips',
+                       ['--output', '[CLEANUP]/tmp_tmp_5']),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the merge kzip output.
+          ['[CLEANUP]/tmp_tmp_5']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
