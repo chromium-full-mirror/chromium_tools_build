@@ -91,6 +91,27 @@ def RunSteps(api):
           'ci:Linux Tests', '-previous-test-id-prefix', 'blink_web_tests', '--'
       ] + cmd,
   )
+
+  api.assertions.assertEqual(
+      rdb.wrap(
+          api,
+          cmd,
+          result_format='json',
+          test_id_as_test_location=True,
+          test_id_prefix='blink_web_tests',
+          module_name='//chrome/build:foo_bar',
+          module_scheme='gtest',
+      ),
+      [
+          'rdb', 'stream', '-module-name', '//chrome/build:foo_bar',
+          '-module-scheme', 'gtest', '-inherit-sources', '-baseline-id',
+          'ci:Linux Tests', '-previous-test-id-prefix', 'blink_web_tests', '--'
+      ] + [
+          'result_adapter', 'json', '-result-file',
+          '${ISOLATED_OUTDIR}/output.json', '-scheme', 'gtest',
+          '-artifact-directory', '${ISOLATED_OUTDIR}', '-test-location', '--'
+      ] + cmd,
+  )
   api.buildbucket.build.input.experiments.remove(
       'chromium_tests.resultdb_module')
 

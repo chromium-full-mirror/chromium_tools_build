@@ -169,6 +169,8 @@ class ResultDB:
       return ['vpython3',
               api.chromium_tests.resource('reset_luci_context.py')] + cmd
 
+    in_rdb_exp = ('chromium_tests.resultdb_module'
+                  in api.buildbucket.build.input.experiments)
     # wrap it with result_adapter
     if not configs.has_native_resultdb_integration and configs.result_format:
       exe = configs.result_adapter_path + ('.exe'
@@ -179,6 +181,12 @@ class ResultDB:
           '-result-file',
           configs.result_file,
       ]
+      if in_rdb_exp and configs.module_scheme:
+        result_adapter += [
+            '-scheme',
+            configs.module_scheme,
+        ]
+
       if configs.artifact_directory:
         result_adapter += ['-artifact-directory', configs.artifact_directory]
 
@@ -206,12 +214,11 @@ class ResultDB:
     module_name = None
     module_scheme = None
 
-    if 'chromium_tests.resultdb_module' in api.buildbucket.build.input.experiments:
-      if configs.module_scheme and configs.module_name:
-        previous_test_id_prefix = configs.test_id_prefix
-        test_id_prefix = None
-        module_name = configs.module_name
-        module_scheme = configs.module_scheme
+    if in_rdb_exp and configs.module_scheme and configs.module_name:
+      previous_test_id_prefix = configs.test_id_prefix
+      test_id_prefix = None
+      module_name = configs.module_name
+      module_scheme = configs.module_scheme
 
     # wrap it with rdb-stream
     return api.resultdb.wrap(
