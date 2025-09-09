@@ -257,6 +257,7 @@ class SisoApi(recipe_api.RecipeApi):
               'siso_trace.json',
               '.siso_config',
               '.siso_deps',
+              '.siso_failed_targets',
               '.siso_filegroups',
               '.siso_fs_state',
               '.siso_fs_state.0',
