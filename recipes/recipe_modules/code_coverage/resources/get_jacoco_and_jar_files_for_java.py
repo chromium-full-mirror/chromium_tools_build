@@ -65,7 +65,7 @@ def main():
   logging.info('Found all files: %r', output_files)
 
   with open(params.output_json, 'w') as f:
-    json.dump(sources_json_files + jar_files, f)
+    json.dump(sources_json_files + jar_files, f, separators=(',', ':'))
 
 
 if __name__ == '__main__':

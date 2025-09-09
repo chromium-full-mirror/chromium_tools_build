@@ -25,6 +25,9 @@ import repository_util
 IS_WIN = platform.system() == 'Windows'
 IS_MAC = platform.system() == 'Darwin'
 
+# Override the default JSON separators with maximally compact ones.
+_JSON_SEPARATORS = (',', ':')
+
 
 def _posix_path(rawpath):
   return rawpath.replace(os.sep, '/')
@@ -507,7 +510,9 @@ def _split_metadata_in_shards_if_necessary(output_dir, files_dir,
     for i, files in enumerate(files_slice):
       file_name = 'files%d.json.gz' % (i + 1)
       with open(os.path.join(output_dir, files_dir, file_name), 'wb') as f:
-        f.write(zlib.compress(json.dumps({'files': files}).encode()))
+        serialized_files = json.dumps({'files': files},
+                                      separators=_JSON_SEPARATORS)
+        f.write(zlib.compress(serialized_files.encode()))
       path = os.path.normpath(os.path.join(files_dir, file_name))
       file_shard_paths.append(_posix_path(path))
     compressed_data['file_shards'] = file_shard_paths
@@ -605,7 +610,7 @@ def _write_coverage_to_disk(output_dir, output_file_name, data):
   """
   coverage_file = os.path.join(output_dir, output_file_name)
   with open(coverage_file, 'w') as fp:
-    json.dump(data, fp)
+    json.dump(data, fp, separators=_JSON_SEPARATORS)
 
 
 def _split_llvm_data_in_shards(data, shard_size=500):
@@ -972,10 +977,11 @@ def main():
         params.third_party_inclusion_subdirs, params.arch)
 
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
-    f.write(zlib.compress(json.dumps(data).encode()))
+    serialized_metadata = json.dumps(data, separators=_JSON_SEPARATORS)
+    f.write(zlib.compress(serialized_metadata.encode()))
   with open(os.path.join(params.output_dir, 'per_target_summaries.json'),
             'w') as f:
-    json.dump(summaries, f)
+    json.dump(summaries, f, separators=_JSON_SEPARATORS)
   _create_index_html(params.output_dir)
 
 

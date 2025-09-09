@@ -121,7 +121,8 @@ def main():
   merged_metadata = _merge_metadata(metadata_files)
 
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
-    f.write(zlib.compress(json.dumps(merged_metadata).encode('utf-8')))
+    serialized_metadata = json.dumps(merged_metadata, separators=(',', ':'))
+    f.write(zlib.compress(serialized_metadata.encode('utf-8')))
 
   for file_path in other_files:
     shutil.copy(file_path, params.output_dir)

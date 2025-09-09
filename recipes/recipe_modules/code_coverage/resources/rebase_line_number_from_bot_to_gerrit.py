@@ -201,7 +201,7 @@ def main():
                                                 args.change, args.patchset,
                                                 args.src_path, args.sources,
                                                 args.token_path)
-  json_mapping = json.dumps(file_to_line_num_mapping)
+  json_mapping = json.dumps(file_to_line_num_mapping, separators=(',', ':'))
   with open(args.output_file, 'w') as f:
     f.write(json_mapping)
 

@@ -106,7 +106,7 @@ def main():
   binaries_with_coverage_data = _get_binaries_with_coverage_data(
       args.profdata_path, args.llvm_cov, args.binaries, args.arch)
   with open(args.output_json, 'w') as f:
-    json.dump(binaries_with_coverage_data, f)
+    json.dump(binaries_with_coverage_data, f, separators=(',', ':'))
 
 
 if __name__ == '__main__':

@@ -52,6 +52,9 @@ SOURCES_JSON_FILES_SUFFIX = '__jacoco_sources.json'
 DEVICE_CLASS_EXCLUDE_SUFFIX = 'host_filter.jar'
 HOST_CLASS_EXCLUDE_SUFFIX = 'device_filter.jar'
 
+# Override the default JSON separators with maximally compact ones.
+_JSON_SEPARATORS = (',', ':')
+
 
 def get_files_with_suffix(root_dir, suffix):
   """Gets all files with a given suffix.
@@ -123,7 +126,7 @@ def _create_classfile_args(class_files, exclude_suffix=None):
 
 
 def _compress_line_data_for_java(lines):
-  """Compresses line data by combining contiguous lines that have the 
+  """Compresses line data by combining contiguous lines that have the
   same covered instructions count.
 
   Args:
@@ -142,7 +145,7 @@ def _compress_line_data_for_java(lines):
     ]
 
   Returns:
-    A list of compressed lines in the same format as the input args. 
+    A list of compressed lines in the same format as the input args.
     For the above example input the result will be:
     [
       {
@@ -619,12 +622,13 @@ def main():
     logging.info('Writing fulfilled Java coverage metadata to %s',
                  params.output_dir)
     with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
-      f.write(zlib.compress(json.dumps(data).encode('utf-8')))
+      serialized_metadata = json.dumps(data, separators=_JSON_SEPARATORS)
+      f.write(zlib.compress(serialized_metadata.encode('utf-8')))
 
     if params.generate_blame_list:
       blame_list_file = os.path.join(params.output_dir, 'blame.json')
       with open(blame_list_file, 'w') as fp:
-        json.dump(blame_list, fp)
+        json.dump(blame_list, fp, separators=_JSON_SEPARATORS)
 
     # Write xml tree to disk so that it can be exported to zoss
     ElementTree.ElementTree(xml_root).write(

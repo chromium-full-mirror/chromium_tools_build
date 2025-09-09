@@ -271,7 +271,8 @@ def main():
   logging.info('Writing fulfilled JavaScript coverage metadata to %s',
                params.output_dir)
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
-    f.write(zlib.compress(json.dumps(data).encode()))
+    serialized_metadata = json.dumps(data, separators=(',', ':'))
+    f.write(zlib.compress(serialized_metadata.encode()))
 
 if __name__ == '__main__':
   logging.basicConfig(

@@ -65,7 +65,7 @@ def main():
   logging.info('Found all files: %r', paths)
 
   with open(params.output_json, 'w') as f:
-    json.dump(paths, f)
+    json.dump(paths, f, separators=(',', ':'))
 
 
 if __name__ == '__main__':
