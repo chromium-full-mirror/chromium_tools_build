@@ -10,6 +10,7 @@ import textwrap
 import unittest
 
 import mock
+from pyfakefs import fake_filesystem_unittest
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0,
@@ -18,11 +19,11 @@ sys.path.insert(0,
 import repository_util
 
 
-class RepositoryUtilTest(unittest.TestCase):
+class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
 
-  @mock.patch('repository_util.os.path.isdir', autospec=True)
-  @mock.patch('repository_util.subprocess.check_output', autospec=True)
-  def test_get_file_revisions(self, mock_subprocess, mock_is_dir):
+  def setUp(self):
+    super().setUp()
+    self.setUpPyfakefs()
     deps_file_content = textwrap.dedent('''
       vars = {
         'chromium_git': 'https://chromium.googlesource.com',
@@ -33,12 +34,11 @@ class RepositoryUtilTest(unittest.TestCase):
         'src/third_party/repo':
           Var('chromium_git') + '/repo.git' + '@' + 'abcd1234',
       }''')
+    self.fs.create_file('/src/DEPS', contents=deps_file_content)
+    self.fs.create_dir('/src/third_party/repo')
 
-    def is_dir_side_effect(path):
-      path = os.path.normpath(path)
-      return path in ('/src', '/src/third_party/repo')
-
-    mock_is_dir.side_effect = is_dir_side_effect
+  @mock.patch('repository_util.subprocess.check_output', autospec=True)
+  def test_get_file_revisions(self, mock_subprocess):
 
     def mock_subprocess_side_effect(commands, cwd, text=None):
       cwd = os.path.normpath(cwd)
@@ -58,17 +58,14 @@ class RepositoryUtilTest(unittest.TestCase):
 
     mock_subprocess.side_effect = mock_subprocess_side_effect
 
-    with mock.patch('repository_util.open',
-                    mock.mock_open(read_data=deps_file_content)) as m:
-      file_revisions = repository_util._GetFileRevisions(
-          '/src', 'DEPS', ['//file1.cc', '//third_party/repo/file2.cc'])
+    file_revisions = repository_util._GetFileRevisions(
+        '/src', 'DEPS', ['//file1.cc', '//third_party/repo/file2.cc'])
 
-      expected_file_revisions = {
-          '//file1.cc': ('file1hash', 12345),
-          '//third_party/repo/file2.cc': ('file2hash', 12345)
-      }
-      self.assertDictEqual(expected_file_revisions, file_revisions)
-      m.assert_called_once_with('/src/DEPS', 'r')
+    expected_file_revisions = {
+        '//file1.cc': ('file1hash', 12345),
+        '//third_party/repo/file2.cc': ('file2hash', 12345)
+    }
+    self.assertDictEqual(expected_file_revisions, file_revisions)
 
   @mock.patch.object(repository_util, '_GetFileRevisions', autospec=True)
   def test_add_git_revisions_to_coverage_files_metadata(
@@ -87,7 +84,6 @@ class RepositoryUtilTest(unittest.TestCase):
         'timestamp': 1234,
     }]
     self.assertListEqual(expected_coverage_files_data, coverage_files_data)
-
 
   @mock.patch('repository_util.subprocess.check_output', autospec=True)
   def test_get_unmodified_lines_since_commit(self, mock_subprocess):
