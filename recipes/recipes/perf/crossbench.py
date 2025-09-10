@@ -35,16 +35,15 @@ def RunSteps(api):
   chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')
 
   cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
-
-  # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
-  if not api.platform.is_win:
-    api.step('Run Unit Tests', [
-        'vpython3',
-        'crossbench/tests/crossbench/runner.py',
-        f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
-    ])
-
   try:
+    # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
+    if not api.platform.is_win:
+      api.step('Run Unit Tests', [
+          'vpython3',
+          'crossbench/tests/crossbench/runner.py',
+          f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
+      ])
+
     api.step('Run End2End Tests', [
         'vpython3',
         '-Xutf8',
