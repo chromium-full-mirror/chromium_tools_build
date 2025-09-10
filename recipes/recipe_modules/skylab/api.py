@@ -37,33 +37,6 @@ def _base64_encode_str(s):
   return base64.b64encode(s.encode('utf-8')).decode('ascii')
 
 
-def _base64_encode_args(args, skip_prefix=None):
-  """Base64-encode some args which contain shell-unsafe characters
-
-    Args:
-      args (list[str]): List of tast args, in the form of name=value
-      skip_prefix: If a name starts with this, it is copied to the result as-is.
-    Returns:
-      list of args, with some args encoded in base64 and _b64 suffix added to the name.
-  """
-  find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII).search
-
-  def encode_if_necessary(arg):
-    a = arg.split('=', 1)
-    if len(a) < 2:
-      # Assume boolean flag
-      return (arg, 'True')
-    name, value = a
-    if skip_prefix and name.startswith(skip_prefix):
-      return (name, value)
-    if not find_unsafe(value):
-      return (name, value)
-    b = _base64_encode_str(value)
-    return (f'{name}_b64', b)
-
-  return [encode_if_necessary(arg) for arg in args]
-
-
 class SkylabApi(recipe_api.RecipeApi):
   """Module for issuing commands to Skylab"""
 
@@ -237,12 +210,14 @@ class SkylabApi(recipe_api.RecipeApi):
       test_args.append(('resultdb_settings', _base64_encode_str(rdb_str)))
 
       if test.spec.test_args:
-        if test.is_tast_test:
-          test_args.extend(
-              _base64_encode_args(test.spec.test_args, TAST_VARS_PREFIX))
-        else:
-          test_args.append(('test_args_b64',
-                            _base64_encode_str(' '.join(test.spec.test_args))))
+        test_args.extend([
+            x.split('=', 1) if '=' in x else (x, 'True')
+            for x in test.spec.test_args
+        ])
+        # test_args_b64 is only for tauto.chromium. tast will automatically
+        # ignore test_args_b64 anyway.
+        test_args.append(('test_args_b64',
+                          _base64_encode_str(' '.join(test.spec.test_args))))
 
       if test.spec.shard_level_retries_on_ctp >= 0 and not runtime_no_retry:
         cmd.extend(['--retry', str(test.spec.shard_level_retries_on_ctp)])

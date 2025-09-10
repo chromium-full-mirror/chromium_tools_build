@@ -402,9 +402,6 @@ def GenTests(api):
     check(f'input JSON for step {step} has use_external_config={value}',
           input_json['use_external_config'] == value)
 
-  def b64_encode(s):
-    return base64.b64encode(s.encode('utf-8')).decode('ascii')
-
   yield api.test(
       'basic',
       api.properties(requests=REQUESTS[:1]),
@@ -571,10 +568,8 @@ def GenTests(api):
       api.properties(requests=TEST_ARGS_REQUESTS),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab test.' + TEST_ARGS_REQUESTS[1].name + '.schedule', [
-              '--test-arg', 'maybemissingvars_b64',
-              b64_encode(MAYBE_MISSING_VARS)
-          ]),
+          'schedule skylab test.' + TEST_ARGS_REQUESTS[1].name + '.schedule',
+          ['--test-arg', 'maybemissingvars', MAYBE_MISSING_VARS]),
       api.post_process(post_process.DropExpectation),
   )
 
