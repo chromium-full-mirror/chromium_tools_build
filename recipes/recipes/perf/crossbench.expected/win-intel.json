@@ -195,6 +195,7 @@
       "--test-browser-path=[CACHE]\\builder\\chrome\\Stable\\131.0.6778.204\\chrome\\chrome-win64\\chrome.exe",
       "--test-driver-path=[CACHE]\\builder\\chrome\\Stable\\131.0.6778.204\\chromedriver\\chromedriver-win64\\chromedriver.exe",
       "--cas-archive=[CLEANUP]\\cq_archive__tmp_1",
+      "--log-file=[CLEANUP]\\cq_archive__tmp_1/pytest.tests.end2end.desktop.out.txt",
       "--ignore-tests=android"
     ],
     "name": "Run End2End Tests"

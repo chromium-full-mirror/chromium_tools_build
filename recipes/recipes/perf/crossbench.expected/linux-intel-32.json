@@ -143,7 +143,7 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 35, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 152, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 160, in download_chrome",
       "    raise NotImplementedError('Unsupported platform: %s' % (config_key,))",
       "NotImplementedError: Unsupported platform: ('linux', 'intel', 32)"
     ]

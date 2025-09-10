@@ -34,19 +34,27 @@ def RunSteps(api):
 
   chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')
 
+  cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
+
   # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
   if not api.platform.is_win:
-    api.step('Run Unit Tests',
-             ['vpython3', 'crossbench/tests/crossbench/runner.py'])
+    api.step('Run Unit Tests', [
+        'vpython3',
+        'crossbench/tests/crossbench/runner.py',
+        f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
+    ])
 
-  cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
   try:
     api.step('Run End2End Tests', [
-        'vpython3', '-Xutf8', 'crossbench/tests/end2end/runner.py',
-        '--test-gsutil-path=%s' % api.gsutil.gsutil_py_path,
-        '--test-browser-path=%s' % chrome_app_path,
-        '--test-driver-path=%s' % chrome_driver_path,
-        '--cas-archive=%s' % cas_archive, '--ignore-tests=android'
+        'vpython3',
+        '-Xutf8',
+        'crossbench/tests/end2end/runner.py',
+        f'--test-gsutil-path={api.gsutil.gsutil_py_path}',
+        f'--test-browser-path={chrome_app_path}',
+        f'--test-driver-path={chrome_driver_path}',
+        f'--cas-archive={cas_archive}',
+        f'--log-file={cas_archive}/pytest.tests.end2end.desktop.out.txt',
+        '--ignore-tests=android',
     ])
   finally:
     api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)

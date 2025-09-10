@@ -189,7 +189,8 @@
   {
     "cmd": [
       "vpython3",
-      "crossbench/tests/crossbench/runner.py"
+      "crossbench/tests/crossbench/runner.py",
+      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.crossbench.out.txt"
     ],
     "name": "Run Unit Tests"
   },
@@ -202,6 +203,7 @@
       "--test-browser-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chrome/chrome-mac-x64/Google Chrome for Testing.app",
       "--test-driver-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver/chromedriver-mac-x64/chromedriver",
       "--cas-archive=[CLEANUP]/cq_archive__tmp_1",
+      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.end2end.desktop.out.txt",
       "--ignore-tests=android"
     ],
     "name": "Run End2End Tests"
