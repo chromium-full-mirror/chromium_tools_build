@@ -112,6 +112,28 @@ def RunSteps(api):
           '-artifact-directory', '${ISOLATED_OUTDIR}', '-test-location', '--'
       ] + cmd,
   )
+
+  # -scheme is not used for other result_adapter formats.
+  api.assertions.assertEqual(
+      rdb.wrap(
+          api,
+          cmd,
+          result_format='gtest',
+          test_id_prefix='blink_web_tests',
+          module_name='//chrome/build:foo_bar',
+          module_scheme='gtest',
+      ),
+      [
+          'rdb', 'stream', '-module-name', '//chrome/build:foo_bar',
+          '-module-scheme', 'gtest', '-inherit-sources', '-baseline-id',
+          'ci:Linux Tests', '-previous-test-id-prefix', 'blink_web_tests', '--'
+      ] + [
+          'result_adapter', 'gtest', '-result-file',
+          '${ISOLATED_OUTDIR}/output.json', '-artifact-directory',
+          '${ISOLATED_OUTDIR}', '--'
+      ] + cmd,
+  )
+
   api.buildbucket.build.input.experiments.remove(
       'chromium_tests.resultdb_module')
 

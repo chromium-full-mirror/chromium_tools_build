@@ -181,7 +181,8 @@ class ResultDB:
           '-result-file',
           configs.result_file,
       ]
-      if in_rdb_exp and configs.module_scheme:
+      if (in_rdb_exp and configs.module_scheme and
+          configs.result_format == 'json'):
         result_adapter += [
             '-scheme',
             configs.module_scheme,
