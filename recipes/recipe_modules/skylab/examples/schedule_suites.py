@@ -274,9 +274,11 @@ PUBLIC_LKGM_REQUESTS = [
         bucket='chromiumos-image-archive')
 ]
 
-TEST_ARGS_REQUESTS = [
+TFC_ARGS_REQUESTS = [
     gen_skylab_test(
         'tast_runtime_var',
+        cros_test_tags=['group:mainline'],
+        autotest_name='',
         test_args=[
             f"tast.{FIELDTRIAL_TAST_VAR_NAME}={FIELDTRIAL_TAST_VAR_VALUE}"
         ],
@@ -284,6 +286,8 @@ TEST_ARGS_REQUESTS = [
         tast_expr="placeholder: this is tast test"),
     gen_skylab_test(
         'tast_maybemissingvars',
+        cros_test_tags=['group:mainline'],
+        autotest_name='',
         test_args=[
             "maybemissingvars=" + MAYBE_MISSING_VARS, 'another_flag=123'
         ],
@@ -291,6 +295,8 @@ TEST_ARGS_REQUESTS = [
         tast_expr="placeholder: this is tast test"),
     gen_skylab_test(
         'tast_other_args',
+        cros_test_tags=['group:mainline'],
+        autotest_name='',
         test_args=["unknown_flag=XYZ", "unknown_boolean_flag"],
         bucket='chromiumos-image-archive',
         tast_expr="placeholder: this is tast test"),
@@ -553,10 +559,10 @@ def GenTests(api):
 
   yield api.test(
       'tast_vars',
-      api.properties(requests=TEST_ARGS_REQUESTS),
+      api.properties(requests=TFC_ARGS_REQUESTS),
       api.post_process(
           StepCommandContainsSubstrings,
-          'schedule skylab test.' + TEST_ARGS_REQUESTS[0].name + '.schedule', [
+          'schedule skylab test.' + TFC_ARGS_REQUESTS[0].name + '.schedule', [
               '--test-arg', 'tast.' + FIELDTRIAL_TAST_VAR_NAME,
               FIELDTRIAL_TAST_VAR_VALUE
           ]),
@@ -565,20 +571,20 @@ def GenTests(api):
 
   yield api.test(
       'tast_maybe_missing_vars',
-      api.properties(requests=TEST_ARGS_REQUESTS),
+      api.properties(requests=TFC_ARGS_REQUESTS),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab test.' + TEST_ARGS_REQUESTS[1].name + '.schedule',
+          'schedule skylab test.' + TFC_ARGS_REQUESTS[1].name + '.schedule',
           ['--test-arg', 'maybemissingvars', MAYBE_MISSING_VARS]),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'tast_unknown_arg',
-      api.properties(requests=TEST_ARGS_REQUESTS),
+      api.properties(requests=TFC_ARGS_REQUESTS),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab test.' + TEST_ARGS_REQUESTS[2].name + '.schedule', [
+          'schedule skylab test.' + TFC_ARGS_REQUESTS[2].name + '.schedule', [
               '--test-arg', 'unknown_flag', 'XYZ', '--test-arg',
               'unknown_boolean_flag', 'True'
           ]),

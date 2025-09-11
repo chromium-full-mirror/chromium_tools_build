@@ -210,10 +210,13 @@ class SkylabApi(recipe_api.RecipeApi):
       test_args.append(('resultdb_settings', _base64_encode_str(rdb_str)))
 
       if test.spec.test_args:
-        test_args.extend([
-            x.split('=', 1) if '=' in x else (x, 'True')
-            for x in test.spec.test_args
-        ])
+        if not test.spec.autotest_name:
+          # gtests args are command line parameters and not key-value pair.
+          # We should not embed and treat args as key-value pair.
+          test_args.extend([
+              x.split('=', 1) if '=' in x else (x, 'True')
+              for x in test.spec.test_args
+          ])
         # test_args_b64 is only for tauto.chromium. tast will automatically
         # ignore test_args_b64 anyway.
         test_args.append(('test_args_b64',
