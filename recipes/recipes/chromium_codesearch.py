@@ -167,7 +167,10 @@ def extract_minimal_rust_kzip(api, rust_index_pack_path):
   Because we don't want this function to prevent the rest of .kzip generation
   to work, skip remaining work and return None there's any issues.
   """
-  kythe_dir = api.codesearch.ensure_kythe()
+  kzip_bin = api.codesearch.ensure_kythe().joinpath(
+      'tools',
+      'kzip') if api.platform.is_linux else api.codesearch.ensure_kythe_go(
+      ).joinpath('kzip')
 
   # Workaround for `kzip view` (without -extract) not outputting the digests
   # for the CUs themselves.
@@ -176,7 +179,7 @@ def extract_minimal_rust_kzip(api, rust_index_pack_path):
   # acceptable (adds ~1min to a 1.5-2h builder)
   extract_cus_dir = api.path.mkdtemp()
   extract_cus_args = [
-      kythe_dir.joinpath('tools', 'kzip'),
+      kzip_bin,
       'view',
       '-extract',
       extract_cus_dir,
@@ -209,7 +212,7 @@ def extract_minimal_rust_kzip(api, rust_index_pack_path):
   # Create a minimal kzip with only this CU.
   filtered_kzip_path = api.path.mkstemp()
   filter_kzip_args = [
-      kythe_dir.joinpath('tools', 'kzip'),
+      kzip_bin,
       'filter',
       '-input',
       rust_index_pack_path,
@@ -397,9 +400,9 @@ def RunSteps(api, properties):
   initial_index_pack_path = api.codesearch.create_kythe_index_pack()
 
   # Create and merge the Rust index pack if it can be successfully generated.
-  # It also only runs on Linux right now.
+  # It also only runs on Linux and Mac right now.
   rust_index_pack_path = None
-  if api.platform.is_linux:
+  if api.platform.is_linux or api.platform.is_mac:
     with api.step.nest('create minimal rust kzip'):
       full_rust_index_pack_path = api.codesearch.run_rust_project_extractor(
           source_dir=source_dir)
@@ -693,10 +696,35 @@ def GenTests(api):
   )
 
   yield api.test(
-      'rust_kzip_success',
+      'rust_kzip_success_linux',
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.step_data(
+          'create minimal rust kzip.list CU metadata',
+          api.file.glob_paths([
+              '/tmp/foo-0123456789abcdef.unit',
+              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+          ])),
+      api.step_data('create minimal rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'merge kzips'),
+      api.post_process(StepCommandContains, 'merge kzips',
+                       ['--output', '[CLEANUP]/tmp_tmp_5']),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the merge kzip output.
+          ['[CLEANUP]/tmp_tmp_5']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rust_kzip_success_mac',
+      api.platform('mac', 64),
+      props('mac'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
       api.step_data(
           'create minimal rust kzip.list CU metadata',
           api.file.glob_paths([
