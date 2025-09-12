@@ -52,6 +52,8 @@ KYTHE_CU_FILENAME_RE = re.compile(r'.+-([0-9a-f]+)\.unit$')
 KYTHE_RUST_CU_ALLOWLIST = [
     # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (linux)
     "a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b",
+    # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (mac)
+    "3e9540fb433af97529eb3c06417fca953f80e97485dee1207fb5c572e14ef6be",
 ]
 
 # Defines the trybots and the mirrored CI builder
