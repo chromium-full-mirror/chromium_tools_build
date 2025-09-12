@@ -149,7 +149,7 @@ def GenTests(api):
       'basic',
       subbuild_data(default_output_properties),
       api.override_step_data(
-          'Detect flakes in new tests.find new tests.git show',
+          'Detect flakes in new tests.find new tests.git diff',
           stdout=api.raw_io.output_text('\n'.join([
               'test/e2e/helpers/datagrid-helpers.ts',
               'test/e2e/helpers/performance-helpers.ts',
