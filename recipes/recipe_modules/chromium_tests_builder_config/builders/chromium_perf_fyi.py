@@ -119,12 +119,6 @@ _AddIsolatedTestSpec(
     parent_builder_group='chromium.perf')
 
 _AddIsolatedTestSpec(
-    'win-dell-pro-16-perf',
-    'win',
-    parent_buildername='win64-builder-perf',
-    parent_builder_group='chromium.perf')
-
-_AddIsolatedTestSpec(
     'win-arm64-snapdragon-plus-perf',
     'win',
     target_arch='arm',
