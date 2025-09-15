@@ -34,8 +34,13 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api: recipe_api.RecipeApi, mock_orderfile: bool, mock_pgo: bool,
-             arch: str, bitness: int):
+def RunSteps(
+    api: recipe_api.RecipeApi,
+    mock_orderfile: bool,
+    mock_pgo: bool,
+    arch: str,
+    bitness: int,
+):
   checkout_dir = api.path.cache_dir / 'builder'
   source_dir = api.path.cache_dir / 'builder/src'
 
@@ -65,13 +70,13 @@ def RunSteps(api: recipe_api.RecipeApi, mock_orderfile: bool, mock_pgo: bool,
           'src': bot_update_api.ManifestRepo(repository='src', revision='rev')
       },
       fixed_revisions={},
-      out_commit=None)
+      out_commit=None,
+  )
 
   api.orderfile.process_orderfile_data(source_dir, result)
 
   # coverage only
   _ = api.orderfile.using_orderfile
-
 
 def GenTests(api: recipe_test_api.RecipeTestApi):
 
@@ -82,11 +87,14 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.orderfile(
           use_orderfile=True,
           upload_orderfile=True,
-          last_uploaded_pgo_filename='profile.pgo'),
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
       api.platform('linux', 32),
       api.post_process(
-          post_process.MustRun, 'processing generated orderfile.create '
-          'chromium/chrome/android/orderfiles/arm'),
+          post_process.MustRun,
+          'processing generated orderfile.create '
+          'chromium/chrome/android/orderfiles/arm',
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -98,11 +106,52 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.orderfile(
           use_orderfile=True,
           upload_orderfile=True,
-          last_uploaded_pgo_filename='profile.pgo'),
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
       api.platform('linux', 64),
       api.post_process(
           post_process.MustRun,
-          'processing generated orderfile.create chromium/chrome/android/orderfiles/arm64'
+          'processing generated orderfile.create'
+          ' chromium/chrome/android/orderfiles/arm64',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'basic_webview',
+      api.chromium.ci_build(
+          builder_group='chromium.perf',
+          builder='android-go-wembley_webview-perf'),
+      api.orderfile(
+          use_orderfile=True,
+          upload_orderfile=True,
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
+      api.platform('linux', 32),
+      api.post_process(
+          post_process.MustRun,
+          'processing generated orderfile.create '
+          'chromium/android_webview/tools/orderfiles/arm',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'basic_webview_64',
+      api.properties(bitness=64),
+      api.chromium.ci_build(
+          builder_group='chromium.perf',
+          builder='android-go-wembley_webview-perf'),
+      api.orderfile(
+          use_orderfile=True,
+          upload_orderfile=True,
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
+      api.platform('linux', 64),
+      api.post_process(
+          post_process.MustRun,
+          'processing generated orderfile.create'
+          ' chromium/android_webview/tools/orderfiles/arm64',
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -114,7 +163,8 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.orderfile(
           use_orderfile=True,
           upload_orderfile=True,
-          last_uploaded_pgo_filename='profile.pgo'),
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
       api.platform('linux', 32),
       api.post_process(post_process.SummaryMarkdownRE, 'Missing ref.*'),
       api.expect_status('FAILURE'),
@@ -129,7 +179,8 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.orderfile(
           use_orderfile=True,
           upload_orderfile=True,
-          last_uploaded_pgo_filename='profile.pgo'),
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
       api.platform('linux', 32),
       api.post_process(post_process.SummaryMarkdownRE, 'Unsupported arch=.*'),
       api.expect_status('FAILURE'),
@@ -144,7 +195,8 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.orderfile(
           use_orderfile=True,
           upload_orderfile=True,
-          last_uploaded_pgo_filename='profile.pgo'),
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
       api.platform('linux', 32),
       api.post_process(post_process.SummaryMarkdownRE,
                        'Orderfile not found at.*'),
@@ -160,11 +212,14 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.orderfile(
           use_orderfile=True,
           upload_orderfile=True,
-          last_uploaded_pgo_filename='profile.pgo'),
+          last_uploaded_pgo_filename='profile.pgo',
+      ),
       api.platform('linux', 32),
       api.post_process(
-          post_process.StepTextContains, 'processing generated orderfile',
-          ('profile does not exist, skipping it for CIPD upload.',)),
+          post_process.StepTextContains,
+          'processing generated orderfile',
+          ('profile does not exist, skipping it for CIPD upload.',),
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -176,7 +231,8 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.platform('linux', 32),
       api.post_process(
           post_process.MustRunRE,
-          'processing generated orderfile.skipping upload to CIPD.*'),
+          'processing generated orderfile.skipping upload to CIPD.*',
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -210,7 +266,8 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
           use_orderfile=True,
           gs_bucket='bucket',
           gs_bucket_path='path',
-          last_uploaded_pgo_filename='profile.prof'),
+          last_uploaded_pgo_filename='profile.prof',
+      ),
       api.platform('linux', 32),
       api.post_process(post_process.MustRun, 'override PGO profile'),
       api.post_process(post_process.DropExpectation),
