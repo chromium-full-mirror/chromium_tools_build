@@ -6,8 +6,10 @@
 import os
 import subprocess
 import sys
+import tempfile
 import textwrap
 import unittest
+from typing import Set
 
 import mock
 from pyfakefs import fake_filesystem_unittest
@@ -54,6 +56,8 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
         if commands[-1] == 'file2.cc' and cwd == '/src/third_party/repo':
           return 'file2hash:12345'
 
+      if commands == ['git', 'rev-parse', 'HEAD']:
+        return '123abc'
       assert False, 'Unexpected subprocess call'
 
     mock_subprocess.side_effect = mock_subprocess_side_effect
@@ -121,6 +125,86 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
     actual_unmodified_lines = repository_util.GetUnmodifiedLinesSinceCommit(
         src_path, file_path, reference_commit)
     self.assertListEqual([2], actual_unmodified_lines)
+
+
+@mock.patch('subprocess.check_output')
+class RevisionCacheTest(fake_filesystem_unittest.TestCase):
+
+  def setUp(self):
+    super().setUp()
+    self.setUpPyfakefs()
+    self.cache_path = os.path.join(tempfile.gettempdir(), '.cov-rev-cache',
+                                   '123abc.csv')
+
+  def test_absent(self, mock_check_output):
+    mock_check_output.side_effect = ['123abc:1111\n', '789def:2222\n']
+    cache = repository_util.RevisionCache(self.cache_path)
+
+    cache.TryLoad()
+    self.assertEqual(('//file1.cc', '123abc', 1111),
+                     cache.RetrieveRevision(
+                         ('/path/to/src', '//', '//file1.cc')))
+    self.assertEqual(('//third_party/fake-submodule/file2.cc', '789def', 2222),
+                     cache.RetrieveRevision(
+                         ('/path/to/src', '//third_party/fake-submodule/',
+                          '//third_party/fake-submodule/file2.cc')))
+
+    cache.Flush()
+    self.verify_cache({
+        '//,file1.cc,123abc,1111\n',
+        '//third_party/fake-submodule/,file2.cc,789def,2222\n',
+    })
+
+  def test_present(self, mock_check_output):
+    self.fs.create_file(
+        self.cache_path,
+        contents=('//,file1.cc,123abc,1111\n'
+                  '//third_party/fake-submodule/,file2.cc,789def,2222\n'))
+    mock_check_output.side_effect = subprocess.SubprocessError
+    cache = repository_util.RevisionCache(self.cache_path)
+
+    cache.TryLoad()
+    self.assertTrue(os.path.exists(self.cache_path))
+    self.assertEqual(('//file1.cc', '123abc', 1111),
+                     cache.RetrieveRevision(
+                         ('/path/to/src', '//', '//file1.cc')))
+    self.assertEqual(('//third_party/fake-submodule/file2.cc', '789def', 2222),
+                     cache.RetrieveRevision(
+                         ('/path/to/src', '//third_party/fake-submodule/',
+                          '//third_party/fake-submodule/file2.cc')))
+
+    cache.Flush()
+    self.verify_cache({
+        '//,file1.cc,123abc,1111\n',
+        '//third_party/fake-submodule/,file2.cc,789def,2222\n',
+    })
+
+  def test_corrupt(self, mock_check_output):
+    # Simulate an incomplete write
+    self.fs.create_file(self.cache_path, contents='//,file.cc,')
+    mock_check_output.side_effect = ['123abc:1111\n', '789def:2222\n']
+    cache = repository_util.RevisionCache(self.cache_path)
+
+    cache.TryLoad()
+    self.assertFalse(os.path.exists(self.cache_path))
+    self.assertEqual(('//file1.cc', '123abc', 1111),
+                     cache.RetrieveRevision(
+                         ('/path/to/src', '//', '//file1.cc')))
+    self.assertEqual(('//third_party/fake-submodule/file2.cc', '789def', 2222),
+                     cache.RetrieveRevision(
+                         ('/path/to/src', '//third_party/fake-submodule/',
+                          '//third_party/fake-submodule/file2.cc')))
+
+    cache.Flush()
+    self.verify_cache({
+        '//,file1.cc,123abc,1111\n',
+        '//third_party/fake-submodule/,file2.cc,789def,2222\n',
+    })
+
+  def verify_cache(self, expected_lines: Set[str]):
+    # Tests should be insensitive to CSV line order.
+    with open(self.cache_path) as cache_file:
+      self.assertEqual(expected_lines, set(cache_file))
 
 
 if __name__ == '__main__':

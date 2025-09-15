@@ -8,13 +8,17 @@ to get the last changed revision of files.
 """
 
 import collections
+from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
+import csv
 import logging
 import multiprocessing
 import os
 import platform
 import subprocess
+import tempfile
 import time
+from typing import Tuple
 
 import diff_util
 
@@ -103,47 +107,111 @@ def _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_content):
   return src_checkout_paths
 
 
-def _RetrieveRevisionFromGit(args):
-  """Returns the path, git hash, and last changed timestamp of the given file.
+RevisionCacheKey = Tuple[str, str]
+LastModifiedInfo = Tuple[str, int]
 
-  Args:
-    args (tuple): A tuple <root_dir, checkout_dir, path> where
-      * root_dir (str): System absolute path to the root checkout.
-      * checkout_dir (str): Source absolute path to the root of a dependency
-                            checkout.
-      * path (str): Source absolute path to the file to retrieve the revision.
 
-  Returns:
-    A tuple of three elements:
-      1. Source absolute path to the file.
-      2. Git hash of the commit when the file was most recently updated.
-      3. Time stamp of the commit when the file was most recently updated.
+class RevisionCache:
+  """A file-based cache that maps paths in checkouts to last modified info.
+
+  This cache should be transparent to `_GetFileRevisions()` callers. Its
+  purpose is to speed up populating coverage reports with revision information
+  when `generate_coverage_metadata.py` is invoked more than once in a static
+  checkout.
+
+  The serialization format is CSV so that the cache can parse or format
+  entries line-by-line.
+
+  The `TryLoad()` and `Flush()` operations are not threadsafe. `TryLoad()` will
+  tolerate an absent or corrupt `.csv`.
   """
-  assert len(args) == 3, 'Got %d args, but expected 3' % (len(args))
-  root_dir, checkout_dir, path = args
 
-  assert checkout_dir.startswith('//'), (
-      '%s is expected to start with //' % checkout_dir)
-  cwd = os.path.join(root_dir, checkout_dir[2:])
+  def __init__(self, path: os.PathLike):
+    self._path = path
+    self._entries: MutableMapping[RevisionCacheKey, LastModifiedInfo] = {}
+    self._dirty = False
 
-  assert path.startswith('//'), '%s is expected to start with //' % path
-  path_in_dep_repo = path[len(checkout_dir):]
-  try:
-    git_output = subprocess.check_output(
-        [GIT, 'log', '-n', '1', '--pretty=format:%H:%ct', path_in_dep_repo],
-        cwd=cwd,
-        text=True)
+  def TryLoad(self):
+    try:
+      self._entries.clear()
+      self._dirty = False
+      with open(self._path) as cache_path:
+        reader = csv.reader(cache_path)
+        for (checkout_dir, path_in_checkout, revision, timestamp) in reader:
+          self._entries[checkout_dir,
+                        path_in_checkout] = (revision, int(timestamp))
+    except FileNotFoundError:
+      logging.warning('Revision cache %s not found', self._path)
+    except (OSError, csv.Error, ValueError):
+      self.Clear()
 
-    lines = git_output.splitlines()
-    assert len(lines) == 1, 'More than one line output.'
+  def Flush(self):
+    try:
+      if not self._dirty:
+        return
+      os.makedirs(os.path.dirname(self._path), exist_ok=True)
+      with open(self._path, 'w+') as cache_path:
+        writer = csv.writer(cache_path)
+        for cache_key, (revision, timestamp) in self._entries.items():
+          checkout_dir, path_in_checkout = cache_key
+          writer.writerow([checkout_dir, path_in_checkout, revision, timestamp])
+      self._dirty = False
+    except OSError:
+      self.Clear()
 
-    parts = lines[0].split(':')
-    assert len(parts) == 2, 'not in format "git_hash:timestamp"'
+  def Clear(self):
+    logging.warning('Deleting revision cache %s, which may be corrupt',
+                    self._path)
+    os.remove(self._path)
 
-    return path, parts[0], int(parts[1])
-  except (subprocess.CalledProcessError, AssertionError):
-    print('Failed to retrieve revision for %s: %r' % (checkout_dir, path))
-    return None
+  def RetrieveRevision(self, args):
+    """Returns the path, git hash, and last changed timestamp of the given file.
+
+    Args:
+      args (tuple): A tuple <root_dir, checkout_dir, path> where
+        * root_dir (str): System absolute path to the root checkout.
+        * checkout_dir (str): Source absolute path to the root of a dependency
+                              checkout.
+        * path (str): Source absolute path to the file to retrieve the revision.
+
+    Returns:
+      A tuple of three elements:
+        1. Source absolute path to the file.
+        2. Git hash of the commit when the file was most recently updated.
+        3. Time stamp of the commit when the file was most recently updated.
+    """
+    assert len(args) == 3, 'Got %d args, but expected 3' % (len(args))
+    root_dir, checkout_dir, path = args
+
+    assert checkout_dir.startswith('//'), ('%s is expected to start with //' %
+                                           checkout_dir)
+    cwd = os.path.join(root_dir, checkout_dir[2:])
+
+    assert path.startswith('//'), '%s is expected to start with //' % path
+    path_in_dep_repo = path[len(checkout_dir):]
+
+    cache_key = (checkout_dir, path_in_dep_repo)
+    if entry := self._entries.get(cache_key):
+      return (path, *entry)
+
+    try:
+      git_output = subprocess.check_output(
+          [GIT, 'log', '-n', '1', '--pretty=format:%H:%ct', path_in_dep_repo],
+          cwd=cwd,
+          text=True)
+
+      lines = git_output.splitlines()
+      assert len(lines) == 1, 'More than one line output.'
+
+      parts = lines[0].split(':')
+      assert len(parts) == 2, 'not in format "git_hash:timestamp"'
+    except (subprocess.CalledProcessError, AssertionError):
+      print('Failed to retrieve revision for %s: %r' % (checkout_dir, path))
+      return None
+
+    revision, timestamp = self._entries[cache_key] = parts[0], int(parts[1])
+    self._dirty = True
+    return path, revision, timestamp
 
 
 def _GetCommitedFilesForEachCheckout(root_dir, checkouts):
@@ -210,26 +278,34 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   timer.End('Finding correct checkout')
 
   timer.Start()
+  root_revision = subprocess.check_output([GIT, 'rev-parse', 'HEAD'],
+                                          text=True,
+                                          cwd=root_dir).strip()
+  cache_path = os.path.join(tempfile.gettempdir(), '.cov-rev-cache',
+                            f'{root_revision}.csv')
+  cache = RevisionCache(cache_path)
+  cache.TryLoad()
   # Scale threads linearly with core count (approximately). Note that threads
   # in all but the newest CPython implementations compete to acquire the Global
   # Interpreter Lock (GIL) [0] when executing bytecode. However, because:
   #   * A thread releases the GIL when blocked on I/O,
-  #   * ... and `_RetrieveRevisionFromGit()` is I/O-bound waiting for `git
-  #     log` subprocesses to join,
+  #   * ... and `RetrieveRevision()` is I/O-bound waiting for `git log`
+  #     subprocesses to join,
   #
   # ... a thread pool is still an effective way to parallelize
-  # `_RetrieveRevisionFromGit()`.
+  # `RetrieveRevision()`.
   #
   # [0]: https://docs.python.org/3/glossary.html#term-global-interpreter-lock
   max_workers = max(5, multiprocessing.cpu_count() - 5)
   revisions_by_path = {}
   with ThreadPoolExecutor(max_workers=max_workers) as pool:
-    for result in pool.map(_RetrieveRevisionFromGit, file_data):
+    for result in pool.map(cache.RetrieveRevision, file_data):
       if not result:
         continue
       path, git_hash, timestamp = result
       revisions_by_path[path] = git_hash, timestamp
-  timer.End('Multithreaded _RetrieveRevisionFromGit')
+  cache.Flush()
+  timer.End('Multithreaded RetrieveRevision')
   return revisions_by_path
 
 
