@@ -208,6 +208,12 @@ _AddIsolatedTestSpec(
     'android-builder-perf',
     target_bits=32)
 
+_AddIsolatedTestSpec(
+    'android-go-wembley_webview-perf',
+    'android',
+    'android-builder-perf',
+    target_bits=32)
+
 _AddIsolatedTestSpec('win-10-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
