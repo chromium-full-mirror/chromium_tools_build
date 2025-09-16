@@ -97,7 +97,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   )
   tests = [
       UnitTests(api, trigger, builder_config, False, 'Unit Tests'),
-      E2ETests(api, trigger, builder_config, 'E2E Tests', divider),
+      E2ETests(api, trigger, builder_config, 'E2E Tests',
+               E2ETestDivider(api, builder_config, shard_count=1)),
       E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests (non-hosted)',
                         divider),
       LintCheck(api, trigger, builder_config, 'Lint Check', target_os),
