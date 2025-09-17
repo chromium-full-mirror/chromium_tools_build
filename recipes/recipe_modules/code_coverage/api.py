@@ -20,18 +20,9 @@ MAX_CANDIDATE_FILES = 200
 # This should be same as toolchain side token at bit.ly/3F3IIMC
 INSTRUMENT_ALL_JACOCO_OVERRIDE_TOKEN = 'INSTRUMENT_ALL_JACOCO'
 
-PROBLEMATIC_JACOCO_PATHS = [
-    'ui/android/java/src/org/chromium/ui/UiUtils.java',  # crbug.com/1522985
-    'base/android/java/src/org/chromium/base/BuildInfo.java',  # b/41495939#comment23
-    'base/android/java/src/org/chromium/base/PackageUtils.java',  # b/41495939#comment33
-    'base/android/java/src/org/chromium/base/ApkInfo.java',  # b/41495939#comment41
-    'base/android/java/src/org/chromium/base/DeviceInfo.java',  # b/41495939#comment42
-    ('chrome/browser/auxiliary_search/java/src/org/chromium/chrome/'
-     'browser/auxiliary_search/AuxiliarySearchUtils.java'
-    ),  # b/41495939#comment39
-    ('chrome/browser/flags/android/java/src/org/chromium/chrome/'
-     'browser/flags/ChromeFeatureList.java')  # b/41495939#comment66
-]
+PROBLEMATIC_JACOCO_PATHS = []
+
+
 class CodeCoverageApi(recipe_api.RecipeApi):
   """This module contains apis to generate code coverage data."""
 
@@ -150,9 +141,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
   def _has_eligible_files_for_tool(self, tool):
     """Checks as a step and returns if any eligible files for a given tool"""
     if not self._eligible_files_by_tool.get(tool):
-      self.m.step.empty(
-          'skip processing %s coverage data because no related source file changed'
-          % tool)
+      self.m.step.empty('skip processing %s coverage data because '
+                        'no related source file changed' % tool)
       return False
     return True
 
@@ -489,7 +479,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     return sorted(binaries, key=str)
 
-
   def filter_and_set_eligible_files(self, candidate_files):
     """Filter candidate_files and assigns them to self._eligible_files_by_tool
 
@@ -660,9 +649,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             unsupported_projects)
         return
 
-    merge_from_multiple_tools = (
-        (self.use_clang_coverage + self.use_java_coverage +
-         self.use_javascript_coverage) > 1)
+    merge_from_multiple_tools = ((self.use_clang_coverage +
+                                  self.use_java_coverage +
+                                  self.use_javascript_coverage) > 1)
     if merge_from_multiple_tools and not self._is_per_cl_coverage:
       raise self.m.step.StepFailure(
           'CI coverage supports only 1 coverage tool type.')
@@ -777,9 +766,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         not self._has_eligible_files_for_tool(constants.tools.CLANG)):
       return
     if not self.m.profiles.profile_subdirs:  # pragma: no cover.
-      self.m.step.empty(
-          'skip processing clang coverage data because no profile data collected'
-      )
+      self.m.step.empty('skip processing clang coverage data because '
+                        'no profile data collected')
       return
 
     with self.m.step.nest(
@@ -956,8 +944,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             break
         if self._is_per_cl_coverage and not any_source_file_cov_available:
           self.m.step.empty(
-              'skip processing because lcov.info does not have data for eligible files'
-          )
+              'skip processing because lcov.info does not have data '
+              'for eligible files')
           return
         output_dir = self._ensure_metadata_dir(test_type, constants.tools.V8)
         cmd = [
@@ -1223,8 +1211,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       ]
 
     if self.use_java_coverage:
-      jacococli_jar = self.source_dir / 'third_party/jacoco/cipd/lib/jacococli.jar'
-      # TODO: Remove the fallback once no builders are building old versions of chromium/src.
+      jacococli_jar = (
+          self.source_dir / 'third_party/jacoco/cipd/lib/jacococli.jar')
+      # TODO: Remove the fallback once no builders are building old versions of
+      # chromium/src.
       if not self.m.path.exists(jacococli_jar):
         jacococli_jar = self.source_dir / 'third_party/jacoco/lib/jacococli.jar'
 
@@ -1425,7 +1415,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     """
     commit = self.m.buildbucket.build.input.gitiles_commit
     branch = 'main'
-    category = 'DEFAULT' if coverage_type == constants.test_types.OVERALL else 'CHROME_UNIT_TEST'
+    category = ('DEFAULT' if coverage_type == constants.test_types.OVERALL else
+                'CHROME_UNIT_TEST')
     return {
         # Maps to https://source.corp.google.com/h/chrome-internal/codesearch/chrome/src
         # which is a view of https://chromium.googlesource.com/chromium/src/
