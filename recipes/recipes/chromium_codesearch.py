@@ -621,8 +621,8 @@ def GenTests(api):
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
-          # Note how this path corresponds to the non-merged kzip output.
-          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+          # Non-merged original package_index output file.
+          ['[CLEANUP]/tmp_tmp_2']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -642,8 +642,8 @@ def GenTests(api):
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
-          # Note how this path corresponds to the non-merged kzip output.
-          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+          # Non-merged original package_index output file.
+          ['[CLEANUP]/tmp_tmp_2']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -667,8 +667,8 @@ def GenTests(api):
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
-          # Note how this path corresponds to the non-merged kzip output.
-          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+          # Non-merged original package_index output file.
+          ['[CLEANUP]/tmp_tmp_2']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -691,8 +691,8 @@ def GenTests(api):
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
-          # Note how this path corresponds to the non-merged kzip output.
-          ['[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip']),
+          # Non-merged original package_index output file.
+          ['[CLEANUP]/tmp_tmp_2']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -712,12 +712,12 @@ def GenTests(api):
       api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'merge kzips'),
       api.post_process(StepCommandContains, 'merge kzips',
-                       ['--output', '[CLEANUP]/tmp_tmp_5']),
+                       ['--output', '[CLEANUP]/tmp_tmp_6']),
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
           # Note how this path corresponds to the merge kzip output.
-          ['[CLEANUP]/tmp_tmp_5']),
+          ['[CLEANUP]/tmp_tmp_6']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -737,12 +737,12 @@ def GenTests(api):
       api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'merge kzips'),
       api.post_process(StepCommandContains, 'merge kzips',
-                       ['--output', '[CLEANUP]/tmp_tmp_5']),
+                       ['--output', '[CLEANUP]/tmp_tmp_6']),
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
           # Note how this path corresponds to the merge kzip output.
-          ['[CLEANUP]/tmp_tmp_5']),
+          ['[CLEANUP]/tmp_tmp_6']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

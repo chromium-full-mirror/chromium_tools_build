@@ -999,7 +999,7 @@
       "--path_to_gn_targets",
       "[CACHE]\\builder\\src\\out\\win-Debug\\gn_targets.json",
       "--path_to_archive_output",
-      "[CACHE]\\builder\\src\\out\\win-Debug\\chrome_win.kzip",
+      "[CLEANUP]\\tmp_tmp_2",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--project",
@@ -1034,7 +1034,7 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CACHE]\\builder\\src\\out\\win-Debug\\chrome_win.kzip",
+      "[CLEANUP]\\tmp_tmp_2",
       "gs://chrome-internal-codesearch/prod/chrome_win_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip"
     ],
     "infra_step": true,

@@ -983,7 +983,7 @@
       "--path_to_gn_targets",
       "[CACHE]/builder/src/out/linux-Debug/gn_targets.json",
       "--path_to_archive_output",
-      "[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip",
+      "[CLEANUP]/tmp_tmp_2",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--project",
@@ -1061,7 +1061,7 @@
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--output",
-      "[CLEANUP]/tmp_tmp_2",
+      "[CLEANUP]/tmp_tmp_3",
       "--vnames_json_path",
       "[{\"pattern\": \"../../(.*)\", \"vname\": {\"path\": \"@1@\"}}, {\"pattern\": \"([^.].*)\", \"vname\": {\"path\": \"linux-Debug/@1@\", \"root\": \"out\"}}]",
       "--root",
@@ -1093,8 +1093,8 @@
       "[START_DIR]/packages/kythe/tools/kzip",
       "view",
       "-extract",
-      "[CLEANUP]/tmp_tmp_3",
-      "[CLEANUP]/tmp_tmp_2"
+      "[CLEANUP]/tmp_tmp_4",
+      "[CLEANUP]/tmp_tmp_3"
     ],
     "luci_context": {
       "realm": {
@@ -1121,7 +1121,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "glob",
-      "[CLEANUP]/tmp_tmp_3",
+      "[CLEANUP]/tmp_tmp_4",
       "*.unit"
     ],
     "infra_step": true,
@@ -1159,7 +1159,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CACHE]/builder/src/out/linux-Debug/chromium_linux.kzip",
+      "[CLEANUP]/tmp_tmp_2",
       "gs://chrome-codesearch/prod/chromium_linux_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip"
     ],
     "infra_step": true,
