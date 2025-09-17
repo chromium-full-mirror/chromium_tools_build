@@ -38,7 +38,6 @@ def cronet_builder(c):
   c.gn_args.append('use_hashed_jni_names=true')
   c.gn_args.append('default_min_sdk_version=23')
   c.gn_args.append('clang_use_default_sample_profile=false')
-  c.gn_args.append('use_thin_lto=false')
   c.gn_args.append('enable_resource_allowlist_generation=false')
 
   c.compile_py.default_targets=[
