@@ -102,7 +102,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
         UnitTests(api, trigger, builder_config, coverage, 'Unit Tests'),
-        E2ETests(api, trigger, builder_config, 'E2E Tests', divider),
+        E2ETests(api, trigger, builder_config, 'E2E Tests',
+                 E2ETestDivider(api, builder_config, shard_count=1)),
         E2ENonHostedTests(api, trigger, builder_config,
                           'E2E Tests (non-hosted)', divider),
         PerformanceTests(api, trigger, builder_config, coverage,
@@ -363,11 +364,6 @@ def GenTests(api):
           'state': 'COMPLETED (FAILURE)',
       }]
   }
-  data2 = {
-      'shards': [{
-          'state': 'COMPLETED (SUCCESS)',
-      }]
-  }
 
   invocation = invocation_pb2.Invocation(
       state=invocation_pb2.Invocation.FINALIZED,
@@ -440,10 +436,6 @@ def GenTests(api):
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
-      api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #1) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data2)),
       api.post_process(MustRun, 'archive'),
       api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
       api.post_process(MustRun, 'Run tests.Unit Tests'),
@@ -469,8 +461,7 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data1),
       ),
       api.post_process(
-          SummaryMarkdown,
-          'Failure in E2E Tests (shard #0), Failure in E2E Tests (shard #1), '
+          SummaryMarkdown, 'Failure in E2E Tests (shard #0), '
           'Failure in E2E Tests (rerun) (shard #0)'),
       api.post_process(DropExpectation),
       status='FAILURE',
@@ -488,10 +479,6 @@ def GenTests(api):
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
-      api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #1) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data2)),
       api.post_process(MustRun, 'archive'),
       api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
       api.post_process(MustRun, 'Run tests.Unit Tests'),
@@ -507,8 +494,7 @@ def GenTests(api):
               'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.post_process(
           SummaryMarkdown,
-          'Flaky tests exonerated: Failure in E2E Tests (shard #0), Failure in'
-          ' E2E Tests (shard #1)'),
+          'Flaky tests exonerated: Failure in E2E Tests (shard #0)'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -525,10 +511,6 @@ def GenTests(api):
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
-      api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #1) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data2)),
       api.post_process(MustRun, 'archive'),
       api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
       api.post_process(MustRun, 'Run tests.Unit Tests'),
@@ -543,10 +525,8 @@ def GenTests(api):
       api.post_process(
           DoesNotRun, 'Flake exonaration attempt.'
           'Trigger E2E Tests (rerun).Read test list'),
-      api.post_process(
-          SummaryMarkdown,
-          'Failure in E2E Tests (shard #0), Failure in E2E Tests (shard #1), '
-          'Too many failures'),
+      api.post_process(SummaryMarkdown,
+                       'Failure in E2E Tests (shard #0), Too many failures'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
@@ -679,11 +659,6 @@ def GenTests(api):
           'state': 'COMPLETED (FAILURE)',
       }]
   }
-  data2 = {
-      'shards': [{
-          'state': 'COMPLETED (SUCCESS)',
-      }]
-  }
   yield api.test(
       'ci failed parallel builder on unit, E2E and performance tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
@@ -703,14 +678,10 @@ def GenTests(api):
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
-      api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #1) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data2)),
       api.post_process(
           SummaryMarkdown,
-          'Failure in Unit Tests (shard #0), Failure in E2E Tests (shard #0), Failure in E2E Tests '
-          '(shard #1), Failure in Performance Tests (shard #0)'),
+          'Failure in Unit Tests (shard #0), Failure in E2E Tests (shard #0), Failure in Performance Tests (shard #0)'
+      ),
       api.post_process(MustRun, 'Run tests.Unit Tests'),
       api.post_process(MustRun, 'Run tests.Performance Tests'),
       api.post_process(MustRun, 'Run tests.E2E Tests'),
