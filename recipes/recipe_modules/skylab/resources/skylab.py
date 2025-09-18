@@ -249,7 +249,8 @@ def schedule_skylab_tests(opts):
       req.suite_request.max_in_shard = opts.cros_test_max_in_shard
     for test_arg in opts.test_arg:
       arg = req.suite_request.test_suite.execution_metadata.args.add()
-      arg.flag = test_arg[0]
+      # Python 3.8 does not have removeprefix
+      arg.flag = test_arg[0][1:] if test_arg[0].startswith(' ') else test_arg[0]
       arg.value = test_arg[1]
 
 

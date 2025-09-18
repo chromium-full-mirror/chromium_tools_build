@@ -337,7 +337,15 @@ class SkylabApi(recipe_api.RecipeApi):
         cmd.extend(['--shard-indexes', retry_shard])
 
       for test_arg_key, test_arg_value in test_args:
-        cmd.extend(['--test-arg', test_arg_key, test_arg_value])
+        cmd.extend([
+            '--test-arg',
+            # Prefix a space to key to bypass argparse treating hyphen-prefixed
+            # arguments as new options.
+            # This is necessary for argparse implementation in Python < 3.13
+            ' ' +
+            test_arg_key if test_arg_key.startswith('-') else test_arg_key,
+            test_arg_value
+        ])
 
       step_result = self.m.step(
           'schedule',
