@@ -50,10 +50,13 @@ KYTHE_CU_FILENAME_RE = re.compile(r'.+-([0-9a-f]+)\.unit$')
 
 # Known safe Rust CUs.
 KYTHE_RUST_CU_ALLOWLIST = [
+    # TEMPORARY non-existent CU for testing purposes.
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    # TODO(b/420540280): Re-enable.
     # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (linux)
-    "a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b",
+    # "a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b",
     # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (mac)
-    "3e9540fb433af97529eb3c06417fca953f80e97485dee1207fb5c572e14ef6be",
+    # "3e9540fb433af97529eb3c06417fca953f80e97485dee1207fb5c572e14ef6be",
 ]
 
 # Defines the trybots and the mirrored CI builder
@@ -681,7 +684,7 @@ def GenTests(api):
       api.step_data(
           'create minimal rust kzip.list CU metadata',
           api.file.glob_paths([
-              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+              '/tmp/foo-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.unit'
           ])),
       api.step_data('create minimal rust kzip.create minimal kzip', retcode=1),
       api.post_process(StepTextEquals, ('create minimal rust kzip.'
@@ -706,7 +709,7 @@ def GenTests(api):
           'create minimal rust kzip.list CU metadata',
           api.file.glob_paths([
               '/tmp/foo-0123456789abcdef.unit',
-              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+              '/tmp/foo-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.unit'
           ])),
       api.step_data('create minimal rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
@@ -731,7 +734,7 @@ def GenTests(api):
           'create minimal rust kzip.list CU metadata',
           api.file.glob_paths([
               '/tmp/foo-0123456789abcdef.unit',
-              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+              '/tmp/foo-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.unit'
           ])),
       api.step_data('create minimal rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
