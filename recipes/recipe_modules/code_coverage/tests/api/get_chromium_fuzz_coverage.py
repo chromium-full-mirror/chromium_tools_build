@@ -20,11 +20,16 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test(
-      'basic', api.post_process(post_process.MustRun, 'chmod llvm file'),
+      'basic',
+      api.post_process(post_process.MustRun,
+                       'process fuzz coverage (overall).chmod llvm file'),
+      api.post_process(
+          post_process.MustRun, 'process fuzz coverage (overall).'
+          'ensure metadata dir for clang coverage'),
       api.post_process(
           post_process.MustRun,
-          'ensure metadata dir for overall tests for clang coverage'),
-      api.post_process(post_process.MustRun, 'generate coverage metadata'),
-      api.post_process(post_process.MustRun,
-                       'gsutil Upload coverage artifacts'),
+          'process fuzz coverage (overall).generate coverage metadata'),
+      api.post_process(
+          post_process.MustRun,
+          'process fuzz coverage (overall).gsutil Upload coverage artifacts'),
       api.post_process(DropExpectation))

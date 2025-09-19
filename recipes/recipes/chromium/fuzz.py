@@ -260,81 +260,78 @@ def RunSteps(api, properties):
       kwargs['bitness'] = 32
 
     if properties.collect_fuzz_coverage:
-      with api.step.nest('process fuzz coverage') as step_result:
-        try:
-          corpora_dir = 'current-corpora-from-clusterfuzz'
-          profdata_dir = str(
+      try:
+        corpora_dir = 'current-corpora-from-clusterfuzz'
+        profdata_dir = str(
+            api.chromium_checkout.source_dir.joinpath('out',
+                                                      'profdata-output-dir'))
+        api.step('make corpora directory', ['mkdir', corpora_dir])
+        api.file.rmtree('ensure profdata directory blank', profdata_dir)
+        api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
+        download_cmd = [
+            'python3',
+            'tools/code_coverage/download_fuzz_corpora.py',
+            '--download-dir',
+            corpora_dir,
+            '--build-dir',
+            build_dir,
+            '--corpora-type',
+            properties.fuzz_engine,
+        ]
+        if properties.fuzz_engine == 'fuzzilli':
+          download_cmd.extend(['--arch', get_target_cpu(api, gn_args)])
+        api.step('download corpora', download_cmd)
+
+        # Figure out what we need to start X. Some fuzzers rely on an
+        # X environment
+        withxvfb_path = api.repo_resource('recipes', 'withxvfb.py')
+        withxvfb_args = ['--target', api.chromium.c.build_config_fs]
+        withxvfb_args.append('--build-dir=%s' % build_dir)
+
+        run_cmd = ['python3', withxvfb_path] + withxvfb_args + [
+            '--', 'python3', 'tools/code_coverage/run_all_fuzzers.py',
+            '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
+            corpora_dir, '--profdata-outdir', profdata_dir, '--fuzzer',
+            properties.fuzz_engine
+        ]
+        if properties.fuzz_engine != 'fuzzilli':
+          target_list_dir = str(
               api.chromium_checkout.source_dir.joinpath('out',
-                                                        'profdata-output-dir'))
-          api.step('make corpora directory', ['mkdir', corpora_dir])
-          api.file.rmtree('ensure profdata directory blank', profdata_dir)
-          api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
-          download_cmd = [
-              'python3',
-              'tools/code_coverage/download_fuzz_corpora.py',
-              '--download-dir',
-              corpora_dir,
-              '--build-dir',
-              build_dir,
-              '--corpora-type',
-              properties.fuzz_engine,
-          ]
-          if properties.fuzz_engine == 'fuzzilli':
-            download_cmd.extend(['--arch', get_target_cpu(api, gn_args)])
-          api.step('download corpora', download_cmd)
+                                                        'target-list-dir'))
+          api.file.rmtree('ensure target list directory blank', target_list_dir)
+          api.step('make target list directory',
+                   ['mkdir', '-p', target_list_dir])
+          run_cmd.extend(['--target-list-dir', target_list_dir])
 
-          # Figure out what we need to start X. Some fuzzers rely on an
-          # X environment
-          withxvfb_path = api.repo_resource('recipes', 'withxvfb.py')
-          withxvfb_args = ['--target', api.chromium.c.build_config_fs]
-          withxvfb_args.append('--build-dir=%s' % build_dir)
+        api.step('run all fuzzers', run_cmd)
 
-          run_cmd = ['python3', withxvfb_path] + withxvfb_args + [
-              '--', 'python3', 'tools/code_coverage/run_all_fuzzers.py',
-              '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
-              corpora_dir, '--profdata-outdir', profdata_dir, '--fuzzer',
-              properties.fuzz_engine
-          ]
-          if properties.fuzz_engine != 'fuzzilli':
-            target_list_dir = str(
-                api.chromium_checkout.source_dir.joinpath(
-                    'out', 'target-list-dir'))
-            api.file.rmtree('ensure target list directory blank',
-                            target_list_dir)
-            api.step('make target list directory',
-                     ['mkdir', '-p', target_list_dir])
-            run_cmd.extend(['--target-list-dir', target_list_dir])
+        if properties.fuzz_engine != 'fuzzilli':
+          # For libfuzzer or centipede, upload the succeeded targets in a
+          # json file to GCS
+          gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
+          revision = api.buildbucket.gitiles_commit.id[:7]
+          json_file = api.path.join(target_list_dir,
+                                    properties.fuzz_engine + '.json')
+          api.gsutil.upload(json_file, 'code-coverage-data',
+                            f'{gcs_dir}{revision}/')
 
-          api.step('run all fuzzers', run_cmd)
+        profdata_path = api.chromium_checkout.source_dir.joinpath(
+            'total_fuzz_coverage.profdata')
+        llvm_profdata_path = api.chromium_checkout.source_dir.joinpath(
+            'third_party', 'llvm-build', 'Release+Asserts', 'bin',
+            'llvm-profdata')
+        api.step('merge all fuzzers', [
+            'python3', 'tools/code_coverage/merge_all_profdata.py',
+            '--profdata-dir', profdata_dir, '--outfile', profdata_path,
+            '--llvm-profdata', llvm_profdata_path
+        ])
 
-          if properties.fuzz_engine != 'fuzzilli':
-            # For libfuzzer or centipede, upload the succeeded targets in a
-            # json file to GCS
-            gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
-            revision = api.buildbucket.gitiles_commit.id[:7]
-            json_file = api.path.join(target_list_dir,
-                                      properties.fuzz_engine + '.json')
-            api.gsutil.upload(json_file, 'code-coverage-data',
-                              f'{gcs_dir}{revision}/')
-
-          profdata_path = api.chromium_checkout.source_dir.joinpath(
-              'total_fuzz_coverage.profdata')
-          llvm_profdata_path = api.chromium_checkout.source_dir.joinpath(
-              'third_party', 'llvm-build', 'Release+Asserts', 'bin',
-              'llvm-profdata')
-          api.step('merge all fuzzers', [
-              'python3', 'tools/code_coverage/merge_all_profdata.py',
-              '--profdata-dir', profdata_dir, '--outfile', profdata_path,
-              '--llvm-profdata', llvm_profdata_path
-          ])
-
-          api.code_coverage.get_chromium_fuzz_coverage(
-              api.chromium_checkout.source_dir, build_dir, profdata_path,
-              profdata_dir)
-        except api.step.StepFailure:
-          step_result.logs[
-              'fuzz coverage logs'] = "Could not process fuzz coverage"
-          raise
+        api.code_coverage.get_chromium_fuzz_coverage(
+            api.chromium_checkout.source_dir, build_dir, profdata_path,
+            profdata_dir)
+      except api.step.StepFailure:
+        api.step.empty('could not process fuzz coverage')
+        raise
 
     else:
       # copy data deps outside the build directory
@@ -441,12 +438,14 @@ def GenTests(api):
             '[CACHE]/builder/src/path4')
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if is_coverage:
-      test += api.post_process(post_process.MustRun, 'process fuzz coverage')
+      test += api.post_process(post_process.MustRun,
+                               'process fuzz coverage (overall)')
       retcode = 0
       if coverage_metadata_failure:
         retcode = 1
       test += api.step_data(
-          'process fuzz coverage.generate coverage metadata', retcode=retcode)
+          'process fuzz coverage (overall).generate coverage metadata',
+          retcode=retcode)
     test += api.post_process(post_process.DropExpectation)
     if is_ios:
       return (test + api.properties(xcode_build_version='12345'))

@@ -159,8 +159,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     metadata_dir = self._metadata_root_dir.joinpath(test_type).joinpath(
         tool_type)
     self.m.file.ensure_directory(
-        'ensure metadata dir for %s tests for %s coverage' %
-        (test_type, tool_type), metadata_dir)
+        f'ensure metadata dir for {tool_type} coverage', metadata_dir)
     self._metadata_dir_by_tool_type_by_test_type[test_type][tool_type] = (
         metadata_dir)
     return metadata_dir
@@ -1010,9 +1009,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   def _merge_metadata_from_multiple_tools(self, test_type):
     """Merges metadata from multiple tools processings."""
-    output_dir = self._ensure_metadata_dir(test_type, 'merged')
     with self.m.step.nest('merge data from multiple coverage tools (%s)' %
                           test_type):
+      output_dir = self._ensure_metadata_dir(test_type, 'merged')
       cmd = [
           'python3',
           self.resource('merge_metadata_files.py'),
@@ -1260,29 +1259,30 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     """ Generates fuzz coverage information. """
     llvm_cov = (
         source_dir / 'third_party/llvm-build/Release+Asserts/bin/llvm-cov')
-    self.m.file.chmod('chmod llvm file', llvm_cov, '777')
-    output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
-    cmd = [
-        'vpython3',
-        self.resource('generate_coverage_metadata.py'),
-        '--output-dir',
-        output_dir,
-        '--build-dir',
-        build_dir,
-        '--llvm-cov',
-        llvm_cov,
-        '--src-path',
-        source_dir,
-        '--profdata-path',
-        llvm_raw_data,
-        '--fuzz',
-        '--profdata-dir',
-        profdata_dir,
-    ]
-    self.m.step('generate coverage metadata', cmd)
-
-    self._persist_coverage_artifacts(source_dir=output_dir, test_type=test_type)
-    self._set_builder_output_properties_for_uploads()
+    with self.m.step.nest(f'process fuzz coverage ({test_type})'):
+      self.m.file.chmod('chmod llvm file', llvm_cov, '777')
+      output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
+      cmd = [
+          'vpython3',
+          self.resource('generate_coverage_metadata.py'),
+          '--output-dir',
+          output_dir,
+          '--build-dir',
+          build_dir,
+          '--llvm-cov',
+          llvm_cov,
+          '--src-path',
+          source_dir,
+          '--profdata-path',
+          llvm_raw_data,
+          '--fuzz',
+          '--profdata-dir',
+          profdata_dir,
+      ]
+      self.m.step('generate coverage metadata', cmd)
+      self._persist_coverage_artifacts(
+          source_dir=output_dir, test_type=test_type)
+      self._set_builder_output_properties_for_uploads()
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
     build = self.m.buildbucket.build
