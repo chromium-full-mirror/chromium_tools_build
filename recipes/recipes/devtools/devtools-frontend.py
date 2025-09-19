@@ -102,10 +102,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
         UnitTests(api, trigger, builder_config, coverage, 'Unit Tests'),
-        E2ETests(api, trigger, builder_config, 'E2E Tests',
-                 E2ETestDivider(api, builder_config, shard_count=1)),
-        E2ENonHostedTests(api, trigger, builder_config,
-                          'E2E Tests (non-hosted)', divider),
+        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests', divider),
         PerformanceTests(api, trigger, builder_config, coverage,
                          'Performance Tests'),
     ]
@@ -442,8 +439,10 @@ def GenTests(api):
       api.post_process(MustRun, 'Run tests.E2E Tests'),
       resultdb_query(
           'Flake exonaration attempt.rdb query',
-          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
-          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
+          test_result('e2e_non_hosted/file1: etest1/first ??',
+                      'e2e_non_hosted_tests'),
+          test_result('e2e_non_hosted/file2: etest2/second (to: escape)',
+                      'e2e_non_hosted_tests'),
       ),
       api.post_process(
           check_swarming_task_args,
@@ -485,8 +484,8 @@ def GenTests(api):
       api.post_process(MustRun, 'Run tests.E2E Tests'),
       resultdb_query(
           'Flake exonaration attempt.rdb query',
-          test_result('e2e/file1: e/test/1', 'e2e_tests'),
-          test_result('e2e/file2: e/test/2', 'e2e_tests'),
+          test_result('e2e_non_hosted/file1: e/test/1', 'e2e_non_hosted_tests'),
+          test_result('e2e_non_hosted/file2: e/test/2', 'e2e_non_hosted_tests'),
       ),
       api.step_data(
           'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
@@ -518,7 +517,8 @@ def GenTests(api):
       resultdb_query(
           'Flake exonaration attempt.rdb query',
           *[
-              test_result(f'e2e/file1: e/test/{i}', 'e2e_tests')
+              test_result(f'e2e_non_hosted/file1: e/test/{i}',
+                          'e2e_non_hosted_tests')
               for i in range(FLAKE_DETECTION_MAX_TESTS + 1)
           ],
       ),

@@ -1445,7 +1445,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_4",
+      "[CLEANUP]/tmp_tmp_3",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -1574,7 +1574,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_4/1/perf-data",
+      "[CLEANUP]/tmp_tmp_3/1/perf-data",
       "[CACHE]/builder/devtools-frontend/perf-data"
     ],
     "env_prefixes": {

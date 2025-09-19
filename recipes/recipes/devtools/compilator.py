@@ -98,8 +98,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     emit_compilator_properties(
         api, {
-            'e2e_test_list':
-                read_test_list(api, builder_config, 'e2e'),
             'e2e_non_hosted_test_list':
                 read_test_list(api, builder_config, 'e2e_non_hosted'),
             'cas_digest':
