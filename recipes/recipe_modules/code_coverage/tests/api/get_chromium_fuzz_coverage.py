@@ -4,32 +4,93 @@
 
 from recipe_engine import post_process
 from recipe_engine.post_process import DropExpectation
+from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.chromium_tests import steps
 
 DEPS = [
     'code_coverage',
     'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
 ]
+PROPERTIES = {
+    'targets': Property(kind=set),
+    'overall': Property(kind=bool, default=True),
+}
 
 
-def RunSteps(api):
+def RunSteps(api, targets: set[str], overall: bool):
   api.code_coverage.get_chromium_fuzz_coverage(api.path.start_dir / 'checkout',
                                                api.path.start_dir / 'build', '',
-                                               '')
+                                               '', targets, overall)
 
 
 def GenTests(api):
   yield api.test(
-      'basic',
+      'overall',
+      api.properties(targets={'blink_unittest_fake_fuzzer', 'fake_fuzzer'}),
+      api.step_data(
+          'process fuzz coverage (overall).calculate gn refs',
+          stdout=api.raw_io.output_text('\n'.join([
+              '//third_party/blink/renderer:blink_unittest_fake_fuzzer',
+              '//base:fake_fuzzer',
+          ]))),
+      api.step_data(
+          'process fuzz coverage (overall).gn desc (deps --type=executable)',
+          stdout=api.raw_io.output_text('\n'.join([
+              'centipede',
+              'blink_unittest',
+              'build-time/binary',
+              '',
+          ]))),
+      api.step_data(
+          'process fuzz coverage (overall).gn desc (runtime_deps)',
+          stdout=api.raw_io.output_text('\n'.join([
+              'not/a/binary.dat',
+              './blink_unittest_fake_fuzzer',
+              './centipede',
+              './blink_unittest',
+              '',
+          ]))),
       api.post_process(post_process.MustRun,
                        'process fuzz coverage (overall).chmod llvm file'),
       api.post_process(
           post_process.MustRun, 'process fuzz coverage (overall).'
           'ensure metadata dir for clang coverage'),
       api.post_process(
-          post_process.MustRun,
-          'process fuzz coverage (overall).generate coverage metadata'),
+          post_process.StepCommandContains,
+          'process fuzz coverage (overall).generate coverage metadata', [
+              '--binaries',
+              '[START_DIR]/build/blink_unittest',
+              '[START_DIR]/build/blink_unittest_fake_fuzzer',
+              '[START_DIR]/build/centipede',
+              '[START_DIR]/build/fake_fuzzer',
+          ]),
       api.post_process(
           post_process.MustRun,
           'process fuzz coverage (overall).gsutil Upload coverage artifacts'),
+      api.post_process(DropExpectation))
+
+  yield api.test(
+      'per-target', api.properties(targets={'fake_fuzzer'}, overall=False),
+      api.post_process(post_process.MustRun,
+                       'process fuzz coverage (fake_fuzzer).chmod llvm file'),
+      api.post_process(
+          post_process.MustRun, 'process fuzz coverage (fake_fuzzer).'
+          'ensure metadata dir for clang coverage'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'process fuzz coverage (fake_fuzzer).generate coverage metadata', [
+              '--binaries',
+              '[START_DIR]/build/fake_fuzzer',
+          ]),
+      api.post_process(
+          post_process.MustRun, 'process fuzz coverage (fake_fuzzer).'
+          'gsutil Upload coverage artifacts'),
+      api.post_process(DropExpectation))
+
+  yield api.test(
+      'no-targets', api.properties(targets=set()),
+      api.post_process(post_process.MustRun,
+                       'no fuzz targets to generate coverage for'),
       api.post_process(DropExpectation))

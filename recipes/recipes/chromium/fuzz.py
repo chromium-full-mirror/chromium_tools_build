@@ -328,7 +328,7 @@ def RunSteps(api, properties):
 
         api.code_coverage.get_chromium_fuzz_coverage(
             api.chromium_checkout.source_dir, build_dir, profdata_path,
-            profdata_dir)
+            profdata_dir, targets)
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
         raise
@@ -386,11 +386,13 @@ def GenTests(api):
         fuzz_engine=engine,
     )
     if engine != 'fuzzilli':
+      targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n')
+      test += api.step_data('calculate all_fuzzers', stdout=targets)
       test += api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('target1\ntarget2\ntarget3\n')
-      ) + api.step_data(
           'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
+      if is_coverage:
+        test += api.step_data('list gn targets', stdout=targets)
+
     if not (is_try or is_coverage):
       test += api.post_process(post_process.MustRun,
                                'generate runtime dependencies to copy')
