@@ -139,7 +139,7 @@ class GnApi(recipe_api.RecipeApi):
            output_format='label', step_name='calculate gn refs', **kwargs):
     """Find reverse dependencies for a given set of inputs.
 
-    See https://gn.googlesource.com/gn/+/main/docs/reference.md#refs for
+    See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_refs for
     more documentation of the command.
 
     Args:
@@ -203,7 +203,7 @@ class GnApi(recipe_api.RecipeApi):
          step_name='list gn targets'):
     """List targets for a given set of inputs.
 
-    See https://gn.googlesource.com/gn/+/main/docs/reference.md#ls for
+    See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_ls for
     more documentation of the command.
 
     Args:
