@@ -9,6 +9,8 @@ import re
 
 FLAKE_DETECTION_OPTION = '--repeat=10'
 FLAKE_EXONERATION_OPTION = '--grep'
+FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
+
 class E2ETests(ExonerableTests):
 
   @property
@@ -80,8 +82,10 @@ class E2ENonHostedTests(E2ETests):
     return 'e2e_non_hosted_tests'
 
   def trigger_flake_detection(self, test_names):
+    skipped_tests = self.skipped_tests_for_flake_detection()
     self.owned_new_tests = [
-        test for test in test_names if test.startswith('test/e2e_non_hosted')
+        test for test in test_names
+        if test.startswith('test/e2e_non_hosted') and test not in skipped_tests
     ]
     if not self.owned_new_tests:
       self.skip_deflaking_result = Results()
@@ -98,6 +102,11 @@ class E2ENonHostedTests(E2ETests):
     # discrete commands for normal and limited runs.
     self.extra_args = [FLAKE_DETECTION_OPTION]
     self.trigger('flake detection')
+
+  def skipped_tests_for_flake_detection(self):
+    return self.api.tryserver.get_footer(
+        FLAKE_DETECTION_SKIPPED_TESTS_FOOTER
+    ) if self.api.tryserver.is_tryserver else []
 
   def process_flake_detection_results(self, test_names):
     if self.skip_deflaking_result:

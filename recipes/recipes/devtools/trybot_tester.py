@@ -146,6 +146,13 @@ def GenTests(api):
   yield test(
       'basic',
       subbuild_data(default_output_properties),
+      api.step_data(
+          'Detect flakes in new tests.Trigger Tests.parse description',
+          api.json.output({
+              'Skip-Flake-Detection': [
+                  'test/e2e_non_hosted/performance/skip_test.ts'
+              ]
+          })),
       api.override_step_data(
           'Detect flakes in new tests.find new tests.git diff',
           stdout=api.raw_io.output_text('\n'.join([
@@ -157,6 +164,7 @@ def GenTests(api):
               'test/e2e_non_hosted/BUILD.gn',
               'test/e2e_non_hosted/performance/BUILD.gn',
               'test/e2e_non_hosted/performance/selector-stats-tracing_test.ts',
+              'test/e2e_non_hosted/performance/skip_test.ts',
               'test/e2e_non_hosted/shared/frontend-helper.ts',
               'test/e2e_non_hosted/shared/page-wrapper.ts',
               'test/shared/helper.ts',
