@@ -16,7 +16,7 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
 from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETests, E2ETestDivider
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETestDivider
 from RECIPE_MODULES.build.devtools.interactions_tests_runner import InteractionsTests
 from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase

@@ -11,37 +11,22 @@ FLAKE_DETECTION_OPTION = '--repeat=10'
 FLAKE_EXONERATION_OPTION = '--grep'
 FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
 
-class E2ETests(ExonerableTests):
 
-  @property
-  def test_type_tag(self):
-    prefix = 'shuffled_' if self.divider.shuffled else ''
-    return prefix + 'e2e_tests'
+class E2ENonHostedTests(ExonerableTests):
+
 
   def __init__(self, api, trigger, builder_config, step_name, divider):
     super().__init__(api, trigger, builder_config, False, step_name)
     self.divider = divider
     if self.divider.shuffled:
       self.extra_args = ['--bail']
+    self.skip_deflaking_result = None
+    # TODO(liviurau): Needed only for where this cannot be passed in grep
+    # pattern. To be removed once we have a ResultDB based solution.
+    self.owned_new_tests = []
 
   def skip(self):
     return self.api.devtools.is_debug(self.builder_config)
-
-  def commands(self):
-    is_exoneration_attempt = self.extra_args and not self.divider.shuffled
-    if is_exoneration_attempt:
-      return [self.run_tests_command('test/e2e')]
-    return [
-        self.run_tests_command(*test_list)
-        for test_list in self.divider.commands('e2e')
-    ]
-
-  @property
-  def grep_filter_pattern(self):
-    """This pattern is used to remove the prefix from the test name. Used by
-    exoneration logic.
-    """
-    return r'^e2e/[^:]*: '
 
   def test_name_to_grep_string(self, name):
     name = re.sub(self.grep_filter_pattern, '', name)
@@ -50,16 +35,6 @@ class E2ETests(ExonerableTests):
   def trigger_exoneration(self, test_names):
     self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
     return super().trigger_exoneration(test_names)
-
-
-class E2ENonHostedTests(E2ETests):
-
-  def __init__(self, api, trigger, builder_config, step_name, divider):
-    super().__init__(api, trigger, builder_config, step_name, divider)
-    self.skip_deflaking_result = None
-    # TODO(liviurau): Needed only for where this cannot be passed in grep
-    # pattern. To be removed once we have a ResultDB based solution.
-    self.owned_new_tests = []
 
   def commands(self):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
@@ -116,7 +91,7 @@ class E2ENonHostedTests(E2ETests):
     self.process_results()
 
 
-class RepeatE2EShuffledTests(E2ETests):
+class RepeatE2EShuffledTests(E2ENonHostedTests):
 
   def trigger_exoneration(self, test_names):
     pass
