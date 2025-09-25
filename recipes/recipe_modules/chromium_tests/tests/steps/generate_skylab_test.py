@@ -252,9 +252,8 @@ def GenTests(api):
           _check_link_equals,
           'basic_EVE_TOT.shard: #0',
           'debug log',
-          'https://cros-test-analytics.appspot.com/p/chromeos/file/view/'
-          'chromeos-test-logs/test-runner/prod/2023-12-07/abcd/'
-          '?test=&file=autoserv_test%2Ftast%2Fdebug%2Ftast.DEBUG',
+          'https://tests.chromeos.goog/p/chromeos/logs/unified/'
+          'invocations/build-8702874632118866193?treeQuery=cros-test',
       ),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -471,9 +470,8 @@ def GenTests(api):
           'failed because of:\n\n- Test.One'),
       api.post_process(
           _check_link_equals, 'basic_EVE_TOT.shard: #0', 'debug log',
-          'https://cros-test-analytics.appspot.com/p/chromeos/file/view/'
-          'chromeos-test-logs/test-runner/prod/2023-12-07/abcd/'
-          '?test=&file=autoserv_test%2Fchromium%2Fdebug%2Fchromium.DEBUG'),
+          'https://tests.chromeos.goog/p/chromeos/logs/unified/'
+          'invocations/build-8702874632118866193?treeQuery=cros-test'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )

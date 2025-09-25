@@ -53,15 +53,6 @@ class TestRunner:
     # execution log.
     log_url = kwargs.pop('log_url', '')
     if log_url:
-      log_url = log_url.replace('/logs/browse/', '/file/view/')
-      log_url += '/?test=&file='
-      if test.is_tast_test:
-        log_url += urllib.parse.quote(
-            'autoserv_test/tast/debug/tast.DEBUG', safe='')
-      else:
-        log_url += urllib.parse.quote(
-            f'autoserv_test/{test.spec.autotest_name}/debug/'
-            f'{test.spec.autotest_name}.DEBUG',
-            safe='')
+      log_url += '?treeQuery=cros-test'
       kwargs['log_url'] = log_url
     return cls(**kwargs)

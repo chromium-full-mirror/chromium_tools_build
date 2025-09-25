@@ -398,8 +398,8 @@ class SkylabApi(recipe_api.RecipeApi):
                     f'test_runner/b{test.ctp_build_ids[suffix]}0',
                 'shard': None,
                 'log_url':
-                    'https://cros-test-analytics.appspot.com/p/chromeos/logs/'
-                    'browse/chromeos-test-logs/test-runner/prod/abcd',
+                    'https://tests.chromeos.goog/p/chromeos/logs/unified/'
+                    'invocations/build-8702874632118866193',
                 'status': 'SUCCESS'
             }
         }))
