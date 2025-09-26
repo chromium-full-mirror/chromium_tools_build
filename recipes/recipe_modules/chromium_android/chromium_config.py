@@ -27,19 +27,11 @@ def clang_builder(c):
 
 @CONFIG_CTX()
 def cronet_builder(c):
-  # From //tools/mb/mb_config.pyl's "cronet_common":
+  # DO NOT ADD GN ARGS HERE. Special snowflake gn args are a pain to maintain;
+  # see https://crbug.com/40287068. Instead, change the GN arg declaration so
+  # that the default value for the arg is derived from the `is_cronet_build`
+  # GN arg.
   c.gn_args.append('is_cronet_build=true')
-  c.gn_args.append('enable_websockets=false')
-  c.gn_args.append('include_transport_security_state_preload_list=false')
-  c.gn_args.append('use_platform_icu_alternatives=true')
-
-  # From //tools/mb/mb_config.pyl's "cronet_android":
-  c.gn_args.append('use_partition_alloc=false')
-  c.gn_args.append('use_hashed_jni_names=true')
-  c.gn_args.append('default_min_sdk_version=23')
-  c.gn_args.append('clang_use_default_sample_profile=false')
-  c.gn_args.append('enable_resource_allowlist_generation=false')
-
   c.compile_py.default_targets=[
       'cronet_package',
       'cronet_sample_test_apk',
