@@ -1582,10 +1582,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if self.m.code_coverage.using_coverage:
         self.m.code_coverage.process_coverage_data(task.test_suites)
 
-      # We explicitly do not want trybots to upload profiles to GS. We prevent
-      # this by ensuring all trybots wanting to run the PGO workflow have
-      # skip_profile_upload.
-      if self.m.pgo.using_pgo and self.m.pgo.skip_profile_upload:
+      # We explicitly do not want all trybots to upload profiles to GS. We
+      # prevent this by ensuring most trybots wanting to run the PGO workflow
+      # have skip_profile_upload. Some are allowed to upload by setting a custom
+      # GS bucket for trybots.
+      if self.m.pgo.using_pgo and not self.m.pgo.skip_profile_upload:
         self.m.pgo.process_pgo_data(task.source_dir, task.test_suites)
 
       # We explicitly do not want trybots to upload orderfiles to CIPD. We

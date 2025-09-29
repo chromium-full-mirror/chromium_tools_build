@@ -5,6 +5,8 @@
 import base64
 
 from recipe_engine import post_process
+from recipe_engine.recipe_api import RecipeApi
+from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
@@ -124,7 +126,7 @@ _TEST_TRYBOTS = ctbc.TryDatabase.create({
 })
 
 
-def RunSteps(api):
+def RunSteps(api: RecipeApi):
   assert api.tryserver.is_tryserver
   api.path.mock_add_paths(
       api.profiles.profile_dir().joinpath('overall-merged.profdata'))
@@ -139,7 +141,7 @@ def RunSteps(api):
   return raw_result
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
@@ -904,12 +906,66 @@ def GenTests(api):
                   }],
               },
           }),
+      api.post_process(post_process.DoesNotRunRE,
+                       '.*gsutil upload artifact to GS.*'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'pgo_trybot_uploads',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='pgo-try-group',
+          builder='pgo-try-builder',
+          revision='a' * 40,
+          builder_db=ctbc.BuilderDatabase.create({
+              'pgo-group': {
+                  'pgo-builder':
+                      ctbc.BuilderSpec.create(
+                          android_config='base_config',
+                          chromium_config='android',
+                          chromium_config_kwargs={
+                              'BUILD_CONFIG': 'Release',
+                              'TARGET_BITS': 32,
+                              'TARGET_PLATFORM': 'android',
+                          },
+                          gclient_config='chromium',
+                          gclient_apply_config=['android'],
+                          simulation_platform='linux',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'pgo-try-group': {
+                  'pgo-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'pgo-group', 'pgo-builder'),
+              },
+          }),
+      ),
+      api.properties(
+          swarm_hashes={
+              'performance_test_suite':
+                  '[dummy hash for performance_test_suite/size]'
+          },),
+      api.pgo(use_pgo=True),
+      api.platform('linux', 64),
+      api.chromium_tests.read_targets_spec(
+          'pgo-group', {
+              'pgo-builder': {
+                  'isolated_scripts': [{
+                      'name': 'performance_test_suite',
+                      'isolate_profile_data': True,
+                      'test': 'performance_test_suite',
+                      'swarming': {},
+                  }],
+              },
+          }),
       api.override_step_data(
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([('/performance_test_suite_with_patch/'
                              'performance_test_suite.profdata')])),
-      api.post_process(post_process.DoesNotRunRE,
+      api.post_process(post_process.MustRunRE,
                        '.*gsutil upload artifact to GS.*'),
       api.post_process(post_process.DropExpectation),
   )
