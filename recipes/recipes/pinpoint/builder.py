@@ -44,7 +44,7 @@ _PINPOINT_MAPPING = {
     'Win x64 Builder Perf': ('chromium.perf.pinpoint', 'win64-builder-perf'),
     'Win x64 Builder Perf PGO':
         ('chromium.perf.pinpoint', 'win64-builder-perf-pgo'),
-    'win-arm64-builder-perf': ('chromium.perf.fyi', 'win-arm64-builder-perf'),
+    'win-arm64-builder-perf': ('chromium.perf', 'win-arm64-builder-perf'),
 }
 
 

@@ -179,6 +179,7 @@ _AddBuildSpec('android-desktop-arm-builder-perf', 'android', target_bits=64)
 
 _AddBuildSpec('win64-builder-perf', 'win')
 _AddBuildSpec('win64-builder-perf-pgo', 'win')
+_AddBuildSpec('win-arm64-builder-perf', 'win', target_arch='arm')
 _AddBuildSpec('mac-builder-perf', 'mac')
 _AddBuildSpec('mac-builder-perf-pgo', 'mac')
 _AddBuildSpec(
@@ -254,6 +255,11 @@ _AddIsolatedTestSpec('win-10-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
+_AddIsolatedTestSpec(
+    'win-arm64-snapdragon-elite-perf',
+    'win',
+    'win-arm64-builder-perf',
+    target_arch='arm')
 
 _AddIsolatedTestSpec('mac-intel-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec(
