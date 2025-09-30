@@ -9,6 +9,7 @@ import os
 import re
 import sys
 
+from recipe_engine import config_types
 from recipe_engine import recipe_api
 
 from RECIPE_MODULES.build import chromium_swarming
@@ -1255,13 +1256,30 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                                  build_dir,
                                  llvm_raw_data,
                                  profdata_dir,
-                                 test_type=constants.test_types.OVERALL):
-    """ Generates fuzz coverage information. """
+                                 targets: set[str],
+                                 overall: bool = True):
+    """Generate fuzz coverage information.
+
+    Arguments:
+        targets: A set of fuzzers in GN output file form (relative paths from
+            the build directory). These are not GN target labels. This set of
+            fuzzers must have exactly one member when computing per-target
+            coverage with `overall=False`.
+        overall: Whether we're computing overall merged coverage.
+    """
     llvm_cov = (
         source_dir / 'third_party/llvm-build/Release+Asserts/bin/llvm-cov')
+    if not targets:
+      self.m.step.empty('no fuzz targets to generate coverage for')
+      return
+    if overall:
+      test_type = 'overall'
+    else:
+      (test_type,) = targets
     with self.m.step.nest(f'process fuzz coverage ({test_type})'):
       self.m.file.chmod('chmod llvm file', llvm_cov, '777')
       output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
+      binaries = self._resolve_binaries_for_fuzzing(build_dir, targets)
       cmd = [
           'vpython3',
           self.resource('generate_coverage_metadata.py'),
@@ -1278,11 +1296,69 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--fuzz',
           '--profdata-dir',
           profdata_dir,
+          '--binaries',
+          *sorted(binaries),
       ]
       self.m.step('generate coverage metadata', cmd)
       self._persist_coverage_artifacts(
           source_dir=output_dir, test_type=test_type)
       self._set_builder_output_properties_for_uploads()
+
+  def _resolve_binaries_for_fuzzing(
+      self,
+      build_dir: config_types.Path,
+      targets: set[str],
+  ) -> set[config_types.Path]:
+    """Get a list of relevant ELF files to extract coverage data for.
+
+    ELF is the executable format for Linux and macOS.
+
+    Some fuzzers invoke multiple binaries (notably fuzztest, where a thin
+    wrapper binary invokes a more substantial unit test binary). For each
+    fuzzer in `targets`, query `gn desc` to deduce runtime dependencies among
+    executables or shared objects.
+    """
+    # Extract coverage for the fuzzers themselves.
+    binaries = {build_dir / target for target in targets}
+    # Convert fuzzers back into GN target labels for consumption by `gn desc`
+    # (e.g., `base64_encode_fuzzer` -> `//base:base64_encode_fuzzer`). Do not
+    # get indirect references, which may not be fuzzers.
+    fuzzer_labels = self.m.gn.refs(
+        build_dir, sorted(binaries), all_deps=False, output_type='executable')
+    for fuzzer_label in fuzzer_labels:
+      # `elf_paths` contains all executables and shared objects that
+      # `fuzzer_label` transitively builds. These can include executables only
+      # used at build time (e.g., `protoc`).
+      elf_paths = self.m.gn.desc(
+          build_dir,
+          fuzzer_label,
+          'deps',
+          '--all',
+          '--as=output',
+          '--type=executable',
+          step_name='gn desc (deps --type=executable)')
+      elf_paths += self.m.gn.desc(
+          build_dir,
+          fuzzer_label,
+          'deps',
+          '--all',
+          '--as=output',
+          '--type=shared_library',
+          step_name='gn desc (deps --type=shared_library)')
+      # `runtime_paths` contains all runtime dependencies of `fuzzer_label`,
+      # including non-binary files (e.g., resource files, scripts).
+      runtime_paths = self.m.gn.desc(
+          build_dir,
+          fuzzer_label,
+          'runtime_deps',
+          step_name='gn desc (runtime_deps)')
+      # Normalize as structured absolute paths.
+      elf_paths = {build_dir / path for path in elf_paths}
+      runtime_paths = {build_dir / path for path in runtime_paths}
+      # We want only binaries or shared libraries that the target depends on
+      # at runtime. That is the set of binaries to extract coverage from.
+      binaries |= elf_paths & runtime_paths
+    return binaries
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
     build = self.m.buildbucket.build

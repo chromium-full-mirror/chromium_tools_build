@@ -184,12 +184,24 @@ def RunSteps(api, properties):
         all_fuzzers = all_fuzzers & ios_fuzzers
       no_clusterfuzz = gn_refs(api, build_dir, 'calculate no_clusterfuzz',
                                '//testing/libfuzzer:no_clusterfuzz')
-      # If we're collecting coverage, we also want to know the coverage
-      # of the main Chromium binary, so let's build that too.
+      # If we're collecting coverage, build the main `chrome` binary to ensure
+      # that all files that make up the binary show up in the coverage report.
+      # Otherwise, the report includes only files that get built for at least
+      # one fuzzer, which misses a big proportion of Chromium code, and we get a
+      # false picture of how well the codebase is covered.
       if properties.collect_fuzz_coverage:
-        all_fuzzers.add("chrome")
-        if properties.fuzz_engine == 'centipede':
-          all_fuzzers.add("centipede")
+        # `gn ls ... chrome --as=output` will output `phony/chrome/chrome` [0],
+        # which can be passed to `compile()` but doesn't represent a path to
+        # the real `chrome(.exe)` executable. On Linux and Windows, we need to
+        # give `gn ls` the `//chrome:chrome_initial` label that actually
+        # outputs the executable.
+        #
+        # macOS uses app bundles to package chrome, so it isn't supported yet.
+        #
+        # [0]: https://gn.googlesource.com/gn/+/master/docs/reference.md#phony-rules
+        assert api.platform.is_win or api.platform.is_linux, (
+            f"{api.platform.name} doesn't support fuzz coverage yet")
+        all_fuzzers.add('//chrome:chrome_initial')
       targets = sorted(all_fuzzers - no_clusterfuzz)
 
       api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
@@ -328,7 +340,7 @@ def RunSteps(api, properties):
 
         api.code_coverage.get_chromium_fuzz_coverage(
             api.chromium_checkout.source_dir, build_dir, profdata_path,
-            profdata_dir)
+            profdata_dir, targets)
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
         raise
@@ -386,11 +398,13 @@ def GenTests(api):
         fuzz_engine=engine,
     )
     if engine != 'fuzzilli':
+      targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n')
+      test += api.step_data('calculate all_fuzzers', stdout=targets)
       test += api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('target1\ntarget2\ntarget3\n')
-      ) + api.step_data(
           'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
+      if is_coverage:
+        test += api.step_data('list gn targets', stdout=targets)
+
     if not (is_try or is_coverage):
       test += api.post_process(post_process.MustRun,
                                'generate runtime dependencies to copy')
