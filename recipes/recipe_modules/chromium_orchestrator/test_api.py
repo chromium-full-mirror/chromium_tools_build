@@ -98,6 +98,8 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                 ).format(t),
             'tast_expr_file':
                 'out/Release/bin/{}.filter'.format(t),
+            'build_output_dir':
+                'out/Release',
         } for t in tests
     }
 

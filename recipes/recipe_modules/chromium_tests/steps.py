@@ -1212,6 +1212,16 @@ class AbstractSkylabTest(AbstractTest):
 
   @property
   @abc.abstractmethod
+  def build_output_dir(self) -> str:
+    raise NotImplementedError()  # pragma: no cover
+
+  @build_output_dir.setter
+  @abc.abstractmethod
+  def build_output_dir(self, value: str) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
   def tast_expr_file(self) -> str:
     raise NotImplementedError()  # pragma: no cover
 
@@ -3320,6 +3330,7 @@ class SkylabTest(AbstractSkylabTest, Test):
     # These fields represent the variables generated at the runtime.
     self._lacros_gcs_path = ''
     self._exe_rel_path = ''
+    self._build_output_dir = ''
     # The relative path of the filter file for tast tests. The
     # filter stores tast expression in a dict. Users need to provide the
     # tast_expr_key to extract them.
@@ -3380,6 +3391,14 @@ class SkylabTest(AbstractSkylabTest, Test):
   @lacros_gcs_path.setter
   def lacros_gcs_path(self, value: str) -> None:
     self._lacros_gcs_path = value
+
+  @property
+  def build_output_dir(self) -> str:
+    return self._build_output_dir
+
+  @build_output_dir.setter
+  def build_output_dir(self, value: str) -> None:
+    self._build_output_dir = value
 
   @property
   def tast_expr_file(self) -> str:

@@ -324,11 +324,7 @@ class SkylabApi(recipe_api.RecipeApi):
           assert False, 'Not supported yet'
 
         cmd.extend(['--ash-chrome-gcs-path', lacros_gcs_path])
-        if test.exe_rel_path:
-          cmd.extend([
-              '--ash-chrome-build-output-dir',
-              os.path.dirname(test.exe_rel_path)
-          ])
+        cmd.extend(['--ash-chrome-build-output-dir', test.build_output_dir])
 
       if test.spec.strip_chrome:
         cmd.append('--strip')

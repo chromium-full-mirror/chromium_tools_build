@@ -1950,6 +1950,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       t.exe_rel_path = target_properties.get("exe_rel_path", '')
       t.lacros_gcs_path = target_properties.get("lacros_gcs_path", '')
       t.tast_expr_file = target_properties.get("tast_expr_file", '')
+      t.build_output_dir = target_properties.get('build_output_dir', '')
 
   def _get_skylab_trigger_properties(self, skylab_tests):
     properties = {}
@@ -1958,6 +1959,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           "exe_rel_path": t.exe_rel_path,
           "lacros_gcs_path": t.lacros_gcs_path,
           "tast_expr_file": t.tast_expr_file,
+          "build_output_dir": t.build_output_dir,
       }
     return properties
 
@@ -2954,9 +2956,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       for target, tests_for_target in tests_by_target.items():
         for t in tests_for_target:
           exe = 'bin/run_%s' % t.target_name
-          if t.is_tast_test or t.is_GPU_test:
+          if t.is_GPU_test:  # pragma: nocover
             exe = './chrome'
           t.exe_rel_path = runtime_dict_by_target.get(target).get(exe)
+          t.build_output_dir = self.m.path.relpath(build_dir, source_dir)
           t.lacros_gcs_path = runtime_deps_gcs_path
           t.tast_expr_file = runtime_dict_by_target.get(target).get(
               'bin/%s.filter' % t.target_name)

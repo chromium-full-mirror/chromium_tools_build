@@ -106,10 +106,8 @@ def gen_skylab_test(name, **kwargs):
   t = SkylabTestSpec.create(name, **k).get_test(SkylabTest)
   t.lacros_gcs_path = LACROS_GCS_PATH
 
-  if t.is_tast_test:
-    t.exe_rel_path = 'out/Release/chrome'
-  else:
-    t.exe_rel_path = 'out/Release/bin/run_foo_unittest'
+  t.exe_rel_path = 'out/Release/bin/run_foo_unittest'
+  t.build_output_dir = 'out/Release'
   if tast_expr_file:
     t.tast_expr_file = tast_expr_file
   if telemetry_shard_index is not None:
