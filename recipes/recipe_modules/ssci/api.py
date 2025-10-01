@@ -358,6 +358,7 @@ class SsciAPI(recipe_api.RecipeApi):
       platform=None,
       to_rename=None,
       archive_names=None,
+      skip_targets=False,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -436,7 +437,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
       futures = []
       targets_from_depbot = depbot_execution_summary.get("targets")
-      if targets_from_depbot is not None:
+      if not skip_targets and targets_from_depbot is not None:
         # Be sure to batch targets to prevent overloading the
         # builder.
         for batch in self._batch_targets(targets_from_depbot):
@@ -588,6 +589,7 @@ class SsciAPI(recipe_api.RecipeApi):
           chrome_version=chrome_version,
           targets=gn_targets,
           archive_names=artifacts.keys(),
+          skip_targets=True,  # only create SBOMs for the archive artifacts
           platform=platform)
 
       sboms = {}
