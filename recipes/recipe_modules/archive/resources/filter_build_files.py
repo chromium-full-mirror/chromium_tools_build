@@ -129,9 +129,13 @@ EXCLUDED_FILES = {
 
 # Pattern for excluded files on specific platforms.
 EXCLUDED_FILES_PATTERN = {
-  'win': re.compile(r'^.+\.(o|a|d|obj|lib|pch|exp|ninja|stamp)$'),
-  'mac': re.compile(r'^.+\.(a|ninja|stamp)$'),
-  'linux': re.compile(r'^.+\.(o|a|d|ninja|stamp)$'),
+    'win':
+        re.compile(r'^(.+\.(o|a|d|obj|lib|pch|exp|ninja|stamp)|\.?siso[\._].*)$'
+                  ),
+    'mac':
+        re.compile(r'^(.+\.(a|ninja|stamp)|\.?siso[\._].*)$'),
+    'linux':
+        re.compile(r'^(.+\.(o|a|d|ninja|stamp)|\.?siso[\._].*)$'),
 }
 
 # Pattern for excluded files in a subdirectory.
