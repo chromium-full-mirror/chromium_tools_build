@@ -17,7 +17,7 @@ from typing import Any
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
-from . import types as chromium
+import RECIPE_MODULES.build.chromium_types as chromium
 from .config import validate_config
 
 from RECIPE_MODULES.build.chromium_tests import steps

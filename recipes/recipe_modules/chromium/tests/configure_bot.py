@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 
 DEPS = [
@@ -17,7 +17,7 @@ _BUILDERS_DICT = {
     'test_group': {
         'builders': {
             'test_buildername':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config='chromium_clang',
                     chromium_apply_config=['mb'],
                     gclient_apply_config=['android'],
@@ -27,9 +27,11 @@ _BUILDERS_DICT = {
     'tryserver_test': {
         'builders': {
             'mac_trybot':
-                chromium.BuilderSpec.create(chromium_config='chromium_clang',),
+                chromium_types.BuilderSpec.create(
+                    chromium_config='chromium_clang',),
             'win_trybot':
-                chromium.BuilderSpec.create(chromium_config='chromium_clang',),
+                chromium_types.BuilderSpec.create(
+                    chromium_config='chromium_clang',),
         },
     },
 }

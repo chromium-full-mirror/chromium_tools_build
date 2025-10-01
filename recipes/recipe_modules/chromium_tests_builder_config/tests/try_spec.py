@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_tests_builder_config import (try_spec as
                                                                 try_spec_module)
 
@@ -22,7 +22,7 @@ def RunSteps(api):
   mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder')
   api.assertions.assertEqual(
       mirror.builder_id,
-      chromium.BuilderId.create_for_group('fake-group', 'fake-builder'))
+      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
   api.assertions.assertIsNone(mirror.tester_id)
 
   # Creation of a TryMirror with tester
@@ -30,27 +30,28 @@ def RunSteps(api):
                                             'fake-tester', 'fake-tester-group')
   api.assertions.assertEqual(
       mirror.builder_id,
-      chromium.BuilderId.create_for_group('fake-group', 'fake-builder'))
+      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
   api.assertions.assertEqual(
       mirror.tester_id,
-      chromium.BuilderId.create_for_group('fake-tester-group', 'fake-tester'))
+      chromium_types.BuilderId.create_for_group('fake-tester-group',
+                                                'fake-tester'))
 
   # Creation of a TryMirror with tester without tester group
   mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder',
                                             'fake-tester')
   api.assertions.assertEqual(
       mirror.builder_id,
-      chromium.BuilderId.create_for_group('fake-group', 'fake-builder'))
+      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
   api.assertions.assertEqual(
       mirror.tester_id,
-      chromium.BuilderId.create_for_group('fake-group', 'fake-tester'))
+      chromium_types.BuilderId.create_for_group('fake-group', 'fake-tester'))
 
   # Creation of a TryMirror with builder for tester
   mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder',
                                             'fake-builder')
   api.assertions.assertEqual(
       mirror.builder_id,
-      chromium.BuilderId.create_for_group('fake-group', 'fake-builder'))
+      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
   api.assertions.assertIsNone(mirror.tester_id)
 
   # TryMirror normalization ****************************************************
@@ -61,7 +62,8 @@ def RunSteps(api):
   api.assertions.assertIs(mirror2, mirror)
 
   # Normalization of a BuilderId
-  builder_id = chromium.BuilderId.create_for_group('fake-group', 'fake-builder')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'fake-group', 'fake-builder')
   mirror = try_spec_module.TryMirror.normalize(builder_id)
   api.assertions.assertEqual(
       mirror, try_spec_module.TryMirror.create('fake-group', 'fake-builder'))
@@ -71,21 +73,23 @@ def RunSteps(api):
       'fake-try-group-1': {
           'fake-try-builder-1':
               try_spec_module.TrySpec.create(mirrors=[
-                  chromium.BuilderId.create_for_group('group-1', 'builder-1'),
+                  chromium_types.BuilderId.create_for_group(
+                      'group-1', 'builder-1'),
               ]),
       },
       'fake-try-group-2': {
           'fake-try-builder-2':
               try_spec_module.TrySpec.create(mirrors=[
-                  chromium.BuilderId.create_for_group('group-2', 'builder-2'),
+                  chromium_types.BuilderId.create_for_group(
+                      'group-2', 'builder-2'),
               ]),
       },
   })
 
-  try_key_1 = chromium.BuilderId.create_for_group('fake-try-group-1',
-                                                  'fake-try-builder-1')
-  try_key_2 = chromium.BuilderId.create_for_group('fake-try-group-2',
-                                                  'fake-try-builder-2')
+  try_key_1 = chromium_types.BuilderId.create_for_group('fake-try-group-1',
+                                                        'fake-try-builder-1')
+  try_key_2 = chromium_types.BuilderId.create_for_group('fake-try-group-2',
+                                                        'fake-try-builder-2')
 
   api.assertions.assertEqual(set(db.keys()), {try_key_1, try_key_2})
   api.assertions.assertEqual(

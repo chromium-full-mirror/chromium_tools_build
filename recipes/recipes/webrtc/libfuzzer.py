@@ -6,7 +6,7 @@ import functools
 
 from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec)
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -88,7 +88,7 @@ def GenTests(api):
         'calculate targets',
         stdout=api.raw_io.output_text('target1 target2 target3')))
 
-  builder_id = chromium.BuilderId.create_for_group(
+  builder_id = chromium_types.BuilderId.create_for_group(
       'client.webrtc', 'Linux64 Release (Libfuzzer)')
   yield generate_builder(
       builder_id, suffix='_compile_failure', fail_compile=True)

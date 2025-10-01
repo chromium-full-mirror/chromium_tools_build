@@ -5,7 +5,7 @@
 from recipe_engine import post_process
 import textwrap
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium, chromium_types
 
 DEPS = [
     'chromium',
@@ -40,7 +40,7 @@ def RunSteps(api):
   api.chromium.mb_gen(
       source_dir,
       build_dir,
-      chromium.BuilderId.create_for_group('test-group', 'test builder'),
+      chromium_types.BuilderId.create_for_group('test-group', 'test builder'),
       phase='test_phase',
       isolated_targets=['base_unittests_run'],
       android_version_code=3,

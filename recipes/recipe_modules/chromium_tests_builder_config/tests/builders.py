@@ -10,7 +10,7 @@ that builder without error.
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -46,7 +46,7 @@ def validate_tester_config(api, builder_group, buildername, builder_config):
   parent_buildername = builder_config.parent_buildername
 
   parent_builder_group = builder_config.parent_builder_group or builder_group
-  parent_builder_id = chromium.BuilderId.create_for_group(
+  parent_builder_id = chromium_types.BuilderId.create_for_group(
       parent_builder_group, parent_buildername)
   parent_builder_spec = builder_config.builder_db[parent_builder_id]
 

@@ -5,7 +5,7 @@
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium.builder_cache_prewarmer import InputProperties
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process
 
@@ -35,7 +35,7 @@ def RunSteps(api, properties):
     cache_dir = api.path.cache_dir / 'builder'
     api.file.rmglob('delete warmed.txt', cache_dir, warmed_file_name)
 
-    builder_id = chromium.BuilderId.create_for_group(
+    builder_id = chromium_types.BuilderId.create_for_group(
         properties.builder_to_warm.builder_group,
         properties.builder_to_warm.builder_name)
 

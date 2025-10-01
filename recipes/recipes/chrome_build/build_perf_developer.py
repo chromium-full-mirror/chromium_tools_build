@@ -10,10 +10,9 @@ from datetime import datetime, timedelta
 from recipe_engine.config_types import Path
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
-from PB.go.chromium.org.luci.buildbucket.proto import builder_common as builder_common_pb
 from PB.go.chromium.org.luci.buildbucket.proto import builds_service as builds_service_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process
 
@@ -306,7 +305,7 @@ def RunSteps(api):
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   # Checkout and gclient hooks.
-  builder_id = chromium.BuilderId.create_for_group(
+  builder_id = chromium_types.BuilderId.create_for_group(
       api.builder_group.for_current, api.buildbucket.builder_name)
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)

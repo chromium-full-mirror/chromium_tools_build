@@ -5,7 +5,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -17,8 +17,8 @@ DEPS = [
 
 
 def RunSteps(api):
-  builder_id = chromium.BuilderId.create_for_group('unused-group',
-                                                   'unused-builder')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'unused-group', 'unused-builder')
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id)
@@ -46,9 +46,12 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  builder_id = chromium.BuilderId.create_for_group('fake-group', 'fake-builder')
-  tester_id = chromium.BuilderId.create_for_group('fake-group', 'fake-tester')
-  tester2_id = chromium.BuilderId.create_for_group('fake-group', 'fake-tester2')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'fake-group', 'fake-builder')
+  tester_id = chromium_types.BuilderId.create_for_group('fake-group',
+                                                        'fake-tester')
+  tester2_id = chromium_types.BuilderId.create_for_group(
+      'fake-group', 'fake-tester2')
 
   yield api.test(
       'builder',
@@ -73,8 +76,8 @@ def GenTests(api):
           },
           expected_attrs={
               'mirroring_try_builders':
-                  (chromium.BuilderId.create_for_group('fake-try-group',
-                                                       'fake-try-builder'),),
+                  (chromium_types.BuilderId.create_for_group(
+                      'fake-try-group', 'fake-try-builder'),),
               'targets_spec_directory': 'fake-targets-spec-directory',
           },
       ),

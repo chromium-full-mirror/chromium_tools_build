@@ -5,11 +5,10 @@
 import attr
 import re
 from PB.recipes.build.gofindit.chromium.test_single_revision import InputProperties
-from recipe_engine import post_process
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
                                         LogContains)
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests import steps
 
@@ -48,7 +47,7 @@ def RunSteps(api, properties):
     }
 
     target_builder = properties.target_builder
-    target_builder_id = chromium.BuilderId.create_for_group(
+    target_builder_id = chromium_types.BuilderId.create_for_group(
         target_builder.group, target_builder.builder)
 
     # If target_builder_id is a tester, this will return the config

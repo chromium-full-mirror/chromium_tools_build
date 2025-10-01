@@ -1,6 +1,8 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+from recipe_engine import recipe_api
 
 from RECIPE_MODULES.build.attr_utils import (FieldMapping, attrib, attrs,
                                              mapping, sequence)
@@ -67,3 +69,14 @@ class BuilderSpec(FieldMapping):
   @classmethod
   def create(cls, **kwargs):
     return cls(**kwargs)
+
+
+class API(recipe_api.RecipeApi):
+
+  def __init__(self, *args, **kwargs):
+    raise Exception(
+        'API has no methods, '
+        'instead import RECIPE_MODULE.build.chromium_types')  # pragma: no cover
+
+
+__all__ = ['API', 'BuilderId', 'BuilderSpec']

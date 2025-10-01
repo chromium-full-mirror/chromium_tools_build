@@ -18,19 +18,19 @@ the following types with the specified additional keyword arguments:
 * BuilderConfig
 * BuilderDatabase
   * builder_id_by_bb_builder_id - A mapping from BuildbucketBuilderID to
-    chromium.BuilderId. This allows for converting the proto message
+    chromium_types.BuilderId. This allows for converting the proto message
     BuilderID to the in-memory BuilderId, which uses the builder group
     instead of the project and bucket.
 * BuilderSpec
   * builder_id_by_bb_builder_id - A mapping from BuildbucketBuilderID to
-    chromium.BuilderId. This allows for converting the proto message
+    chromium_types.BuilderId. This allows for converting the proto message
     BuilderID to the in-memory BuilderId, which uses the builder group
     instead of the project and bucket.
 """
 
 import collections
 
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 from RECIPE_MODULES.build import proto_validation
 
 from PB.go.chromium.org.luci.buildbucket.proto \
@@ -39,8 +39,10 @@ from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
                                                                    properties_pb
                                                                   )
 
-from . import (BuildbucketBuilderId, BuilderConfig, BuilderDatabase,
-               BuilderSpec, COMPILE_AND_TEST, TEST, NEVER, ALWAYS)
+from .builder_config import BuildbucketBuilderId, BuilderConfig
+from .builder_db import BuilderDatabase
+from .builder_spec import BuilderSpec, COMPILE_AND_TEST, TEST
+from .try_spec import ALWAYS, NEVER
 
 VALIDATORS = proto_validation.Registry()
 

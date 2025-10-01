@@ -9,7 +9,7 @@ using the rr tool, and upload the recorded traces to GCS.
 
 import itertools
 from recipe_engine.post_process import DropExpectation, MustRun
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build.chromium_types import BuilderId
 from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -67,8 +67,8 @@ def RunSteps(api, properties):
       allow_tester=True)
 
   if builder_config.execution_mode == ctbc.TEST:
-    builder_id = chromium.BuilderId.create_for_group(
-        builder_config.parent_builder_group, builder_config.parent_buildername)
+    builder_id = BuilderId.create_for_group(builder_config.parent_builder_group,
+                                            builder_config.parent_buildername)
 
   source_dir, targets_config = _bot_update(api, builder_config)
   build_dir = api.chromium.default_build_dir(source_dir)

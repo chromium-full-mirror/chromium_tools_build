@@ -6,7 +6,7 @@ import re
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -41,7 +41,7 @@ def RunSteps(api):
           api.properties.get('affected_files', ['file1', 'file2']),
           api.properties.get('test_targets', ['test1', 'test2']),
           api.properties.get('compile_targets', ['compile1', 'compile2']),
-          builder_id=chromium.BuilderId.create_for_group(
+          builder_id=chromium_types.BuilderId.create_for_group(
               'test_group', 'test_buildername'),
           **kwargs,
       ))

@@ -8,7 +8,7 @@ from recipe_engine import post_process
 from recipe_engine.config_types import Path
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -40,8 +40,8 @@ def _raise_raw_result_on_failure(api, raw_result):
 
 def _get_builder_id(api):
   buildername = api.buildbucket.builder_name
-  return chromium.BuilderId.create_for_group(api.builder_group.for_current,
-                                             buildername)
+  return chromium_types.BuilderId.create_for_group(
+      api.builder_group.for_current, buildername)
 
 
 def _run_builds(api,

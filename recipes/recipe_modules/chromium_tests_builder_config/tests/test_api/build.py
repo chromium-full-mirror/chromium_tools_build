@@ -5,7 +5,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_tests_builder_config import (
     builders, trybots, BuilderDatabase, BuilderSpec, TryDatabase, TrySpec)
 
@@ -55,7 +55,7 @@ def GenTests(api):
           builder='fake-builder',
           builder_db=BUILDER_DB),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-builder'),
           expected_builder_db=BUILDER_DB,
           expected_try_db=TryDatabase.create({}),
@@ -73,7 +73,7 @@ def GenTests(api):
           try_db=TRY_DB,
           use_try_db=True),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-builder'),
           expected_builder_db=BUILDER_DB,
           expected_try_db=TRY_DB,
@@ -89,7 +89,7 @@ def GenTests(api):
           builder='fake-builder',
           builder_db=BUILDER_DB),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-builder'),
           expected_builder_db=BUILDER_DB,
           expected_try_db=TryDatabase.create({}),
@@ -106,7 +106,7 @@ def GenTests(api):
           builder_db=BUILDER_DB,
           try_db=TRY_DB),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-try-group', 'fake-try-builder'),
           expected_builder_db=BUILDER_DB,
           expected_try_db=TRY_DB,
@@ -120,7 +120,7 @@ def GenTests(api):
       api.chromium_tests_builder_config.generic_build(
           builder_group='migration.testing', builder='foo'),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'migration.testing', 'foo'),
           expected_builder_db=builders.BUILDERS,
           expected_try_db=trybots.TRYBOTS,

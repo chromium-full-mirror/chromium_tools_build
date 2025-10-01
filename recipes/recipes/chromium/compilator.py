@@ -8,7 +8,7 @@ from recipe_engine.config_types import Path
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium.compilator import InputProperties
 from PB.recipe_engine import result as result_pb2
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.chromium_tests.api import (
@@ -67,7 +67,7 @@ def compilator_steps(api, properties):
       raise api.step.InfraFailure(
           'this builder is intended to be triggered by its corresponding'
           ' orchestrator builder, it is an error to trigger it directly')
-    orch_builder_id = chromium.BuilderId.create_for_group(
+    orch_builder_id = chromium_types.BuilderId.create_for_group(
         builder_group, orchestrator)
 
     _, orch_builder_config = (

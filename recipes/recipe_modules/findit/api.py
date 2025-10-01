@@ -6,8 +6,7 @@ import attr
 
 from recipe_engine import recipe_api
 
-from RECIPE_MODULES.build import chromium
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build import chromium_types
 
 
 class FinditApi(recipe_api.RecipeApi):
@@ -42,7 +41,7 @@ class FinditApi(recipe_api.RecipeApi):
     # If the builder is a tester, the builder configuration should be the one
     # for its parent, with the builder itself be the only builder in scope for
     # testing.
-    builder_id = chromium.BuilderId.create_for_group(
+    builder_id = chromium_types.BuilderId.create_for_group(
         target_builder_spec.parent_builder_group or target_builder_id.group,
         target_builder_spec.parent_buildername)
     return attr.evolve(

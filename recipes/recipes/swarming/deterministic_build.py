@@ -10,9 +10,8 @@ Waterfall page: https://build.chromium.org/p/chromium.swarm/waterfall
 
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
-from recipe_engine.recipe_api import Property
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'builder_group',
@@ -282,7 +281,7 @@ def RunSteps(api):
   remote_phase = 'reclient'
 
   # Do a first build and move the build artifact to the temp directory.
-  builder_id = chromium.BuilderId.create_for_group(
+  builder_id = chromium_types.BuilderId.create_for_group(
       api.builder_group.for_current, buildername)
   api.chromium.mb_gen(
       source_dir,

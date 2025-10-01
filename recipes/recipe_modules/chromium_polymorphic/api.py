@@ -27,7 +27,7 @@ from google.protobuf import json_format
 
 from recipe_engine import recipe_api
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 from PB.go.chromium.org.luci.buildbucket.proto \
@@ -54,7 +54,7 @@ class ChromiumPolymorphicApi(recipe_api.RecipeApi):
       self._target_builder_group = properties.target_builder_group
     if properties.HasField('tester_filter'):
       self._testers = [
-          chromium.BuilderId.create_for_group(t.group, t.builder)
+          chromium_types.BuilderId.create_for_group(t.group, t.builder)
           for t in properties.tester_filter.testers
       ]
 
@@ -127,7 +127,7 @@ class ChromiumPolymorphicApi(recipe_api.RecipeApi):
   def lookup_builder_config(
       self,
       allow_tester=False,
-  ) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
+  ) -> tuple[chromium_types.BuilderId, ctbc.BuilderConfig]:
     """Look up the target builder's config.
 
     This is called by a polymorphic builder to get the builder config
@@ -157,7 +157,7 @@ class ChromiumPolymorphicApi(recipe_api.RecipeApi):
         builder is a tester.
     """
     target_builder_bb_id = self.target_builder_id
-    target_builder_id = chromium.BuilderId.create_for_group(
+    target_builder_id = chromium_types.BuilderId.create_for_group(
         self._target_builder_group, target_builder_bb_id.builder)
     _, builder_config = (
         self.m.chromium_tests_builder_config.lookup_builder(target_builder_id))

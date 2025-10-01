@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -31,8 +31,10 @@ def RunSteps(api):
                                api.properties['targets_spec_directory'])
 
 def GenTests(api):
-  builder_id = chromium.BuilderId.create_for_group('fake-group', 'fake-builder')
-  tester_id = chromium.BuilderId.create_for_group('fake-group', 'fake-tester')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'fake-group', 'fake-builder')
+  tester_id = chromium_types.BuilderId.create_for_group('fake-group',
+                                                        'fake-tester')
 
   yield api.test(
       'src-side-builder',
@@ -73,7 +75,7 @@ def GenTests(api):
   yield api.test(
       'bad-src-side-builder',
       api.properties(
-          target_builder_id=chromium.BuilderId.create_for_group(
+          target_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'other-fake-builder')),
       api.chromium_tests_builder_config.properties(
           api.chromium_tests_builder_config.properties_assembler_for_ci_builder(

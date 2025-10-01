@@ -14,7 +14,7 @@ from recipe_engine import recipe_api
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build import proto_validation
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
@@ -132,7 +132,7 @@ class _OutputFactory(abc.ABC):
   @abc.abstractmethod
   def edit_builder(
       self,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     """Set arguments for a builder.
 
@@ -229,7 +229,7 @@ class _TextFactory(_OutputFactory):
   @contextlib.contextmanager
   def edit_builder(
       self,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _TextArgumentsFactory(_TextArgumentsFactory.INDENT)
     yield args_factory
@@ -336,7 +336,7 @@ class _JsonFactory(_OutputFactory):
   @contextlib.contextmanager
   def edit_builder(
       self,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     builder_factory = _JsonBuilderFactory()
     yield builder_factory
@@ -372,7 +372,7 @@ class BlockerCategory(abc.ABC):
   @abc.abstractmethod
   def get_blocker(
       self,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_spec: ctbc.BuilderSpec,
   ) -> str | None:
     raise NotImplementedError()  # pragma: no cover
@@ -477,7 +477,7 @@ _SETTINGS_ATTRS = tuple(
 
 
 def _migrate_try_spec(
-    builder_id: chromium.BuilderId,
+    builder_id: chromium_types.BuilderId,
     try_spec: ctbc.TrySpec,
     builder_factory: _OutputArgumentsFactory,
 ) -> None:
@@ -608,8 +608,8 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
 
     to_migrate = set()
     for b in migration_operation.builders_to_migrate:
-      builder_id = chromium.BuilderId.create_for_group(b.builder_group,
-                                                       b.builder)
+      builder_id = chromium_types.BuilderId.create_for_group(
+          b.builder_group, b.builder)
       grouping = groupings_by_builder_id.get(builder_id)
       if grouping is None:
         return _failure("unknown builder '{}'".format(builder_id))
@@ -643,8 +643,8 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
       try_db: ctbc.TryDatabase,
       blocker_categories: Iterable[BlockerCategory],
       *,
-      builder_filter: Callable[[chromium.BuilderId], bool] = None,
-  ) -> Mapping[chromium.BuilderId, _Grouping]:
+      builder_filter: Callable[[chromium_types.BuilderId], bool] = None,
+  ) -> Mapping[chromium_types.BuilderId, _Grouping]:
     builder_filter = builder_filter or (lambda _: True)
 
     groupings_by_builder_id = collections.defaultdict(_Grouping)

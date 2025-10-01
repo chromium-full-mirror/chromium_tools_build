@@ -6,7 +6,7 @@ from . import steps
 
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
                                              mapping, sequence)
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 
@@ -28,7 +28,7 @@ class TargetsConfig:
   """
 
   builder_config = attrib(ctbc.BuilderConfig)
-  _targets_by_builder_id = attrib(mapping[chromium.BuilderId, Targets])
+  _targets_by_builder_id = attrib(mapping[chromium_types.BuilderId, Targets])
   _skip_tests = attrib(sequence[str])
 
   @classmethod

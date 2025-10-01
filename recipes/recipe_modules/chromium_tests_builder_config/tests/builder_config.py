@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 from RECIPE_MODULES.build.chromium_tests_builder_config import (
     builder_config as builder_config_module, builder_db, builder_spec, try_spec)
 from RECIPE_MODULES.build.chromium_tests_builder_config.builder_config import (

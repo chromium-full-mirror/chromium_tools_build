@@ -20,7 +20,7 @@ from recipe_engine.engine_types import StepPresentation
 
 from RECIPE_MODULES.build import proto_validation
 from RECIPE_MODULES.build.attr_utils import attrib, attrs
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb

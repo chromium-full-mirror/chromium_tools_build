@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from . import types
-
 from PB.recipe_modules.build.chromium import properties
 
 DEPS = [
@@ -42,8 +40,10 @@ DEPS = [
 PROPERTIES = properties.InputProperties
 
 # Forward symbols for other modules to import
-BuilderId = types.BuilderId
-BuilderSpec = types.BuilderSpec
 from .config import config_ctx as CONFIG_CTX
+
+# TODO(b/446916327) - Stop importing these after downstream repos directly
+# import from chromium_types instead.
+from RECIPE_MODULES.build.chromium_types import BuilderId, BuilderSpec
 
 __all__ = ['CONFIG_CTX', 'BuilderId', 'BuilderSpec']

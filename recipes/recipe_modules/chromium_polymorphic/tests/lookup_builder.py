@@ -5,7 +5,7 @@
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 from PB.recipe_modules.build.chromium_polymorphic.properties \
@@ -65,13 +65,13 @@ def GenTests(api):
               builder='fake-tester-bar',
           ).assemble()),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-builder'),
           expected_tester_ids=[
-              chromium.BuilderId.create_for_group('fake-group',
-                                                  'fake-tester-foo'),
-              chromium.BuilderId.create_for_group('fake-group',
-                                                  'fake-tester-bar')
+              chromium_types.BuilderId.create_for_group('fake-group',
+                                                        'fake-tester-foo'),
+              chromium_types.BuilderId.create_for_group('fake-group',
+                                                        'fake-tester-bar')
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -114,7 +114,7 @@ def GenTests(api):
           ).assemble()),
       api.properties(
           allow_tester=True,
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-tester'),
       ),
       api.post_process(post_process.DropExpectation),
@@ -144,11 +144,11 @@ def GenTests(api):
               builder='fake-tester-bar',
           ).assemble()),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-builder'),
           expected_tester_ids=[
-              chromium.BuilderId.create_for_group('fake-group',
-                                                  'fake-tester-foo')
+              chromium_types.BuilderId.create_for_group('fake-group',
+                                                        'fake-tester-foo')
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -172,7 +172,7 @@ def GenTests(api):
               },
           })),
       api.properties(
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-builder')),
       api.post_process(post_process.DropExpectation),
   )
@@ -204,7 +204,7 @@ def GenTests(api):
           })),
       api.properties(
           allow_tester=True,
-          expected_builder_id=chromium.BuilderId.create_for_group(
+          expected_builder_id=chromium_types.BuilderId.create_for_group(
               'fake-group', 'fake-tester'),
       ),
       api.post_process(post_process.DropExpectation),

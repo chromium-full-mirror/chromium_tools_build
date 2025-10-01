@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
 
 DEPS = [
     'builder_group',
@@ -23,7 +22,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  builder_id = chromium.BuilderId.create_for_group(
+  builder_id = chromium_types.BuilderId.create_for_group(
       api.builder_group.for_current, api.buildbucket.builder_name)
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)

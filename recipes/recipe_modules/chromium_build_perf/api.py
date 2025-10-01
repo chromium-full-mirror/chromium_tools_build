@@ -4,11 +4,8 @@
 """APIs for taking Chrome build performance metrics."""
 
 import copy
-import glob
-import os
-import tempfile
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
@@ -107,7 +104,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       self.m.file.move('preserve %s' % siso_deps_path, siso_deps_path,
                        tmp_siso_deps_path)
     self.m.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
-    builder_id = chromium.BuilderId.create_for_group(
+    builder_id = chromium_types.BuilderId.create_for_group(
         self.m.builder_group.for_current, self.m.buildbucket.builder_name)
     self.m.chromium.mb_gen(
         source_dir, build_dir, builder_id, recursive_lookup=True, phase=phase)

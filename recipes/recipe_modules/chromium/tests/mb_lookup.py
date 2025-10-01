@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -23,7 +23,7 @@ def RunSteps(api):
 
   gn_args = api.chromium.mb_lookup(
       source_dir,
-      chromium.BuilderId.create_for_group('test-group', 'test-builder'),
+      chromium_types.BuilderId.create_for_group('test-group', 'test-builder'),
       recursive=api.properties.get('recursive', False),
   )
   expected_gn_args = api.properties.get('expected_gn_args')

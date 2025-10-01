@@ -13,7 +13,7 @@ from recipe_engine.config_types import Path
 from recipe_engine.engine_types import thaw
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb

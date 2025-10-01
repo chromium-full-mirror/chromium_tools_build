@@ -3,10 +3,9 @@
 # found in the LICENSE file.
 
 from PB.recipes.build.gofindit.chromium.single_revision import InputProperties
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        StepCommandContains)
+from recipe_engine.post_process import (DropExpectation, MustRun)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 
@@ -67,7 +66,7 @@ def RunSteps(api, properties):
 
 
 def _configure_builder(api, target_builder, should_clobber):
-  target_builder_id = chromium.BuilderId.create_for_group(
+  target_builder_id = chromium_types.BuilderId.create_for_group(
       target_builder.group, target_builder.builder)
   # TODO: replace this with the polymorphic API when it is ready (go/test-reviver-builders-dd)
   builder_config = api.findit.get_builder_config(target_builder_id)

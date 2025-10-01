@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 """Shareable implementation of the recipe side of Chromium's UTR."""
 
+from __future__ import annotations
+
+import typing
 import attr
 import contextlib
 import copy
@@ -10,25 +13,22 @@ import itertools
 import uuid
 from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
-from google.protobuf.json_format import MessageToDict
 
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
 from PB.go.chromium.org.luci.buildbucket.proto import (
     common as common_pb2,
-    builds_service as builds_service_pb2,
 )
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.chromium_utr.request import Request
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium.config import get_expected_host_platform
-from RECIPE_MODULES.build.chromium_tests_builder_config import (
-    builder_config as builder_config_module)
-from RECIPE_MODULES.build.chromium_tests.steps import (
-    Test, SwarmingIsolatedScriptTest)
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+  from RECIPE_MODULES.build.chromium_tests.steps import Test
 
 gclient_aliases = {
     'linux': ['linux', 'unix'],
@@ -68,7 +68,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       properties: Request,
       checkout_dir: Path,
       source_dir: Path,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
   ) -> result_pb2.RawResult:
     """Compiles and runs tests as needed.
@@ -244,8 +244,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     return is_cog
 
   def get_compiling_builder_config(
-      self, builder_id: chromium.BuilderId, builder_config: ctbc.BuilderConfig
-  ) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
+      self, builder_id: chromium_types.BuilderId,
+      builder_config: ctbc.BuilderConfig
+  ) -> tuple[chromium_types.BuilderId, ctbc.BuilderConfig]:
     """Gets the config of the compiling-builder for the given BuilderConfig
 
     Essentially just returns the BuilderConfig of the parent builder if the
@@ -262,7 +263,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if builder_config.execution_mode != ctbc.TEST:
       return builder_id, builder_config
 
-    compiling_builder_id = chromium.BuilderId.create_for_group(
+    compiling_builder_id = chromium_types.BuilderId.create_for_group(
         builder_config.parent_builder_group, builder_config.parent_buildername)
     compiling_builder_config = attr.evolve(
         builder_config,
@@ -380,7 +381,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       self,
       source_dir: Path,
       build_dir: Path,
-      compiling_builder_id: chromium.BuilderId,
+      compiling_builder_id: chromium_types.BuilderId,
       compiling_builder_config: ctbc.BuilderConfig,
       no_siso: bool,
   ) -> str:
@@ -483,7 +484,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       properties: Request,
       source_dir: Path,
       build_path: Path,
-      compiling_builder_id: chromium.BuilderId,
+      compiling_builder_id: chromium_types.BuilderId,
       compiling_builder_config: ctbc.BuilderConfig,
       is_cog: bool,
   ) -> result_pb2.RawResult:
@@ -625,7 +626,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       source_dir: Path,
       build_dir: Path,
       properties: Request,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
   ) -> list[str]:
     """Handles code coverage for runs using try builders
 
@@ -675,7 +676,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
   def gn_gen(
       self,
       properties: Request,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
       preserve_gn_args: bool,
       source_dir: Path,
@@ -761,7 +762,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       self,
       properties: Request,
       tests: Iterable[Test],
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
       preserve_gn_args: bool,
       source_dir: Path,
@@ -831,7 +832,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       source_dir: Path,
       build_dir: Path,
       got_revisions: Mapping[str, str],
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
       should_build: bool,
       should_test: bool,
@@ -910,10 +911,16 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       """
       return ('*' in filter_arg or ':' in filter_arg)
 
+    # avoid circular import
+    # pylint: disable=import-outside-toplevel
+    from RECIPE_MODULES.build.chromium_tests.steps import (
+        SwarmingIsolatedScriptTest)
+
     for test in tests:
       # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
       # ci builders that would point to gcs dirs that devs do not have access
       # to. Remove when layout tests can be archived
+
       if isinstance(test, SwarmingIsolatedScriptTest):
         test.spec = attr.evolve(test.spec, results_handler_name=None)
       # Prevent deduping in case the user is trying to run the same suite in

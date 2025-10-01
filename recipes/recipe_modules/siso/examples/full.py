@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import siso
 
 DEPS = [
@@ -44,8 +44,8 @@ def RunSteps(api):
         post_step_func=lambda s: s,
         ninja_invocation_id='some_random_id',
         include_utr_instruction=True,
-        builder_id=chromium.BuilderId.create_for_group('builder group',
-                                                       'builder name'))
+        builder_id=chromium_types.BuilderId.create_for_group(
+            'builder group', 'builder name'))
     with api.siso.context():
       api.step('siso context', cmd=['some_process_calling_siso.py'])
   with api.siso.disable():

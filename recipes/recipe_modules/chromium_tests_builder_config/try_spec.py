@@ -6,7 +6,7 @@ import collections.abc
 
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, enum, mapping,
                                              sequence)
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 
 COMPILE_AND_TEST = 'compile/test'
 COMPILE = 'compile'

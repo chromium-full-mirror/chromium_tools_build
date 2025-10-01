@@ -7,7 +7,7 @@ from recipe_engine import recipe_api
 from recipe_engine import step_data
 from collections.abc import Iterable
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 
 def get_utr_instruction(command: str,
@@ -87,7 +87,7 @@ def get_utr_instruction(command: str,
 
 def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
                                 step_result: step_data.StepData,
-                                builder_id: chromium.BuilderId) -> None:
+                                builder_id: chromium_types.BuilderId) -> None:
   """Apply the compile instruction for the provided step_result
 
   Creates and adds the instruction for compiling using the UTR for the provided

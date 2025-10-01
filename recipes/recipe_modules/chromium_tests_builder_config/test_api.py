@@ -7,7 +7,7 @@ import attr
 from recipe_engine import recipe_test_api
 
 from RECIPE_MODULES.build.attr_utils import attrs, attrib, enum
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 
 from PB.go.chromium.org.luci.buildbucket.proto \
   import builder_common as builder_common_pb

@@ -10,7 +10,7 @@ from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from PB.recipe_modules.build.chromium_utr.request import Request
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -56,7 +56,7 @@ def configure_build(
     api: RecipeApi,
     build: bool,
     skip_validation: bool,
-) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
+) -> tuple[chromium_types.BuilderId, ctbc.BuilderConfig]:
   """Prepares the recipe to build with the provided checkout.
 
   Args:
@@ -75,7 +75,7 @@ def configure_build(
       is determined to not be compatible with the current running enviornment
   """
   builder = api.buildbucket.build.builder.builder
-  builder_id = chromium.BuilderId.create_for_group(
+  builder_id = chromium_types.BuilderId.create_for_group(
       api.m.properties['builder_group'], builder)
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))

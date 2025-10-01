@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -23,7 +23,7 @@ def RunSteps(api):
     api.chromium.mb_gen(
         source_dir,
         build_dir,
-        chromium.BuilderId.create_for_group('fake-group', 'fake-builder'),
+        chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'),
     )
     return api.chromium.compile(source_dir, build_dir)
 

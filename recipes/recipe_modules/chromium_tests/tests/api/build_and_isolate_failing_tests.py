@@ -5,10 +5,7 @@
 from recipe_engine import post_process
 from PB.recipes.build.chromium.compilator import InputProperties
 
-from RECIPE_MODULES.build import chromium
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium_tests.api import (
-    ALL_TEST_BINARIES_ISOLATE_NAME)
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -27,11 +24,11 @@ PROPERTIES = InputProperties
 def RunSteps(api, properties):
   orchestrator = properties.orchestrator.builder_name
   builder_group = properties.orchestrator.builder_group
-  orch_builder_id = chromium.BuilderId.create_for_group(builder_group,
-                                                        orchestrator)
+  orch_builder_id = chromium_types.BuilderId.create_for_group(
+      builder_group, orchestrator)
 
-  orch_builder_id = chromium.BuilderId.create_for_group(builder_group,
-                                                        orchestrator)
+  orch_builder_id = chromium_types.BuilderId.create_for_group(
+      builder_group, orchestrator)
 
   _, orch_builder_config = (
       api.chromium_tests_builder_config.lookup_builder(

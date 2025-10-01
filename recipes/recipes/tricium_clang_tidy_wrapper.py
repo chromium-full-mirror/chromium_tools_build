@@ -9,7 +9,7 @@ from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from RECIPE_MODULES.build.tricium_clang_tidy import _clang_tidy_path
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -32,7 +32,7 @@ DEPS = [
 ]
 
 
-class ClangTidySpec(chromium.BuilderSpec):
+class ClangTidySpec(chromium_types.BuilderSpec):
   """Builder spec for clang-tidy bots."""
 
   def __init__(self, **kwargs):

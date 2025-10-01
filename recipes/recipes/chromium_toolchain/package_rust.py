@@ -6,7 +6,7 @@ from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 
 from PB.recipes.build.chromium_toolchain.package import InputProperties
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -28,7 +28,7 @@ BUILDERS = {
     'tryserver.chromium.linux': {
         'builders': {
             'linux_upload_rust':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config_kwargs={
                         'BUILD_CONFIG': 'Release',
                         'TARGET_PLATFORM': 'linux',
@@ -45,7 +45,7 @@ BUILDERS = {
     'tryserver.chromium.mac': {
         'builders': {
             'mac_upload_rust':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config_kwargs={
                         'BUILD_CONFIG': 'Release',
                         'TARGET_PLATFORM': 'mac',
@@ -58,7 +58,7 @@ BUILDERS = {
                     ],
                 ),
             'mac_upload_rust_arm':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config_kwargs={
                         'BUILD_CONFIG': 'Release',
                         'TARGET_PLATFORM': 'mac',
@@ -75,7 +75,7 @@ BUILDERS = {
     'tryserver.chromium.win': {
         'builders': {
             'win_upload_rust':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config_kwargs={
                         'BUILD_CONFIG': 'Release',
                         'TARGET_PLATFORM': 'win',

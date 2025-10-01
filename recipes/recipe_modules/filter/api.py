@@ -12,7 +12,7 @@ from recipe_engine import config_types
 from recipe_engine import recipe_api
 from recipe_engine import step_data
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 _AnalyzeInput = dict[str, Collection[str]]
 _AnalyzeOutput = dict[str, Any]
@@ -149,7 +149,7 @@ class FilterApi(recipe_api.RecipeApi):
       analyze_input: _AnalyzeInput,
       test_analyze_output: _AnalyzeOutput,
       *,
-      builder_id: chromium.BuilderId | None,
+      builder_id: chromium_types.BuilderId | None,
       mb_path: config_types.Path | None,
       mb_config_path: config_types.Path | None,
       phase: str | None,
@@ -271,7 +271,7 @@ class FilterApi(recipe_api.RecipeApi):
       config_path: config_types.Path = None,
       additional_names: Collection[str] | None = None,
       additional_exclusions: Mapping[str, str] | None = None,
-      builder_id: chromium.BuilderId | None = None,
+      builder_id: chromium_types.BuilderId | None = None,
       mb_path: config_types.Path | None = None,
       mb_config_path: config_types.Path | None = None,
       phase: str | None = None,

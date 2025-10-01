@@ -22,7 +22,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.buildbucket.proto \
   import builds_service as builds_service_pb2
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
 from RECIPE_MODULES.depot_tools import bot_update
@@ -2418,7 +2418,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def determine_compilation_targets(
       self,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
       checkout_dir: Path,
       source_dir: Path,
@@ -2510,7 +2510,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def build_affected_targets(
       self,
-      builder_id: chromium.BuilderId,
+      builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
       *,
       root_solution_revision: str | None = None,
@@ -2671,7 +2671,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       spec = builder_config.builder_db[builder_id]
       if not spec.parent_buildername:
         return (builder_id,)
-      parent_builder_id = chromium.BuilderId.create_for_group(
+      parent_builder_id = chromium_types.BuilderId.create_for_group(
           spec.parent_builder_group or builder_id.group,
           spec.parent_buildername)
       return (parent_builder_id, builder_id)
@@ -2770,7 +2770,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                              mb_config_path=None,
                              mb_phase=None):
     # Lookup GN args for the associated builder
-    parent_builder_id = chromium.BuilderId.create_for_group(
+    parent_builder_id = chromium_types.BuilderId.create_for_group(
         builder_config.parent_builder_group or builder_id.group,
         builder_config.parent_buildername)
     parent_builder_spec = builder_config.builder_db[parent_builder_id]

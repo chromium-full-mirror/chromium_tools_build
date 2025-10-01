@@ -8,7 +8,7 @@ import functools
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.webrtc import builders
 
 DEPS = [
@@ -114,8 +114,8 @@ def GenTests(api):
   for builder_id in builders_db:
     yield generate_builder(builder_id)
 
-  builder_id = chromium.BuilderId.create_for_group('client.webrtc',
-                                                   'Linux64 Debug')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'client.webrtc', 'Linux64 Debug')
   yield generate_builder(builder_id, failing_test=True, suffix='_failing_test')
   yield generate_builder(
       builder_id,
@@ -126,14 +126,15 @@ def GenTests(api):
       suffix='_pinpoint')
   yield generate_builder(builder_id, suffix='_fail_compile', fail_compile=True)
 
-  builder_id = chromium.BuilderId.create_for_group('client.webrtc', 'Android32')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'client.webrtc', 'Android32')
   yield generate_builder(
       builder_id,
       fail_android_archive=True,
       suffix='_failing_archive')
 
-  builder_id = chromium.BuilderId.create_for_group('tryserver.webrtc',
-                                                   'iwyu_verifier')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'tryserver.webrtc', 'iwyu_verifier')
   yield generate_builder(builder_id, fail_iwyu=True, suffix='_failing_iwyu')
   yield generate_builder(
       builder_id, suffix='_skip_file') + api.step_data(
@@ -142,13 +143,13 @@ def GenTests(api):
       builder_id, suffix='_skipping_iwyu') + api.tryserver.get_footers(
           {'No-Iwyu': ['skip']})
 
-  builder_id = chromium.BuilderId.create_for_group('client.webrtc.perf',
-                                                   'Perf Linux')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'client.webrtc.perf', 'Perf Linux')
   yield generate_builder(
       builder_id, is_experimental=True, suffix='_experimental')
 
-  builder_id = chromium.BuilderId.create_for_group('tryserver.webrtc',
-                                                   'linux_compile_arm_rel')
+  builder_id = chromium_types.BuilderId.create_for_group(
+      'tryserver.webrtc', 'linux_compile_arm_rel')
   gn_analyze_no_deps_output = {'status': ['No dependency']}
   yield generate_builder(
       builder_id,

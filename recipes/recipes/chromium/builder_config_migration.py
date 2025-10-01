@@ -13,9 +13,6 @@ import textwrap
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium import BuilderId
-
 from PB.recipe_modules.build.chromium_tests_builder_config_migration import (
     properties as properties_pb)
 

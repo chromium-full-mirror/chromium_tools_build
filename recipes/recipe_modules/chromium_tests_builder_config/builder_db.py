@@ -8,7 +8,7 @@ from . import builder_spec as builder_spec_module
 
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
                                              mapping, set_)
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 
 
 @attrs()

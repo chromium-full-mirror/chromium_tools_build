@@ -11,7 +11,7 @@ from .builder_spec import BuilderSpec, COMPILE_AND_TEST, TEST
 from .builder_db import BuilderDatabase
 from .try_spec import TryDatabase, ALWAYS, NEVER
 
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
                                              enum, mapping, sequence)
 

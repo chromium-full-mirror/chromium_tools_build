@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 from recipe_engine.engine_types import freeze
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -21,7 +21,7 @@ BUILDERS = freeze({
     'chromium.clang': {
         'builders': {
             'ToTMacCoverage':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config='clang_tot_mac',
                     chromium_apply_config=[],
                     gclient_apply_config=['clang_tot'],
@@ -32,7 +32,7 @@ BUILDERS = freeze({
                     },
                 ),
             'ToTLinuxCoverage':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config='clang_tot_linux',
                     chromium_apply_config=[],
                     gclient_apply_config=['clang_tot'],
@@ -43,7 +43,7 @@ BUILDERS = freeze({
                     },
                 ),
             'ToTWindowsCoverage':
-                chromium.BuilderSpec.create(
+                chromium_types.BuilderSpec.create(
                     chromium_config='chromium_win_clang_tot',
                     chromium_apply_config=[],
                     gclient_apply_config=['clang_tot'],

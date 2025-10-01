@@ -2,14 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from google.protobuf import timestamp_pb2
-
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
 
-from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.recipe_modules.build.chromium_utr.request import Request
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -40,7 +36,7 @@ def RunSteps(api, request):
   api.chromium_checkout.set_paths(checkout_dir, source_dir)
 
   builder = api.buildbucket.build.builder.builder
-  builder_id = chromium.BuilderId.create_for_group(
+  builder_id = chromium_types.BuilderId.create_for_group(
       api.m.properties['builder_group'], builder)
 
   api.chromium.verify_config = not request.rerun_options.skip_config_validation

@@ -9,7 +9,7 @@ from recipe_engine.engine_types import freeze
 from recipe_engine.post_process import (DoesNotRun, MustRun,
                                         StepCommandContains, StepTextEquals,
                                         StatusSuccess)
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium_codesearch import (InputProperties,
@@ -338,7 +338,8 @@ def RunSteps(api, properties):
   api.chromium.mb_gen(
       source_dir,
       build_dir,
-      chromium.BuilderId.create_for_group(builder_id.group, builder_id.builder),
+      chromium_types.BuilderId.create_for_group(builder_id.group,
+                                                builder_id.builder),
       name='generate build files')
 
   if platform == 'webview':

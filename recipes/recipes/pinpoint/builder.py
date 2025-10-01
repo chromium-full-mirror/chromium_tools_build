@@ -4,7 +4,7 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
     'chromium',
@@ -60,7 +60,7 @@ def RunSteps(api):
             'Please update pinpoint/builder.py').format(pinpoint_builder))
 
   with api.chromium.chromium_layout():
-    builder_id = chromium.BuilderId.create_for_group(*perf_builder)
+    builder_id = chromium_types.BuilderId.create_for_group(*perf_builder)
     _, builder_config = api.chromium_tests_builder_config.lookup_builder(
         builder_id, use_try_db=False)
 

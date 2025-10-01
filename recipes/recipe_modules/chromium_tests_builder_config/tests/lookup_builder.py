@@ -6,7 +6,7 @@ from recipe_engine import post_process, recipe_api
 from recipe_engine.config import Dict
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium import BuilderId
+from RECIPE_MODULES.build.chromium_types import BuilderId
 
 from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
                                                                    properties_pb
