@@ -11,6 +11,10 @@
       "0o777",
       "[CACHE]/uncached"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -48,8 +52,8 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
-      "FORCE_MAC_TOOLCHAIN": "1",
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -58,7 +62,8 @@
       "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
       "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -128,8 +133,9 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
-      "FORCE_MAC_TOOLCHAIN": "1"
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "env_suffixes": {
       "PATH": [
@@ -155,19 +161,17 @@
       "cipd",
       "ensure",
       "-root",
-      "[CACHE]/osx_sdk",
+      "[CACHE]/builder",
       "-ensure-file",
-      "infra/tools/mac_toolchain/${platform} git_revision:26bb3effce1bc1896a3776c21b84e76ae82c3917",
+      "@Subdir clang\nfuchsia/third_party/clang/linux-amd64 8ii0cvHxegwLJjXM6PekCWB7xzEnFsY7cc2G96VT0VsC",
       "-max-threads",
       "0",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
-      ]
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
     "luci_context": {
@@ -182,14 +186,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ensure_installed",
+    "name": "Install Clang",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"clang\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:26b\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/mac_toolchain/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-8ii0cvHxegwLJjXM\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"fuchsia/third_party/clang/linux-amd64\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    ]@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
@@ -199,14 +203,20 @@
   },
   {
     "cmd": [
-      "sw_vers",
-      "-productVersion"
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/java",
+      "-ensure-file",
+      "chromium/third_party/jdk BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
     ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
-      ]
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
     "luci_context": {
@@ -221,27 +231,37 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "find macOS version",
+    "name": "Install JDK 17",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Running on '14.4'.@@@"
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-BXZwbslDFpYhPRuG\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/jdk\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
     "cmd": [
-      "[CACHE]/osx_sdk/mac_toolchain",
-      "install",
-      "-kind",
-      "mac",
-      "-xcode-version",
-      "15e204a",
-      "-output-dir",
-      "[CACHE]/osx_sdk/XCode.app"
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/android_sdk",
+      "-ensure-file",
+      "chromium/third_party/android_sdk/public/build-tools/34.0.0 latest\nchromium/third_party/android_sdk/public/platform-tools latest\nchromium/third_party/android_sdk/public/platforms/android-34 latest\nchromium/third_party/android_sdk/public/cmdline-tools latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
     ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
-      ]
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
     "luci_context": {
@@ -256,20 +276,73 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install xcode"
+    "name": "Install Android SDK",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/build-tools/34.0.0\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/cmdline-tools\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/platform-tools\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/platforms/android-34\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
   },
   {
     "cmd": [
-      "sudo",
-      "xcode-select",
-      "--switch",
-      "[CACHE]/osx_sdk/XCode.app"
+      "[CACHE]/android_sdk/cmdline-tools/latest/bin/sdkmanager",
+      "--licenses"
     ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
-      ]
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Accept Android SDK Licenses",
+    "stdin": "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/gradle",
+      "-ensure-file",
+      "flutter/gradle version:8.9",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
     "luci_context": {
@@ -284,7 +357,151 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "select XCode"
+    "name": "Install Gradle 8",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-version:8.9-----\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"flutter/gradle\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "./tools/check-no-crlf"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check for no CRLF"
+  },
+  {
+    "cmd": [
+      "./tools/lint"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run cpplint"
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "./..."
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run go tool unittests"
+  },
+  {
+    "cmd": [
+      "gradle",
+      ":webgpu:testDebugUnitTest"
+    ],
+    "cwd": "[CACHE]/uncached/dawn/tools/android",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run Kotlin unit tests"
   },
   {
     "cmd": [],
@@ -299,10 +516,10 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_WERROR=1",
-      "-DDAWN_USE_BUILT_DXC=0",
+      "-DDAWN_USE_BUILT_DXC=1",
       "-DTINT_BUILD_SPV_READER=1",
       "-DTINT_BUILD_WGSL_READER=1",
       "-DTINT_BUILD_GLSL_WRITER=1",
@@ -314,14 +531,24 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -350,10 +577,17 @@
       "--target",
       "all"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -386,10 +620,10 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_WERROR=1",
-      "-DDAWN_USE_BUILT_DXC=0",
+      "-DDAWN_USE_BUILT_DXC=1",
       "-DTINT_BUILD_SPV_READER=1",
       "-DTINT_BUILD_WGSL_READER=1",
       "-DTINT_BUILD_GLSL_WRITER=1",
@@ -401,14 +635,24 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=1",
       "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -437,10 +681,17 @@
       "--target",
       "dawn.node"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -464,10 +715,17 @@
     "cmd": [
       "[CACHE]/uncached/dawn/cmake-build/tint_unittests"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -486,6 +744,79 @@
   },
   {
     "cmd": [
+      "./tools/run",
+      "fuzz",
+      "--check",
+      "--build",
+      "cmake-build"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check WGSL fuzzer"
+  },
+  {
+    "cmd": [
+      "./tools/run",
+      "fuzz",
+      "--check",
+      "--ir",
+      "--build",
+      "cmake-build"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check IR fuzzer"
+  },
+  {
+    "cmd": [
       "python3",
       "./src/tint/cmd/bench/generate_benchmark_inputs.py",
       "wgsl",
@@ -493,10 +824,17 @@
       "--check-stale"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -524,10 +862,17 @@
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -557,10 +902,10 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_WERROR=1",
-      "-DDAWN_USE_BUILT_DXC=0",
+      "-DDAWN_USE_BUILT_DXC=1",
       "-DTINT_BUILD_SPV_READER=1",
       "-DTINT_BUILD_WGSL_READER=1",
       "-DTINT_BUILD_GLSL_WRITER=1",
@@ -572,14 +917,24 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=1",
-      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -608,10 +963,17 @@
       "--target",
       "tint_cmd_tint_cmd"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -644,10 +1006,10 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_WERROR=1",
-      "-DDAWN_USE_BUILT_DXC=0",
+      "-DDAWN_USE_BUILT_DXC=1",
       "-DTINT_BUILD_SPV_READER=0",
       "-DTINT_BUILD_WGSL_READER=0",
       "-DTINT_BUILD_GLSL_WRITER=0",
@@ -659,14 +1021,24 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -695,10 +1067,17 @@
       "--target",
       "tint_cmd_tint_cmd"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -717,33 +1096,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
-  },
-  {
-    "cmd": [
-      "sudo",
-      "xcode-select",
-      "--reset"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "reset XCode"
   },
   {
     "name": "$result"

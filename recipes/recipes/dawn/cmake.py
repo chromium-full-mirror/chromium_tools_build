@@ -6,11 +6,11 @@
 
 DEPS = [
     'depot_tools/bot_update', 'depot_tools/depot_tools', 'depot_tools/gclient',
-    'depot_tools/gsutil', 'depot_tools/osx_sdk', 'reclient',
-    'recipe_engine/buildbucket', 'recipe_engine/cipd', 'recipe_engine/context',
-    'recipe_engine/file', 'recipe_engine/json', 'recipe_engine/path',
-    'recipe_engine/platform', 'recipe_engine/properties', 'recipe_engine/step',
-    'recipe_engine/time', 'recipe_engine/raw_io'
+    'depot_tools/gsutil', 'depot_tools/osx_sdk', 'recipe_engine/buildbucket',
+    'recipe_engine/cipd', 'recipe_engine/context', 'recipe_engine/file',
+    'recipe_engine/json', 'recipe_engine/path', 'recipe_engine/platform',
+    'recipe_engine/properties', 'recipe_engine/step', 'recipe_engine/time',
+    'recipe_engine/raw_io'
 ]
 
 from contextlib import contextmanager
@@ -29,8 +29,6 @@ PROPERTIES = {
     'ubsan':
         Property(default=False, kind=bool),
     'gen_fuzz_corpus':  # TODO(amaiorano): remove once main.star is updated
-        Property(default=False, kind=bool),
-    'enable_remoteexec':  # TODO(amaiorano): remove once we get rbe working
         Property(default=False, kind=bool),
 }
 
@@ -63,8 +61,6 @@ def _checkout_steps(api):
         'fetch_cmake': 'True',  # Fetch cmake
         'dawn_node': 'True',  # Fetch deps for dawn.node
     }
-    if api.reclient.instance:
-      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
     update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
   return update_result
@@ -217,47 +213,6 @@ def windows_sdk(api, source_dir):
         ok_ret='any')
 
 
-def _rbe_host_platform_name(api):
-  if api.platform.is_win:
-    return 'windows'
-  if api.platform.is_linux:
-    return 'linux'
-  if api.platform.is_mac:
-    return 'mac'
-
-
-def _get_rbe_plaform_from_cfg(api, rewrapper_cfg):
-
-  def parse_line(line):
-    line = line.strip()
-    if len(line) == 0 or line.startswith('#'):
-      return None
-    parts = line.split('=', 1)
-    parts[0].lstrip('-')
-    return (parts[0], True if len(parts) == 1 else parts[1])
-
-  rbe_platform = ''
-  cfg_content = api.file.read_text(
-      f'read {rewrapper_cfg.name}',
-      str(rewrapper_cfg),
-      test_data='#comment\nplatform=test',
-      include_log=False)
-  for line in cfg_content.split('\n'):
-    flag = parse_line(line)
-    if flag and flag[0] == 'platform':
-      rbe_platform = flag[1]
-      break
-  return rbe_platform
-
-
-def _rbe_exec_root(api):
-  '''Returns base absolute path that contains all required inputs for RBE'''
-  # We make sure to checkout Dawn and any required build inputs (e.g. clang)
-  # under the cache directory (note: note everything under it is actually
-  # cached).
-  return api.path.cache_dir
-
-
 @dataclass
 class CMakeFixedArgs:
   '''Args to CMake that shouldn't change for a given build'''
@@ -266,7 +221,6 @@ class CMakeFixedArgs:
   clang: bool
   asan: bool
   ubsan: bool
-  enable_remoteexec: bool
   build_benchmarks: bool
   build_dxc: bool
 
@@ -294,7 +248,6 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
                     dawn_node: bool, build_as_other: bool,
                     enable_readers_and_writers: bool, build_fuzzers: bool,
                     targets: list):
-  use_remoteexec = fixed_args.enable_remoteexec and fixed_args.clang and api.reclient.instance
   build_env_vars = {}
 
   # Cross-compilation with CMake is painful, requiring toolchain files
@@ -345,21 +298,6 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
         '-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake',
     ])
 
-  rbe_exec_root = _rbe_exec_root(api)
-  if use_remoteexec:
-    # Tell CMake to use reclient via it's launcher flags
-    # See go/reclient-migration-guide (CMake section)
-    rewrapper = source_dir.joinpath('buildtools', 'reclient', 'rewrapper')
-    config = source_dir.joinpath(
-        'buildtools', 'reclient_cfgs', 'chromium-browser-clang',
-        f'rewrapper_{_rbe_host_platform_name(api)}.cfg')
-    cmake_args.extend([
-        # f'-DCMAKE_C_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
-        # f'-DCMAKE_CXX_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
-        f'-DCMAKE_C_COMPILER_LAUNCHER={rewrapper};-cfg={config}',
-        f'-DCMAKE_CXX_COMPILER_LAUNCHER={rewrapper};-cfg={config}',
-    ])
-
   # Always use the same build directory so that incremental builds are faster.
   # Note that this directory is not cached.
   outdir_name = 'cmake-build'
@@ -374,50 +312,21 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
         [cmake_path, '-S', str(source_dir), '-B', build_path] + cmake_args)
 
   step_desc = f'Compile {flavor}'
-  if use_remoteexec:
-    # RBE build
-    ninja_cmd = [
-        ninja_path / 'ninja', '-C', build_path, '-j', api.reclient.jobs
-    ]
-    ninja_cmd.extend(targets)
 
-    # Setup RBE environment required to work with CMake
-    build_env_vars['PLATFORM'] = _rbe_host_platform_name(api)
-    build_env_vars['RBE_exec_root'] = rbe_exec_root
-    build_env_vars['RBE_canonicalize_working_dir'] = 'False'
-    rbe_platform = _get_rbe_plaform_from_cfg(api, config)
-    if rbe_platform:
-      build_env_vars[
-          'RBE_platform'] = f'{rbe_platform},InputRootAbsolutePath={rbe_exec_root}'
+  def gen_targets():
+    for t in targets:
+      yield '--target'
+      yield t
 
-    build_env_vars['RBE_v'] = '2'
-
-    with api.context(env=build_env_vars):
-      # Force remote-only to see if this fails (can't do this via env var)
-      with api.reclient.process(
-          step_desc, '', source_dir, exec_strategy='remote'):
-        api.step(step_desc, ninja_cmd)
-  else:
-    # Regular cmake build
-    def gen_targets():
-      for t in targets:
-        yield '--target'
-        yield t
-
-    cmake_build_cmd = [cmake_path, '--build', build_path, '--parallel'] + list(
-        gen_targets())
-    with api.context(env=build_env_vars):
-      api.step(step_desc, cmake_build_cmd)
+  cmake_build_cmd = [cmake_path, '--build', build_path, '--parallel'] + list(
+      gen_targets())
+  with api.context(env=build_env_vars):
+    api.step(step_desc, cmake_build_cmd)
   return build_path
 
 
-def RunSteps(api,
-             target_cpu: str,
-             debug: bool,
-             clang: bool,
-             asan: bool,
-             ubsan: bool,
-             enable_remoteexec: bool = False):
+def RunSteps(api, target_cpu: str, debug: bool, clang: bool, asan: bool,
+             ubsan: bool):
   env = {}
   if asan:
     # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
@@ -467,7 +376,6 @@ def RunSteps(api,
           clang,
           asan,
           ubsan,
-          enable_remoteexec,
           # Skip benchmarks on Mac to speed up the build
           build_benchmarks=not api.platform.is_mac,
           # Skip dxc on Mac to speed up the build
@@ -559,22 +467,19 @@ def RunSteps(api,
 def GenTests(api):
   yield api.test(
       'linux',
-      api.reclient.properties(),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='linux', git_repo=DAWN_REPO),
   )
   yield api.test(
-      'linux_remoteexec',
-      api.reclient.properties(),
-      api.properties(clang=True, enable_remoteexec=True),
+      'linux_clang',
+      api.properties(clang=True),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='linux', git_repo=DAWN_REPO),
   )
   yield api.test(
       'linux_asan',
-      api.reclient.properties(),
       api.properties(asan=True),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
@@ -582,7 +487,6 @@ def GenTests(api):
   )
   yield api.test(
       'linux_ubsan',
-      api.reclient.properties(),
       api.properties(ubsan=True),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
@@ -590,37 +494,25 @@ def GenTests(api):
   )
   yield api.test(
       'mac',
-      api.reclient.properties(),
       api.platform('mac', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
   yield api.test(
       'mac_debug',
-      api.reclient.properties(),
       api.platform('mac', 64),
       api.properties(debug=True),
       api.buildbucket.ci_build(
           project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
   yield api.test(
-      'mac_remoteexec',
-      api.reclient.properties(),
-      api.properties(clang=True, enable_remoteexec=True),
-      api.platform('mac', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='mac', git_repo=DAWN_REPO),
-  )
-  yield api.test(
       'win',
-      api.reclient.properties(),
       api.platform('win', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='win', git_repo=DAWN_REPO),
   )
   yield api.test(
       'win_debug',
-      api.reclient.properties(),
       api.platform('win', 64),
       api.properties(debug=True),
       api.buildbucket.ci_build(
@@ -628,17 +520,8 @@ def GenTests(api):
   )
   yield api.test(
       'win_clang',
-      api.reclient.properties(),
       api.platform('win', 64),
       api.properties(clang=True),
-      api.buildbucket.ci_build(
-          project='dawn', builder='win', git_repo=DAWN_REPO),
-  )
-  yield api.test(
-      'win_remoteexec',
-      api.reclient.properties(),
-      api.platform('win', 64),
-      api.properties(clang=True, enable_remoteexec=True),
       api.buildbucket.ci_build(
           project='dawn', builder='win', git_repo=DAWN_REPO),
   )
