@@ -12,8 +12,7 @@ from google.protobuf import struct_pb2
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETestDivider, write_test_list
-from RECIPE_MODULES.build.devtools.interactions_tests_runner import InteractionsTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase, FlakeDetectionPhase
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
@@ -76,15 +75,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   if maybe_raw_result:
     return maybe_raw_result
 
-  # TODO(liviurau): Refactor this to make the divider take the file list a
-  # direct argument. Eventually make it so we do not even need the list maybe
-  # using a hash based stable sharding and ordering on the test runner side.
-  write_test_list(api, builder_config, 'e2e_non_hosted',
-                  comp_props['e2e_non_hosted_test_list'])
-
   cas_digest = comp_props['cas_digest']
 
-  divider = E2ETestDivider(api, builder_config)
   trigger = SwarmingTrigger(
       api,
       cas_digest,
@@ -96,8 +88,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   )
   tests = [
       UnitTests(api, trigger, builder_config, False, 'Unit Tests'),
-      E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests (non-hosted)',
-                        divider),
+      E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests (non-hosted)'),
       LintCheck(api, trigger, builder_config, 'Lint Check', target_os),
       ScriptsTests(api, trigger, builder_config, 'Scripts Tests', target_os),
   ]

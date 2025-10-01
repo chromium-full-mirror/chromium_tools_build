@@ -319,41 +319,6 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]/builder/devtools-frontend/out/Release/gen/test/e2e_non_hosted/tests.txt",
-      "/path/to/tmp/"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.Read test list",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LOG_END@tests.txt@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Run tests.Trigger Tests.Trigger E2E Tests.Full command",
     "~followup_annotations": [
@@ -367,6 +332,10 @@
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
       "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
+      "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
+      "@@@STEP_LOG_LINE@command@--shard-number=1@@@",
+      "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -377,7 +346,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=1\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -474,7 +443,11 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-number=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -531,6 +504,10 @@
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
       "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
+      "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
+      "@@@STEP_LOG_LINE@command@--shard-number=2@@@",
+      "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -541,7 +518,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #1) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #1) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=2\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -638,7 +615,11 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-number=2\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -695,6 +676,10 @@
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
       "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
+      "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
+      "@@@STEP_LOG_LINE@command@--shard-number=3@@@",
+      "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -705,7 +690,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #2) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #2) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=3\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -802,7 +787,11 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-number=3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -859,6 +848,10 @@
       "@@@STEP_LOG_LINE@command@--skip-ninja@@@",
       "@@@STEP_LOG_LINE@command@--verbose=2@@@",
       "@@@STEP_LOG_LINE@command@--on-diff=throw@@@",
+      "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
+      "@@@STEP_LOG_LINE@command@--shard-number=4@@@",
+      "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -869,7 +862,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #3) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/Ubuntu-22.04/e3b0c44298/parallel_linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:parallel_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:parallel_linux\", \"stepname:E2E Tests (Shard #3) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:parallel_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=4\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -966,7 +959,11 @@
       "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-number=4\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1535,7 +1532,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=1 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1631,7 +1628,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=2 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1727,7 +1724,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=3 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1823,7 +1820,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=4 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

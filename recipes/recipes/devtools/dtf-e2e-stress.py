@@ -7,7 +7,7 @@ from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETestDivider
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase
 
@@ -66,10 +66,9 @@ def RunSteps(api, clobber, runner_args):
         return compilation_result
     cas_digest = api.devtools.archive_to_cas()
 
-    divider = E2ETestDivider(api, builder_config)
     trigger = SwarmingTrigger(api, cas_digest)
     e2e_stressor = E2EStressTests(api, trigger, builder_config, 'E2E Tests',
-                                  divider, runner_args)
+                                  runner_args)
 
     results = FirstRunPhase(api).run_all([e2e_stressor])
 
@@ -78,9 +77,8 @@ def RunSteps(api, clobber, runner_args):
 
 class E2EStressTests(E2ENonHostedTests):
 
-  def __init__(self, api, trigger, builder_config, step_name, divider,
-               runner_args):
-    super().__init__(api, trigger, builder_config, step_name, divider)
+  def __init__(self, api, trigger, builder_config, step_name, runner_args):
+    super().__init__(api, trigger, builder_config, step_name)
     self.test_list = []
     self.extra_args = []
     for arg in split(runner_args or ""):

@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from .commons import Results
 
 FLAKE_DETECTION_MAX_TESTS = 20
-
+SHARDING_BIAS = 1
 
 class DevToolsTests(ABC):
 
@@ -215,11 +215,18 @@ class GoldensCollector(DevToolsTests):
 
 class ExonerableTests(DevToolsTests):
 
-  def __init__(self, api, trigger, builder_config, coverage, step_name):
+  def __init__(self,
+               api,
+               trigger,
+               builder_config,
+               coverage,
+               step_name,
+               shard_count=1):
     super().__init__(api, trigger, builder_config, coverage, step_name)
     # Used to indicate that no task was triggered; may contain a failure if the
     # reason for not triggering qualifies as such
     self.skip_result = None
+    self.shard_count = shard_count
 
   def trigger_exoneration(self, test_names):
     owned_tests = test_names.get(self.test_type_tag)
@@ -241,3 +248,9 @@ class ExonerableTests(DevToolsTests):
       self.results += self.skip_result
       return
     self.process_results()
+
+  def sharding_args(self):
+    return [[
+        f'--shard-count={self.shard_count}', f'--shard-number={shard_number+1}',
+        f'--shard-bias={SHARDING_BIAS}'
+    ] for shard_number in range(self.shard_count)]

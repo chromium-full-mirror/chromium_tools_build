@@ -7,7 +7,7 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
                                         MustRun, SummaryMarkdown)
 from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETestDivider, RepeatE2EShuffledTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, RepeatE2EShuffledTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase
 
 DEPS = [
@@ -54,12 +54,11 @@ def RunSteps(api, clobber):
         return compilation_result
     cas_digest = api.devtools.archive_to_cas()
 
-    divider = E2ETestDivider(api, builder_config, shuffled=True)
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
-        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests', divider),
-        RepeatE2EShuffledTests(api, trigger, builder_config, 'Repeat E2E Tests',
-                               divider),
+        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
+        RepeatE2EShuffledTests(api, trigger, builder_config,
+                               'Repeat E2E Tests'),
     ]
 
     results = FirstRunPhase(api).run_all(tests)

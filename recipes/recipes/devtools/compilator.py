@@ -22,7 +22,6 @@ from recipe_engine.post_process import DropExpectation, SummaryMarkdown, MustRun
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import read_test_list
 
 DEPS = [
     'chromium',
@@ -98,8 +97,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     emit_compilator_properties(
         api, {
-            'e2e_non_hosted_test_list':
-                read_test_list(api, builder_config, 'e2e_non_hosted'),
             'cas_digest':
                 api.devtools.archive_to_cas(),
         })

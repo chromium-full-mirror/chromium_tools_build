@@ -15,11 +15,9 @@ FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
 class E2ENonHostedTests(ExonerableTests):
 
 
-  def __init__(self, api, trigger, builder_config, step_name, divider):
-    super().__init__(api, trigger, builder_config, False, step_name)
-    self.divider = divider
-    if self.divider.shuffled:
-      self.extra_args = ['--bail']
+  def __init__(self, api, trigger, builder_config, step_name):
+    super().__init__(
+        api, trigger, builder_config, False, step_name, shard_count=4)
     self.skip_deflaking_result = None
     # TODO(liviurau): Needed only for where this cannot be passed in grep
     # pattern. To be removed once we have a ResultDB based solution.
@@ -33,7 +31,7 @@ class E2ENonHostedTests(ExonerableTests):
     return super().test_name_to_grep_string(name)
 
   def trigger_exoneration(self, test_names):
-    self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
+    self.shard_count = 1
     return super().trigger_exoneration(test_names)
 
   def commands(self):
@@ -44,8 +42,8 @@ class E2ENonHostedTests(ExonerableTests):
     if is_flake_exoneration_attempt:
       return [self.run_tests_command('test/e2e_non_hosted')]
     return [
-        self.run_tests_command(*test_list)
-        for test_list in self.divider.commands('e2e_non_hosted')
+        self.run_tests_command(*args, 'test/e2e_non_hosted')
+        for args in self.sharding_args()
     ]
 
   @property
@@ -70,7 +68,7 @@ class E2ENonHostedTests(ExonerableTests):
     # TODO(liviurau): The divider needs rework.  E.g. the rerun count could be
     # used to divide. Instead of running 10 times on one shard you could run
     # the same 5 times on 2 shares, etc.
-    self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
+    self.shard_count = 1
     self.step_name += ' (flake detection)'
     # TODO(liviurau): There must be a better way to prepare a limited run.
     # Maybe pass the command function to the trigger function and have
@@ -102,55 +100,3 @@ class RepeatE2EShuffledTests(E2ENonHostedTests):
   @property
   def test_type_tag(self):
     return 'shuffled_repeat_e2e_tests'
-
-
-class E2ETestDivider:
-
-  def __init__(self,
-               api,
-               builder_config,
-               shard_count=4,
-               shuffled=False):
-    self.api = api
-    self.builder_config = builder_config
-    self.shard_count = shard_count
-    self.shuffled = shuffled
-
-  # It returns a list of lists of test paths
-  def commands(self, test_type):
-    contents = read_test_list(self.api, self.builder_config, test_type)
-    all_tests = contents.splitlines()
-    all_test_paths = [
-        self.api.path.join('test', test_type, t) for t in all_tests
-    ]
-    if self.shuffled:
-      # TODO(liviurau) make this pseudo-random with a seed based e.g. on
-      # the revision of the commit
-      self.api.random.shuffle(all_test_paths)
-    return divide_list(all_test_paths, self.shard_count)
-
-
-def divide_list(lst, split_count):
-  chunk_size, remainder_size = divmod(len(lst), split_count)
-  chunk_start = 0
-  result = []
-  for i in range(split_count):
-    current_size = chunk_size + (1 if i < remainder_size else 0)
-    result.append(lst[chunk_start:chunk_start + current_size])
-    chunk_start += current_size
-  return result
-
-
-def read_test_list(api, builder_config, test_type):
-  gen_root = api.devtools.source_dir / 'out' / builder_config / 'gen'
-  test_root = gen_root / 'test' / test_type
-  test_list_file_path = test_root / 'tests.txt'
-  return api.file.read_text('Read test list', test_list_file_path)
-
-
-def write_test_list(api, builder_config, test_type, test_list):
-  gen_root = api.devtools.source_dir / 'out' / builder_config / 'gen'
-  test_root = gen_root / 'test' / test_type
-  api.step('Create E2E test root', ['mkdir', '-p', test_root])
-  test_list_file_path = test_root / 'tests.txt'
-  api.file.write_text('Write E2E test list', test_list_file_path, test_list)

@@ -16,8 +16,7 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
 from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, E2ETestDivider
-from RECIPE_MODULES.build.devtools.interactions_tests_runner import InteractionsTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
@@ -98,11 +97,10 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
         return compilation_result
     cas_digest = api.devtools.archive_to_cas()
 
-    divider = E2ETestDivider(api, builder_config)
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
         UnitTests(api, trigger, builder_config, coverage, 'Unit Tests'),
-        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests', divider),
+        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
         PerformanceTests(api, trigger, builder_config, coverage,
                          'Performance Tests'),
     ]
@@ -326,10 +324,6 @@ def GenTests(api):
       'cq parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='devtools_frontend_linux_rel'),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.post_process(MustRun, 'archive'),
       api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
       api.post_process(DropExpectation),
@@ -341,10 +335,6 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.post_process(MustRun, 'archive'),
       api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger Unit Tests'),
       api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
@@ -426,10 +416,6 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
-      api.step_data(
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
@@ -451,10 +437,6 @@ def GenTests(api):
            '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
           'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
       api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
-      api.step_data(
           'Flake exonaration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
           ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1),
@@ -471,10 +453,6 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
-      api.step_data(
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
@@ -487,10 +465,6 @@ def GenTests(api):
           test_result('e2e_non_hosted/file1: e/test/1', 'e2e_non_hosted_tests'),
           test_result('e2e_non_hosted/file2: e/test/2', 'e2e_non_hosted_tests'),
       ),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.post_process(
           SummaryMarkdown,
           'Flaky tests exonerated: Failure in E2E Tests (shard #0)'),
@@ -502,10 +476,6 @@ def GenTests(api):
       'failed parallel builder on E2E with exonerations limit reached',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.step_data(
           'Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
@@ -522,9 +492,6 @@ def GenTests(api):
               for i in range(FLAKE_DETECTION_MAX_TESTS + 1)
           ],
       ),
-      api.post_process(
-          DoesNotRun, 'Flake exonaration attempt.'
-          'Trigger E2E Tests (rerun).Read test list'),
       api.post_process(SummaryMarkdown,
                        'Failure in E2E Tests (shard #0), Too many failures'),
       api.post_process(DropExpectation),
@@ -540,10 +507,6 @@ def GenTests(api):
       'ci infra failure for parallel builder on unit tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.step_data(
           'Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
@@ -567,10 +530,6 @@ def GenTests(api):
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
       api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
-      api.step_data(
           'Run tests.Performance Tests.Performance Tests ' +
           'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
@@ -592,10 +551,6 @@ def GenTests(api):
       'ci failed parallel builder on unit tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
       api.step_data(
           'Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
@@ -638,10 +593,6 @@ def GenTests(api):
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
       api.step_data(
-          'Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-          api.raw_io.stream_output_text(
-              'test1\ntest2\ntest3\ntest4\n', stream='stdout')),
-      api.step_data(
           'Run tests.Performance Tests.Performance Tests ' +
           'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
@@ -664,8 +615,6 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
-      api.step_data('Run tests.Trigger Tests.Trigger E2E Tests.Read test list',
-                    api.file.read_text('test1\ntest2\ntest3\ntest4\ntest4\n')),
       api.step_data(
           'Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
