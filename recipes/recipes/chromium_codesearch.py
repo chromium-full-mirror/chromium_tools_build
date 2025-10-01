@@ -402,10 +402,10 @@ def RunSteps(api, properties):
   # Create the initial kythe index pack.
   initial_index_pack_path = api.codesearch.create_kythe_index_pack()
 
-  # Create and merge the Rust index pack if it can be successfully generated.
-  # It also only runs on Linux and Mac right now.
+  # Create the Rust index pack on supported platforms.
+  # The extractor is currently only built for Linux and Mac.
   rust_index_pack_path = None
-  if api.platform.is_linux or api.platform.is_mac:
+  if target_os in ('linux', 'mac'):
     with api.step.nest('create minimal rust kzip'):
       full_rust_index_pack_path = api.codesearch.run_rust_project_extractor(
           source_dir=source_dir)
@@ -744,6 +744,23 @@ def GenTests(api):
           'gsutil upload kythe index pack',
           # Note how this path corresponds to the merge kzip output.
           ['[CLEANUP]/tmp_tmp_6']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rust_kzip_disabled_android',
+      api.platform('linux', 64),
+      props('android'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-android'),
+      api.post_process(DoesNotRun,
+                       'create minimal rust kzip.create minimal kzip'),
+      api.post_process(DoesNotRun, 'merge kzips'),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Non-merged original package_index output file.
+          ['[CLEANUP]/tmp_tmp_2']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
