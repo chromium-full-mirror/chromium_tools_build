@@ -322,10 +322,21 @@ def RunSteps(api, properties):
           # json file to GCS
           gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
           revision = api.buildbucket.gitiles_commit.id[:7]
-          json_file = api.path.join(target_list_dir,
-                                    properties.fuzz_engine + '.json')
-          api.gsutil.upload(json_file, 'code-coverage-data',
+          targets_file = api.path.join(target_list_dir,
+                                       properties.fuzz_engine + '.json')
+          api.gsutil.upload(targets_file, 'code-coverage-data',
                             f'{gcs_dir}{revision}/')
+
+          successful_targets = api.file.read_json('read successful targets',
+                                                  targets_file)
+          for target in successful_targets:
+            profdata_path = api.path.join(profdata_dir, f'{target}.profdata')
+            api.code_coverage.get_chromium_fuzz_coverage(
+                api.chromium_checkout.source_dir,
+                build_dir,
+                profdata_path,
+                profdata_dir, {target},
+                overall=False)
 
         profdata_path = api.chromium_checkout.source_dir.joinpath(
             'total_fuzz_coverage.profdata')
@@ -457,6 +468,16 @@ def GenTests(api):
       retcode = 0
       if coverage_metadata_failure:
         retcode = 1
+      if engine != 'fuzzilli':
+        test += api.step_data(
+            'read successful targets',
+            api.file.read_json(['target1', 'target2', 'target3']))
+        test += api.post_process(post_process.MustRun,
+                                 'process fuzz coverage (target1)')
+        test += api.post_process(post_process.MustRun,
+                                 'process fuzz coverage (target2)')
+        test += api.post_process(post_process.MustRun,
+                                 'process fuzz coverage (target3)')
       test += api.step_data(
           'process fuzz coverage (overall).generate coverage metadata',
           retcode=retcode)
