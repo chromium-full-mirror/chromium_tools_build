@@ -406,11 +406,14 @@ def RunSteps(api, properties):
   # The extractor is currently only built for Linux and Mac.
   rust_index_pack_path = None
   if target_os in ('linux', 'mac'):
-    with api.step.nest('create minimal rust kzip'):
-      full_rust_index_pack_path = api.codesearch.run_rust_project_extractor(
+    with api.step.nest('create rust kzip'):
+      rust_index_pack_path = api.codesearch.run_rust_project_extractor(
           source_dir=source_dir)
-      rust_index_pack_path = extract_minimal_rust_kzip(
-          api, full_rust_index_pack_path)
+      # On Mac, reduce this full kzip to a minimal kzip.
+      # (This means the full kzip will be merged on Linux.)
+      if api.platform.is_mac:
+        rust_index_pack_path = extract_minimal_rust_kzip(
+            api, rust_index_pack_path)
 
   # Merge the Rust index pack if it was successfully generated.
   final_index_pack_path = initial_index_pack_path
@@ -610,13 +613,13 @@ def GenTests(api):
 
   yield api.test(
       'rust_kzip_ignore_extract_cus_fail',
-      api.platform('linux', 64),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.step_data('create minimal rust kzip.extract CUs', retcode=1),
-      api.post_process(StepTextEquals, 'create minimal rust kzip.extract CUs',
+      api.platform('mac', 64),
+      props('mac'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      api.step_data('create rust kzip.extract CUs', retcode=1),
+      api.post_process(StepTextEquals, 'create rust kzip.extract CUs',
                        'kzip view failed, skipping'),
-      api.post_process(DoesNotRun, ('create minimal rust kzip.'
+      api.post_process(DoesNotRun, ('create rust kzip.'
                                     'create minimal kzip')),
       api.post_process(DoesNotRun, 'merge kzips'),
       api.post_process(
@@ -630,14 +633,13 @@ def GenTests(api):
 
   yield api.test(
       'rust_kzip_ignore_zero_rust_cus',
-      api.platform('linux', 64),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.step_data('create minimal rust kzip.list CU metadata',
+      api.platform('mac', 64),
+      props('mac'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      api.step_data('create rust kzip.list CU metadata',
                     api.file.glob_paths([])),
-      api.post_process(MustRun,
-                       'create minimal rust kzip.no CUs found, skipping'),
-      api.post_process(DoesNotRun, ('create minimal rust kzip.'
+      api.post_process(MustRun, 'create rust kzip.no CUs found, skipping'),
+      api.post_process(DoesNotRun, ('create rust kzip.'
                                     'create minimal kzip')),
       api.post_process(DoesNotRun, 'merge kzips'),
       api.post_process(
@@ -651,18 +653,18 @@ def GenTests(api):
 
   yield api.test(
       'rust_kzip_ignore_no_allowed_cus',
-      api.platform('linux', 64),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.platform('mac', 64),
+      props('mac'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
       api.step_data(
-          'create minimal rust kzip.list CU metadata',
+          'create rust kzip.list CU metadata',
           api.file.glob_paths([
               '/tmp/hello-0123456789abcdef.txt',
               '/tmp/foo-0123456789abcdef.unit'
           ])),
-      api.post_process(MustRun, ('create minimal rust kzip.'
+      api.post_process(MustRun, ('create rust kzip.'
                                  'no allowed CUs found, skipping')),
-      api.post_process(DoesNotRun, ('create minimal rust kzip.'
+      api.post_process(DoesNotRun, ('create rust kzip.'
                                     'create minimal kzip')),
       api.post_process(DoesNotRun, 'merge kzips'),
       api.post_process(
@@ -676,16 +678,16 @@ def GenTests(api):
 
   yield api.test(
       'rust_kzip_filter_ignore_filter_fail',
-      api.platform('linux', 64),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+      api.platform('mac', 64),
+      props('mac'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
       api.step_data(
-          'create minimal rust kzip.list CU metadata',
+          'create rust kzip.list CU metadata',
           api.file.glob_paths([
               '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
           ])),
-      api.step_data('create minimal rust kzip.create minimal kzip', retcode=1),
-      api.post_process(StepTextEquals, ('create minimal rust kzip.'
+      api.step_data('create rust kzip.create minimal kzip', retcode=1),
+      api.post_process(StepTextEquals, ('create rust kzip.'
                                         'create minimal kzip'),
                        'kzip filter failed, skipping'),
       api.post_process(DoesNotRun, 'merge kzips'),
@@ -703,22 +705,16 @@ def GenTests(api):
       api.platform('linux', 64),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.step_data(
-          'create minimal rust kzip.list CU metadata',
-          api.file.glob_paths([
-              '/tmp/foo-0123456789abcdef.unit',
-              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
-          ])),
-      api.step_data('create minimal rust kzip.create minimal kzip'),
-      api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'create rust kzip.extract Rust kzips'),
+      api.post_process(DoesNotRun, 'create rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'merge kzips'),
       api.post_process(StepCommandContains, 'merge kzips',
-                       ['--output', '[CLEANUP]/tmp_tmp_6']),
+                       ['--output', '[CLEANUP]/tmp_tmp_4']),
       api.post_process(
           StepCommandContains,
           'gsutil upload kythe index pack',
           # Note how this path corresponds to the merge kzip output.
-          ['[CLEANUP]/tmp_tmp_6']),
+          ['[CLEANUP]/tmp_tmp_4']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -729,13 +725,13 @@ def GenTests(api):
       props('mac'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
       api.step_data(
-          'create minimal rust kzip.list CU metadata',
+          'create rust kzip.list CU metadata',
           api.file.glob_paths([
               '/tmp/foo-0123456789abcdef.unit',
               '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
           ])),
-      api.step_data('create minimal rust kzip.create minimal kzip'),
-      api.post_process(MustRun, 'create minimal rust kzip.create minimal kzip'),
+      api.step_data('create rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'create rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'merge kzips'),
       api.post_process(StepCommandContains, 'merge kzips',
                        ['--output', '[CLEANUP]/tmp_tmp_6']),

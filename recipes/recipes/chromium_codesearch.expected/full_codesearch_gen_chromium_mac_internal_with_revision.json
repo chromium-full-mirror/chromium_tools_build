@@ -1080,7 +1080,7 @@
   },
   {
     "cmd": [],
-    "name": "create minimal rust kzip"
+    "name": "create rust kzip"
   },
   {
     "cmd": [
@@ -1108,7 +1108,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.ensure_installed",
+    "name": "create rust kzip.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -1152,7 +1152,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.extract Rust kzips",
+    "name": "create rust kzip.extract Rust kzips",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1177,7 +1177,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.extract CUs",
+    "name": "create rust kzip.extract CUs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1206,7 +1206,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.list CU metadata",
+    "name": "create rust kzip.list CU metadata",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@glob@@@"
@@ -1214,7 +1214,7 @@
   },
   {
     "cmd": [],
-    "name": "create minimal rust kzip.no CUs found, skipping",
+    "name": "create rust kzip.no CUs found, skipping",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

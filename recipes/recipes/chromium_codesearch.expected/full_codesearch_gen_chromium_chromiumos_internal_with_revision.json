@@ -1024,7 +1024,7 @@
   },
   {
     "cmd": [],
-    "name": "create minimal rust kzip"
+    "name": "create rust kzip"
   },
   {
     "cmd": [
@@ -1052,7 +1052,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.ensure_installed",
+    "name": "create rust kzip.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -1096,7 +1096,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.extract Rust kzips",
+    "name": "create rust kzip.extract Rust kzips",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1104,9 +1104,12 @@
   {
     "cmd": [
       "[START_DIR]/packages/kythe/tools/kzip",
-      "view",
-      "-extract",
+      "merge",
+      "--encoding",
+      "PROTO",
+      "--output",
       "[CLEANUP]/tmp_tmp_4",
+      "[CLEANUP]/tmp_tmp_2",
       "[CLEANUP]/tmp_tmp_3"
     ],
     "luci_context": {
@@ -1121,47 +1124,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "create minimal rust kzip.extract CUs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "glob",
-      "[CLEANUP]/tmp_tmp_4",
-      "*.unit"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "create minimal rust kzip.list CU metadata",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@glob@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "create minimal rust kzip.no CUs found, skipping",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
+    "name": "merge kzips"
   },
   {
     "cmd": [
@@ -1172,7 +1135,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_2",
+      "[CLEANUP]/tmp_tmp_4",
       "gs://chrome-internal-codesearch/prod/chrome_chromiumos_170242_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa+1531887759.kzip"
     ],
     "infra_step": true,
