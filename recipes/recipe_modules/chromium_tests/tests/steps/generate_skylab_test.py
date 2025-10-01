@@ -201,7 +201,8 @@ def GenTests(api):
           retries=1),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.FAILURE)]),
-      api.post_process(post_process.StepCommandContains, 'compile', ['chrome']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['lacros_fyi_tast_tests']),
       api.post_process(
           post_process.LogContains,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
@@ -496,7 +497,8 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
       api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
-      api.post_process(post_process.StepCommandContains, 'compile', ['chrome']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['lacros_fyi_tast_tests']),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
                        ['Test did not run or failed to report to ResultDB.']),

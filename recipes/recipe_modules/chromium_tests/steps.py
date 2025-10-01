@@ -3569,6 +3569,4 @@ class SkylabTest(AbstractSkylabTest, Test):
 
   def compile_targets(self) -> Iterable[str]:
     t = [self.spec.target_name]
-    if self.is_tast_test:
-      t.append('chrome')
     return t
