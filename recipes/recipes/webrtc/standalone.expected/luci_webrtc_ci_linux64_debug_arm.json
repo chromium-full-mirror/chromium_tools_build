@@ -1829,7 +1829,7 @@
       "@@@STEP_LOG_END@serialized results@@@",
       "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.39 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for dummy_test: 1.20 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for dummy_test: 1.19 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
       "@@@STEP_LOG_END@memory usage@@@"
