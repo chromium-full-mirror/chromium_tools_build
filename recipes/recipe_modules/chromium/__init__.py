@@ -42,8 +42,4 @@ PROPERTIES = properties.InputProperties
 # Forward symbols for other modules to import
 from .config import config_ctx as CONFIG_CTX
 
-# TODO(b/446916327) - Stop importing these after downstream repos directly
-# import from chromium_types instead.
-from RECIPE_MODULES.build.chromium_types import BuilderId, BuilderSpec
-
-__all__ = ['CONFIG_CTX', 'BuilderId', 'BuilderSpec']
+__all__ = ['CONFIG_CTX']
