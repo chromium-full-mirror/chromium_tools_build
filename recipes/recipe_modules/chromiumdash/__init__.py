@@ -1,7 +1,9 @@
-# Copyright 2020 The LUCI Authors. All rights reserved.
-# Use of this source code is governed under the Apache License, Version 2.0
-# that can be found in the LICENSE file.
+# Copyright 2020 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 DEPS = [
     'recipe_engine/url',
 ]
+
+from .api import ChromiumDashApi as API

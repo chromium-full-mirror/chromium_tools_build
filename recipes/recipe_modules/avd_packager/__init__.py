@@ -16,3 +16,5 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import AvdPackagerApi as API

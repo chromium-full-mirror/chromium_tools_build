@@ -13,3 +13,6 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
+
+from .api import ChromiumTestsBuilderConfigVerifierApi as API
+from .test_api import ChromiumTestsBuilderConfigVerifierApi as TEST_API

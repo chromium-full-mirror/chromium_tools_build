@@ -24,3 +24,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import PgoApi as API
+from .test_api import PgoTestApi as TEST_API

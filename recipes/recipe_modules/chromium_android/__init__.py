@@ -22,4 +22,6 @@ DEPS = [
 
 from .config import config_ctx as CONFIG_CTX
 
-__all__ = ['CONFIG_CTX']
+from .api import AndroidApi as API
+
+__all__ = ['CONFIG_CTX', 'API']

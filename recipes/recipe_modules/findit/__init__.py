@@ -22,3 +22,5 @@ DEPS = [
     'recipe_engine/step',
     'test_utils',
 ]
+
+from .api import FinditApi as API

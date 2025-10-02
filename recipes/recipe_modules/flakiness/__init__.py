@@ -30,3 +30,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import FlakinessApi as API
+from .test_api import FlakinessTestApi as TEST_API

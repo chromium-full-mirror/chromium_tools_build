@@ -18,3 +18,5 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import Chromium3ppApi as API

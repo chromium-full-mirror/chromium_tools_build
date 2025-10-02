@@ -28,3 +28,5 @@ DEPS = [
 ]
 
 ENV_PROPERTIES = request.EnvProperties
+
+from .api import ChromiumUTRApi as API

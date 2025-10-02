@@ -11,3 +11,5 @@ DEPS = [
     'recipe_engine/resultdb',
     'recipe_engine/step',
 ]
+
+from .api import ReproInstructionsApi as API

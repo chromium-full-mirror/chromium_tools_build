@@ -17,3 +17,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import SymuploadApi as API
+from .test_api import SymuploadTestApi as TEST_API

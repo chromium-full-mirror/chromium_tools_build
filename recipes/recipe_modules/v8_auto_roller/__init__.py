@@ -21,3 +21,5 @@ DEPS = [
     'recipe_engine/url',
     'v8',
 ]
+
+from .api import V8AutoRoller as API

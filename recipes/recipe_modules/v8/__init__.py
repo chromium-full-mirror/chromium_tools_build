@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, List, Single
 
@@ -60,3 +59,6 @@ PROPERTIES = {
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
+
+from .api import V8Api as API
+from .test_api import V8TestApi as TEST_API

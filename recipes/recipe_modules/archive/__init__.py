@@ -30,3 +30,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import ArchiveApi as API
+from .test_api import ArchiveApi as TEST_API
