@@ -14,6 +14,3 @@ DEPS = [
     'recipe_engine/swarming',
     'test_utils',
 ]
-
-from .api import SkylabApi as API
-from .test_api import SkylabTestApi as TEST_API

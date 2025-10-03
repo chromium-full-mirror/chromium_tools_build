@@ -39,6 +39,3 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
-
-from .api import ANGLEApi as API
-from .test_api import ANGLETestsApi as TEST_API

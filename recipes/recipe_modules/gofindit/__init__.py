@@ -8,5 +8,3 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
 ]
-
-from .api import LuciBisectionApi as API

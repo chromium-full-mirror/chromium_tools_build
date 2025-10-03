@@ -8,6 +8,3 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
 ]
-
-from .api import DawnApi as API
-from .test_api import DawnTestsApi as TEST_API

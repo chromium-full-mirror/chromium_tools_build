@@ -18,5 +18,3 @@ DEPS = [
     'reclient',
     'siso',
 ]
-
-from .api import ChromiumBuildPerfApi as API

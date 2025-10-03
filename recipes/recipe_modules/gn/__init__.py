@@ -9,6 +9,3 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
-
-from .api import GnApi as API
-from .test_api import GnTestApi as TEST_API

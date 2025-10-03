@@ -31,6 +31,3 @@ PROPERTIES = properties.InputProperties
 DISABLE_STRICT_COVERAGE = True
 
 from .util import RDBResults
-
-from .api import TestUtilsApi as API
-from .test_api import TestUtilsTestApi as TEST_API

@@ -1,7 +1,3 @@
-# Copyright 2020 The Chromium Authors
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 DEPS = [
     'archive',
     'builder_group',
@@ -27,6 +23,3 @@ DEPS = [
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
-
-from .api import LibyuvApi as API
-from .test_api import LibyuvTestApi as TEST_API

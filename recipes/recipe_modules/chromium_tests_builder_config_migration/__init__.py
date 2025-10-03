@@ -14,4 +14,3 @@ DEPS = [
 
 # Forward symbols that might need to be imported
 from .api import BlockerCategory
-from .api import ChromiumTestsBuilderConfigMigrationApi as API

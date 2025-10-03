@@ -42,8 +42,4 @@ PROPERTIES = properties.InputProperties
 # Forward symbols for other modules to import
 from .config import config_ctx as CONFIG_CTX
 
-# These introduce circular imports, so import them last.
-from .api import ChromiumApi as API
-from .test_api import ChromiumTestApi as TEST_API
-
-__all__ = ['CONFIG_CTX', 'API', 'TEST_API']
+__all__ = ['CONFIG_CTX']

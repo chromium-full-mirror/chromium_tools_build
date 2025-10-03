@@ -24,6 +24,3 @@ DEPS = [
 
 # TODO(http://crbug.com/693058): provide coverage.
 DISABLE_STRICT_COVERAGE = True
-
-from .api import V8TestsApi as API
-from .test_api import V8TestApi as TEST_API

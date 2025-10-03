@@ -15,5 +15,3 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
 ]
-
-from .api import V8OrchestratorApi as API

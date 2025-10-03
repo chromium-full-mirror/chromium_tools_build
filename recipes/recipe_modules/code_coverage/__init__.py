@@ -32,6 +32,3 @@ DEPS = [
 
 
 PROPERTIES = properties.InputProperties
-
-from .api import CodeCoverageApi as API
-from .test_api import CodeCoverageTestApi as TEST_API

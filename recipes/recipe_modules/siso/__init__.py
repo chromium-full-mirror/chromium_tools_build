@@ -26,6 +26,3 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
-
-from .api import SisoApi as API
-from .test_api import SisoTestApi as TEST_API

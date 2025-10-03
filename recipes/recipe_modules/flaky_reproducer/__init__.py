@@ -18,6 +18,3 @@ DEPS = [
     'recipe_engine/url',
     'isolate',
 ]
-
-from .api import FlakyReproducer as API
-from .test_api import FlakyReproducerTestApi as TEST_API

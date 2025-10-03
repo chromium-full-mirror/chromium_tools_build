@@ -10,5 +10,3 @@ DEPS = [
   'recipe_engine/step',
   'recipe_engine/swarming',
 ]
-
-from .api import SwarmingClientApi as API

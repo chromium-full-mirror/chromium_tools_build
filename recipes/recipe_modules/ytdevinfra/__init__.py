@@ -11,5 +11,3 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
-
-from .api import DevInfraApi as API

@@ -1,7 +1,6 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Utilities for declaring immutable attr types.
 
 This module provides `attrs` as a replacement for `attr.s` that has the
@@ -494,6 +493,3 @@ class FieldMapping(collections.abc.Mapping):
 
   def __len__(self):
     return sum(1 for a in self._non_none_attrs())
-
-
-from .api import AttrUtilsApi as API

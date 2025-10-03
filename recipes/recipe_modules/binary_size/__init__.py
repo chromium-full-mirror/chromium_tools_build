@@ -31,6 +31,3 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
-
-from .api import BinarySizeApi as API
-from .test_api import BinarySizeTestApi as TEST_API

@@ -10,5 +10,3 @@ DEPS = [
     'code_coverage',
     'recipe_engine/buildbucket',
 ]
-
-from .api import ChromiumReviverApi as API

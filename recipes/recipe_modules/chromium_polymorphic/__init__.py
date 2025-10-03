@@ -12,6 +12,3 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
-
-from .api import ChromiumPolymorphicApi as API
-from .test_api import ChromiumPolymorphicTestApi as TEST_API

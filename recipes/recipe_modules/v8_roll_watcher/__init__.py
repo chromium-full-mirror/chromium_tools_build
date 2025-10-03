@@ -20,5 +20,3 @@ DEPS = [
     'recipe_engine/step',
     'v8',
 ]
-
-from .api import V8RollWatcherApi as API

@@ -15,5 +15,3 @@ DEPS = [
 
 _clang_tidy_path = ('third_party', 'llvm-build', 'Release+Asserts', 'bin',
                     'clang-tidy')
-
-from .api import TriciumClangTidyApi as API
