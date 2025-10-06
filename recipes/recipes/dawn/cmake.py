@@ -5,12 +5,23 @@
 """
 
 DEPS = [
-    'depot_tools/bot_update', 'depot_tools/depot_tools', 'depot_tools/gclient',
-    'depot_tools/gsutil', 'depot_tools/osx_sdk', 'recipe_engine/buildbucket',
-    'recipe_engine/cipd', 'recipe_engine/context', 'recipe_engine/file',
-    'recipe_engine/json', 'recipe_engine/path', 'recipe_engine/platform',
-    'recipe_engine/properties', 'recipe_engine/step', 'recipe_engine/time',
-    'recipe_engine/raw_io'
+    'dawn',
+    'depot_tools/bot_update',
+    'depot_tools/depot_tools',
+    'depot_tools/gclient',
+    'depot_tools/gsutil',
+    'depot_tools/osx_sdk',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/step',
+    'recipe_engine/time',
+    'recipe_engine/raw_io',
 ]
 
 from contextlib import contextmanager
@@ -345,13 +356,15 @@ def RunSteps(api, target_cpu: str, debug: bool, clang: bool, asan: bool,
     env_paths = []
     if clang and not api.platform.is_mac:
       env_paths = _install_clang(api)
-    env_paths.append(source_dir.joinpath('tools', 'golang', 'bin'))
+    env_paths.extend(api.dawn.get_go_paths(source_dir))
     env_paths.append(source_dir.joinpath('third_party', 'depot_tools'))
     if api.platform.is_linux:
       env_paths.extend(_install_android_deps(api))
-    with api.context(env_prefixes={'PATH': env_paths}) as _, \
-        api.osx_sdk('mac') as _, \
-        windows_sdk(api, source_dir) as _:
+    with (
+        api.context(env_prefixes={'PATH': env_paths}),
+        api.osx_sdk('mac'),
+        windows_sdk(api, source_dir),
+    ):
 
       # Run shell scripts with bash on Windows
       shell_wrapper = ('bash', '--') if api.platform.is_win else ()

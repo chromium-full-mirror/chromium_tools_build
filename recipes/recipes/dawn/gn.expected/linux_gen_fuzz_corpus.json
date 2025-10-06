@@ -542,6 +542,7 @@
     "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin"
       ]
     },
@@ -573,6 +574,7 @@
     "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin"
       ]
     },
@@ -609,6 +611,7 @@
     "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin"
       ]
     },
@@ -646,6 +649,7 @@
     "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin"
       ]
     },
@@ -678,6 +682,7 @@
     "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin"
       ]
     },
@@ -714,6 +719,7 @@
     "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin"
       ]
     },

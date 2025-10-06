@@ -9,6 +9,7 @@
 from recipe_engine import post_process
 
 DEPS = [
+    'dawn',
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
@@ -53,8 +54,7 @@ def RunSteps(api):
   with api.nodejs(NODEJS_VERSION):
     api.step('npm', ['npm', 'version'])
 
-    with api.context(
-        env_prefixes={'PATH': [source_dir.joinpath('tools', 'golang', 'bin')]}):
+    with api.context(env_prefixes={'PATH': api.dawn.get_go_paths(source_dir)}):
       api.step('Roll WebGPU CTS', [
           source_dir.joinpath('tools', 'run'),
           'cts',

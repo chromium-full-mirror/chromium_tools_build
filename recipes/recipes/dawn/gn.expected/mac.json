@@ -611,6 +611,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/builder/dawn/tools/golang/bin",
         "[CACHE]/npmcache/pfx/bin",
         "[CACHE]/nodejs/bin"

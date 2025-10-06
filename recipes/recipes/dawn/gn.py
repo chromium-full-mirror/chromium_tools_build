@@ -5,6 +5,7 @@
 """
 
 DEPS = [
+    'dawn',
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
@@ -182,9 +183,8 @@ def _generate_dawn_corpus(api, source_dir, **kwargs):
 
 
 def _generate_tint_corpus(api, source_dir, name, build_out):
-  go_path = source_dir.joinpath('tools', 'golang', 'bin')
-  with api.context(cwd=source_dir), \
-        api.context(env_prefixes={'PATH': [go_path]}):
+  with (api.context(cwd=source_dir),
+        api.context(env_prefixes={'PATH': api.dawn.get_go_paths(source_dir)})):
     gen_cmd = ['tools/run', 'fuzz', '--build', str(build_out), '--generate']
     output_dir = api.path.tmp_base_dir / (name + "_corpus")
     api.file.ensure_directory('mkdir {}'.format(output_dir), output_dir)
@@ -228,9 +228,9 @@ def _run_dawn_node_test(api, source_dir, dawn_node_exe,
       api.step('Install CTS dependencies',
                ['npm.cmd' if api.platform.is_win else 'npm', 'install'])
     # Run test using run-cts
-    go_path = source_dir.joinpath('tools', 'golang', 'bin')
-    with api.context(cwd=source_dir) as _, \
-        api.context(env_prefixes={'PATH': [go_path]}) as _:
+    with (api.context(cwd=source_dir),
+          api.context(
+              env_prefixes={'PATH': api.dawn.get_go_paths(source_dir)})):
       case = 'webgpu:api,operation,adapter,requestDevice:default:*'
       # Run shell scripts with bash on Windows
       shell_wrapper = ('bash', '--') if api.platform.is_win else ()
@@ -356,8 +356,9 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   if fuzzers_out and api.platform.is_linux:
     # Only running on Linux, because Windows and Mac have their own unique
     # complexities, and this is meant to be just a smoke test.
-    with api.context(cwd=source_dir) as _, \
-            api.context(env_prefixes={'PATH': [source_dir.joinpath('tools', 'golang', 'bin')]}) as _:
+    with (api.context(cwd=source_dir),
+          api.context(
+              env_prefixes={'PATH': api.dawn.get_go_paths(source_dir)})):
       check_cmd = ['tools/run', 'fuzz', '--build', str(fuzzers_out), '--check']
       api.step('Run WGSL `fuzz --check`', check_cmd)
       api.step('Run IR `fuzz --check`', check_cmd + ['--ir'])

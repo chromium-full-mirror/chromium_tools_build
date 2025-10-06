@@ -456,6 +456,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
         "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
         "[CACHE]\\npmcache\\pfx",
         "[CACHE]\\nodejs"

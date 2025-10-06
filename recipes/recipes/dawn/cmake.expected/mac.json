@@ -165,6 +165,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -204,6 +205,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -239,6 +241,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -267,6 +270,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -320,6 +324,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -352,6 +357,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -407,6 +413,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -439,6 +446,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -466,6 +474,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -495,6 +504,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -526,6 +536,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -578,6 +589,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -610,6 +622,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -665,6 +678,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -697,6 +711,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -726,6 +741,7 @@
     ],
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]

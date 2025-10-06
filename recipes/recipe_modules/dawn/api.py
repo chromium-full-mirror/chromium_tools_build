@@ -33,3 +33,19 @@ class DawnApi(recipe_api.RecipeApi):
     builder_id, builder_config = self._get_builder_id_and_config()
     return self.m.chromium_tests.trybot_steps(
         builder_id, builder_config, files_relative_to='dawn/')
+
+  def get_go_paths(self, source_dir):
+    """Retrieves paths that Dawn's copy of Go may live under.
+
+    Args:
+      source_dir: The path to the Dawn source root.
+
+    Returns:
+      A list of paths that should be added to PATH to find Dawn's copy of Go.
+    """
+    arch_specific_path = source_dir.joinpath('tools', 'golang',
+                                             self.m.cipd.platform, 'bin')
+    # Path prior to when Dawn started downloading versions of Go for all
+    # architectures.
+    old_go_path = source_dir.joinpath('tools', 'golang', 'bin')
+    return [arch_specific_path, old_go_path]

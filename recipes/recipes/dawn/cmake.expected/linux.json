@@ -338,6 +338,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -369,6 +370,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -402,6 +404,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -434,6 +437,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -491,6 +495,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -529,6 +534,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -589,6 +595,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -627,6 +634,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -660,6 +668,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -695,6 +704,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -731,6 +741,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -766,6 +777,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -803,6 +815,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -860,6 +873,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -898,6 +912,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -958,6 +973,7 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
@@ -996,6 +1012,7 @@
     },
     "env_prefixes": {
       "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
