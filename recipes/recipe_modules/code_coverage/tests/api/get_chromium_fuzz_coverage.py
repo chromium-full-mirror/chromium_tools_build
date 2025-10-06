@@ -22,7 +22,7 @@ PROPERTIES = {
 def RunSteps(api, targets: set[str], overall: bool):
   api.code_coverage.get_chromium_fuzz_coverage(api.path.start_dir / 'checkout',
                                                api.path.start_dir / 'build', '',
-                                               '', targets, overall)
+                                               targets, overall)
 
 
 def GenTests(api):

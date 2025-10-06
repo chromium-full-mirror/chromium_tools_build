@@ -871,11 +871,6 @@ def _parse_args(args):
       '--fuzz',
       action='store_true',
       help='indicates whether we are generating fuzzing coverage')
-  parser.add_argument(
-      '--profdata-dir',
-      type=str,
-      help=('Data in which profdata files are stored. Used by fuzzing coverage'
-            'to determine which fuzzer binaries successfully ran.'))
   return parser.parse_args(args=args)
 
 

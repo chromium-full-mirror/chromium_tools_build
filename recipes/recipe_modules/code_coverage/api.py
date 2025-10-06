@@ -29,9 +29,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    # A single temporary directory to contain the profile data for all targets
-    # in the build.
-    self._base_profdata_dir = None
     # Temp dir for report.
     self._report_dir = None
     # Temp dir for metadata
@@ -1255,7 +1252,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                                  source_dir,
                                  build_dir,
                                  llvm_raw_data,
-                                 profdata_dir,
                                  targets: set[str],
                                  overall: bool = True):
     """Generate fuzz coverage information.
@@ -1294,8 +1290,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--profdata-path',
           llvm_raw_data,
           '--fuzz',
-          '--profdata-dir',
-          profdata_dir,
           '--binaries',
           *sorted(binaries),
       ]
