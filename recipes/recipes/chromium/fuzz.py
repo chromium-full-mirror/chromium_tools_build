@@ -41,13 +41,17 @@ PROPERTIES = InputProperties
 
 def gn_refs(api, build_dir: Path, step_name, target):
   """Runs gn refs to calculate targets depending on target.
-  Returns: the list of matched targets.
+  Returns: the set of matched targets.
   """
-  return api.gn.refs(
+  raw_output = api.gn.refs(
       build_dir, [target],
       output_type='executable',
       step_name=step_name,
       output_format='label')
+  # Filter out lines starting with "Warning: is_asan "
+  return {
+      line for line in raw_output if not line.startswith('Warning: is_asan ')
+  }
 
 
 def copy_path(api, source_dir: Path, build_dir: Path, path_name):
@@ -806,5 +810,37 @@ def GenTests(api):
       api.post_check(post_process.MustRun, 'compile (3)'),
       api.post_check(post_process.MustRun, 'compile (3)'),
       api.post_check(post_process.DoesNotRun, 'compile (4)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'filter_asan_warning',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='chromium-browser-libfuzzer',
+          upload_directory='fuzz',
+      ),
+      api.step_data(
+          'calculate all_fuzzers',
+          stdout=api.raw_io.output_text('Warning: is_asan is not defined\n'
+                                        '//foo/bar:target1\n')),
+      api.step_data(
+          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
+      api.step_data(
+          'list gn targets', stdout=api.raw_io.output_text('target1')),
+      api.post_check(post_process.StepCommandDoesNotContain, 'list gn targets',
+                     ['Warning: is_asan is not defined']),
       api.post_process(post_process.DropExpectation),
   )
