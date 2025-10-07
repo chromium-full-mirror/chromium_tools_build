@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import io
+import sys
 import unittest
 import typing
 from unittest.mock import patch

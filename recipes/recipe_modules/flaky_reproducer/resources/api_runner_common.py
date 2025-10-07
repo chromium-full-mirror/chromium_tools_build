@@ -7,6 +7,8 @@ import argparse
 import inspect
 import json
 
+from typing import Callable, List, get_args, get_origin, get_type_hints
+
 from libs.result_summary import (create_result_summary_from_output_json,
                                  BaseResultSummary)
 from libs.test_binary import (create_test_binary_from_jsonish, BaseTestBinary,
@@ -43,7 +45,7 @@ type_mapping = {
 }
 
 
-def parse_args(args, methods):
+def parse_args(args: list[str], methods: dict[str, Callable]):
   parser = argparse.ArgumentParser(
       description='Flaky reproducer libs API runner. This is to provide an'
       ' interface bridging recipe and the script running in swarming.')
@@ -56,19 +58,16 @@ def parse_args(args, methods):
   for method, func in methods.items():
     subparser = subparsers.add_parser(method, help=func.__doc__)
     method_signature = inspect.signature(func)
+    anns = get_type_hints(func)
     for parameter in method_signature.parameters.values():
       nargs = None
-      argument_type = parameter.annotation
-      # Support type such as list[int]
-      if (hasattr(parameter.annotation, '__origin__') and
-          parameter.annotation.__origin__ == list and
-          len(parameter.annotation.__args__) == 1):
+      argument_type = anns[parameter.name]
+      if get_origin(argument_type) == list and len(
+          typ_args := get_args(argument_type)) == 1:
         nargs = '*'
-        argument_type = parameter.annotation.__args__[0]
-      # type_mapping for libs
-      argument_type = type_mapping.get(argument_type, argument_type)
-      subparser.add_argument(
-          '--' + parameter.name, nargs=nargs, type=argument_type)
+        argument_type = typ_args[0]
+      type_func = type_mapping.get(argument_type, argument_type)
+      subparser.add_argument('--' + parameter.name, nargs=nargs, type=type_func)
 
   return parser.parse_args(args)
 

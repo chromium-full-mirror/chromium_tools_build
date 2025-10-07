@@ -5,6 +5,7 @@
 import json
 import io
 import unittest
+import typing
 from unittest.mock import patch, create_autospec
 
 import api_runner_common
@@ -59,6 +60,10 @@ class StrategyAPIRunnerTest(unittest.TestCase):
                   api_runner.summarize_reproducing_steps, return_value=())
       })
   def test_main_summarize_reproducing_steps(self, mock_stdout):
+    # Patch the mock so that parse_args works.
+    setattr(api_runner.methods['summarize_reproducing_steps'],
+            '__annotations__',
+            typing.get_type_hints(api_runner.summarize_reproducing_steps))
     api_runner.main([
         'summarize_reproducing_steps',
         '--reproducing_step',
