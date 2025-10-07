@@ -1,5 +1,5 @@
-# Copyright (c) 2014 The Chromium Authors. All Rights Reserved.
-# Use of this code is governed by a BSD-style license that can be
+# Copyright 2014 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from recipe_engine import recipe_test_api
