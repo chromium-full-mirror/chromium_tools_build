@@ -8,6 +8,8 @@ command lines, and returns the map of target_name -> command line.
 Used to figure out what command lines to pass to swarming tasks.
 """
 
+from __future__ import annotations
+
 import argparse
 import ast
 import glob

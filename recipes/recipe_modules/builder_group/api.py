@@ -19,6 +19,8 @@ Grouping can be retrieved for the following builders:
     configuration.
 """
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 
 

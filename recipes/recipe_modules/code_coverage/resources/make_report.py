@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """This script generates an html code coverage report using llvm-cov."""
 
+from __future__ import annotations
+
 import argparse
 import glob
 import os

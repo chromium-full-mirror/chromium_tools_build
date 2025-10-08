@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Module for providing reproduction instructions on Milo"""
 
+from __future__ import annotations
+
 from collections.abc import Iterable
 from typing import Any
 import re

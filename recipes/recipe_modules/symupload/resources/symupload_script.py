@@ -9,6 +9,8 @@
   the V2 protocol.
 """
 
+from __future__ import annotations
+
 import argparse
 from ast import dump
 import hashlib

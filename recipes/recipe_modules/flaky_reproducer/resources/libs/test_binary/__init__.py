@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 import re
 
 from .base_test_binary import (BaseTestBinary, TestBinaryWithBatchMixin,
@@ -51,10 +53,10 @@ class TaskRequest:
     @staticmethod
     def from_jsonish(d):
       def kv_list_to_dict(kv_list):
-          ret = {}
-          for kv in kv_list:
-            ret[kv['key']] = kv.get('value', None)
-          return ret
+        ret = {}
+        for kv in kv_list:
+          ret[kv['key']] = kv.get('value', None)
+        return ret
 
       p = d.get('properties', {})
       obj = TaskRequest.TaskSlice()

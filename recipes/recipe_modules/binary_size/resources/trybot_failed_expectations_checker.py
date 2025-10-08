@@ -6,6 +6,8 @@
 check_android_configuration. This is used by the size trybot to monitor
 expectation file regressions."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

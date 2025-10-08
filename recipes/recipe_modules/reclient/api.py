@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """API for interacting with the re-client remote compiler."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import os

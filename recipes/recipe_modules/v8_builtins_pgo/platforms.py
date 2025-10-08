@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 # Paths relative to the V8 checkout directory
+from __future__ import annotations
+
+
 PROFILE_ONLY_PATH = 'tools/builtins-pgo/profile_only.py'
 D8_OUT_PATH = 'out/build/d8'
 

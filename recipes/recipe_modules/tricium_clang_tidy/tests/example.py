@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from RECIPE_MODULES.build.tricium_clang_tidy import _clang_tidy_path
 from recipe_engine import post_process

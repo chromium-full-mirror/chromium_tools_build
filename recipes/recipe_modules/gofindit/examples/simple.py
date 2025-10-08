@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from recipe_engine.post_process import LogEquals, StepCommandRE, DropExpectation
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import test_result as test_result_pb2

@@ -7,6 +7,8 @@ The `|upload_metadata|=True` branch is not covered in full.py where
 |process_coverage_data| is invoked.
 """
 
+from __future__ import annotations
+
 import re
 
 from recipe_engine import post_process

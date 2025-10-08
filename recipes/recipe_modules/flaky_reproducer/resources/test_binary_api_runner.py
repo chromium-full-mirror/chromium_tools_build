@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Exporting TestBinary object methods as CLI for recipe scripts."""
 
+from __future__ import annotations
+
 import sys
 
 from api_runner_common import main

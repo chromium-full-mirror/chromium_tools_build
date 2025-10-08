@@ -21,6 +21,8 @@ After rebasing the line numbers, we'd like understand that
 contain my change), and their line number mapping is 2 -> 3.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging

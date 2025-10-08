@@ -7,6 +7,8 @@ The code coverage data format is defined at:
 https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/findit/model/proto/code_coverage.proto
 """
 
+from __future__ import annotations
+
 import argparse
 import fnmatch
 import json

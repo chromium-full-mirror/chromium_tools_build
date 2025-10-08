@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Common steps for recipes that sync/build Cronet sources."""
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 

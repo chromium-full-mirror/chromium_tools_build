@@ -6,6 +6,7 @@
 """A tool to extract size information from a build.
 """
 
+from __future__ import annotations
 from __future__ import absolute_import
 
 import argparse

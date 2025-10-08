@@ -5,6 +5,8 @@
 # found in the LICENSE file.
 """Aggregates Jacoco coverage files to produce output."""
 
+from __future__ import annotations
+
 import argparse
 import sys
 from xml.dom import minidom

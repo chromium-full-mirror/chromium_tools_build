@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 
+from __future__ import annotations
+
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2

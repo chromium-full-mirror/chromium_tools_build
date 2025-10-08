@@ -29,6 +29,9 @@ The canonical format is a dict of the form:
 """
 
 
+from __future__ import annotations
+
+
 def result_format(
     valid=False, failures=None, total_tests_ran=0,
     pass_fail_counts=None, findit_notrun=None):

@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """This script provides utility functions to parse unified diff."""
 
+from __future__ import annotations
+
 from collections import defaultdict
 import logging
 import re

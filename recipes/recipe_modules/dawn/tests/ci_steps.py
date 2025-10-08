@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Tests for dawn.ci_steps() with synthetic builders."""
 
+from __future__ import annotations
+
 from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec)
 

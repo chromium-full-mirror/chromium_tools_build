@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Creates the instruction to run UTR."""
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 from recipe_engine import step_data
 from collections.abc import Iterable

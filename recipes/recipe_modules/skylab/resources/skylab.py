@@ -8,6 +8,8 @@ Since crosfleet is not supported for automatated usage, we created this helper
 script to map browser test to a cros_test_platform request and run in CrOS lab.
 """
 
+from __future__ import annotations
+
 import argparse
 import base64
 import json

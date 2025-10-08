@@ -6,6 +6,8 @@
 # from multiple recipes.
 
 
+from __future__ import annotations
+
 from collections import defaultdict
 
 from recipe_engine.engine_types import freeze

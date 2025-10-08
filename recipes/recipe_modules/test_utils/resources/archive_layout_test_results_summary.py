@@ -10,6 +10,8 @@ layout test results from the first try (with patch), the retry
 results can be easily fetched from the same location as the results.
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import re

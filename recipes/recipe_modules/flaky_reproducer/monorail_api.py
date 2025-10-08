@@ -9,6 +9,9 @@ limited methods in raw JSON without proto.
 """
 
 
+from __future__ import annotations
+
+
 class MonorailApi:
 
   def __init__(self, api):

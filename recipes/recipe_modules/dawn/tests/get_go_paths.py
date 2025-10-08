@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Tests for dawn.get_go_paths()."""
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 DEPS = [

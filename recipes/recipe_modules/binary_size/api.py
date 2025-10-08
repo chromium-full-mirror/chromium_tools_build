@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Binary size analysis for patchsets."""
 
+from __future__ import annotations
+
 import os
 import re
 

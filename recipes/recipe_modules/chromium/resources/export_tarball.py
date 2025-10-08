@@ -16,6 +16,8 @@ export_tarball.py /foo/bar
 The above will create file /foo/bar.tar.xz.
 """
 
+from __future__ import annotations
+
 import optparse
 import os
 import re

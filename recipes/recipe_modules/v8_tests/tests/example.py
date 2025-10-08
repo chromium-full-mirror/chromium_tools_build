@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 import json
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb

@@ -4,6 +4,8 @@
 """Test to ensure the correctness of get_first_tag
 """
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2

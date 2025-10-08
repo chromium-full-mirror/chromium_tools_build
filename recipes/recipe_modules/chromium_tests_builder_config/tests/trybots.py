@@ -8,6 +8,8 @@ chromium_tests.trybot_steps can be called with the input set as it would
 be when the try builder runs.
 """
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc

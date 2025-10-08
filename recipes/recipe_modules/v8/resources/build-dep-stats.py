@@ -9,6 +9,8 @@
 Outputs json to the given file or stdout.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import numpy

@@ -9,6 +9,8 @@ more details on the REST APIs of Gerrit, please refer to:
 https://gerrit-review.googlesource.com/Documentation/rest-api.html.
 """
 
+from __future__ import annotations
+
 import base64
 import json
 import logging

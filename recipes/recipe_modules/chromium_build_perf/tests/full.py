@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process

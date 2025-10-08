@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """Traverses the output dir and aggregates 'invalid_profiles.json' instances."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

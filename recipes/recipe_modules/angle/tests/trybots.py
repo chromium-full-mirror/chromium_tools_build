@@ -10,6 +10,8 @@ be when the try builder runs.
 Copied from recipe_modules/chromium_tests/tests/trybots.py.
 """
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.angle import trybots as angle_trybots

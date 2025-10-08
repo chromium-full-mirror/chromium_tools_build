@@ -7,6 +7,8 @@ It parses the DEPS file to look for dependency repositories, and runs "git log"
 to get the last changed revision of files.
 """
 
+from __future__ import annotations
+
 import collections
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor

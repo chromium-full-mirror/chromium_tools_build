@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Test of proto validation."""
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.proto_validation import Registry

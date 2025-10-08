@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 """This script stores constants accessed from the recipe API."""
 
+from __future__ import annotations
+
+
 DEFAULT_BUCKET_NAME = 'code-coverage-data'
 
 DEFAULT_FUZZ_SRC_BUCKET_NAME = 'locally-generated-coverage-reports'

@@ -12,6 +12,8 @@
   For a list of command-line options, call this script with '--help'.
 """
 
+from __future__ import annotations
+
 import optparse
 import os
 import subprocess

@@ -8,6 +8,8 @@ chromium_tests.configure_build can be called with a BuilderConfig for
 that builder without error.
 """
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_types

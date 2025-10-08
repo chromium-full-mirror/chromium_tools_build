@@ -21,6 +21,8 @@ please see the nicely commented blob near the end of the script. :)
 # tricium_clang_tidy import to this file instead of the recipe module, this can
 # be renamed back to tricium_clang_tidy.py
 
+from __future__ import annotations
+
 import argparse
 import bisect
 import collections

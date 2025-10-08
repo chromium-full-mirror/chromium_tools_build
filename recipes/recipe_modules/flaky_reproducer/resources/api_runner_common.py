@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Helper functions to wrap libs API methods as CLI."""
 
+from __future__ import annotations
+
 import argparse
 import inspect
 import json

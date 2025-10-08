@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Script to get all Android/Fuchsia unstripped artifacts' paths."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging

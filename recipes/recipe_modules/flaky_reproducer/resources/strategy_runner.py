@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Entrypoint to run the actual strategies on swarming bots."""
 
+from __future__ import annotations
+
 import argparse
 import logging
 import json

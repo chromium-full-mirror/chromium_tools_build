@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """APIs for taking Chrome build performance metrics."""
 
+from __future__ import annotations
+
 import copy
 
 from RECIPE_MODULES.build import chromium_types

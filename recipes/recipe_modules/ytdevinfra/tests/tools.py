@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 from recipe_engine.post_process import StepCommandRE, DropExpectation
 from recipe_engine.recipe_api import Property

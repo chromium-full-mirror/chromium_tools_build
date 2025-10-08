@@ -22,6 +22,8 @@ the JSON equivalent of a list of BuilderGroupFilter messages from
 builder_config_migration.proto.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

@@ -5,6 +5,8 @@
 
 """Standalone python script to post a json blob to a given url."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

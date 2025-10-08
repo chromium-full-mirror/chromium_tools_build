@@ -9,6 +9,8 @@
 Generates json output of the filepaths relative to the given build directory.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

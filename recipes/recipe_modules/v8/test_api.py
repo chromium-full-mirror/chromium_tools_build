@@ -4,6 +4,8 @@
 
 # Exposes the builder and recipe configurations to GenTests in recipes.
 
+from __future__ import annotations
+
 import argparse
 from collections import OrderedDict
 import re

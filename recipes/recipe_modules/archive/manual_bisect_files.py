@@ -11,6 +11,10 @@ gotten from the local chrome executable path. (This can be retrieved by
 typing 'chrome://version' in chrome and following the executable path.
 The list needs to be updated if future chrome versions require additional files.
 """
+
+from __future__ import annotations
+
+
 CHROME_REQUIRED_FILES = {
     'android': [
         'apks',

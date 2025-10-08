@@ -8,6 +8,8 @@ Argument 1: the repr() of the adb command to run.
 Argument 2: the temporary json file to write the output to.
 """
 
+from __future__ import annotations
+
 import subprocess
 import sys
 import json

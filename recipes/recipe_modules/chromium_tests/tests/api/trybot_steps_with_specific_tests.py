@@ -7,6 +7,8 @@
 # It would make sense to merge them into a single file or into separate
 # files with a more cohesive groupings of test cases.
 
+from __future__ import annotations
+
 import re
 
 from recipe_engine import post_process

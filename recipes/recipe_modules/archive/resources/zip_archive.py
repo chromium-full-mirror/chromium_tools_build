@@ -7,6 +7,8 @@
 """Wrapper to the legacy zip function, which stages files in a directory.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

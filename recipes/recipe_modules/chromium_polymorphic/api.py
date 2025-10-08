@@ -21,6 +21,8 @@ the polymorphic builder:
   * lookup_builder_config
 """
 
+from __future__ import annotations
+
 import attr
 
 from google.protobuf import json_format

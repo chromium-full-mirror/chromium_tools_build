@@ -9,6 +9,8 @@ generator functionality to each of the generate_* tests or risk having coverage
 for the wrappers scattered about.
 """
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 DEPS = [

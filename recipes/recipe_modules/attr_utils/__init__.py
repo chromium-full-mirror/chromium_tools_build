@@ -78,6 +78,8 @@ The following additional utilities are provided:
   with `attrs`.
 """
 
+from __future__ import annotations
+
 import collections.abc
 import sys
 

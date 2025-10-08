@@ -4,6 +4,8 @@
 
 # Exposes the builder and recipe configurations to GenTests in recipes.
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 from recipe_engine import recipe_test_api
 

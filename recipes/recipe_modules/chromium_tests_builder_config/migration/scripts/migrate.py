@@ -9,6 +9,8 @@ be added to the LUCI builder definitions in order to move the builder
 configs src-side.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

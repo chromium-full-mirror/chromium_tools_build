@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Functions for interacting with llvm-cov"""
 
+from __future__ import annotations
+
 import json
 import logging
 import os

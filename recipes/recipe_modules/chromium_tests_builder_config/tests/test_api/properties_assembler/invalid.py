@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Test recipe for invalid use of property builders of the test API."""
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 DEPS = [

@@ -14,6 +14,8 @@ data format to GCS, where they get consumed by zoss and coverage service
 respectively.
 """
 
+from __future__ import annotations
+
 import argparse
 from collections import defaultdict
 import fnmatch

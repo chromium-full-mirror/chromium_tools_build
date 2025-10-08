@@ -8,6 +8,8 @@ This can be useful if you need to detach the result_sink aspect of a
 LUCI_CONTEXT for a single sub-command.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 

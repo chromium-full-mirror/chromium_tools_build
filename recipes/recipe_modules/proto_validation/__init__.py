@@ -27,6 +27,8 @@ if errors:
   # Report errors
 """
 
+from __future__ import annotations
+
 import contextlib
 
 from google.protobuf.message import Message

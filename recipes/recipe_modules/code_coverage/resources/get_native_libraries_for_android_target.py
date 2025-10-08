@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Get native libraries from .isolate file for an android target."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging

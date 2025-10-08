@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Script to clean up __jacoco_sources.json files."""
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os

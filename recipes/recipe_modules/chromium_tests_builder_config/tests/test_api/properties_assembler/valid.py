@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Test recipe for valid use of property builders of the test API."""
 
+from __future__ import annotations
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_types

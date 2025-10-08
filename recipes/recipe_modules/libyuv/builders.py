@@ -5,6 +5,8 @@
 # Contains the bulk of the libyuv builder configurations to improve readability
 # of the recipe.
 
+from __future__ import annotations
+
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs)
 from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec)

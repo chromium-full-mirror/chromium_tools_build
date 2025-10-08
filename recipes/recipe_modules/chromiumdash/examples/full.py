@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 
+from __future__ import annotations
+
+
 DEPS = [
   'chromiumdash',
 ]

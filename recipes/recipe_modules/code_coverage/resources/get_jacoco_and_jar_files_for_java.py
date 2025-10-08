@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """Script to fetch paths of jacoco and jar files for java code coverage"""
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging

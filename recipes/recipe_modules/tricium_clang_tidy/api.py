@@ -6,6 +6,8 @@ Recipe module to encapsulate the logic of calling clang-tidy on a list
 of affected files, gather warnings, and generate code findings.
 """
 
+from __future__ import annotations
+
 import collections
 
 from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb

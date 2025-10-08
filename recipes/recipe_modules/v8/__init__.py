@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 
+from __future__ import annotations
+
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, List, Single
 

@@ -10,6 +10,8 @@ which may explode the step numbers that LUCI can accept.
 This wrapper batch the step operations to background.
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import sys

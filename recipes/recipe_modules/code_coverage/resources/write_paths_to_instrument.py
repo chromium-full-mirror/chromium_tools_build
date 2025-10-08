@@ -7,6 +7,8 @@
 https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/clang_code_coverage_wrapper.md
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os

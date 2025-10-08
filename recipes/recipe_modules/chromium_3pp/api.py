@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """API to create 3pp-based packaged in chromium."""
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 
 

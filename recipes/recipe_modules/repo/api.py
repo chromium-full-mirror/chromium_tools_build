@@ -4,6 +4,8 @@
 
 """Common steps for recipes that use repo for source control."""
 
+from __future__ import annotations
+
 import re
 
 from recipe_engine import recipe_api

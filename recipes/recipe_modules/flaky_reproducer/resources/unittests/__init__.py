@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from libs.result_summary import TestStatus
 from libs.result_summary.gtest_result_summary import (GTestTestResultSummary,
                                                       GTestTestResult)

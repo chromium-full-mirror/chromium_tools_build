@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Config for ytdevinfra recipe module."""
 
+from __future__ import annotations
+
 from recipe_engine.config import config_item_context, ConfigGroup
 from recipe_engine.config import Single, Static, BadConf
 

@@ -12,6 +12,8 @@ Standard output: JSON object with keys:
   used (float): disk usage, in MiB.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import sys

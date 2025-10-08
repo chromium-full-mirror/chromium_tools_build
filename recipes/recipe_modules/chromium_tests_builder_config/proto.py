@@ -28,6 +28,8 @@ the following types with the specified additional keyword arguments:
     instead of the project and bucket.
 """
 
+from __future__ import annotations
+
 import collections
 
 from RECIPE_MODULES.build.chromium_types import BuilderId

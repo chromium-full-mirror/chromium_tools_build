@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Exporting strategy related methods as CLI for recipe scripts."""
 
+from __future__ import annotations
+
 import sys
 import typing
 

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """API to create Android Virtual Device (AVD) and upload to CIPD."""
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 
 

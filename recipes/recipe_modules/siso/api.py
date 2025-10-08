@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """API for interacting with the siso, experimental build tool."""
 
+from __future__ import annotations
+
 import contextlib
 import re
 

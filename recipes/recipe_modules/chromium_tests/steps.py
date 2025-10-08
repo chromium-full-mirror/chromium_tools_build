@@ -28,6 +28,8 @@ classes. Each concrete test type or test wrapper type has an associated
 spec type that contains the input details for the test or test wrapper.
 """
 
+from __future__ import annotations
+
 import abc
 import attr
 from collections.abc import Iterable, Set

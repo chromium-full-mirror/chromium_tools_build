@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """This script generates the json data of the code coverage using llvm-cov."""
 
+from __future__ import annotations
+
 import argparse
 import collections
 import copy

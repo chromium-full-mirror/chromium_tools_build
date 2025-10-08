@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """API recipe module for ytdevinfra."""
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 
 

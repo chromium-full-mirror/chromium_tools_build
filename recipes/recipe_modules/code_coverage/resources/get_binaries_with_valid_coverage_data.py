@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """This script gets binaries with valid coverage data for per-cl coverage."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging

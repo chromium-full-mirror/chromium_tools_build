@@ -4,6 +4,8 @@
 
 """API for sending requests to ChromiumDash."""
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 
 

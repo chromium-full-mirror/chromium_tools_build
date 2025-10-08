@@ -5,6 +5,8 @@
 """This script removes temp directories for iOS simulators under /var/folders.
 """
 
+from __future__ import annotations
+
 import glob
 import os
 import shutil

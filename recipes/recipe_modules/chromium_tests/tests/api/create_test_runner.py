@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
                                         SummaryMarkdown)
 from RECIPE_MODULES.build.chromium_tests import steps

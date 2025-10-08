@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """This script merges all.json.gz from different metadata folders."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

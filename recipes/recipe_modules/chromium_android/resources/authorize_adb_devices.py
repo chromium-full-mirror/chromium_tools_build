@@ -9,6 +9,8 @@ ADB_VENDOR_KEYS to push the host-specific private key onto the devices that are
 not authorized.
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os
