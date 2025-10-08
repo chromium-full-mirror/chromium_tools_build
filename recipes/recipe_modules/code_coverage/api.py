@@ -1426,7 +1426,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         cmd.extend(['--dir-metadata-path', self._generate_dir_metadata()])
 
     if self.platform == 'ios':
-      cmd.extend(['--arch', 'x86_64'])
+      cmd.extend(['--arch', 'arm64'])
 
     try:
       self.m.step(
