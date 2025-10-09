@@ -1174,11 +1174,6 @@ class AbstractSkylabTest(AbstractTest):
 
   @property
   @abc.abstractmethod
-  def is_tast_test(self) -> bool:
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
   def is_GPU_test(self) -> bool:
     raise NotImplementedError()  # pragma: no cover
 
@@ -3342,10 +3337,6 @@ class SkylabTest(AbstractSkylabTest, Test):
   @property
   def locality(self) -> TestLocality:
     return TestLocality.SKYLAB
-
-  @property
-  def is_tast_test(self) -> bool:
-    return bool(self.spec.tast_expr)
 
   @property
   def is_tag_criteria_test(self) -> bool:

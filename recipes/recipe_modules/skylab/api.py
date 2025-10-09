@@ -426,11 +426,16 @@ class SkylabApi(recipe_api.RecipeApi):
     tags = test.spec.resultdb.base_tags or []
     if not any(t[0] == 'cros_img' for t in tags):
       tags.append(('cros_img', cros_img))
-    result_format = 'gtest'
-    if test.is_tast_test:
-      result_format = 'tast'
-    elif test.is_GPU_test:
-      result_format = 'native'
+    result_format = test.spec.resultdb.result_format
+    # TODO(b/430180607): branched builder configuration does not have
+    # result_format in spec, infer from test name. Remove later.
+    if not result_format:  # pragma: nocover
+      if test.spec.autotest_name:
+        # GPU test does not have branched builders. Wrapped test must be gtest
+        # for recent milestones.
+        result_format = 'gtest'
+      else:
+        result_format = 'tast'
 
     gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
 
