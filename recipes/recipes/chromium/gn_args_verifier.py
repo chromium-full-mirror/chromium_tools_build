@@ -329,13 +329,48 @@ def _compare_gn_args(api, pre_patch_args: str, post_patch_args: str,
       ))
 
   if diff:
-    presentation.logs['diff'] = diff
-    presentation.status = api.step.FAILURE
-    presentation.step_text = 'GN args mismatch; see "diff" log for details'
-    return False
+    for line in diff[4:]:
+      if not _check_diff_line(line):
+        presentation.logs['diff'] = diff
+        presentation.status = api.step.FAILURE
+        presentation.step_text = 'GN args mismatch; see "diff" log for details'
+        return False
 
   presentation.step_text = 'GN args match between starlark and mb config'
   return True
+
+
+def _check_diff_line(line: str) -> bool:
+  """ Checks if a gn_arg unified diff line is an acceptable change.
+
+  Because mb_config.pyl did not require configs to explicitly list target_cpu
+  and target_os and starlark requires those args to be explicit, a properly
+  migrated list may not match exactly. This function checks lines of the
+  unified diff of the gn args, and will verify that a line represents an exact
+  match of gn args or that the only difference is the addition of target_os
+  or target_cpu when those args did not exist in the mb_config.pyl file.
+
+  Args:
+    line: the unified diff line to check for gn_args mismatches.
+
+  Returns:
+    True if a line represents an exact match of args or if the line represents
+      the addition of target_cpu or target_os when those args were not present
+      in the original mb_config file.
+    False in all other cases, including when target_cpu and target_os existed in
+      the mb_config file and have been changed in the starlark file.
+  """
+  # Because starlark requires target_cpu and target_os, adding those args when
+  # they did not exist before is fine.
+  if line.startswith(('+target_cpu', '+target_os')):
+    return True
+
+  # Lines that do not start with + or - represent a match so those are fine.
+  if not line.startswith(('+', '-')):
+    return True
+
+  # Otherwise a non permitted mismatch.
+  return False
 
 
 _UNKNOWN_BUILDER_RETCODE = 2
@@ -606,7 +641,12 @@ def GenTests(api):
                   'gn_args': {
                       'str_arg': 'test1',
                       'int_arg': 1,
-                      'bool_arg': False
+                      'bool_arg': False,
+                      # Adding target_cpu and/or target_os when that arg did not
+                      # exist before should be considered a match since starlark
+                      # requires those to be explicitly set.
+                      'target_cpu': 'CPU',
+                      'target_os': 'OS'
                   }
               },
               mb_gn_args={
@@ -669,14 +709,20 @@ def GenTests(api):
                   'gn_args': {
                       'str_arg': 'test1',
                       'int_arg': 1,
-                      'bool_arg': False
+                      'bool_arg': False,
+                      # Overwriting an existing target_cpu or target_os should
+                      # be considered a gn args mismatch.
+                      'target_cpu': 'cpu2',
+                      'target_os': 'os2'
                   }
               },
               mb_gn_args={
                   'gn_args': {
                       'str_arg': 'test1',
                       'int_arg': 2,
-                      'bool_arg': False
+                      'bool_arg': False,
+                      'target_cpu': 'cpu1',
+                      'target_os': 'os1'
                   }
               },
           ),
