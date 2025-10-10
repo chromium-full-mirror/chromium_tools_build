@@ -49,6 +49,12 @@ _PINPOINT_MAPPING = {
 
 
 def RunSteps(api):
+  # In Perf on CQ, if CQ triggers Pinpoint, the builds triggered by those
+  # Pinpoint jobs will show up in Gerrit. We should not show them because
+  # this should be part of Pinpoint workflow and be transparent to gerrit
+  # end users.
+  api.buildbucket.hide_current_build_in_gerrit()
+
   pinpoint_builder = api.buildbucket.builder_name
   perf_builder = _PINPOINT_MAPPING.get(pinpoint_builder)
   if perf_builder is None:
