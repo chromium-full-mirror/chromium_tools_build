@@ -13,3 +13,11 @@ def dawn_node(c):
     if soln.name == 'dawn':
       soln.custom_vars['dawn_node'] = True
       break
+
+
+@CONFIG_CTX(includes=['dawn'])
+def dawn_wasm(c):
+  for soln in c.solutions:
+    if soln.name == 'dawn':
+      soln.custom_vars['dawn_wasm'] = True
+      break

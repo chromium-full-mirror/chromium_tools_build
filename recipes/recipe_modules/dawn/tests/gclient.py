@@ -31,3 +31,8 @@ def GenTests(api):
       api.properties(apply_gclient_config='dawn_node'),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'dawn_wasm',
+      api.properties(apply_gclient_config='dawn_wasm'),
+      api.post_process(post_process.DropExpectation),
+  )
