@@ -108,7 +108,7 @@ def _run_tests(api, source_dir):
               '--parallel-workers',
               -1,
           ],
-          module_name='eval_prompts',
+          module_name='//agents/testing:eval_prompts',
           module_scheme='flat',
       ),
   )
