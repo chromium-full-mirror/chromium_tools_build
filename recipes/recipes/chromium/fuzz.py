@@ -142,6 +142,14 @@ def get_target_cpu(api, gn_args):
   return str(args.get('target_cpu')).replace('"', '')
 
 
+def gn_ls_with_filter(api, build_dir, inputs, **kwargs):
+  """Wraps api.gn.ls to filter out 'is_asan' warnings."""
+  raw_output = api.gn.ls(build_dir, inputs, **kwargs)
+  return {
+      line for line in raw_output if not line.startswith('Warning: is_asan ')
+  }
+
+
 def RunSteps(api, properties):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -237,7 +245,8 @@ def RunSteps(api, properties):
       # this manner.
       target_set = set()
       for target_batch in batched(targets):
-        target_set |= api.gn.ls(build_dir, target_batch, output_format='output')
+        target_set |= gn_ls_with_filter(
+            api, build_dir, target_batch, output_format='output')
 
       targets = list(target_set)
       targets.sort()  # Ensure stable order for tests.
@@ -841,6 +850,40 @@ def GenTests(api):
       api.step_data(
           'list gn targets', stdout=api.raw_io.output_text('target1')),
       api.post_check(post_process.StepCommandDoesNotContain, 'list gn targets',
+                     ['Warning: is_asan is not defined']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'filter_asan_warning_in_gn_ls',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='chromium-browser-libfuzzer',
+          upload_directory='fuzz',
+      ),
+      api.step_data(
+          'calculate all_fuzzers',
+          stdout=api.raw_io.output_text('//foo/bar:target1\n')),
+      api.step_data(
+          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
+      api.step_data(
+          'list gn targets',
+          stdout=api.raw_io.output_text('Warning: is_asan is not defined\n'
+                                        'target1\n')),
+      api.post_check(post_process.StepCommandContains, 'compile', ['target1']),
+      api.post_check(post_process.StepCommandDoesNotContain, 'compile',
                      ['Warning: is_asan is not defined']),
       api.post_process(post_process.DropExpectation),
   )
