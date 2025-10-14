@@ -1186,6 +1186,7 @@
     },
     "name": "generate_build_files (with patch)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "generate_build_files_with_patch_repro_instructions"
     },
     "~followup_annotations": [
@@ -1333,6 +1334,7 @@
     },
     "name": "compile (with patch)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001337",
       "resultdb.instruction.id": "compile_with_patch_repro_instructions"
     }

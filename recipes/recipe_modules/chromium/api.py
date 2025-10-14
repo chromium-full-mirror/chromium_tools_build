@@ -46,6 +46,8 @@ _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
 _LAST_BUILD_SYSTEM = 'LAST_BUILD_SYSTEM.txt'
 
 class ChromiumApi(recipe_api.RecipeApi):
+  # Tag used to indicate a step can be used for bisect.
+  BISECT_STEP_TAG = 'luci-bisection.is_bisectable'
 
   def __init__(self, input_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -451,6 +453,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         example_json, name='ninja_info') + self.m.raw_io.test_api.output_text(
             example_failure_output, name='failure_summary'))
 
+    ninja_step_result = None
     try:
       if self.m.siso.enabled:
         # TODO(b/288534744): support ninja_info with Siso.
@@ -524,6 +527,8 @@ class ChromiumApi(recipe_api.RecipeApi):
           retcode=ninja_step_result.retcode)
 
     finally:
+      if ninja_step_result:
+        ninja_step_result.presentation.tags[self.BISECT_STEP_TAG] = 'true'
       if include_utr_instruction and builder_id:
         self.m.repro_instructions.update_invocation_instructions()
       if not self.m.runtime.in_global_shutdown and not skip_log_upload:
@@ -1566,24 +1571,31 @@ class ChromiumApi(recipe_api.RecipeApi):
           '</br><li> '.join([arg for arg in gn_args.split('\n') if arg]))
 
     mb_args.extend(self.m.chromium_rts.mb_args())
-
     name = name or 'generate_build_files'
-    with self.mb_failure_handler(name):
-      result = self.run_mb_cmd(
-          name,
-          'gen',
-          source_dir,
-          builder_id,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          phase=phase,
-          android_version_code=android_version_code,
-          android_version_name=android_version_name,
-          additional_args=mb_args,
-          step_test_data=step_test_data,
-          include_instruction=True,
-          additional_instructions=additional_instructions,
-          **kwargs)
+    result = None
+    try:
+      with self.mb_failure_handler(name):
+        result = self.run_mb_cmd(
+            name,
+            'gen',
+            source_dir,
+            builder_id,
+            mb_path=mb_path,
+            mb_config_path=mb_config_path,
+            phase=phase,
+            android_version_code=android_version_code,
+            android_version_name=android_version_name,
+            additional_args=mb_args,
+            step_test_data=step_test_data,
+            include_instruction=True,
+            additional_instructions=additional_instructions,
+            **kwargs)
+    except self.m.step.StepFailure as f:
+      result = f.result
+      raise
+    finally:
+      if result:
+        result.presentation.tags[self.BISECT_STEP_TAG] = 'true'
 
     if isolated_targets:
       result.presentation.logs['swarming-targets-file.txt'] = (

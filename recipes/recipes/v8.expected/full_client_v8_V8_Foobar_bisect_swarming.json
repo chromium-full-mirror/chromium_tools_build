@@ -420,6 +420,7 @@
     },
     "name": "build.generate_build_files",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "buildgenerate_build_files_repro_instructions"
     },
     "~followup_annotations": [
@@ -1709,6 +1710,7 @@
     },
     "name": "Bisect a0.generate_build_files",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "bisect_a0generate_build_files_repro_instructions"
     },
     "~followup_annotations": [
@@ -2758,6 +2760,7 @@
     },
     "name": "Bisect a2.generate_build_files",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "bisect_a2generate_build_files_repro_instructions"
     },
     "~followup_annotations": [
@@ -3846,6 +3849,7 @@
     },
     "name": "Bisect a1.generate_build_files",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "bisect_a1generate_build_files_repro_instructions"
     },
     "~followup_annotations": [

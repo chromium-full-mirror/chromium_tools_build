@@ -334,6 +334,7 @@
     },
     "name": "build (ref).compile",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     },
     "~followup_annotations": [

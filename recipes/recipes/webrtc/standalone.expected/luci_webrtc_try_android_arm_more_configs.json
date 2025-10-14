@@ -850,6 +850,7 @@
     },
     "name": "generate_build_files",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "generate_build_files_repro_instructions"
     },
     "~followup_annotations": [
@@ -1478,6 +1479,7 @@
     },
     "name": "generate_build_files (2)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "generate_build_files_2_repro_instructions"
     },
     "~followup_annotations": [
@@ -2124,6 +2126,7 @@
     },
     "name": "generate_build_files (3)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "generate_build_files_3_repro_instructions"
     },
     "~followup_annotations": [

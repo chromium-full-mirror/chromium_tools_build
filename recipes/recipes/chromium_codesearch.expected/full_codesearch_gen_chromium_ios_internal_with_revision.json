@@ -523,6 +523,7 @@
     },
     "name": "generate build files",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "resultdb.instruction.id": "generate_build_files_repro_instructions"
     },
     "~followup_annotations": [

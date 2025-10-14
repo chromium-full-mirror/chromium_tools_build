@@ -115,6 +115,19 @@ def GenTests(api):
   )
 
   yield api.test(
+      'failure_with_tag',
+      api.step_data('generate_build_files', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.TagEquals,
+          'generate_build_files',
+          'luci-bisection.is_bisectable',
+          'true',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'win_failure',
       api.platform('win', 64),
       api.properties(target_platform='win'),

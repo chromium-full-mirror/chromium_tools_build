@@ -74,6 +74,8 @@ def GenTests(api):
       api.path.exists(
           api.path.cache_dir /
           'builder/src/tools/clang/scripts/process_crashreports.py'),
+      api.post_process(post_process.TagEquals, 'compile',
+                       'luci-bisection.is_bisectable', 'true'),
       api.post_process(post_process.MustRun, 'process clang crashes'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
