@@ -237,3 +237,6 @@ class Context:
     yield sub_ctx
 
     self._errors.extend(sub_ctx._errors)
+
+
+from .api import ProtoUtilsApi as API

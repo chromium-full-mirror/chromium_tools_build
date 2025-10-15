@@ -25,3 +25,6 @@ DEPS = [
     'siso',
     'swarming_client',
 ]
+
+from .api import IsolateApi as API
+from .test_api import IsolateTestApi as TEST_API

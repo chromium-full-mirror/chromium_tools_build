@@ -8,3 +8,5 @@ from __future__ import annotations
 DEPS = [
     'recipe_engine/url',
 ]
+
+from .api import ChromiumDashApi as API

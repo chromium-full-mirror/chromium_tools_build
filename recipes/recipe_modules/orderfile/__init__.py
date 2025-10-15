@@ -18,3 +18,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import OrderfileApi as API
+from .test_api import OrderfileTestApi as TEST_API

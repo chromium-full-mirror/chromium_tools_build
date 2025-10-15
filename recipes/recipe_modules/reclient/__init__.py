@@ -30,3 +30,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import ReclientApi as API
+from .test_api import ReclientTestApi as TEST_API

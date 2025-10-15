@@ -24,3 +24,6 @@ DEPS = [
     'v8_orchestrator',
     'v8_tests',
 ]
+
+from .api import V8BuiltinsPgoApi as API
+from .test_api import V8BuiltinsPgoTestApi as TEST_API

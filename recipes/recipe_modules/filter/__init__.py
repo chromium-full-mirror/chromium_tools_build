@@ -19,3 +19,6 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
+
+from .api import FilterApi as API
+from .test_api import FilterTestApi as TEST_API

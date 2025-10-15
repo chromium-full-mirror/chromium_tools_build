@@ -14,3 +14,5 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import XcodeApi as API

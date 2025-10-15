@@ -13,3 +13,6 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/step',
 ]
+
+from .api import DawnApi as API
+from .test_api import DawnTestsApi as TEST_API

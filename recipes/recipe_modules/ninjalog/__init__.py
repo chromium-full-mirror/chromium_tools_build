@@ -16,3 +16,5 @@ DEPS = [
     'recipe_engine/time',
     'recipe_engine/uuid',
 ]
+
+from .api import NinjalogApi as API

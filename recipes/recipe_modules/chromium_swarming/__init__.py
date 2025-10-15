@@ -39,3 +39,6 @@ DISABLE_STRICT_COVERAGE = True
 
 from .api import SwarmingTask
 from .types import CipdPackage, MergeScript, TriggerScript
+
+from .api import SwarmingApi as API
+from .test_api import SwarmingTestApi as TEST_API

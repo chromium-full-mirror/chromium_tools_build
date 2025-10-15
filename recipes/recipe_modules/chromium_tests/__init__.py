@@ -68,3 +68,7 @@ assert not any(
                         'build/chromium_tests_builder_config'))
 
 PROPERTIES = properties.InputProperties
+
+# These can introduce a circular dependency, so import them last.
+from .api import ChromiumTestsApi as API
+from .test_api import ChromiumTestsApi as TEST_API

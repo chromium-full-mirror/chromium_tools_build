@@ -11,3 +11,5 @@ DEPS = [
     'recipe_engine/properties', 'recipe_engine/step', 'recipe_engine/swarming',
     'infra/secret_manager'
 ]
+
+from .api import ChromiumRtsApi as API

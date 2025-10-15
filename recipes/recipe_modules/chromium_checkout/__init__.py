@@ -27,3 +27,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import ChromiumCheckoutApi as API
+from .test_api import ChromiumCheckoutTestApi as TEST_API

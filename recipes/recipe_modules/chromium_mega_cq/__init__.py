@@ -21,3 +21,5 @@ DEPS = [
     'recipe_engine/swarming',
     'recipe_engine/time',
 ]
+
+from .api import ChromiumMegaCqApi as API

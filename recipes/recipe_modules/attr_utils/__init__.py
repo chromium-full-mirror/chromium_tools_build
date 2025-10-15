@@ -495,3 +495,6 @@ class FieldMapping(collections.abc.Mapping):
 
   def __len__(self):
     return sum(1 for a in self._non_none_attrs())
+
+
+from .api import AttrUtilsApi as API

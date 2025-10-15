@@ -10,3 +10,6 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/step',
 ]
+
+from .api import AdbApi as API
+from .test_api import AdbTestApi as TEST_API

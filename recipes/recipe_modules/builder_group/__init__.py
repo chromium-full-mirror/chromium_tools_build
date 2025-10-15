@@ -8,3 +8,6 @@ from __future__ import annotations
 DEPS = [
     'recipe_engine/properties',
 ]
+
+from .api import BuilderGroupApi as API
+from .test_api import ChromiumTestApi as TEST_API

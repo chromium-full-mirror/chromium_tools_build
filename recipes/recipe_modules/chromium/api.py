@@ -22,8 +22,6 @@ from recipe_engine.config_types import Path
 import RECIPE_MODULES.build.chromium_types as chromium
 from .config import validate_config
 
-from RECIPE_MODULES.build.chromium_tests import steps
-
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 

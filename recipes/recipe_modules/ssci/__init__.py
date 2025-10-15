@@ -25,3 +25,5 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import SsciAPI as API

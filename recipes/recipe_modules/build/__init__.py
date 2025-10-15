@@ -8,3 +8,5 @@ from __future__ import annotations
 DEPS = [
     'depot_tools/depot_tools',
 ]
+
+from .api import ToolsBuildApi as API

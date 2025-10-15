@@ -11,3 +11,6 @@ DEPS = [
   'recipe_engine/platform',
   'recipe_engine/step',
 ]
+
+from .api import DiskApi as API
+from .test_api import DiskApi as TEST_API

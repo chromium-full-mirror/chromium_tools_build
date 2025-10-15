@@ -18,3 +18,5 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
 ]
+
+from .api import CronetApi as API

@@ -41,3 +41,6 @@ DEPS = [
 ]
 
 PROPERTIES = properties.InputProperties
+
+from .api import ChromiumOrchestratorApi as API
+from .test_api import ChromiumOrchestratorApi as TEST_API

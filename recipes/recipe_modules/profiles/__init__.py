@@ -13,3 +13,5 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/step',
 ]
+
+from .api import ProfilesApi as API

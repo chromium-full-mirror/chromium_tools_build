@@ -14,3 +14,6 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/step',
 ]
+
+from .api import ChromiumBootstrapApi as API
+from .test_api import ChromiumBootstrapApi as TEST_API

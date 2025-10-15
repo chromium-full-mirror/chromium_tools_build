@@ -26,3 +26,5 @@ DEPS = [
     'recipe_engine/url',
     'v8_tests',
 ]
+
+from .api import DevToolsAPI as API

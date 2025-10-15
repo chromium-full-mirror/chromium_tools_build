@@ -13,3 +13,5 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/step',
 ]
+
+from .api import ChromiumGerritUitlsApi as API

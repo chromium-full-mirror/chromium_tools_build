@@ -9,3 +9,5 @@ DEPS = [
     'recipe_engine/cipd',
     'recipe_engine/platform',
 ]
+
+from .api import GaeSdkApi as API
