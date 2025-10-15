@@ -242,6 +242,12 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
       'use_remoteexec=true',
       'use_siso=true',
   ]
+
+  # TODO(crbug.com/452209505): Enable clang modules when all Macs have Xcode 26
+  # or later.
+  if api.platform.is_mac:
+    args.append('use_clang_modules=false')
+
   if api.platform.is_win and not memory_tool:
     args.append('symbol_level=1')
 
