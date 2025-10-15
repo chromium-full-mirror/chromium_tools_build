@@ -3,16 +3,16 @@
     "cmd": [],
     "name": "report builders",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>running tester 'linux-child-tester' on group 'dawn' against builder 'linux-parent-builder' on group 'dawn'@@@",
-      "@@@STEP_LINK@linux-parent-builder@https://ci.chromium.org/p/dawn/builders/ci/linux-parent-builder@@@",
-      "@@@STEP_LINK@linux-child-tester@https://ci.chromium.org/p/dawn/builders/ci/linux-child-tester@@@"
+      "@@@STEP_TEXT@<br/>running tester 'win-child-tester' on group 'dawn' against builder 'win-parent-builder' on group 'dawn'@@@",
+      "@@@STEP_LINK@win-parent-builder@https://ci.chromium.org/p/dawn/builders/ci/win-parent-builder@@@",
+      "@@@STEP_LINK@win-child-tester@https://ci.chromium.org/p/dawn/builders/ci/win-child-tester@@@"
     ]
   },
   {
     "cmd": [],
     "name": "Report target_platform",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@target_platform@\"linux\"@@@"
+      "@@@SET_BUILD_PROPERTY@target_platform@\"win\"@@@"
     ]
   },
   {
@@ -27,11 +27,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]/builder"
+      "[CACHE]\\builder"
     ],
     "infra_step": true,
     "luci_context": {
@@ -58,7 +58,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@config@{@@@",
       "@@@STEP_LOG_LINE@config@  \"USE_MIRROR\": true,@@@",
-      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]/git\",@@@",
+      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]\\\\git\",@@@",
       "@@@STEP_LOG_LINE@config@  \"delete_unversioned_trees\": true,@@@",
       "@@@STEP_LOG_LINE@config@  \"deps_os\": {},@@@",
       "@@@STEP_LOG_LINE@config@  \"got_revision_mapping\": {@@@",
@@ -95,15 +95,15 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"dawn\"}",
       "--git-cache-dir",
-      "[CACHE]/git",
+      "[CACHE]\\git",
       "--cleanup-dir",
-      "[CLEANUP]/bot_update",
+      "[CLEANUP]\\bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
@@ -112,18 +112,18 @@
       "refs/heads/main",
       "--no_fetch_tags"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux-child-tester/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win-child-tester/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800",
       "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
-      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
-      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE2_EVENT": "[CLEANUP]\\trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]\\trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]\\trace-packet"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -203,7 +203,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -287,14 +287,14 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"ci:linux-child-tester\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"120015\", \"project\": \"dawn\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"ci:win-child-tester\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"120015\", \"project\": \"dawn\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:linux-child-tester\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:win-child-tester\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
@@ -318,13 +318,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
+      "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux-child-tester/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win-child-tester/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -356,7 +356,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -414,11 +414,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/dawn/infra/specs/dawn.json",
+      "[CACHE]\\builder\\dawn\\infra\\specs\\dawn.json",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -436,7 +436,7 @@
     },
     "name": "read test spec (dawn.json)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: [CACHE]/builder/dawn/infra/specs/dawn.json@@@",
+      "@@@STEP_TEXT@path: [CACHE]\\builder\\dawn\\infra\\specs\\dawn.json@@@",
       "@@@STEP_LOG_LINE@dawn.json@{@@@",
       "@@@STEP_LOG_LINE@dawn.json@  \"linux-child-tester\": {@@@",
       "@@@STEP_LOG_LINE@dawn.json@    \"gtest_tests\": [@@@",
@@ -498,18 +498,18 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/dawn/tools/mb/mb.py",
+      "[CACHE]\\builder\\dawn\\tools\\mb\\mb.py",
       "lookup",
       "-m",
       "dawn",
       "-b",
-      "linux-parent-builder",
+      "win-parent-builder",
       "--config-file",
-      "[CACHE]/builder/dawn/infra/specs/mb_config.pyl",
+      "[CACHE]\\builder\\dawn\\infra\\specs\\mb_config.pyl",
       "--luci-auth",
       "--quiet"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -534,11 +534,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/builder/dawn/out/Release"
+      "[CACHE]\\builder\\dawn\\out\\Release"
     ],
     "infra_step": true,
     "luci_context": {
@@ -570,15 +570,15 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -599,10 +599,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227",
       "-ensure-file",
       "infra/tools/luci/swarming/${platform} swarming_module_pin",
       "-max-threads",
@@ -610,7 +610,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -642,16 +642,16 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227\\swarming",
       "spawn-tasks",
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"dawn_end2end_tests/Ubuntu/ffffffffff/linux-child-tester/571\", \"priority\": \"25\", \"realm\": \"dawn:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:dawn\", \"buildername:linux-child-tester\", \"buildnumber:571\", \"data:ffffffffffffffffffffffffffffff/size\", \"name:dawn_end2end_tests\", \"ninja_target:\", \"project:dawn\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:dawn.ci:linux-child-tester\", \"stepname:dawn_end2end_tests on Ubuntu\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:dawn_end2end_tests\", \"waterfall_builder_group:dawn\", \"waterfall_buildername:linux-child-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"ffffffffffffffffffffffffffffff\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:linux-child-tester\", \"-var\", \"os:Ubuntu\", \"-var\", \"test_suite:dawn_end2end_tests\", \"-tag\", \"step_name:dawn_end2end_tests on Ubuntu\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux-child-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests.gpu\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"dawn_end2end_tests/Windows/ffffffffff/win-child-tester/571\", \"priority\": \"25\", \"realm\": \"dawn:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:dawn\", \"buildername:win-child-tester\", \"buildnumber:571\", \"data:ffffffffffffffffffffffffffffff/size\", \"name:dawn_end2end_tests\", \"ninja_target:\", \"project:dawn\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:dawn.ci:win-child-tester\", \"stepname:dawn_end2end_tests on Windows\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:dawn_end2end_tests\", \"waterfall_builder_group:dawn\", \"waterfall_buildername:win-child-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"ffffffffffffffffffffffffffffff\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:win-child-tester\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:dawn_end2end_tests\", \"-tag\", \"step_name:dawn_end2end_tests on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:win-child-tester\", \"--\", \"result_adapter.exe\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests.gpu\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -665,14 +665,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] dawn_end2end_tests on Ubuntu",
+    "name": "test_pre_run.[trigger] dawn_end2end_tests on Windows",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"dawn_end2end_tests/Ubuntu/ffffffffff/linux-child-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"dawn_end2end_tests/Windows/ffffffffff/win-child-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -687,7 +687,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"dawn_end2end_tests/Ubuntu/ffffffffff/linux-child-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"dawn_end2end_tests/Windows/ffffffffff/win-child-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"dawn:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -699,7 +699,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"bucket:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"builder_group:dawn\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"buildername:linux-child-tester\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:win-child-tester\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"buildnumber:571\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"data:ffffffffffffffffffffffffffffff/size\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:dawn_end2end_tests\",@@@",
@@ -709,13 +709,13 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"spec_name:dawn.ci:linux-child-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:dawn_end2end_tests on Ubuntu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:dawn.ci:win-child-tester\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:dawn_end2end_tests on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_phase:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:dawn_end2end_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_builder_group:dawn\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:linux-child-tester\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:win-child-tester\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -732,24 +732,24 @@
       "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"builder:linux-child-tester\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:win-child-tester\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"os:Ubuntu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"os:Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:dawn_end2end_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:dawn_end2end_tests on Ubuntu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:dawn_end2end_tests on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"target_platform:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"target_platform:win\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"ci:linux-child-tester\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"ci:win-child-tester\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"result_adapter\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"result_adapter.exe\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"gtest\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-result-file\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}/output.json\",@@@",
@@ -768,7 +768,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Windows\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -796,7 +796,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: dawn_end2end_tests/Ubuntu/ffffffffff/linux-child-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: dawn_end2end_tests/Windows/ffffffffff/win-child-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -807,7 +807,7 @@
       "UpdateIncludedInvocations",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -844,7 +844,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -859,7 +859,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dawn_end2end_tests instructions\", \"id\": \"tag_a169d2b71505b5e946efaad9a3a35f8989d8991a\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester -t dawn_end2end_tests compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso -t dawn_end2end_tests compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --reuse-task 0 -t dawn_end2end_tests test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dawn_end2end_tests instructions\", \"id\": \"tag_5f30cba01dd8840a49763f479c1a03e5d4ef5865\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dawn_end2end_tests instructions\", \"id\": \"tag_a169d2b71505b5e946efaad9a3a35f8989d8991a\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester -t dawn_end2end_tests compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso -t dawn_end2end_tests compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --reuse-task 0 -t dawn_end2end_tests test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dawn_end2end_tests instructions\", \"id\": \"tag_5f30cba01dd8840a49763f479c1a03e5d4ef5865\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -897,7 +897,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester -t dawn_end2end_tests compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso -t dawn_end2end_tests compile-and-test```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester -t dawn_end2end_tests compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso -t dawn_end2end_tests compile-and-test```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -909,7 +909,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --reuse-task 0 -t dawn_end2end_tests test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --reuse-task 0 -t dawn_end2end_tests test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -929,7 +929,7 @@
       "@@@STEP_LOG_LINE@json.input@          },@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso -t dawn_end2end_tests compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -947,7 +947,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso --reuse-task 0 -t dawn_end2end_tests test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -972,13 +972,13 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::git]/resources/git_setup.py",
+      "RECIPE_MODULE[depot_tools::git]\\resources\\git_setup.py",
       "--path",
-      "[START_DIR]/swarming.client",
+      "[START_DIR]\\swarming.client",
       "--url",
       "https://chromium.googlesource.com/infra/luci/client-py.git"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -1003,9 +1003,9 @@
       "origin",
       "--progress"
     ],
-    "cwd": "[START_DIR]/swarming.client",
+    "cwd": "[START_DIR]\\swarming.client",
     "env": {
-      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools];<PATH>"
     },
     "infra_step": true,
     "luci_context": {
@@ -1032,7 +1032,7 @@
       "-f",
       "6b5e452e39fc4c629c40726b0421d495e40b3620"
     ],
-    "cwd": "[START_DIR]/swarming.client",
+    "cwd": "[START_DIR]\\swarming.client",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1057,7 +1057,7 @@
       "rev-parse",
       "HEAD"
     ],
-    "cwd": "[START_DIR]/swarming.client",
+    "cwd": "[START_DIR]\\swarming.client",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1085,7 +1085,7 @@
       "-d",
       "-x"
     ],
-    "cwd": "[START_DIR]/swarming.client",
+    "cwd": "[START_DIR]\\swarming.client",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1110,7 +1110,7 @@
       "submodule",
       "sync"
     ],
-    "cwd": "[START_DIR]/swarming.client",
+    "cwd": "[START_DIR]\\swarming.client",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1137,7 +1137,7 @@
       "--init",
       "--recursive"
     ],
-    "cwd": "[START_DIR]/swarming.client",
+    "cwd": "[START_DIR]\\swarming.client",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1159,11 +1159,11 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::chromium_swarming]/resources/wait_for_finished_task_set.py",
+      "RECIPE_MODULE[build::chromium_swarming]\\resources\\wait_for_finished_task_set.py",
       "--swarming-server",
       "https://example.swarmingserver.appspot.com",
       "--swarming-py-path",
-      "[START_DIR]/swarming.client/swarming.py",
+      "[START_DIR]\\swarming.client\\swarming.py",
       "--output-json",
       "/path/to/tmp/json",
       "--input-json",
@@ -1172,7 +1172,7 @@
       "0",
       "--verbose"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -1206,7 +1206,7 @@
       "luci.resultdb.v1.ResultDB",
       "QueryTestResultStatistics"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1246,7 +1246,7 @@
       "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
       "0"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1269,14 +1269,14 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "RECIPE_MODULE[build::chromium_swarming]\\resources\\collect_task.py",
       "--verbose",
       "-o",
-      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]\\tmp_tmp_1",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_2",
+      "[CLEANUP]\\tmp_tmp_2",
       "--merge-script",
-      "[CACHE]/builder/dawn/testing/merge_scripts/standard_gtest_merge.py",
+      "[CACHE]\\builder\\dawn\\testing\\merge_scripts\\standard_gtest_merge.py",
       "--merge-script-stdout-file",
       "/path/to/tmp/merge_script_log",
       "--merge-additional-args",
@@ -1299,7 +1299,7 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
     "luci_context": {
@@ -1314,12 +1314,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "dawn_end2end_tests on Ubuntu",
+    "name": "dawn_end2end_tests on Windows",
     "tags": {
       "resultdb.instruction.id": "tag_a169d2b71505b5e946efaad9a3a35f8989d8991a"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester -t dawn_end2end_tests compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-child-tester --no-siso -t dawn_end2end_tests compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-child-tester -t dawn_end2end_tests compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-child-tester --no-siso -t dawn_end2end_tests compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -1363,17 +1363,17 @@
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"dawn_end2end_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"cpu\": \"x86-64\",@@@",
-      "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Ubuntu\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests.gpu\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"dawn_end2end_tests on Ubuntu\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"dawn_end2end_tests on Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"dawn_end2end_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"0\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  ],@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_builder_group\": \"dawn\",@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_buildername\": \"linux-child-tester\"@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"waterfall_buildername\": \"win-child-tester\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@}@@@",
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
@@ -1429,6 +1429,28 @@
     "~followup_annotations": [
       "@@@SET_BUILD_PROPERTY@test_status@{\"dawn_end2end_tests\": \"Success\"}@@@"
     ]
+  },
+  {
+    "cmd": [
+      "taskkill.exe",
+      "/f",
+      "/t",
+      "/im",
+      "mspdbsrv.exe"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Kill mspdbsrv.exe (if running)"
   },
   {
     "cmd": [

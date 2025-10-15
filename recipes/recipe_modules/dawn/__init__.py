@@ -10,4 +10,6 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
     'recipe_engine/cipd',
+    'recipe_engine/platform',
+    'recipe_engine/step',
 ]

@@ -3,15 +3,15 @@
     "cmd": [],
     "name": "report builders",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>running builder 'linux-parent-builder' on group 'dawn'@@@",
-      "@@@STEP_LINK@linux-parent-builder@https://ci.chromium.org/p/dawn/builders/ci/linux-parent-builder@@@"
+      "@@@STEP_TEXT@<br/>running builder 'win-parent-builder' on group 'dawn'@@@",
+      "@@@STEP_LINK@win-parent-builder@https://ci.chromium.org/p/dawn/builders/ci/win-parent-builder@@@"
     ]
   },
   {
     "cmd": [],
     "name": "Report target_platform",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@target_platform@\"linux\"@@@"
+      "@@@SET_BUILD_PROPERTY@target_platform@\"win\"@@@"
     ]
   },
   {
@@ -26,11 +26,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]/builder"
+      "[CACHE]\\builder"
     ],
     "infra_step": true,
     "luci_context": {
@@ -57,7 +57,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@config@{@@@",
       "@@@STEP_LOG_LINE@config@  \"USE_MIRROR\": true,@@@",
-      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]/git\",@@@",
+      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]\\\\git\",@@@",
       "@@@STEP_LOG_LINE@config@  \"delete_unversioned_trees\": true,@@@",
       "@@@STEP_LOG_LINE@config@  \"deps_os\": {},@@@",
       "@@@STEP_LOG_LINE@config@  \"got_revision_mapping\": {@@@",
@@ -94,15 +94,15 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"dawn\"}",
       "--git-cache-dir",
-      "[CACHE]/git",
+      "[CACHE]\\git",
       "--cleanup-dir",
-      "[CLEANUP]/bot_update",
+      "[CLEANUP]\\bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
@@ -111,18 +111,18 @@
       "refs/heads/main",
       "--no_fetch_tags"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux-parent-builder/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win-parent-builder/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800",
       "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
-      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
-      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE2_EVENT": "[CLEANUP]\\trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]\\trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]\\trace-packet"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -202,7 +202,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -286,14 +286,14 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"ci:linux-parent-builder\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"120015\", \"project\": \"dawn\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"ci:win-parent-builder\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"120015\", \"project\": \"dawn\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:linux-parent-builder\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:win-parent-builder\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
@@ -317,13 +317,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
+      "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux-parent-builder/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win-parent-builder/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -355,7 +355,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -413,11 +413,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/dawn/infra/specs/dawn.json",
+      "[CACHE]\\builder\\dawn\\infra\\specs\\dawn.json",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -435,7 +435,7 @@
     },
     "name": "read test spec (dawn.json)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: [CACHE]/builder/dawn/infra/specs/dawn.json@@@",
+      "@@@STEP_TEXT@path: [CACHE]\\builder\\dawn\\infra\\specs\\dawn.json@@@",
       "@@@STEP_LOG_LINE@dawn.json@{@@@",
       "@@@STEP_LOG_LINE@dawn.json@  \"linux-child-tester\": {@@@",
       "@@@STEP_LOG_LINE@dawn.json@    \"gtest_tests\": [@@@",
@@ -497,13 +497,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/dawn/out/Release"
+      "[CACHE]\\builder\\dawn\\out\\Release"
     ],
     "infra_step": true,
     "luci_context": {
@@ -524,12 +524,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/dawn/out/Release/CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\dawn\\out\\Release\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -558,12 +558,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "ninja",
-      "[CACHE]/builder/dawn/out/Release/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]\\builder\\dawn\\out\\Release\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -588,18 +588,18 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/dawn/tools/mb/mb.py",
+      "[CACHE]\\builder\\dawn\\tools\\mb\\mb.py",
       "lookup",
       "-m",
       "dawn",
       "-b",
-      "linux-parent-builder",
+      "win-parent-builder",
       "--config-file",
-      "[CACHE]/builder/dawn/infra/specs/mb_config.pyl",
+      "[CACHE]\\builder\\dawn\\infra\\specs\\mb_config.pyl",
       "--luci-auth",
       "--recursive"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -624,24 +624,24 @@
     "cmd": [
       "python3",
       "-u",
-      "[CACHE]/builder/dawn/tools/mb/mb.py",
+      "[CACHE]\\builder\\dawn\\tools\\mb\\mb.py",
       "gen",
       "-m",
       "dawn",
       "-b",
-      "linux-parent-builder",
+      "win-parent-builder",
       "--config-file",
-      "[CACHE]/builder/dawn/infra/specs/mb_config.pyl",
+      "[CACHE]\\builder\\dawn\\infra\\specs\\mb_config.pyl",
       "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
-      "[CACHE]/builder/dawn/infra/specs/gn_isolate_map.pyl",
+      "[CACHE]\\builder\\dawn\\infra\\specs\\gn_isolate_map.pyl",
       "--swarming-targets-file",
       "dawn_end2end_tests\n",
-      "[CACHE]/builder/dawn/out/Release"
+      "[CACHE]\\builder\\dawn\\out\\Release"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -673,11 +673,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/dawn/out/Release/gn_logs.txt",
+      "[CACHE]\\builder\\dawn\\out\\Release\\gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -726,7 +726,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m dawn -b linux-parent-builder --config-file infra/specs/mb_config.pyl --isolate-map-file infra/specs/gn_isolate_map.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m dawn -b win-parent-builder --config-file infra\\\\specs\\\\mb_config.pyl --isolate-map-file infra\\\\specs\\\\gn_isolate_map.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -758,7 +758,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m dawn -b linux-parent-builder --config-file infra/specs/mb_config.pyl --isolate-map-file infra/specs/gn_isolate_map.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m dawn -b win-parent-builder --config-file infra\\\\specs\\\\mb_config.pyl --isolate-map-file infra\\\\specs\\\\gn_isolate_map.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -778,18 +778,18 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
+      "RECIPE_MODULE[build::chromium]\\resources\\ninja_wrapper.py",
       "--ninja_info_output",
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
       "--",
-      "[CACHE]/builder/dawn/third_party/ninja/ninja",
+      "[CACHE]\\builder\\dawn\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/dawn/out/Release",
+      "[CACHE]\\builder\\dawn\\out\\Release",
       "dawn_end2end_tests"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -820,7 +820,7 @@
       "UpdateInvocation",
       "-include-update-token"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -838,7 +838,7 @@
       }
     },
     "name": "update invocation instructions (4)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m dawn -b linux-parent-builder --config-file infra/specs/mb_config.pyl --isolate-map-file infra/specs/gn_isolate_map.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m dawn -b win-parent-builder --config-file infra\\\\specs\\\\mb_config.pyl --isolate-map-file infra\\\\specs\\\\gn_isolate_map.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -870,7 +870,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m dawn -b linux-parent-builder --config-file infra/specs/mb_config.pyl --isolate-map-file infra/specs/gn_isolate_map.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m dawn -b win-parent-builder --config-file infra\\\\specs\\\\mb_config.pyl --isolate-map-file infra\\\\specs\\\\gn_isolate_map.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -883,7 +883,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"compile_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -895,7 +895,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -922,14 +922,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/dawn/out/Release/.ninja_log",
+      "[CACHE]\\builder\\dawn\\out\\Release\\.ninja_log",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -952,14 +952,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -982,15 +982,15 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
+      "[TMP_BASE]\\ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
       "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -1016,15 +1016,15 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/third_party/ninja/ninja",
+      "[CACHE]\\builder\\dawn\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/dawn/out/Release",
+      "[CACHE]\\builder\\dawn\\out\\Release",
       "dawn_end2end_tests",
       "-d",
       "explain",
       "-n"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]\\builder\\dawn",
     "env": {
       "CHROME_HEADLESS": "1"
     },
@@ -1064,7 +1064,7 @@
       }
     },
     "name": "update invocation instructions (5)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m dawn -b linux-parent-builder --config-file infra/specs/mb_config.pyl --isolate-map-file infra/specs/gn_isolate_map.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"dawn\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://dawn.googlesource.com/dawn.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m dawn -b win-parent-builder --config-file infra\\\\specs\\\\mb_config.pyl --isolate-map-file infra\\\\specs\\\\gn_isolate_map.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1096,7 +1096,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m dawn -b linux-parent-builder --config-file infra/specs/mb_config.pyl --isolate-map-file infra/specs/gn_isolate_map.pyl out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools\\\\mb\\\\mb.py gen -m dawn -b win-parent-builder --config-file infra\\\\specs\\\\mb_config.pyl --isolate-map-file infra\\\\specs\\\\gn_isolate_map.pyl out\\\\Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1109,7 +1109,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"compile_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1121,7 +1121,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b linux-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p dawn -B ci -b win-parent-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1148,11 +1148,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/dawn/out/Release/CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\dawn\\out\\Release\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1177,13 +1177,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra/tools/luci/isolate/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\isolate\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1205,10 +1205,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/tools/luci/isolate/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\isolate\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee",
       "-ensure-file",
       "infra/tools/luci/isolate/${platform} git_revision:mock_infra_git_revision",
       "-max-threads",
@@ -1247,7 +1247,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/isolate/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee/isolate",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\isolate\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee\\isolate",
       "batcharchive",
       "--dump-json",
       "/path/to/tmp/json",
@@ -1256,7 +1256,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]/builder/dawn/out/Release/dawn_end2end_tests.isolated.gen.json"
+      "[CACHE]\\builder\\dawn\\out\\Release\\dawn_end2end_tests.isolated.gen.json"
     ],
     "luci_context": {
       "realm": {
@@ -1283,9 +1283,9 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[build::chromium_tests]/resources/find_command_lines.py",
+      "RECIPE_MODULE[build::chromium_tests]\\resources\\find_command_lines.py",
       "--build-dir",
-      "[CACHE]/builder/dawn/out/Release",
+      "[CACHE]\\builder\\dawn\\out\\Release",
       "--output-json",
       "/path/to/tmp/json"
     ],
@@ -1311,12 +1311,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "{}",
-      "[CLEANUP]/command_lines.json"
+      "[CLEANUP]\\command_lines.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1341,11 +1341,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
+      "RECIPE_MODULE[recipe_engine::cas]\\resources\\infra.sha1",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1375,13 +1375,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1403,10 +1403,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee",
       "-ensure-file",
       "infra/tools/luci/cas/${platform} git_revision:mock_infra_git_revision",
       "-max-threads",
@@ -1445,7 +1445,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee/cas",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee\\cas",
       "archive",
       "-log-level",
       "info",
@@ -1478,12 +1478,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "{}",
-      "[CLEANUP]/command_lines.json"
+      "[CLEANUP]\\command_lines.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1506,7 +1506,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee/cas",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee\\cas",
       "archive",
       "-log-level",
       "info",
@@ -1557,14 +1557,14 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"linux-child-tester\", \"project\": \"dawn\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"dawn\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"compile_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"dawn\", \"parent_buildername\": \"linux-parent-builder\", \"parent_got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"parent_got_revision_cp\": \"refs/heads/main@{#120015}\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"swarm_hashes\": {\"dawn_end2end_tests\": \"[dummy hash for dawn_end2end_tests/dummy size]\"}, \"swarming_command_lines_cwd\": \"out/Release\", \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"swarming_rts_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"}, \"ref\": \"refs/heads/main\", \"repo\": \"https://fake.org/dawn\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"tags\": [\"parent_buildername:linux-parent-builder\", \"parent_buildnumber:571\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"linux-parent-builder/571\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000003000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"win-child-tester\", \"project\": \"dawn\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"dawn\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"compile_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"dawn\", \"parent_buildername\": \"win-parent-builder\", \"parent_got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"parent_got_revision_cp\": \"refs/heads/main@{#120015}\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"swarm_hashes\": {\"dawn_end2end_tests\": \"[dummy hash for dawn_end2end_tests/dummy size]\"}, \"swarming_command_lines_cwd\": \"out\\\\Release\", \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"swarming_rts_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"}, \"ref\": \"refs/heads/main\", \"repo\": \"https://fake.org/dawn\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"tags\": [\"parent_buildername:win-parent-builder\", \"parent_buildnumber:571\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"win-parent-builder/571\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000003000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
       "@@@STEP_LOG_LINE@input@        {@@@",
       "@@@STEP_LOG_LINE@input@            \"jobs\": [@@@",
       "@@@STEP_LOG_LINE@input@                {@@@",
-      "@@@STEP_LOG_LINE@input@                    \"job\": \"linux-child-tester\",@@@",
+      "@@@STEP_LOG_LINE@input@                    \"job\": \"win-child-tester\",@@@",
       "@@@STEP_LOG_LINE@input@                    \"project\": \"dawn\"@@@",
       "@@@STEP_LOG_LINE@input@                }@@@",
       "@@@STEP_LOG_LINE@input@            ],@@@",
@@ -1590,14 +1590,14 @@
       "@@@STEP_LOG_LINE@input@                        ],@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_build_id\": \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_builder_group\": \"dawn\",@@@",
-      "@@@STEP_LOG_LINE@input@                        \"parent_buildername\": \"linux-parent-builder\",@@@",
+      "@@@STEP_LOG_LINE@input@                        \"parent_buildername\": \"win-parent-builder\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_got_revision_cp\": \"refs/heads/main@{#120015}\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"swarm_hashes\": {@@@",
       "@@@STEP_LOG_LINE@input@                            \"dawn_end2end_tests\": \"[dummy hash for dawn_end2end_tests/dummy size]\"@@@",
       "@@@STEP_LOG_LINE@input@                        },@@@",
-      "@@@STEP_LOG_LINE@input@                        \"swarming_command_lines_cwd\": \"out/Release\",@@@",
+      "@@@STEP_LOG_LINE@input@                        \"swarming_command_lines_cwd\": \"out\\\\Release\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"swarming_rts_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"@@@",
       "@@@STEP_LOG_LINE@input@                    },@@@",
@@ -1605,13 +1605,13 @@
       "@@@STEP_LOG_LINE@input@                    \"repo\": \"https://fake.org/dawn\",@@@",
       "@@@STEP_LOG_LINE@input@                    \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@input@                    \"tags\": [@@@",
-      "@@@STEP_LOG_LINE@input@                        \"parent_buildername:linux-parent-builder\",@@@",
+      "@@@STEP_LOG_LINE@input@                        \"parent_buildername:win-parent-builder\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_buildnumber:571\",@@@",
       "@@@STEP_LOG_LINE@input@                        \"user_agent:recipe\"@@@",
       "@@@STEP_LOG_LINE@input@                    ]@@@",
       "@@@STEP_LOG_LINE@input@                },@@@",
       "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"title\": \"linux-parent-builder/571\",@@@",
+      "@@@STEP_LOG_LINE@input@                \"title\": \"win-parent-builder/571\",@@@",
       "@@@STEP_LOG_LINE@input@                \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"@@@",
       "@@@STEP_LOG_LINE@input@            }@@@",
       "@@@STEP_LOG_LINE@input@        }@@@",
@@ -1620,6 +1620,28 @@
       "@@@STEP_LOG_LINE@input@}@@@",
       "@@@STEP_LOG_END@input@@@"
     ]
+  },
+  {
+    "cmd": [
+      "taskkill.exe",
+      "/f",
+      "/t",
+      "/im",
+      "mspdbsrv.exe"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Kill mspdbsrv.exe (if running)"
   },
   {
     "cmd": [

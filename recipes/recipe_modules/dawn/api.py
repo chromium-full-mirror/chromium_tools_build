@@ -26,15 +26,19 @@ class DawnApi(recipe_api.RecipeApi):
 
   def ci_steps(self):
     builder_id, builder_config = self._get_builder_id_and_config()
-    return self.m.chromium_tests.main_waterfall_steps(builder_id,
-                                                      builder_config)
+    chromium_results = self.m.chromium_tests.main_waterfall_steps(
+        builder_id, builder_config)
+    self._kill_mspdbsrv()
+    return chromium_results
 
   def try_steps(self):
     self.m.tryserver.require_is_tryserver()
 
     builder_id, builder_config = self._get_builder_id_and_config()
-    return self.m.chromium_tests.trybot_steps(
+    chromium_results = self.m.chromium_tests.trybot_steps(
         builder_id, builder_config, files_relative_to='dawn/')
+    self._kill_mspdbsrv()
+    return chromium_results
 
   def get_go_paths(self, source_dir):
     """Retrieves paths that Dawn's copy of Go may live under.
@@ -51,3 +55,20 @@ class DawnApi(recipe_api.RecipeApi):
     # architectures.
     old_go_path = source_dir.joinpath('tools', 'golang', 'bin')
     return [arch_specific_path, old_go_path]
+
+  def _kill_mspdbsrv(self):
+    """Attempts to kill mspdbsrv.exe.
+
+    This is only expected to happen when building with MSVC, but is safe to do
+    on all Windows builds. If this is not done, the process can prevent
+    Swarming from moving the builder directory, which in turn prevents a cache
+    from being created.
+    """
+    if not self.m.platform.is_win:
+      return
+    self.m.step(
+        'Kill mspdbsrv.exe (if running)',
+        ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+        raise_on_failure=False,
+        ok_ret='any',
+    )

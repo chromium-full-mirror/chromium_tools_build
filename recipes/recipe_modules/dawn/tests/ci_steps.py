@@ -37,6 +37,19 @@ _TEST_BUILDERS = builder_db.BuilderDatabase.create({
                 parent_builder_group='dawn',
                 parent_buildername='linux-parent-builder',
                 execution_mode=builder_spec.TEST),
+        'win-compile-and-test':
+            builder_spec.BuilderSpec.create(
+                gclient_config='dawn', chromium_config='dawn_base'),
+        'win-parent-builder':
+            builder_spec.BuilderSpec.create(
+                gclient_config='dawn', chromium_config='dawn_base'),
+        'win-child-tester':
+            builder_spec.BuilderSpec.create(
+                gclient_config='dawn',
+                chromium_config='dawn_base',
+                parent_builder_group='dawn',
+                parent_buildername='win-parent-builder',
+                execution_mode=builder_spec.TEST),
     },
 })
 
@@ -58,6 +71,28 @@ _TEST_SPECS = {
             'swarming': {
                 'dimensions': {
                     'os': 'Ubuntu',
+                    'pool': 'chromium.tests.gpu',
+                },
+            },
+        },],
+    },
+    'win-compile-and-test': {
+        'gtest_tests': [{
+            'test': 'dawn_unittests',
+            'swarming': {
+                'dimensions': {
+                    'os': 'Windows',
+                    'pool': 'chromium.tests.gpu',
+                },
+            },
+        },],
+    },
+    'win-child-tester': {
+        'gtest_tests': [{
+            'test': 'dawn_end2end_tests',
+            'swarming': {
+                'dimensions': {
+                    'os': 'Windows',
                     'pool': 'chromium.tests.gpu',
                 },
             },
@@ -87,6 +122,34 @@ def GenTests(api):
       'linux_child_tester',
       api.platform('linux', 64),
       api.dawn.ci_build(builder='linux-child-tester'),
+      api.dawn.builders(_TEST_BUILDERS),
+      api.chromium_tests.read_targets_spec('dawn', _TEST_SPECS),
+      api.properties(
+          swarm_hashes={
+              'dawn_end2end_tests': 'ffffffffffffffffffffffffffffff/size',
+          },),
+  )
+
+  yield api.test(
+      'win_compile_and_test',
+      api.platform('win', 64),
+      api.dawn.ci_build(builder='win-compile-and-test'),
+      api.dawn.builders(_TEST_BUILDERS),
+      api.chromium_tests.read_targets_spec('dawn', _TEST_SPECS),
+  )
+
+  yield api.test(
+      'win_parent_builder',
+      api.platform('win', 64),
+      api.dawn.ci_build(builder='win-parent-builder'),
+      api.dawn.builders(_TEST_BUILDERS),
+      api.chromium_tests.read_targets_spec('dawn', _TEST_SPECS),
+  )
+
+  yield api.test(
+      'win_child_tester',
+      api.platform('win', 64),
+      api.dawn.ci_build(builder='win-child-tester'),
       api.dawn.builders(_TEST_BUILDERS),
       api.chromium_tests.read_targets_spec('dawn', _TEST_SPECS),
       api.properties(
