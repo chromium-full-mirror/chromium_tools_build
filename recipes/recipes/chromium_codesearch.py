@@ -48,12 +48,10 @@ GIT_COMMIT_HASH_RE = re.compile(r'[a-zA-Z0-9]{40}')
 # Regular expression for filenames produced by `kythe view -extract`.
 KYTHE_CU_FILENAME_RE = re.compile(r'.+-([0-9a-f]+)\.unit$')
 
-# Known safe Rust CUs.
+# Allowlist for smaller kzip with minimal set of Rust CUs before wider rollout.
 KYTHE_RUST_CU_ALLOWLIST = [
-    # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (linux)
-    "a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b",
-    # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (mac)
-    "3e9540fb433af97529eb3c06417fca953f80e97485dee1207fb5c572e14ef6be",
+    # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (ios)
+    "de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3",
 ]
 
 # Defines the trybots and the mirrored CI builder
@@ -405,13 +403,13 @@ def RunSteps(api, properties):
   # Create the Rust index pack on supported platforms.
   # The extractor is currently only built for Linux and Mac.
   rust_index_pack_path = None
-  if target_os in ('linux', 'mac'):
+  if target_os in ('linux', 'mac', 'ios'):
     with api.step.nest('create rust kzip'):
       rust_index_pack_path = api.codesearch.run_rust_project_extractor(
           source_dir=source_dir)
-      # On Mac, reduce this full kzip to a minimal kzip.
-      # (This means the full kzip will be merged on Linux.)
-      if api.platform.is_mac:
+      # On iOS, reduce this full kzip to a minimal kzip.
+      # (This means the full kzip will be merged on Linux and Mac.)
+      if target_os == 'ios':
         rust_index_pack_path = extract_minimal_rust_kzip(
             api, rust_index_pack_path)
 
@@ -422,7 +420,6 @@ def RunSteps(api, properties):
         initial_index_pack_path, rust_index_pack_path)
 
   # Upload the initial kythe index pack.
-  # TODO(b/420540280): Upload the combined index pack.
   api.codesearch.upload_kythe_index_pack(
       index_pack_kythe_path=final_index_pack_path,
       commit_hash=properties.codesearch_mirror_revision or _get_revision(api),
@@ -614,8 +611,8 @@ def GenTests(api):
   yield api.test(
       'rust_kzip_ignore_extract_cus_fail',
       api.platform('mac', 64),
-      props('mac'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      props('ios'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
       api.step_data('create rust kzip.extract CUs', retcode=1),
       api.post_process(StepTextEquals, 'create rust kzip.extract CUs',
                        'kzip view failed, skipping'),
@@ -634,8 +631,8 @@ def GenTests(api):
   yield api.test(
       'rust_kzip_ignore_zero_rust_cus',
       api.platform('mac', 64),
-      props('mac'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      props('ios'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
       api.step_data('create rust kzip.list CU metadata',
                     api.file.glob_paths([])),
       api.post_process(MustRun, 'create rust kzip.no CUs found, skipping'),
@@ -654,8 +651,8 @@ def GenTests(api):
   yield api.test(
       'rust_kzip_ignore_no_allowed_cus',
       api.platform('mac', 64),
-      props('mac'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      props('ios'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
       api.step_data(
           'create rust kzip.list CU metadata',
           api.file.glob_paths([
@@ -679,12 +676,12 @@ def GenTests(api):
   yield api.test(
       'rust_kzip_filter_ignore_filter_fail',
       api.platform('mac', 64),
-      props('mac'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      props('ios'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
       api.step_data(
           'create rust kzip.list CU metadata',
           api.file.glob_paths([
-              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+              '/tmp/foo-de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3.unit'
           ])),
       api.step_data('create rust kzip.create minimal kzip', retcode=1),
       api.post_process(StepTextEquals, ('create rust kzip.'
@@ -724,11 +721,30 @@ def GenTests(api):
       api.platform('mac', 64),
       props('mac'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+      api.post_process(MustRun, 'create rust kzip.extract Rust kzips'),
+      api.post_process(DoesNotRun, 'create rust kzip.create minimal kzip'),
+      api.post_process(MustRun, 'merge kzips'),
+      api.post_process(StepCommandContains, 'merge kzips',
+                       ['--output', '[CLEANUP]/tmp_tmp_4']),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Note how this path corresponds to the merge kzip output.
+          ['[CLEANUP]/tmp_tmp_4']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rust_kzip_success_ios',
+      api.platform('mac', 64),
+      props('ios'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
       api.step_data(
           'create rust kzip.list CU metadata',
           api.file.glob_paths([
               '/tmp/foo-0123456789abcdef.unit',
-              '/tmp/foo-a239086b00a9f63d7cb1912af76037f2f108f503140e8ac7873aba8cf033f45b.unit'
+              '/tmp/foo-de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3.unit'
           ])),
       api.step_data('create rust kzip.create minimal kzip'),
       api.post_process(MustRun, 'create rust kzip.create minimal kzip'),
