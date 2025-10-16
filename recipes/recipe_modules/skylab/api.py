@@ -253,6 +253,10 @@ class SkylabApi(recipe_api.RecipeApi):
 
         if test.exe_rel_path:
           test_args.append(('exe_rel_path', test.exe_rel_path))
+        elif 'tast' in test.spec.autotest_name:
+          # TODO(b/450596053): Remove after M140 is no longer built.
+          test_args.append(
+              ('exe_rel_path', os.path.join(test.build_output_dir, 'chrome')))
 
         if test.tast_expr_file:
           test_args.append(('tast_expr_file', test.tast_expr_file))
@@ -429,10 +433,11 @@ class SkylabApi(recipe_api.RecipeApi):
     result_format = test.spec.resultdb.result_format
     # TODO(b/430180607): branched builder configuration does not have
     # result_format in spec, infer from test name. Remove later.
+    # Remove once all M142 and older milestone are gone.
     if not result_format:  # pragma: nocover
-      if test.spec.autotest_name:
+      if test.spec.autotest_name and 'tast' not in test.spec.autotest_name:
         # GPU test does not have branched builders. Wrapped test must be gtest
-        # for recent milestones.
+        # for recent milestones, except when tast is in test name.
         result_format = 'gtest'
       else:
         result_format = 'tast'
