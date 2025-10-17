@@ -266,7 +266,7 @@
   },
   {
     "cmd": [],
-    "name": "get led builders.get luci.chromium.try:chromium_presubmit",
+    "name": "get led builders.get luci.chromium.try:linux-presubmit",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -278,7 +278,7 @@
       "-real-build",
       "-adjust-priority",
       "0",
-      "luci.chromium.try:chromium_presubmit"
+      "luci.chromium.try:linux-presubmit"
     ],
     "luci_context": {
       "realm": {
@@ -292,7 +292,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "get led builders.get luci.chromium.try:chromium_presubmit.led get-builder",
+    "name": "get led builders.get luci.chromium.try:linux-presubmit.led get-builder",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@proto.output@{@@@",
@@ -301,7 +301,7 @@
       "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
-      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"chromium_presubmit\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"linux-presubmit\",@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
       "@@@STEP_LOG_LINE@proto.output@        },@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
@@ -686,7 +686,7 @@
   },
   {
     "cmd": [],
-    "name": "edit recipe bundle for luci.chromium.try:chromium_presubmit"
+    "name": "edit recipe bundle for luci.chromium.try:linux-presubmit"
   },
   {
     "cmd": [
@@ -706,8 +706,8 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "edit recipe bundle for luci.chromium.try:chromium_presubmit.led edit-recipe-bundle",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"chromium_presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          }\n        },\n        \"input\": {\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "name": "edit recipe bundle for luci.chromium.try:linux-presubmit.led edit-recipe-bundle",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          }\n        },\n        \"input\": {\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@proto.output@{@@@",
@@ -716,7 +716,7 @@
       "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
-      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"chromium_presubmit\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"linux-presubmit\",@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
       "@@@STEP_LOG_LINE@proto.output@        },@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
@@ -1010,7 +1010,7 @@
   },
   {
     "cmd": [],
-    "name": "test luci.chromium.try:chromium_presubmit",
+    "name": "test luci.chromium.try:linux-presubmit",
     "~followup_annotations": [
       "@@@STEP_LINK@Test CL@https://chromium-review.googlesource.com/c/chromium/src/+/91827@@@",
       "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
@@ -1018,7 +1018,7 @@
   },
   {
     "cmd": [],
-    "name": "test luci.chromium.try:chromium_presubmit.trigger",
+    "name": "test luci.chromium.try:linux-presubmit.trigger",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1042,8 +1042,8 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:chromium_presubmit.trigger.led edit-cr-cl",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"chromium_presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "name": "test luci.chromium.try:linux-presubmit.trigger.led edit-cr-cl",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@proto.output@{@@@",
@@ -1052,7 +1052,7 @@
       "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
-      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"chromium_presubmit\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"linux-presubmit\",@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
       "@@@STEP_LOG_LINE@proto.output@        },@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
@@ -1122,8 +1122,8 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:chromium_presubmit.trigger.led edit",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"chromium_presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"91827\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "name": "test luci.chromium.try:linux-presubmit.trigger.led edit",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"91827\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@proto.output@{@@@",
@@ -1132,7 +1132,7 @@
       "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
-      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"chromium_presubmit\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"linux-presubmit\",@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
       "@@@STEP_LOG_LINE@proto.output@        },@@@",
       "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
@@ -1202,8 +1202,8 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:chromium_presubmit.trigger.led launch",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"chromium_presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"91827\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "name": "test luci.chromium.try:linux-presubmit.trigger.led launch",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-presubmit\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"91827\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -1218,7 +1218,7 @@
   },
   {
     "cmd": [],
-    "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect",
+    "name": "test luci.chromium.try:linux-presubmit.buildbucket.collect",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1246,7 +1246,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect.wait",
+    "name": "test luci.chromium.try:linux-presubmit.buildbucket.collect.wait",
     "timeout": 7200,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -1272,7 +1272,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect.get",
+    "name": "test luci.chromium.try:linux-presubmit.buildbucket.collect.get",
     "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"id\": \"87654321\"}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -1303,7 +1303,7 @@
   },
   {
     "cmd": [],
-    "name": "test luci.chromium.try:chromium_presubmit.build ends with SUCCESS",
+    "name": "test luci.chromium.try:linux-presubmit.build ends with SUCCESS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

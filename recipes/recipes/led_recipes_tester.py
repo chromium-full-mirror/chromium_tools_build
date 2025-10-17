@@ -79,7 +79,7 @@ class BuilderToTrigger:
 
 DEFAULT_BUILDERS = (
     BuilderToTrigger(
-        'luci.chromium.try:chromium_presubmit',
+        'luci.chromium.try:linux-presubmit',
         file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING),
     BuilderToTrigger(
         'luci.chromium.try:android-x64-rel',
