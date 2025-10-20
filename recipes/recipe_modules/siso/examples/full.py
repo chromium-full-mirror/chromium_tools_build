@@ -137,7 +137,7 @@ def GenTests(api):
                        ['--metrics_project', 'test-metrics-proj']),
       api.post_process(post_process.StepCommandContains, 'compile', [
           '--metrics_labels',
-          'project=chromium,bucket=ci,builder=linux-rel,source=prod,tool=siso',
+          'type=ci,host_os=linux,project=chromium,bucket=ci,builder=linux-rel,source=prod,tool=siso',
       ]),
       api.post_process(post_process.DropExpectation),
   )

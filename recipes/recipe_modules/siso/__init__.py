@@ -11,6 +11,7 @@ from .api import RUSAGE_FORMAT
 DEPS = [
     'depot_tools/gclient',
     'depot_tools/gsutil',
+    'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
     'recipe_engine/cipd',
