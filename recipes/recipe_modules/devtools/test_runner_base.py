@@ -11,7 +11,9 @@ from contextlib import contextmanager
 from .commons import Results
 
 FLAKE_DETECTION_MAX_TESTS = 20
-SHARDING_BIAS = 1
+FLAKE_DETECTION_OPTION = '--repeat=10'
+FLAKE_EXONERATION_OPTION = '--grep'
+FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
 
 class DevToolsTests(ABC):
 
@@ -228,7 +230,15 @@ class ExonerableTests(DevToolsTests):
     # Used to indicate that no task was triggered; may contain a failure if the
     # reason for not triggering qualifies as such
     self.skip_result = None
+    self.owned_new_tests = []
     self.shard_count = shard_count
+    self.shard_bias = 1
+
+  @property
+  @abstractmethod
+  def test_home_dir(self):
+    pass
+
 
   def trigger_exoneration(self, test_names):
     owned_tests = test_names.get(self.test_type_tag)
@@ -254,5 +264,17 @@ class ExonerableTests(DevToolsTests):
   def sharding_args(self):
     return [[
         f'--shard-count={self.shard_count}', f'--shard-number={shard_number+1}',
-        f'--shard-bias={SHARDING_BIAS}'
+        f'--shard-bias={self.shard_bias}'
     ] for shard_number in range(self.shard_count)]
+
+  def commands(self):
+    is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
+    if is_flake_detection_attempt:
+      return [self.run_tests_command(*self.owned_new_tests)]
+    is_flake_exoneration_attempt = FLAKE_EXONERATION_OPTION in self.extra_args
+    if is_flake_exoneration_attempt:
+      return [self.run_tests_command(self.test_home_dir)]
+    return [
+        self.run_tests_command(*args, self.test_home_dir)
+        for args in self.sharding_args()
+    ]

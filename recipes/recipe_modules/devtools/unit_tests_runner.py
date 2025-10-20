@@ -9,12 +9,21 @@ from .test_runner_base import ExonerableTests, GoldensCollector
 
 class UnitTests(ExonerableTests, GoldensCollector):
 
+  def __init__(self, api, trigger, builder_config, coverage, step_name):
+    ExonerableTests.__init__(
+        self, api, trigger, builder_config, coverage, step_name, shard_count=2)
+    GoldensCollector.__init__(self, api, trigger, builder_config, coverage,
+                              step_name)
+    self.coverage = coverage
+    self.shard_bias = 2  # Use a bias to keep shards balanced
+
+  @property
+  def test_home_dir(self):
+    return 'front_end'
+
   @property
   def test_type_tag(self):
     return 'unit_tests'
-
-  def commands(self):
-    return [self.run_tests_command('front_end')]
 
   def _post_collect(self):
     self.copy_golden_snapshots()

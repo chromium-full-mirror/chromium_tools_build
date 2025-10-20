@@ -5,17 +5,13 @@
 from __future__ import annotations
 
 from .commons import Results
-from .test_runner_base import ExonerableTests
+from .test_runner_base import (ExonerableTests, FLAKE_DETECTION_OPTION,
+                               FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
 from functools import cached_property
 import re
 
-FLAKE_DETECTION_OPTION = '--repeat=10'
-FLAKE_EXONERATION_OPTION = '--grep'
-FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
-
 
 class E2ENonHostedTests(ExonerableTests):
-
 
   def __init__(self, api, trigger, builder_config, step_name):
     super().__init__(
@@ -24,6 +20,10 @@ class E2ENonHostedTests(ExonerableTests):
     # TODO(liviurau): Needed only for where this cannot be passed in grep
     # pattern. To be removed once we have a ResultDB based solution.
     self.owned_new_tests = []
+
+  @property
+  def test_home_dir(self):
+    return 'test/e2e_non_hosted'
 
   def skip(self):
     return self.api.devtools.is_debug(self.builder_config)
@@ -35,18 +35,6 @@ class E2ENonHostedTests(ExonerableTests):
   def trigger_exoneration(self, test_names):
     self.shard_count = 1
     return super().trigger_exoneration(test_names)
-
-  def commands(self):
-    is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
-    if is_flake_detection_attempt:
-      return [self.run_tests_command(*self.owned_new_tests)]
-    is_flake_exoneration_attempt = FLAKE_EXONERATION_OPTION in self.extra_args
-    if is_flake_exoneration_attempt:
-      return [self.run_tests_command('test/e2e_non_hosted')]
-    return [
-        self.run_tests_command(*args, 'test/e2e_non_hosted')
-        for args in self.sharding_args()
-    ]
 
   @property
   def grep_filter_pattern(self):
