@@ -152,6 +152,10 @@ class SisoApi(recipe_api.RecipeApi):
     ])
     if self._props.keep_going:
       cmd.extend(['-k', '0'])
+    elif 'siso.keep_going_limited' in self.m.buildbucket.build.input.experiments:
+      # TODO(crbug.com/442618066)
+      cmd.extend(['-k', '3'])
+
     if self._props.disable_batch_mode:
       cmd.extend(['-batch=false'])
 

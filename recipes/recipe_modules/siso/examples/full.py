@@ -10,6 +10,7 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import siso
 
 DEPS = [
+    'chromium',
     'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/path',
@@ -160,6 +161,34 @@ def GenTests(api):
 
   yield api.test(
       'keep_going',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(keep_going=True),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-k', '0']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'keep_going_limited',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['siso.keep_going_limited'],
+      ),
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-k', '3']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'keep_going_takes_priority',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['siso.keep_going_limited'],
+      ),
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(keep_going=True),
       api.post_process(post_process.StepCommandContains, 'compile',
