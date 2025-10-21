@@ -439,6 +439,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       # TODO(crbug.com/355218109): Can remove the following when it's rolled
       # out everywhere.
       'chromium.use_per_builder_build_dir_name',
+      # TODO(crbug.com/442618066)
+      'siso.keep_going_limited',
   ))
 
   def _trigger_compilator(self,
