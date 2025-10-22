@@ -3267,10 +3267,6 @@ class SkylabTestSpec(TestSpec):
   # autotest wrapper is required. e.g. tast.lacros
   autotest_name = attrib(str, default='')
 
-  # Spec for tast tests.
-  # The tast expression defines what tast test we run on the
-  # Skylab DUT, e.g. lacros.Basic.
-  tast_expr = attrib(str, default='')
   # The key to extract the tast expression from the tast_expr_file.
   tast_expr_key = attrib(str, default='default')
 

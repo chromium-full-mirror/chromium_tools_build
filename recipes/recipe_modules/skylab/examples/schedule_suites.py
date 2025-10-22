@@ -36,7 +36,6 @@ from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-LACROS_TAST_EXPR = '("group:mainline" && "dep:lacros" && "!informational")'
 LACROS_GTEST_ARGS = '--gtest_filter="VaapiTest.*"'
 MAYBE_MISSING_VARS = 'ui\\.gaiaPoolDefault|anotherpackage\\..*'
 GPU_GTEST_ARGS = ['--show-stdout', '--browser=cros-chrome', '--passthrough']
@@ -90,7 +89,6 @@ SKYLAB_TEST_SPEC_TEMPLATE = dict(
     autotest_name='tast.lacros',
     cros_board='eve',
     cros_model='',
-    tast_expr=None,
     tast_expr_key='default',
     test_args=None,
     cros_img='eve-release/R88-13545.0.0',
@@ -121,7 +119,7 @@ def gen_skylab_test(name, **kwargs):
 REQUESTS = [
     gen_skylab_test(
         'm88_tast_with_retry',
-        tast_expr=LACROS_TAST_EXPR,
+        tast_expr_file='tast.filter',
         retries=3,
         shard_level_retries_on_ctp=1,
         cros_model='baks',
@@ -130,19 +128,16 @@ REQUESTS = [
         public_builder_bucket='public-bucket'),
     gen_skylab_test(
         'm88_gtest_test_args',
-        tast_expr=None,
         test_args=LACROS_GTEST_ARGS,
         autotest_name='chromium',
     ),
     gen_skylab_test(
         'm88_nearby_dut_pool',
-        tast_expr=LACROS_TAST_EXPR,
         dut_pool='cross_device_multi_cb',
         tast_expr_file='tast_expr_file.filter',
         autotest_name='tast.nearby-share'),
     gen_skylab_test(
         'telemetry_test_args',
-        tast_expr=None,
         benchmark='speedometer2',
         story_filter='Speedometer2',
         results_label='12345',
@@ -151,7 +146,6 @@ REQUESTS = [
         autotest_name='chromium_Telemetry'),
     gen_skylab_test(
         'sharded_tast_req',
-        tast_expr=LACROS_TAST_EXPR,
         dut_pool='cross_device_multi_cb',
         tast_expr_file='tast_expr_file.filter',
         max_run_sec=TAST_MAX_RUN_SEC,
@@ -165,7 +159,6 @@ REQUESTS = [
     ),
     gen_skylab_test(
         'm88_gtest_test_args_strip',
-        tast_expr=None,
         test_args=LACROS_GTEST_ARGS,
         autotest_name='chromium',
         strip_chrome=True,
@@ -185,7 +178,6 @@ TFC_REQUESTS = [
         cros_test_names_exclude_from_file=['dynamically-disabled-tests.txt'],
         cros_test_max_in_shard=30,
         cros_ctp_suite_name='bvt-tast-cq',
-        tast_expr='STUB_STRING_TO_RUN_TAST_TESTS',
         autotest_name='',
     ),
     gen_skylab_test(
@@ -196,7 +188,6 @@ TFC_REQUESTS = [
         cros_model='kano',
         cros_test_names=['tast.run.TestA', 'tast.run.TestB'],
         cros_test_names_from_file=['dynamically-disabled-tests.txt'],
-        tast_expr='STUB_STRING_TO_RUN_TAST_TESTS',
         autotest_name='',
     ),
 ]
@@ -204,7 +195,6 @@ TFC_REQUESTS = [
 BUILD_VARIANT_REQUESTS = [
     gen_skylab_test(
         'build_variant',
-        tast_expr=None,
         test_args=LACROS_GTEST_ARGS,
         cros_board='eve',
         cros_build_target='eve-arc-t',
@@ -226,13 +216,13 @@ MULTI_DUT_REQUESTS = [
         'multi_dut',
         secondary_cros_board='eve',
         secondary_cros_img='eve-release/R88-13545.0.0',
-        tast_expr=LACROS_TAST_EXPR,
+        tast_expr_file='tast.filter',
         autotest_name='tast.nearby-share'),
     gen_skylab_test(
         'multi_dut_skip_secondary_lacros_paths',
         secondary_cros_board='pixel6',
         secondary_cros_img='',
-        tast_expr=LACROS_TAST_EXPR,
+        tast_expr_file='tast.filter',
         should_provision_browser_files=[False],
         autotest_name='tast.nearby-share',
     ),
@@ -240,7 +230,7 @@ MULTI_DUT_REQUESTS = [
         'multi_dut_partial_skip_secondary_lacros_paths',
         secondary_cros_board='atlas,pixel6,octopus',
         secondary_cros_img='atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
-        tast_expr=LACROS_TAST_EXPR,
+        tast_expr_file='tast.filter',
         should_provision_browser_files=[True, False, True],
         autotest_name='tast.nearby-share',
     ),
@@ -252,11 +242,10 @@ MULTI_DUT_REQUESTS = [
     ),
 ]
 
-
 LKGM_REQUESTS = [
     gen_skylab_test(
         'm88_tast_with_retry_lkgm',
-        tast_expr=LACROS_TAST_EXPR,
+        tast_expr_file='tast.filter',
         use_lkgm=True,
         cros_img='',
         retries=3,
@@ -268,7 +257,7 @@ LKGM_REQUESTS = [
 PUBLIC_LKGM_REQUESTS = [
     gen_skylab_test(
         'm88_tast_with_retry_lkgm',
-        tast_expr=LACROS_TAST_EXPR,
+        tast_expr_file='tast.filter',
         use_lkgm=True,
         cros_img='',
         retries=3,
@@ -283,8 +272,7 @@ TFC_ARGS_REQUESTS = [
         test_args=[
             f"tast.{FIELDTRIAL_TAST_VAR_NAME}={FIELDTRIAL_TAST_VAR_VALUE}"
         ],
-        bucket='chromiumos-image-archive',
-        tast_expr="placeholder: this is tast test"),
+        bucket='chromiumos-image-archive'),
     gen_skylab_test(
         'tast_maybemissingvars',
         cros_test_tags=['group:mainline'],
@@ -292,15 +280,13 @@ TFC_ARGS_REQUESTS = [
         test_args=[
             "maybemissingvars=" + MAYBE_MISSING_VARS, 'another_flag=123'
         ],
-        bucket='chromiumos-image-archive',
-        tast_expr="placeholder: this is tast test"),
+        bucket='chromiumos-image-archive'),
     gen_skylab_test(
         'tast_other_args',
         cros_test_tags=['group:mainline'],
         autotest_name='',
         test_args=["unknown_flag=XYZ", "unknown_boolean_flag"],
-        bucket='chromiumos-image-archive',
-        tast_expr="placeholder: this is tast test"),
+        bucket='chromiumos-image-archive'),
 ]
 
 PROPERTIES = {

@@ -245,10 +245,9 @@ def GenTests(api):
               'cros_board': 'eve',
               'cros_img': 'eve-release/R89-13631.0.0',
               'name': 'basic_EVE_TOT',
-              'tast_expr': 'lacros.Basic',
               'test': 'basic',
               'timeout_sec': 3600,
-              'autotest_name': 'tast.lacros',
+              'autotest_name': 'chromium',
           }],
           test_skylab=True,
       ),
@@ -274,9 +273,8 @@ def GenTests(api):
                            '60',
                        ]),
       api.post_process(post_process.StepCommandContains,
-                       'test_pre_run.basic_EVE_TOT.schedule', [
-                           'tast.lacros',
-                       ]),
+                       'test_pre_run.basic_EVE_TOT.schedule',
+                       ['--autotest-name', 'chromium']),
       api.post_process(post_process.DropExpectation),
   )
 

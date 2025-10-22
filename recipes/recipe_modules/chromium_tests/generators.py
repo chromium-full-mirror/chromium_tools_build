@@ -581,9 +581,7 @@ class Generator:
         'cros_test_names_exclude_from_file',
     ])
     if not common_skylab_kwargs.get('autotest_name') and not has_tag_criteria:
-      if common_skylab_kwargs.get('tast_expr'):
-        common_skylab_kwargs['autotest_name'] = 'tast.lacros'
-      elif common_skylab_kwargs.get('benchmark'):
+      if common_skylab_kwargs.get('benchmark'):
         common_skylab_kwargs['autotest_name'] = 'chromium_Telemetry'
       else:
         common_skylab_kwargs['autotest_name'] = 'chromium'

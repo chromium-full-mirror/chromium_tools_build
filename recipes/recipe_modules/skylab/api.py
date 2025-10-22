@@ -232,13 +232,6 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.autotest_name:
         cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
 
-        if test.spec.tast_expr:
-          # Due to crbug/1173329, skylab does not support arbitrary tast
-          # expressions. As a workaround, we encode test argument which may
-          # contain complicated patterns to base64.
-          test_args.append(
-              ('tast_expr_b64', _base64_encode_str(test.spec.tast_expr)))
-
         test_retries = '2'
         if test.spec.test_level_retries != None:
           test_retries = test.spec.test_level_retries

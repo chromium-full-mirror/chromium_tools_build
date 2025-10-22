@@ -71,7 +71,6 @@ def GenTests(api):
                   build_id=8945511751514863184,
                   builder_group='chromium.chromiumos',
                   builder='lacros-amd64-generic-rel',
-                  tast_expr='',
                   test_args='',
                   benchmark='',
                   isolate_content=GOOD_ISOLATE_TEXT,
@@ -130,7 +129,6 @@ def GenTests(api):
         'test_id_prefix': 'ninja://basic_EVE_TOT/',
         'ci_only': ci_only_tests,
         'name': 'basic_EVE_TOT',
-        'tast_expr': tast_expr,
         'benchmark': benchmark,
         'args': [test_args],
         'test': target_name,
@@ -195,12 +193,9 @@ def GenTests(api):
           (link_name, link_value) in step_odict[step].links.items())
 
   yield api.test(
-      'basic for tast',
+      'basic',
       api.properties(orchestrator={'builder_name': 'orchestrator'}),
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
-          retries=1),
+      boilerplate('chrome-test-builds', retries=1),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.FAILURE)]),
       api.post_process(post_process.StepCommandContains, 'compile',
@@ -266,7 +261,6 @@ def GenTests(api):
       'some shards had failed before run tests',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
           shards=2),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT',
@@ -290,7 +284,6 @@ def GenTests(api):
       'some shards infra failure and retry succeeded',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
           shards=3,
           retries=1),
       api.skylab.mock_wait_on_suites(
@@ -405,7 +398,6 @@ def GenTests(api):
       'infra failure not recovered by retry',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
           shards=1),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.INFRA_FAILURE)]),
@@ -496,8 +488,7 @@ def GenTests(api):
 
   yield api.test(
       'RDB returned empty test_results',
-      boilerplate(
-          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
+      boilerplate('chrome-test-builds'),
       api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['lacros_fyi_tast_tests']),
@@ -511,8 +502,7 @@ def GenTests(api):
   # CrOS lab has outage and no response from the buildbucket call.
   yield api.test(
       'Skylab outage',
-      boilerplate(
-          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
+      boilerplate('chrome-test-builds'),
       api.override_step_data('basic_EVE_TOT.read_ctp_response',
                              api.m.json.output({})),
       api.override_step_data('basic_EVE_TOT (retry shards).read_ctp_response',
@@ -528,7 +518,7 @@ def GenTests(api):
 
   yield api.test(
       'not scheduled for absent skylab gcs',
-      boilerplate('', tast_expr=TAST_TARGET, should_read_isolate=False),
+      boilerplate('', should_read_isolate=False),
       api.post_process(
           post_process.SummaryMarkdown,
           'Test was not scheduled because of absent lacros_gcs_path.'),
@@ -540,7 +530,6 @@ def GenTests(api):
       'failed to find isolate file',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
           isolate_file_exists=False),
       api.post_process(
           post_process.StepFailure,
@@ -555,7 +544,6 @@ def GenTests(api):
       'failed to parse isolate file',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
           isolate_content=BAD_ISOLATE_TEXT),
       api.post_process(
           post_process.StepFailure,
@@ -570,7 +558,6 @@ def GenTests(api):
       'target has no deps',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
           isolate_content=EMPTY_FILE_LIST),
       api.post_process(
           post_process.StepFailure,
@@ -746,7 +733,6 @@ def GenTests(api):
                       'test_id_prefix': 'ninja://basic_EVE_TOT/',
                       'ci_only': True,
                       'name': 'basic_EVE_TOT',
-                      'tast_expr': "",
                       'benchmark': "",
                       'args': [],
                       'test': GTEST_TARGET,
@@ -828,7 +814,6 @@ def GenTests(api):
       'disabled-test',
       boilerplate(
           'chrome-test-builds',
-          tast_expr='dummy_tast',
           is_ci_build=False,
           isolate_file_exists=False,
           ci_only_tests=True),
