@@ -187,8 +187,9 @@ class SisoApi(recipe_api.RecipeApi):
         labels = ''
         run_type = 'cq' if self.m.tryserver.is_tryserver else 'ci'
         labels += f'type={run_type},'
-        system_dict = {'windows': 'windows', 'darwin': 'mac', 'linux': 'linux'}
-        system = system_dict.get(self.m.platform.name.lower(), "unknown")
+        system_dict = {'win': 'windows', 'mac': 'mac', 'linux': 'linux'}
+        platform = self.m.platform.name
+        system = system_dict.get(platform, platform)
         labels += f'host_os={system},'
         buildbucket_builder_id = self.m.buildbucket.build.builder
         if buildbucket_builder_id.project:
