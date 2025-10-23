@@ -4,18 +4,27 @@
 
 from __future__ import annotations
 
-from .test_runner_base import ExonerableTests, GoldensCollector
+from .test_runner_base import ExonerableTests, GoldensCollector, NODE_UNIT_TESTS_OPTION
 
 
 class UnitTests(ExonerableTests, GoldensCollector):
 
-  def __init__(self, api, trigger, builder_config, coverage, step_name):
+  def __init__(self,
+               api,
+               trigger,
+               builder_config,
+               coverage,
+               step_name,
+               node_unit_tests=False):
     ExonerableTests.__init__(
         self, api, trigger, builder_config, coverage, step_name, shard_count=2)
     GoldensCollector.__init__(self, api, trigger, builder_config, coverage,
                               step_name)
     self.coverage = coverage
     self.shard_bias = 2  # Use a bias to keep shards balanced
+    if node_unit_tests:
+      self.shard_count = 1  # we have very few tests right now so 1 shard is sufficient.
+      self.extra_args.append(NODE_UNIT_TESTS_OPTION)
 
   @property
   def test_home_dir(self):

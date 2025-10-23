@@ -10,6 +10,8 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from .commons import Results
 
+NODE_UNIT_TESTS_OPTION = '--node-unit-tests'
+
 FLAKE_DETECTION_MAX_TESTS = 20
 FLAKE_DETECTION_OPTION = '--repeat=10'
 FLAKE_EXONERATION_OPTION = '--grep'
@@ -59,11 +61,15 @@ class DevToolsTests(ABC):
     return results
 
   def prepare_filtered_rerun(self, test_names):
+    had_node_unit_tests = NODE_UNIT_TESTS_OPTION in self.extra_args
+    # TODO: we probably should not override extra args.
     self.extra_args = [
         '--grep',
         self.test_names_to_grep_string(test_names),
         '--retries=5',
     ]
+    if had_node_unit_tests:
+      self.extra_args.append(NODE_UNIT_TESTS_OPTION)
     # TODO (liviurau): add it back after puppeteer bug fix
     # https://github.com/puppeteer/puppeteer/pull/13901
     # self.env['DEBUG'] = 'puppeteer:*'

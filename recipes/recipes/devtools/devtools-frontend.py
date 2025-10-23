@@ -100,6 +100,13 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
         UnitTests(api, trigger, builder_config, coverage, 'Unit Tests'),
+        UnitTests(
+            api,
+            trigger,
+            builder_config,
+            coverage,
+            'Unit Tests (node)',
+            node_unit_tests=True),
         E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
         PerformanceTests(api, trigger, builder_config, coverage,
                          'Performance Tests'),
