@@ -170,7 +170,8 @@ class Task:
         'duration': self.duration,
         'start_time': str(self.start_time),
         'create_time': str(self.create_time),
-        'end_time': str(self.end_time)
+        'end_time': str(self.end_time),
+        'state': 'SUCCESS'
     }
 
 

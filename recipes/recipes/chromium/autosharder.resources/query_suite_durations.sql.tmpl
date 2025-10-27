@@ -58,6 +58,7 @@ deduped_tasks AS (
     AND DATE(end_time) BETWEEN
       DATE_SUB(DATE('{lookback_start_date}'), INTERVAL 1 DAY) AND
       DATE_ADD(DATE('{lookback_end_date}'), INTERVAL 1 DAY)
+    AND NOT state = 'TIMED_OUT'
 ),
 # Now get the test swarming tasks triggered by each build from
 # build_task_ids.
