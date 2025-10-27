@@ -382,7 +382,12 @@ class SsciAPI(recipe_api.RecipeApi):
       # prepare outputs.
       depbot_json_output_dir = self.m.path.mkdtemp()
       depbot_json_summary_file = self.m.json.output(name="summary")
-      third_party_out = self.m.path.mkdtemp().joinpath("third_party.json")
+
+      partybot_output_dir = self.m.path.cleanup_dir / 'partybot'
+      self.m.file.ensure_directory('ensure Partybot output directory',
+                                   partybot_output_dir)
+      third_party_out = partybot_output_dir.joinpath(
+          f'third_party_{self.execution_id}.json')
 
       targetFlags = []
 
@@ -418,24 +423,30 @@ class SsciAPI(recipe_api.RecipeApi):
 
       depbot_execution_summary = depbot_result.json.outputs.get("summary")
 
-      # partybot uses gclient and relies on having depot_tools available in $PATH
-      with self.m.depot_tools.on_path():
-        # The vPython metadata files are found in the parent directory.
-        with self.m.context(cwd=self.m.path.dirname(self.partybot.tool_path)):
-          self.m.step(
-              "run partybot to collect 3P deps", [
-                  "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
-                  self.m.path.dirname(src_dir), "--file", third_party_out,
-                  "--os", self.m.buildbucket.build.builder.builder
-              ],
-              infra_step=True)
+      # Only run Partybot if it hasn't been run for this build before.
+      if not self.m.path.exists(third_party_out):
+        # Partybot uses gclient and relies on having depot_tools available in $PATH
+        with self.m.depot_tools.on_path():
+          # The vPython metadata files are found in the parent directory.
+          with self.m.context(cwd=self.m.path.dirname(self.partybot.tool_path)):
+            self.m.step(
+                "run partybot to collect 3P deps", [
+                    "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
+                    self.m.path.dirname(src_dir), "--file", third_party_out,
+                    "--os", self.m.buildbucket.build.builder.builder
+                ],
+                infra_step=True)
 
-      filename = self._make_filename_from_target("ThirdPartyData",
-                                                 sbom_filename_postfix)
-      self._upload_collected_data('third party dependencies', [
-          "-column", f'execution_id="{self.execution_id}"',
-          self.bq_thirdparty_table
-      ], third_party_out, filename, sbom_folder)
+        filename = self._make_filename_from_target("ThirdPartyData",
+                                                   sbom_filename_postfix)
+        self._upload_collected_data('third party dependencies', [
+            "-column", f'execution_id="{self.execution_id}"',
+            self.bq_thirdparty_table
+        ], third_party_out, filename, sbom_folder)
+      else:
+        skip_partybot = self.m.step.empty('using existing Partybot results')
+        skip_partybot.presentation.step_text = \
+          f'Partybot output: {self.m.path.basename(third_party_out)}'
 
       futures = []
       targets_from_depbot = depbot_execution_summary.get("targets")

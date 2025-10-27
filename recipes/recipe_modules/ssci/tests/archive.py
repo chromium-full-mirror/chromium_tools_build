@@ -41,7 +41,7 @@ def RunSteps(api):
               'sbom_name':
                   'ExampleCanary.apk.spdx.json',
               'sbom_path':
-                  '[CLEANUP]/tmp_tmp_3/spdx-out.json',
+                  '[CLEANUP]/tmp_tmp_2/spdx-out.json',
               'target':
                   'Example.apk'
           },
@@ -55,7 +55,7 @@ def RunSteps(api):
               'sbom_name':
                   'AnotherCanary.apk.spdx.json',
               'sbom_path':
-                  '[CLEANUP]/tmp_tmp_4/spdx-out.json',
+                  '[CLEANUP]/tmp_tmp_3/spdx-out.json',
               'target':
                   'Another.apk'
           },
@@ -69,7 +69,7 @@ def RunSteps(api):
               'sbom_name':
                   'exampleCanary.zip.spdx.json',
               'sbom_path':
-                  '[CLEANUP]/tmp_tmp_5/spdx-out.json',
+                  '[CLEANUP]/tmp_tmp_4/spdx-out.json',
               'targets': [
                   '//example:example',
                   '//another:another',
@@ -85,7 +85,7 @@ def RunSteps(api):
               'sbom_name':
                   'example2Canary.zip.spdx.json',
               'sbom_path':
-                  '[CLEANUP]/tmp_tmp_6/spdx-out.json',
+                  '[CLEANUP]/tmp_tmp_5/spdx-out.json',
               'targets': [
                   '//example:example',
                   '//another:another',

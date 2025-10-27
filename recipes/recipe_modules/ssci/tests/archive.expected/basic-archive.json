@@ -720,6 +720,36 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CLEANUP]/partybot"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.ensure Partybot output directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/depbot",
       "--chromium-src-dir",
       "[CACHE]/builder/src",
@@ -798,7 +828,7 @@
       "partybot",
       "[CACHE]/builder",
       "--file",
-      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "[CLEANUP]/partybot/third_party_luci-8945511751514863184.json",
       "--os",
       "mybuilder"
     ],
@@ -840,7 +870,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77/ssci_sbom",
       "-output-file",
-      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_2/spdx-out.json",
       "-sbom-generator-version",
       "vresolved-instance_id-of-prod------------",
       "-product",
@@ -852,7 +882,7 @@
       "-partybot-version",
       "vresolved-instance_id-of-AABBCC----------",
       "-third-party-file",
-      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "[CLEANUP]/partybot/third_party_luci-8945511751514863184.json",
       "-chromium-path",
       "[CACHE]/builder",
       "-depbot-version",
@@ -888,7 +918,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "file_hash",
-      "[CLEANUP]/tmp_tmp_3/spdx-out.json"
+      "[CLEANUP]/tmp_tmp_2/spdx-out.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -918,7 +948,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_2/spdx-out.json",
       "gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json"
     ],
     "infra_step": true,
@@ -952,7 +982,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77/ssci_sbom",
       "-output-file",
-      "[CLEANUP]/tmp_tmp_4/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
       "-sbom-generator-version",
       "vresolved-instance_id-of-prod------------",
       "-product",
@@ -964,7 +994,7 @@
       "-partybot-version",
       "vresolved-instance_id-of-AABBCC----------",
       "-third-party-file",
-      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "[CLEANUP]/partybot/third_party_luci-8945511751514863184.json",
       "-chromium-path",
       "[CACHE]/builder",
       "-depbot-version",
@@ -1000,7 +1030,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "file_hash",
-      "[CLEANUP]/tmp_tmp_4/spdx-out.json"
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1030,7 +1060,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_4/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
       "gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json"
     ],
     "infra_step": true,
@@ -1064,7 +1094,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77/ssci_sbom",
       "-output-file",
-      "[CLEANUP]/tmp_tmp_5/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_4/spdx-out.json",
       "-sbom-generator-version",
       "vresolved-instance_id-of-prod------------",
       "-product",
@@ -1076,7 +1106,7 @@
       "-partybot-version",
       "vresolved-instance_id-of-AABBCC----------",
       "-third-party-file",
-      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "[CLEANUP]/partybot/third_party_luci-8945511751514863184.json",
       "-chromium-path",
       "[CACHE]/builder",
       "-depbot-version",
@@ -1112,7 +1142,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "file_hash",
-      "[CLEANUP]/tmp_tmp_5/spdx-out.json"
+      "[CLEANUP]/tmp_tmp_4/spdx-out.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1142,7 +1172,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_5/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_4/spdx-out.json",
       "gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json"
     ],
     "infra_step": true,
@@ -1176,7 +1206,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77/ssci_sbom",
       "-output-file",
-      "[CLEANUP]/tmp_tmp_6/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_5/spdx-out.json",
       "-sbom-generator-version",
       "vresolved-instance_id-of-prod------------",
       "-product",
@@ -1188,7 +1218,7 @@
       "-partybot-version",
       "vresolved-instance_id-of-AABBCC----------",
       "-third-party-file",
-      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "[CLEANUP]/partybot/third_party_luci-8945511751514863184.json",
       "-chromium-path",
       "[CACHE]/builder",
       "-depbot-version",
@@ -1224,7 +1254,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "file_hash",
-      "[CLEANUP]/tmp_tmp_6/spdx-out.json"
+      "[CLEANUP]/tmp_tmp_5/spdx-out.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1254,7 +1284,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_6/spdx-out.json",
+      "[CLEANUP]/tmp_tmp_5/spdx-out.json",
       "gs://my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json"
     ],
     "infra_step": true,
@@ -1282,10 +1312,10 @@
     "name": "SSCI collection.SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json', 'filename': 'ExampleCanary.apk', 'sbom_name': 'ExampleCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_3/spdx-out.json', 'target': 'Example.apk'}@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@AnotherCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json', 'filename': 'AnotherCanary.apk', 'sbom_name': 'AnotherCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_4/spdx-out.json', 'target': 'Another.apk'}@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@exampleCanary.zip:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json', 'filename': 'exampleCanary.zip', 'sbom_name': 'exampleCanary.zip.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_5/spdx-out.json', 'targets': ['//example:example', '//another:another']}@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@example2Canary.zip:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json', 'filename': 'example2Canary.zip', 'sbom_name': 'example2Canary.zip.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_6/spdx-out.json', 'targets': ['//example:example', '//another:another']}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json', 'filename': 'ExampleCanary.apk', 'sbom_name': 'ExampleCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_2/spdx-out.json', 'target': 'Example.apk'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@AnotherCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/AnotherCanary.apk.spdx.json', 'filename': 'AnotherCanary.apk', 'sbom_name': 'AnotherCanary.apk.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_3/spdx-out.json', 'target': 'Another.apk'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@exampleCanary.zip:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/exampleCanary.zip.spdx.json', 'filename': 'exampleCanary.zip', 'sbom_name': 'exampleCanary.zip.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_4/spdx-out.json', 'targets': ['//example:example', '//another:another']}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@example2Canary.zip:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/example2Canary.zip.spdx.json', 'filename': 'example2Canary.zip', 'sbom_name': 'example2Canary.zip.spdx.json', 'sbom_path': '[CLEANUP]/tmp_tmp_5/spdx-out.json', 'targets': ['//example:example', '//another:another']}@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@"
     ]
   },

@@ -121,7 +121,7 @@ def GenTests(api):
               "vpython3", "-u",
               "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
               "--json-output", "/path/to/tmp/json", "move",
-              "[CLEANUP]/tmp_tmp_3/spdx-out.json",
+              "[CLEANUP]/tmp_tmp_2/spdx-out.json",
               "[START_DIR]/src/Release/out/chromium.zip.spdx.json"
           ],
       ),
@@ -132,7 +132,7 @@ def GenTests(api):
               "vpython3", "-u",
               "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
               "--json-output", "/path/to/tmp/json", "move",
-              "[CLEANUP]/tmp_tmp_4/spdx-out.json",
+              "[CLEANUP]/tmp_tmp_3/spdx-out.json",
               "[START_DIR]/src/Release/out/special/remoting.zip.spdx.json"
           ],
       ),

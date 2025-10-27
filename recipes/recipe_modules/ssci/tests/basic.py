@@ -27,6 +27,12 @@ def RunSteps(api):
       sbom_filename_postfix='Stable',
       targets=["//example:example"])
 
+  # Mock Partybot output file existing after the first call to `run` for the
+  # build.
+  partybot_dir = api.path.cleanup_dir / 'partybot'
+  out_file = 'third_party_luci-8945511751514863184.json'
+  api.path.mock_add_file(partybot_dir / out_file)
+
   res = api.ssci.run(
       src_dir=api.path.abspath(source_dir),
       build_dir='out/Release',
@@ -47,7 +53,7 @@ def RunSteps(api):
               'sbom_name':
                   'ExampleCanary.apk.spdx.json',
               'sbom_path':
-                  '[CLEANUP]/tmp_tmp_6/spdx-out.json',
+                  '[CLEANUP]/tmp_tmp_4/spdx-out.json',
               'target':
                   'Example.apk'
           }
@@ -90,7 +96,18 @@ def GenTests(api):
                   "bq_thirdparty_table": "project.dataset.table",
                   "ssci_version": "latest",
               }
-          }))
+          }),
+      api.post_process(
+          post_process.MustRunRE,
+          r'.+\.run partybot to collect 3P deps',
+          at_least=1,
+          at_most=1,
+      ),
+      api.post_process(
+          post_process.MustRunRE,
+          r'.+\.using existing Partybot results',
+          at_least=1,
+      ))
 
   yield api.test(
       'minimal-sdpx',
