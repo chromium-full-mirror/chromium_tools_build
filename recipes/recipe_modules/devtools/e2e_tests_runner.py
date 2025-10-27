@@ -22,8 +22,8 @@ class E2ENonHostedTests(ExonerableTests):
     self.owned_new_tests = []
 
   @property
-  def test_home_dir(self):
-    return 'test/e2e_non_hosted'
+  def test_src_folders(self):
+    return ['test/e2e_non_hosted']
 
   def skip(self):
     return self.api.devtools.is_debug(self.builder_config)

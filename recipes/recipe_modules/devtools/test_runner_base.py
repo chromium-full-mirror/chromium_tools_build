@@ -183,7 +183,7 @@ class DevToolsTests(ABC):
   def construct_env(self):
     return self.env
 
-  def run_tests_command(self, *test_list):
+  def run_tests_command(self, test_list):
     command = [
         self.api.path.join('third_party', 'node', 'node.py'),
         '--output',
@@ -242,7 +242,7 @@ class ExonerableTests(DevToolsTests):
 
   @property
   @abstractmethod
-  def test_home_dir(self):
+  def test_src_folders(self):
     pass
 
 
@@ -276,11 +276,11 @@ class ExonerableTests(DevToolsTests):
   def commands(self):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
-      return [self.run_tests_command(*self.owned_new_tests)]
+      return [self.run_tests_command(self.owned_new_tests)]
     is_flake_exoneration_attempt = FLAKE_EXONERATION_OPTION in self.extra_args
     if is_flake_exoneration_attempt:
-      return [self.run_tests_command(self.test_home_dir)]
+      return [self.run_tests_command(self.test_src_folders)]
     return [
-        self.run_tests_command(*args, self.test_home_dir)
+        self.run_tests_command(args + self.test_src_folders)
         for args in self.sharding_args()
     ]

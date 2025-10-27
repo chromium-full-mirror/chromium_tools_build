@@ -27,8 +27,8 @@ class UnitTests(ExonerableTests, GoldensCollector):
       self.extra_args.append(NODE_UNIT_TESTS_OPTION)
 
   @property
-  def test_home_dir(self):
-    return 'front_end'
+  def test_src_folders(self):
+    return ['front_end', 'mcp', 'inspector_overlay']
 
   @property
   def test_type_tag(self):

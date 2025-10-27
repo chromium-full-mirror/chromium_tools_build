@@ -88,7 +88,7 @@ class E2EStressTests(E2ENonHostedTests):
 
   def commands(self):
     tests = self.test_list or ['test/e2e']
-    return [self.run_tests_command(*tests)]
+    return [self.run_tests_command(tests)]
 
 
 def GenTests(api):

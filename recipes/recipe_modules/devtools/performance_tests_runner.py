@@ -17,7 +17,7 @@ class PerformanceTests(DevToolsTests):
     return not self.api.properties.get("perf_benchmarks", False)
 
   def commands(self):
-    return [self.run_tests_command('test/perf')]
+    return [self.run_tests_command(['test/perf'])]
 
 
   def _post_collect(self):
