@@ -471,6 +471,9 @@ class ReclientApi(recipe_api.RecipeApi):
             self.m.step.empty(
                 'verification', status=status, step_text=self._mismatch)
 
+  def download_reclient(self, gclient_solution):
+    gclient_solution.custom_vars['download_reclient'] = 'True'
+
   def use_download_remoteexec_cfg_hook(self, gclient_solution):
     gclient_solution.custom_vars['rbe_instance'] = self.m.reclient.instance
     gclient_solution.custom_vars['download_remoteexec_cfg'] = 'True'

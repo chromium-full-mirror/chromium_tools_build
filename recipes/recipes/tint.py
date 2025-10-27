@@ -44,6 +44,8 @@ def _checkout_steps(api):
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'tint' on bots here:
     api.gclient.c.solutions[0].custom_vars = {'tint_root': 'tint'}
+    # TODO(crbug.com/448517720): remove reclient
+    api.reclient.download_reclient(api.gclient.c.solutions[0])
     update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
 

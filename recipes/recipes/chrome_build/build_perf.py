@@ -70,6 +70,7 @@ def RunSteps(api):
   api.chromium_tests.configure_build(builder_config)
 
   if api.reclient.instance:
+    api.reclient.download_reclient(api.gclient.c.solutions[0])
     api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   update_result = api.chromium_checkout.ensure_checkout()

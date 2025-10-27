@@ -43,6 +43,7 @@ def RunSteps(api):
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'
   soln.custom_vars = {}
+  api.reclient.download_reclient(soln)
   api.reclient.use_download_remoteexec_cfg_hook(soln)
   source_dir = api.path.tmp_base_dir / 'checkout'
 

@@ -23,6 +23,7 @@ DEPS = [
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/gclient',
     'depot_tools/git',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -310,6 +311,7 @@ def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
+  api.reclient.download_reclient(api.gclient.c.solutions[0])
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)

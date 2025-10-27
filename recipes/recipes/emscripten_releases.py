@@ -69,6 +69,7 @@ def RunSteps(api):
   }
 
   env.update({'USE_RECLIENT': '1'})
+  api.reclient.download_reclient(api.gclient.c.solutions[0])
   api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   cache_dir = api.path.cache_dir / 'builder'

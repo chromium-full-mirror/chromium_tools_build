@@ -59,7 +59,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'emscripten-releases', 'url': 'https://chromium.googlesource.com/emscripten-releases.git'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'download_reclient': 'True', 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'emscripten-releases', 'url': 'https://chromium.googlesource.com/emscripten-releases.git'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"emscripten-releases\"}",
       "--git-cache-dir",
