@@ -23,7 +23,8 @@
       "--refs",
       "refs/heads/main",
       "--enforce_fetch",
-      "--no_fetch_tags"
+      "--no_fetch_tags",
+      "--clean-ignored"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
