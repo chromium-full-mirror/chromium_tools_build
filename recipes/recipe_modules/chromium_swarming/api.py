@@ -379,6 +379,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
   def task(self,
            name=None,
+           test_name=None,
            build_properties=None,
            cipd_packages=None,
            collect_step=None,
@@ -417,7 +418,8 @@ class SwarmingApi(recipe_api.RecipeApi):
     test failure. To change this behavior, overwrite the default collect step.
 
     Args:
-      * name: name of the test, used as part of a task ID.
+      * name: The name of the request, used as part of a task ID.
+      * test_name: The name of the test that this task belongs to.
       * cas_input_root: digeste of isolated test on RBE-CAS, the test should
           be already isolated there, see 'isolate' recipe module.
       * shards: if defined, the number of shards to use for the task. By default
@@ -544,11 +546,13 @@ class SwarmingApi(recipe_api.RecipeApi):
         trigger_script=trigger_script,
         collect_json_output_override=collect_json_output_override,
         instructions_tag=instructions_tag,
+        test_name=test_name,
         include_utr_instruction=include_utr_instruction)
 
   def gtest_task(self,
                  raw_cmd,
                  name=None,
+                 test_name=None,
                  cas_input_root='',
                  cipd_packages=None,
                  merge=None,
@@ -591,6 +595,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     # Make a task, configure it to be collected through shim script.
     task = self.task(
         name=name,
+        test_name=test_name,
         cipd_packages=cipd_packages,
         cas_input_root=cas_input_root,
         merge=merge,
@@ -602,6 +607,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     return task
 
   def isolated_script_task(self,
+                           test_name=None,
                            raw_cmd=None,
                            relative_cwd=None,
                            cas_input_root='',
@@ -638,6 +644,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         relative_cwd=relative_cwd,
         cas_input_root=cas_input_root,
         instructions_tag=instructions_tag,
+        test_name=test_name,
         include_utr_instruction=include_utr_instruction)
     task.extra_args = extra_args
     task.merge = merge
@@ -1837,6 +1844,7 @@ class SwarmingTask:
                trigger_script=None,
                collect_json_output_override=None,
                instructions_tag=None,
+               test_name=None,
                include_utr_instruction=False):
 
     """Configuration of a swarming task.
@@ -1900,6 +1908,7 @@ class SwarmingTask:
     self.wait_for_capacity = False
     self.collect_json_output_override = collect_json_output_override
     self._instructions_tag = instructions_tag
+    self._test_name = test_name
     self._include_utr_instruction = include_utr_instruction
 
   @property
@@ -1972,18 +1981,8 @@ class SwarmingTask:
 
   @property
   def test_suite_name(self) -> str | None:
-    """Gets the test suite name that this task belongs to
-
-    This is based on the test_suite tag which is getting set in step.py which
-    might not be set by all uses of this module.
-    """
-    # TODO(crbug.com/350641999): Clean-up how we handle and set swarming tags
-    # throughout the Chromium recipe stack.
-    for t in self.request.tags or []:
-      k, v = t.split(':', 1)
-      if k == 'test_suite':
-        return v
-    return None
+    """Gets the test suite name that this task belongs to."""
+    return self._test_name
 
   def text_for_step(self):
     """Returns the markdown step text for the test's step display in Milo."""

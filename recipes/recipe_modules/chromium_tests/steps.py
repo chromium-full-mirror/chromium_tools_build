@@ -2802,6 +2802,7 @@ class SwarmingGTestTest(SwarmingTest):
     for cmd_filter in cmd_filters:
       cmd.remove(cmd_filter)
     task = self.api.m.chromium_swarming.gtest_task(
+        test_name=self.name,
         raw_cmd=cmd,
         relative_cwd=self.relative_cwd,
         cas_input_root=cas_input_root,
@@ -3004,6 +3005,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
         relative_cwd=self.relative_cwd,
         cas_input_root=cas_input_root,
         instructions_tag=self._instructions_tag_for_suffix('step', suffix),
+        test_name=self.name,
         include_utr_instruction=include_utr_instruction)
 
     self._apply_swarming_task_config(task, suffix,
