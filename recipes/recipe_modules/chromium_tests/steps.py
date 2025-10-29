@@ -2132,14 +2132,28 @@ class SwarmingTestSpec(TestSpec):
 
   @staticmethod
   def _get_gpu_suffix(dimensions):
-    gpu_vendor_id = dimensions.get('gpu', '').split(':')[0].lower()
+    # Expected format if present is vendor:model-driver
+    split_gpu_dimension = dimensions.get('gpu', '').split(':')
+    gpu_vendor_id = split_gpu_dimension[0].lower()
     vendor_ids = {
         '8086': 'Intel',
         '10de': 'NVIDIA',
         '1002': 'AMD',
         'none': 'SwiftShader',  # explicit 'none' means requesting SwS
     }
-    gpu_vendor = vendor_ids.get(gpu_vendor_id) or '(%s)' % gpu_vendor_id
+    gpu_model_id = ''
+    if len(split_gpu_dimension) > 1:
+      gpu_model_id = split_gpu_dimension[1].split('-')[0]
+    if gpu_vendor_id in vendor_ids:
+      if gpu_model_id:
+        gpu_identifier = '%s 0x%s' % (vendor_ids[gpu_vendor_id], gpu_model_id)
+      else:
+        gpu_identifier = vendor_ids[gpu_vendor_id]
+    else:
+      if gpu_model_id:
+        gpu_identifier = '(%s:%s)' % (gpu_vendor_id, gpu_model_id)
+      else:
+        gpu_identifier = '(%s)' % gpu_vendor_id
 
     os = dimensions.get('os', '')
     if os.lower().startswith('mac'):
@@ -2153,7 +2167,7 @@ class SwarmingTestSpec(TestSpec):
       # TODO(crbug/1018836): Use distro specific name instead of Linux.
       os_name = 'Linux'
 
-    return 'on %s GPU on %s' % (gpu_vendor, os_name)
+    return 'on %s GPU on %s' % (gpu_identifier, os_name)
 
   @staticmethod
   def _get_android_suffix(dimensions):
