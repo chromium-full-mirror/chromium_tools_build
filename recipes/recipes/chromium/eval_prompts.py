@@ -62,7 +62,7 @@ def RunSteps(api: RecipeApi):
     # ensure_bootstrap to init the repo.
     api.step('bootstrap depot_tools', ['ensure_bootstrap'])
 
-    _run_tests(api, source_dir)
+    _run_tests(api, update_result, source_dir)
 
 
 def checkout(api: RecipeApi):
@@ -96,7 +96,8 @@ def _is_btrfs_subvolume(api, path):
   ).retcode == 0
 
 
-def _run_tests(api, source_dir):
+def _run_tests(api, update_result, source_dir):
+  build = api.buildbucket.build
   api.step(
       'run eval prompts',
       api.resultdb.wrap(
@@ -107,6 +108,20 @@ def _run_tests(api, source_dir):
               '-v',
               '--parallel-workers',
               -1,
+              '--enable-perf-uploading',
+              '--git-revision',
+              (update_result.properties.get('got_revision') or
+               update_result.properties.get('got_src_revision')),
+              '--gcs-bucket',
+              # Despite the name, this only contains public data and is safe to
+              # access from public builders.
+              # TODO(b/450054252): Switch this to the primary Chrome bucket
+              # once we confirm uploading is working as intended.
+              'chrome-perf-experiment-non-public',
+              '--build-id',
+              build.id,
+              '--builder',
+              build.builder.builder,
           ],
           module_name='//agents/testing:eval_prompts',
           module_scheme='flat',
