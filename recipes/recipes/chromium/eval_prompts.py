@@ -12,6 +12,7 @@ DEPS = [
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
@@ -98,31 +99,35 @@ def _is_btrfs_subvolume(api, path):
 
 def _run_tests(api, update_result, source_dir):
   build = api.buildbucket.build
+  cmd = [
+      'vpython3',
+      source_dir.joinpath('agents', 'testing', 'eval_prompts.py'),
+      '-f',
+      '-v',
+      '--parallel-workers',
+      -1,
+  ]
+  if not api.tryserver.is_tryserver:
+    cmd.extend([
+        '--enable-perf-uploading',
+        '--git-revision',
+        (update_result.properties.get('got_revision') or
+         update_result.properties.get('got_src_revision')),
+        '--gcs-bucket',
+        # Despite the name, this only contains public data and is safe to
+        # access from public builders.
+        # TODO(b/450054252): Switch this to the primary Chrome bucket
+        # once we confirm uploading is working as intended.
+        'chrome-perf-experiment-non-public',
+        '--build-id',
+        build.id,
+        '--builder',
+        build.builder.builder,
+    ])
   api.step(
       'run eval prompts',
       api.resultdb.wrap(
-          [
-              'vpython3',
-              source_dir.joinpath('agents', 'testing', 'eval_prompts.py'),
-              '-f',
-              '-v',
-              '--parallel-workers',
-              -1,
-              '--enable-perf-uploading',
-              '--git-revision',
-              (update_result.properties.get('got_revision') or
-               update_result.properties.get('got_src_revision')),
-              '--gcs-bucket',
-              # Despite the name, this only contains public data and is safe to
-              # access from public builders.
-              # TODO(b/450054252): Switch this to the primary Chrome bucket
-              # once we confirm uploading is working as intended.
-              'chrome-perf-experiment-non-public',
-              '--build-id',
-              build.id,
-              '--builder',
-              build.builder.builder,
-          ],
+          cmd,
           module_name='//agents/testing:eval_prompts',
           module_scheme='flat',
       ),
@@ -154,8 +159,18 @@ def _install_gemini_cli(api):
 def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
-  def gen_test_props():
+  def gen_ci_test_props():
     return api.chromium.ci_build(
+        builder_group='fake-group',
+        builder='fake-builder',
+    ) + ctbc_api.properties(
+        ctbc_api.properties_assembler_for_ci_builder(
+            builder_group='fake-group',
+            builder='fake-builder',
+        ).assemble())
+
+  def gen_try_test_props():
+    return api.chromium.try_build(
         builder_group='fake-group',
         builder='fake-builder',
     ) + ctbc_api.properties(
@@ -166,13 +181,25 @@ def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'basic',
-      gen_test_props(),
+      gen_ci_test_props(),
+      api.post_process(post_process.MustRun, 'run eval prompts'),
+      api.post_process(post_process.StepCommandContains, 'run eval prompts',
+                       ['--enable-perf-uploading']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'basic_try',
+      gen_try_test_props(),
+      api.post_process(post_process.MustRun, 'run eval prompts'),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'run eval prompts', ['--enable-perf-uploading']),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'fail',
-      gen_test_props(),
+      gen_ci_test_props(),
       api.step_data('run eval prompts', retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -180,7 +207,7 @@ def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'not-a-btrfs-subvolume',
-      gen_test_props(),
+      gen_ci_test_props(),
       api.step_data('ensure btrfs subvolume.check btrfs subvolume', retcode=1),
       api.post_process(post_process.DropExpectation),
   )
