@@ -132,6 +132,7 @@ def GenTests(api):
               message='warning: clang-tidy timed out on this file; '
               'issuing diagnostics is impossible.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -212,6 +213,7 @@ def GenTests(api):
               '`Skip-Clang-Tidy-Checks: super-cool-diag` footer to '
               'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(
           _has_finding,
@@ -230,6 +232,7 @@ def GenTests(api):
               '`Skip-Clang-Tidy-Checks: moderately-cool-diag` footer to '
               'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -270,6 +273,7 @@ def GenTests(api):
               '`Skip-Clang-Tidy-Checks: readability` footer to '
               'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -327,6 +331,7 @@ def GenTests(api):
               '`Skip-Clang-Tidy-Checks: super-cool-diag` footer to the CL '
               'description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -396,6 +401,7 @@ def GenTests(api):
               message='warning: clang-tidy timed out on this file; issuing '
               'diagnostics is impossible.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -430,6 +436,7 @@ def GenTests(api):
               message='warning: building this file or its dependencies failed; '
               'no diagnostics will be issued.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -465,6 +472,7 @@ def GenTests(api):
               message='warning: building this file or its dependencies failed; '
               'no diagnostics will be issued.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -499,6 +507,7 @@ def GenTests(api):
               message='warning: clang-tidy failed on this file; no diagnostics '
               'will be issued.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -553,7 +562,8 @@ def GenTests(api):
               'is-angry.html)\n\n(Note: You can add '
               '`Skip-Clang-Tidy-Checks: tidy-is-angry` footer to '
               'the CL description to skip the check)',
-              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,\
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
               fixes=[
                   findings_pb.Fix(
                       replacements=[
@@ -647,6 +657,7 @@ def GenTests(api):
                 '\n\n(Note: You can add `Skip-Clang-Tidy-Checks: tidy-is-angry`'
                 ' footer to the CL description to skip the check)',
                 severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+                url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
             )),
         api.post_process(post_process.DropExpectation),
     )
@@ -701,6 +712,7 @@ def GenTests(api):
               '`Skip-Clang-Tidy-Checks: bugprone-use-after-move` footer to '
               'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(
           _has_finding,
@@ -721,6 +733,7 @@ def GenTests(api):
               '`Skip-Clang-Tidy-Checks: bugprone-use-after-move` footer to '
               'the CL description to skip the check)',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
       api.post_process(post_process.DropExpectation),
   )

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 DEPS = [
     'chromium',
+    'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/findings',

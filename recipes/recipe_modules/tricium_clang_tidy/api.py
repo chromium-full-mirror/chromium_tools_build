@@ -217,6 +217,7 @@ class TriciumClangTidyApi(RecipeApi):
                 message=f'check: {check_name}\n\n{message}'
                 if check_name else message,
                 severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+                url=self.m.buildbucket.build_url(),
             )
             self.m.findings.populate_source_from_current_build(finding.location)
             if line_number:
