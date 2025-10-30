@@ -8,6 +8,7 @@ from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 DEPS = [
+    'builder_group',
     'chromium',
     'chromium_checkout',
     'chromium_tests',
@@ -111,8 +112,9 @@ def _run_tests(api, update_result, source_dir):
     cmd.extend([
         '--enable-perf-uploading',
         '--git-revision',
-        (update_result.properties.get('got_revision') or
-         update_result.properties.get('got_src_revision')),
+        # The perf dashboard infra normally accepts a git revision, but the
+        # Chrome-related instances use commit position for historical reasons.
+        'CP:%s' % update_result.out_commit.position,
         '--gcs-bucket',
         # Despite the name, this only contains public data and is safe to
         # access from public builders.
@@ -123,6 +125,10 @@ def _run_tests(api, update_result, source_dir):
         build.id,
         '--builder',
         build.builder.builder,
+        '--builder-group',
+        api.builder_group.for_current,
+        '--build-number',
+        build.number,
     ])
   api.step(
       'run eval prompts',
@@ -185,6 +191,10 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.MustRun, 'run eval prompts'),
       api.post_process(post_process.StepCommandContains, 'run eval prompts',
                        ['--enable-perf-uploading']),
+      api.post_process(post_process.StepCommandContains, 'run eval prompts',
+                       ['fake-builder']),
+      api.post_process(post_process.StepCommandContains, 'run eval prompts',
+                       ['fake-group']),
       api.post_process(post_process.DropExpectation),
   )
 
