@@ -108,8 +108,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
             'Unit Tests (node)',
             node_unit_tests=True),
         E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
-        PerformanceTests(api, trigger, builder_config, coverage,
-                         'Performance Tests'),
+        PerformanceTests(api, trigger, builder_config, 'Performance Tests'),
     ]
     tests = [t for t in tests if not t.skip()]
 

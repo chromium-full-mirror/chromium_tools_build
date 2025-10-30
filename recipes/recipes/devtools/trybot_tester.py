@@ -16,6 +16,7 @@ from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase, FlakeDetectionPhase
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
+from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
 from RECIPE_MODULES.build.devtools.scripts_tests_runner import ScriptsTests
 
 
@@ -98,6 +99,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests (non-hosted)'),
       LintCheck(api, trigger, builder_config, 'Lint Check', target_os),
       ScriptsTests(api, trigger, builder_config, 'Scripts Tests', target_os),
+      PerformanceTests(api, trigger, builder_config, 'Performance Tests',
+                       target_os)
   ]
   tests = [t for t in tests if not t.skip()]
 
