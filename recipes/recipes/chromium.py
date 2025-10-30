@@ -123,7 +123,7 @@ def GenTests(api):
           }),
       # Make one of the tests fail to improve code coverage.
       api.override_step_data(
-          'base_unittests on NVIDIA 0x104a GPU on Linux',
+          'base_unittests on NVIDIA GPU on Linux',
           api.chromium_swarming.canned_summary_output(
               api.test_utils.canned_gtest_output(False))),
   )

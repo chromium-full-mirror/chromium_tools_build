@@ -804,62 +804,6 @@ target_os=['os']
   )
 
   yield api.test(
-      'gpu_model_backwards_compatibility_known_vendor',
-      boilerplate(
-          test_names=['browser_tests on NVIDIA 0x1234 GPU on Linux'],
-          target_spec={
-              'fake-tester': {
-                  'gtest_tests': [{
-                      # Simulate a step name from before GPU models were added.
-                      'name': 'browser_tests on NVIDIA GPU on Linux',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate tests'),
-      api.post_process(
-          post_process.MustRun,
-          'test_pre_run.[trigger] browser_tests on NVIDIA GPU on Linux'),
-      api.post_process(post_process.MustRun,
-                       'browser_tests on NVIDIA GPU on Linux'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'gpu_model_backwards_compatibility_unknown_vendor',
-      boilerplate(
-          test_names=['browser_tests on (1234:5678) GPU on Linux'],
-          target_spec={
-              'fake-tester': {
-                  'gtest_tests': [{
-                      # Simulate a step name from before GPU models were added.
-                      'name': 'browser_tests on (1234) GPU on Linux',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate tests'),
-      api.post_process(
-          post_process.MustRun,
-          'test_pre_run.[trigger] browser_tests on (1234) GPU on Linux'),
-      api.post_process(post_process.MustRun,
-                       'browser_tests on (1234) GPU on Linux'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'SwarmingIsolatedScriptTest_skips_upload',
       boilerplate(
           test_names=['fake-script-test'],

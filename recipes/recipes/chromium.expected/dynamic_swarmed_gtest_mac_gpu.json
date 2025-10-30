@@ -872,7 +872,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"gl_tests intel on Intel 0x0a2e GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:gl_tests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:gl_tests intel\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:8086:0a2e\", \"-var\", \"os:Mac-10.10\", \"-var\", \"test_suite:gl_tests intel\", \"-tag\", \"step_name:gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10\", \"-tag\", \"target_platform:mac\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"8086:0a2e\"}, {\"key\": \"hidpi\", \"value\": \"0\"}, {\"key\": \"os\", \"value\": \"Mac-10.10\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"gl_tests intel on Intel GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:gl_tests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:gl_tests intel on Intel GPU on Mac on Mac-10.10\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:gl_tests intel\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:8086:0a2e\", \"-var\", \"os:Mac-10.10\", \"-var\", \"test_suite:gl_tests intel\", \"-tag\", \"step_name:gl_tests intel on Intel GPU on Mac on Mac-10.10\", \"-tag\", \"target_platform:mac\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"8086:0a2e\"}, {\"key\": \"hidpi\", \"value\": \"0\"}, {\"key\": \"os\", \"value\": \"Mac-10.10\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -894,14 +894,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10",
+    "name": "test_pre_run.[trigger] gl_tests intel on Intel GPU on Mac on Mac-10.10",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"gl_tests intel on Intel 0x0a2e GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"gl_tests intel on Intel GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -916,7 +916,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"gl_tests intel on Intel 0x0a2e GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"gl_tests intel on Intel GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -939,7 +939,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:gl_tests intel on Intel GPU on Mac on Mac-10.10\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_phase:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:gl_tests intel\",@@@",
@@ -969,7 +969,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:gl_tests intel\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:gl_tests intel on Intel GPU on Mac on Mac-10.10\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:mac\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -1035,7 +1035,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: gl_tests intel on Intel 0x0a2e GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: gl_tests intel on Intel GPU on Mac/Mac-10.10/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -1045,7 +1045,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:gl_tests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:gl_tests nvidia\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:0fe9\", \"-var\", \"os:Mac-10.13\", \"-var\", \"test_suite:gl_tests nvidia\", \"-tag\", \"step_name:gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13\", \"-tag\", \"target_platform:mac\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:0fe9\"}, {\"key\": \"hidpi\", \"value\": \"1\"}, {\"key\": \"os\", \"value\": \"Mac-10.13\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:gl_tests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:gl_tests nvidia\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:0fe9\", \"-var\", \"os:Mac-10.13\", \"-var\", \"test_suite:gl_tests nvidia\", \"-tag\", \"step_name:gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13\", \"-tag\", \"target_platform:mac\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:0fe9\"}, {\"key\": \"hidpi\", \"value\": \"1\"}, {\"key\": \"os\", \"value\": \"Mac-10.13\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1067,14 +1067,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13",
+    "name": "test_pre_run.[trigger] gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1089,7 +1089,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1112,7 +1112,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_phase:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:gl_tests nvidia\",@@@",
@@ -1142,7 +1142,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:gl_tests nvidia\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:mac\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -1208,7 +1208,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=1@@@"
+      "@@@STEP_LINK@task UI: gl_tests nvidia on NVIDIA GPU on Mac Retina/Mac-10.13/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=1@@@"
     ]
   },
   {
@@ -1280,7 +1280,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests intel on Intel 0x0a2e GPU on Mac instructions\", \"id\": \"tag_855959a007431beb059b6c91acf77c2d0e2e0d97\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests intel on Intel 0x0a2e GPU on Mac instructions\", \"id\": \"tag_63b4145adad9d81b2bade536ce16d627567c82c8\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina instructions\", \"id\": \"tag_77e6d5874edf521e9b05c10ef5c46b34d9d1add6\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina instructions\", \"id\": \"tag_4c288a9c81023d7c3d1087f28aabe13f1b4a8c45\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"1\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests intel on Intel GPU on Mac instructions\", \"id\": \"tag_aa377a0d1b329d6bf8466e5f0525b0460c4a008f\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests intel on Intel GPU on Mac instructions\", \"id\": \"tag_604c083917079bf88e7203bb2391562df03d7d20\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina instructions\", \"id\": \"tag_e50586cc7e3d34f44f4604ff6df13aa133f9d7bc\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina instructions\", \"id\": \"tag_22963bfddbcef0fd834a7ec98e7f01d6b5d1135a\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"1\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1308,8 +1308,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests intel on Intel 0x0a2e GPU on Mac instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_855959a007431beb059b6c91acf77c2d0e2e0d97\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests intel on Intel GPU on Mac instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_aa377a0d1b329d6bf8466e5f0525b0460c4a008f\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\",@@@",
@@ -1318,7 +1318,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1330,7 +1330,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1339,8 +1339,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests intel on Intel 0x0a2e GPU on Mac instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_63b4145adad9d81b2bade536ce16d627567c82c8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests intel on Intel GPU on Mac instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_604c083917079bf88e7203bb2391562df03d7d20\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"instructionFilter\": {@@@",
       "@@@STEP_LOG_LINE@json.input@            \"invocationIds\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"invocationIds\": [@@@",
@@ -1350,7 +1350,7 @@
       "@@@STEP_LOG_LINE@json.input@          },@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests intel on Intel GPU on Mac\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1368,7 +1368,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel 0x0a2e GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"gl_tests intel on Intel GPU on Mac\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1377,8 +1377,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"TEST_RESULT_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_77e6d5874edf521e9b05c10ef5c46b34d9d1add6\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_e50586cc7e3d34f44f4604ff6df13aa133f9d7bc\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\",@@@",
@@ -1387,7 +1387,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1399,7 +1399,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1408,8 +1408,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_4c288a9c81023d7c3d1087f28aabe13f1b4a8c45\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_22963bfddbcef0fd834a7ec98e7f01d6b5d1135a\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"instructionFilter\": {@@@",
       "@@@STEP_LOG_LINE@json.input@            \"invocationIds\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"invocationIds\": [@@@",
@@ -1419,7 +1419,7 @@
       "@@@STEP_LOG_LINE@json.input@          },@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1437,7 +1437,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"gl_tests nvidia on NVIDIA GPU on Mac Retina\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1747,7 +1747,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.gl_tests intel on Intel 0x0a2e GPU on Mac stats",
+    "name": "collect tasks.gl_tests intel on Intel GPU on Mac stats",
     "stdin": "{\"invocations\": [\"invocations/0\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1791,7 +1791,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.gl_tests intel on Intel 0x0a2e GPU on Mac results",
+    "name": "collect tasks.gl_tests intel on Intel GPU on Mac results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1822,7 +1822,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina stats",
+    "name": "collect tasks.gl_tests nvidia on NVIDIA GPU on Mac Retina stats",
     "stdin": "{\"invocations\": [\"invocations/1\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1866,7 +1866,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina results",
+    "name": "collect tasks.gl_tests nvidia on NVIDIA GPU on Mac Retina results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1924,12 +1924,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10",
+    "name": "gl_tests intel on Intel GPU on Mac on Mac-10.10",
     "tags": {
-      "resultdb.instruction.id": "tag_855959a007431beb059b6c91acf77c2d0e2e0d97"
+      "resultdb.instruction.id": "tag_aa377a0d1b329d6bf8466e5f0525b0460c4a008f"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Mac-10.10'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"gl_tests intel on Intel 0x0a2e GPU on Mac\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"gl_tests intel on Intel 0x0a2e GPU on Mac\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Mac-10.10'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"gl_tests intel on Intel GPU on Mac\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"gl_tests intel on Intel GPU on Mac\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -1978,7 +1978,7 @@
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Mac-10.10\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"gl_tests intel on Intel 0x0a2e GPU on Mac on Mac-10.10\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"gl_tests intel on Intel GPU on Mac on Mac-10.10\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"gl_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -2044,12 +2044,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13",
+    "name": "gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13",
     "tags": {
-      "resultdb.instruction.id": "tag_77e6d5874edf521e9b05c10ef5c46b34d9d1add6"
+      "resultdb.instruction.id": "tag_e50586cc7e3d34f44f4604ff6df13aa133f9d7bc"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"gl_tests nvidia on NVIDIA GPU on Mac Retina\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"gl_tests nvidia on NVIDIA GPU on Mac Retina\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -2098,7 +2098,7 @@
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Mac-10.13\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina on Mac-10.13\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"gl_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -2173,7 +2173,7 @@
     "cmd": [],
     "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@test_status@{\"gl_tests intel on Intel 0x0a2e GPU on Mac\": \"Success\", \"gl_tests nvidia on NVIDIA 0x0fe9 GPU on Mac Retina\": \"Success\"}@@@"
+      "@@@SET_BUILD_PROPERTY@test_status@{\"gl_tests intel on Intel GPU on Mac\": \"Success\", \"gl_tests nvidia on NVIDIA GPU on Mac Retina\": \"Success\"}@@@"
     ]
   },
   {
