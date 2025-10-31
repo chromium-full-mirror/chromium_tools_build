@@ -815,7 +815,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"base_unittests on NVIDIA GPU on Linux/Linux/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:base_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:base_unittests on NVIDIA GPU on Linux\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:base_unittests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:104a\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:base_unittests\", \"-tag\", \"step_name:base_unittests on NVIDIA GPU on Linux\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:104a\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"base_unittests on NVIDIA 0x104a GPU on Linux/Linux/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:base_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:base_unittests on NVIDIA 0x104a GPU on Linux\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:base_unittests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:104a\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:base_unittests\", \"-tag\", \"step_name:base_unittests on NVIDIA 0x104a GPU on Linux\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:104a\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -836,14 +836,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] base_unittests on NVIDIA GPU on Linux",
+    "name": "test_pre_run.[trigger] base_unittests on NVIDIA 0x104a GPU on Linux",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"base_unittests on NVIDIA GPU on Linux/Linux/eeeeeeeeee/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"base_unittests on NVIDIA 0x104a GPU on Linux/Linux/eeeeeeeeee/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -858,7 +858,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"base_unittests on NVIDIA GPU on Linux/Linux/eeeeeeeeee/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"base_unittests on NVIDIA 0x104a GPU on Linux/Linux/eeeeeeeeee/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -881,7 +881,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:base_unittests on NVIDIA GPU on Linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:base_unittests on NVIDIA 0x104a GPU on Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_phase:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:base_unittests\",@@@",
@@ -911,7 +911,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:base_unittests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:base_unittests on NVIDIA GPU on Linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:base_unittests on NVIDIA 0x104a GPU on Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -973,7 +973,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: base_unittests on NVIDIA GPU on Linux/Linux/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: base_unittests on NVIDIA 0x104a GPU on Linux/Linux/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -983,7 +983,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"browser_tests on NVIDIA GPU on Linux/Linux/ffffffffff/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:ffffffffffffffffffffffffffffff/size\", \"name:browser_tests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:browser_tests on NVIDIA GPU on Linux\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:browser_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"ffffffffffffffffffffffffffffff\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:104a\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:browser_tests\", \"-tag\", \"step_name:browser_tests on NVIDIA GPU on Linux\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:104a\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"browser_tests on NVIDIA 0x104a GPU on Linux/Linux/ffffffffff/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:ffffffffffffffffffffffffffffff/size\", \"name:browser_tests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"shard_count:1\", \"shard_index:0\", \"spec_name:chromium.ci:fake-tester\", \"stepname:browser_tests on NVIDIA 0x104a GPU on Linux\", \"test_id_prefix:\", \"test_phase:\", \"test_suite:browser_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"ffffffffffffffffffffffffffffff\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:104a\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:browser_tests\", \"-tag\", \"step_name:browser_tests on NVIDIA 0x104a GPU on Linux\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:104a\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1004,14 +1004,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] browser_tests on NVIDIA GPU on Linux",
+    "name": "test_pre_run.[trigger] browser_tests on NVIDIA 0x104a GPU on Linux",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"browser_tests on NVIDIA GPU on Linux/Linux/ffffffffff/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"browser_tests on NVIDIA 0x104a GPU on Linux/Linux/ffffffffff/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1026,7 +1026,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"browser_tests on NVIDIA GPU on Linux/Linux/ffffffffff/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"browser_tests on NVIDIA 0x104a GPU on Linux/Linux/ffffffffff/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1049,7 +1049,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:browser_tests on NVIDIA GPU on Linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:browser_tests on NVIDIA 0x104a GPU on Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_phase:\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:browser_tests\",@@@",
@@ -1079,7 +1079,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:browser_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:browser_tests on NVIDIA GPU on Linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:browser_tests on NVIDIA 0x104a GPU on Linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -1141,7 +1141,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: browser_tests on NVIDIA GPU on Linux/Linux/ffffffffff/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=1@@@"
+      "@@@STEP_LINK@task UI: browser_tests on NVIDIA 0x104a GPU on Linux/Linux/ffffffffff/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=1@@@"
     ]
   },
   {
@@ -1211,7 +1211,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"base_unittests on NVIDIA GPU on Linux instructions\", \"id\": \"tag_f0e9c754f6460f1b040b394bc912906a8cd96f35\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"base_unittests on NVIDIA GPU on Linux instructions\", \"id\": \"tag_0a10c7b4852dc700666254f2e2e4b73b0795bcbd\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}, {\"descriptiveName\": \"browser_tests on NVIDIA GPU on Linux instructions\", \"id\": \"tag_6ceac7c53d3c408c25996f7b2bebb0ac45de0785\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"browser_tests on NVIDIA GPU on Linux instructions\", \"id\": \"tag_109e42c7173096b0a51781b142e7b617b9073abe\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"1\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"base_unittests on NVIDIA 0x104a GPU on Linux instructions\", \"id\": \"tag_97f690d3f38e2beaecd9227889d46a9f47eedbe3\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"base_unittests on NVIDIA 0x104a GPU on Linux instructions\", \"id\": \"tag_3992446e41a7cc0564e726cb6ef52d8d8fe729a0\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"0\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}, {\"descriptiveName\": \"browser_tests on NVIDIA 0x104a GPU on Linux instructions\", \"id\": \"tag_312bd9a492e2cf2f2fa68865c35d3302862a05a9\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"browser_tests on NVIDIA 0x104a GPU on Linux instructions\", \"id\": \"tag_566e4f45d4a402ecc0b9b35add05c49c75d44749\", \"instructionFilter\": {\"invocationIds\": {\"invocationIds\": [\"1\"]}}, \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\", \"dependencies\": [{\"instructionId\": \"bot_update_repro_instructions\", \"invocationId\": \"build-8945511751514863184\"}], \"targets\": [\"REMOTE\"]}, {\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json --gtest_filter={{test.tags.test_name}}```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"TEST_RESULT_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1239,8 +1239,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"base_unittests on NVIDIA GPU on Linux instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_f0e9c754f6460f1b040b394bc912906a8cd96f35\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"base_unittests on NVIDIA 0x104a GPU on Linux instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_97f690d3f38e2beaecd9227889d46a9f47eedbe3\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\",@@@",
@@ -1249,7 +1249,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1261,7 +1261,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1270,8 +1270,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"base_unittests on NVIDIA GPU on Linux instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_0a10c7b4852dc700666254f2e2e4b73b0795bcbd\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"base_unittests on NVIDIA 0x104a GPU on Linux instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_3992446e41a7cc0564e726cb6ef52d8d8fe729a0\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"instructionFilter\": {@@@",
       "@@@STEP_LOG_LINE@json.input@            \"invocationIds\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"invocationIds\": [@@@",
@@ -1281,7 +1281,7 @@
       "@@@STEP_LOG_LINE@json.input@          },@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1299,7 +1299,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 0 -t \\\"base_unittests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1308,8 +1308,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"TEST_RESULT_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"browser_tests on NVIDIA GPU on Linux instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_6ceac7c53d3c408c25996f7b2bebb0ac45de0785\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"browser_tests on NVIDIA 0x104a GPU on Linux instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_312bd9a492e2cf2f2fa68865c35d3302862a05a9\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\",@@@",
@@ -1318,7 +1318,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1330,7 +1330,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1339,8 +1339,8 @@
       "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
       "@@@STEP_LOG_LINE@json.input@        },@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"browser_tests on NVIDIA GPU on Linux instructions\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_109e42c7173096b0a51781b142e7b617b9073abe\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"browser_tests on NVIDIA 0x104a GPU on Linux instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"tag_566e4f45d4a402ecc0b9b35add05c49c75d44749\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"instructionFilter\": {@@@",
       "@@@STEP_LOG_LINE@json.input@            \"invocationIds\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"invocationIds\": [@@@",
@@ -1350,7 +1350,7 @@
       "@@@STEP_LOG_LINE@json.input@          },@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" compile-and-test -- --gtest_filter={{test.tags.test_name}}```</details>\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"dependencies\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                {@@@",
       "@@@STEP_LOG_LINE@json.input@                  \"instructionId\": \"bot_update_repro_instructions\",@@@",
@@ -1368,7 +1368,7 @@
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"**Re-trigger in swarming:**<br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso --reuse-task 1 -t \\\"browser_tests on NVIDIA 0x104a GPU on Linux\\\" test -- --gtest_filter={{test.tags.test_name}}```</details><br/>*Note: additional args can be used by extending this command*<br/><br/>**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest ffffffffffffffffffffffffffffff/size -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"PREBUILT\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1669,7 +1669,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.base_unittests on NVIDIA GPU on Linux stats",
+    "name": "collect tasks.base_unittests on NVIDIA 0x104a GPU on Linux stats",
     "stdin": "{\"invocations\": [\"invocations/0\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1712,7 +1712,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.base_unittests on NVIDIA GPU on Linux results",
+    "name": "collect tasks.base_unittests on NVIDIA 0x104a GPU on Linux results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1742,7 +1742,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.browser_tests on NVIDIA GPU on Linux stats",
+    "name": "collect tasks.browser_tests on NVIDIA 0x104a GPU on Linux stats",
     "stdin": "{\"invocations\": [\"invocations/1\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1785,7 +1785,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.browser_tests on NVIDIA GPU on Linux results",
+    "name": "collect tasks.browser_tests on NVIDIA 0x104a GPU on Linux results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1842,12 +1842,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "base_unittests on NVIDIA GPU on Linux",
+    "name": "base_unittests on NVIDIA 0x104a GPU on Linux",
     "tags": {
-      "resultdb.instruction.id": "tag_f0e9c754f6460f1b040b394bc912906a8cd96f35"
+      "resultdb.instruction.id": "tag_97f690d3f38e2beaecd9227889d46a9f47eedbe3"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"base_unittests on NVIDIA GPU on Linux\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"base_unittests on NVIDIA GPU on Linux\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"base_unittests on NVIDIA 0x104a GPU on Linux\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"base_unittests on NVIDIA 0x104a GPU on Linux\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -1895,7 +1895,7 @@
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Linux\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"base_unittests on NVIDIA GPU on Linux\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"base_unittests on NVIDIA 0x104a GPU on Linux\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"base_unittests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -1960,12 +1960,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "browser_tests on NVIDIA GPU on Linux",
+    "name": "browser_tests on NVIDIA 0x104a GPU on Linux",
     "tags": {
-      "resultdb.instruction.id": "tag_6ceac7c53d3c408c25996f7b2bebb0ac45de0785"
+      "resultdb.instruction.id": "tag_312bd9a492e2cf2f2fa68865c35d3302862a05a9"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"browser_tests on NVIDIA GPU on Linux\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"browser_tests on NVIDIA GPU on Linux\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-tester -t \"browser_tests on NVIDIA 0x104a GPU on Linux\" compile-and-test```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-tester --no-siso -t \"browser_tests on NVIDIA 0x104a GPU on Linux\" compile-and-test```</details><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -2013,7 +2013,7 @@
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Linux\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"browser_tests on NVIDIA GPU on Linux\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"browser_tests on NVIDIA 0x104a GPU on Linux\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"browser_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -2088,7 +2088,7 @@
     "cmd": [],
     "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@test_status@{\"base_unittests on NVIDIA GPU on Linux\": \"Success\", \"browser_tests on NVIDIA GPU on Linux\": \"Success\"}@@@"
+      "@@@SET_BUILD_PROPERTY@test_status@{\"base_unittests on NVIDIA 0x104a GPU on Linux\": \"Success\", \"browser_tests on NVIDIA 0x104a GPU on Linux\": \"Success\"}@@@"
     ]
   },
   {

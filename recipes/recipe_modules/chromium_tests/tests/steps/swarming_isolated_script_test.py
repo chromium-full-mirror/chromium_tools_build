@@ -64,7 +64,7 @@ def RunSteps(api):
         expiration=7200,
         shards=1,
         dimensions=api.properties.get('dimensions', {
-            'gpu': '8086',
+            'gpu': api.properties.get('test_gpu_dimension', '8086'),
             'os': 'Linux',
         }),
         isolate_profile_data=isolate_profile_data)
@@ -155,6 +155,106 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'base_unittests on Intel GPU on Linux (with patch)',
+          [('[CACHE]/builder/src/testing/merge_scripts/code_coverage/'
+            'merge_results.py')],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'isolate_profile_data_gpu_model_specified',
+      arbitrary_tester(),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          },
+          isolate_profile_data=True,
+          test_gpu_dimension='8086:1234-5678',
+      ),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests on Intel 0x1234 '
+          'GPU on Linux (with patch)',
+          lambda check, req: check('LLVM_PROFILE_FILE' in req[0].env_vars),
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'base_unittests on Intel 0x1234 GPU on Linux (with patch)',
+          [('[CACHE]/builder/src/testing/merge_scripts/code_coverage/'
+            'merge_results.py')],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'isolate_profile_data_unknown_gpu',
+      arbitrary_tester(),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          },
+          isolate_profile_data=True,
+          test_gpu_dimension='9999',
+      ),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests on (9999) GPU on '
+          'Linux (with patch)',
+          lambda check, req: check('LLVM_PROFILE_FILE' in req[0].env_vars),
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'base_unittests on (9999) GPU on Linux (with patch)',
+          [('[CACHE]/builder/src/testing/merge_scripts/code_coverage/'
+            'merge_results.py')],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'isolate_profile_data_unknown_gpu_with_model',
+      arbitrary_tester(),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          },
+          isolate_profile_data=True,
+          test_gpu_dimension='9999:1234-5678',
+      ),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests on '
+          '(9999:1234) GPU on Linux (with patch)',
+          lambda check, req: check('LLVM_PROFILE_FILE' in req[0].env_vars),
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'base_unittests on (9999:1234) GPU on Linux (with patch)',
+          [('[CACHE]/builder/src/testing/merge_scripts/code_coverage/'
+            'merge_results.py')],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'isolate_profile_data_swiftshader',
+      arbitrary_tester(),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          },
+          isolate_profile_data=True,
+          test_gpu_dimension='none',
+      ),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests on '
+          'SwiftShader GPU on Linux (with patch)',
+          lambda check, req: check('LLVM_PROFILE_FILE' in req[0].env_vars),
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'base_unittests on SwiftShader GPU on Linux (with patch)',
           [('[CACHE]/builder/src/testing/merge_scripts/code_coverage/'
             'merge_results.py')],
       ),

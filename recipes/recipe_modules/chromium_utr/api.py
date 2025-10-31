@@ -10,6 +10,7 @@ import attr
 import contextlib
 import copy
 import itertools
+import re
 import uuid
 from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
@@ -35,6 +36,8 @@ gclient_aliases = {
     'mac': ['mac', 'osx'],
     'win': ['win', 'windows']
 }
+
+GPU_IDENTIFIER_REGEX = re.compile(r'.*on (.*) GPU on .*')
 
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
@@ -868,6 +871,36 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       for t in targets_config.all_tests:
         if requested_test_name in (t.name, t.canonical_name):
           return t
+
+      # Try again with GPU info modified for some backwards compatibility with
+      # runs before crrev.com/c/7103332. This can be removed once enough time
+      # has passed that users are unlikely to try to use the UTR with a build
+      # from before that CL.
+      match = GPU_IDENTIFIER_REGEX.match(requested_test_name)
+      if match:
+        original_gpu_identifier = match.group(1)
+        # There are potentially multiple identifiers if the GPU dimension
+        # contains |, but prior to the inclusion of the model, only the first
+        # one was surfaced. So, only look at the first identifier if multiple
+        # are present.
+        gpu_identifier = original_gpu_identifier.split('/')[0]
+        replacement_identifier = gpu_identifier
+        # Known GPU vendor with a GPU model.
+        split_identifier = gpu_identifier.split()
+        if len(split_identifier) > 1:
+          replacement_identifier = split_identifier[0]
+        elif ('(' in gpu_identifier and ':' in gpu_identifier and
+              ')' in gpu_identifier):
+          # Unknown GPU vendor with a GPU model.
+          gpu_vendor = gpu_identifier.split('(')[1].split(':')[0]
+          replacement_identifier = '(%s)' % gpu_vendor
+        prefix, _, suffix = requested_test_name.partition(
+            original_gpu_identifier)
+        requested_test_name = prefix + replacement_identifier + suffix
+        for t in targets_config.all_tests:
+          if requested_test_name in (t.name, t.canonical_name):
+            return t
+
       raise self.m.step.StepFailure(
           'No suites on the bot matched the request for '
           f'{requested_test_name}. Passed-in tests must either all be test '

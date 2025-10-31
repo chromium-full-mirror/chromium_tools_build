@@ -123,7 +123,7 @@ def GenTests(api):
           }),
       # Make one of the tests fail to improve code coverage.
       api.override_step_data(
-          'base_unittests on NVIDIA GPU on Linux',
+          'base_unittests on NVIDIA 0x104a GPU on Linux',
           api.chromium_swarming.canned_summary_output(
               api.test_utils.canned_gtest_output(False))),
   )
@@ -625,7 +625,7 @@ def GenTests(api):
                           'name': 'telemetry_gpu_unittests',
                           'swarming': {
                               'dimensions': {
-                                  'gpu': '10de:104a',  # NVIDIA GeForce GT 610
+                                  'gpu': '10de:104a-1234',  # NVIDIA GPU.
                                   'os': 'Linux',
                               },
                           },
@@ -633,6 +633,50 @@ def GenTests(api):
                   ],
               },
           }),
+  )
+
+  yield api.test(
+      'dynamic_swarmed_isolated_script_test_linux_multi_gpu_no_driver',
+      api.platform('linux', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          parent_buildername='fake-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_tester(
+              builder_group='fake-group',
+              builder='fake-tester',
+          ).with_parent(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarm_hashes={
+          'telemetry_gpu_unittests': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size',
+      }),
+      api.chromium_tests.read_targets_spec(
+          'fake-group',
+          {
+              'fake-tester': {
+                  'isolated_scripts': [
+                      {
+                          'test': 'telemetry_gpu_unittests',
+                          'name': 'telemetry_gpu_unittests',
+                          'swarming': {
+                              'dimensions': {
+                                  'gpu': '10de:104a|10de:1234',  # NVIDIA GPUs.
+                                  'os': 'Linux',
+                              },
+                          },
+                      },
+                  ],
+              },
+          }),
+      api.post_process(
+          post_process.MustRun,
+          'test_pre_run.[trigger] telemetry_gpu_unittests on NVIDIA '
+          '0x104a/NVIDIA 0x1234 GPU on Linux'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
