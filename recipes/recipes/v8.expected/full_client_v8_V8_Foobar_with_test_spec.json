@@ -72,7 +72,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]/builder/v8/out/build/mjsunit.isolated.gen.json"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/mjsunit.isolated.gen.json"
     ],
     "luci_context": {
       "realm": {

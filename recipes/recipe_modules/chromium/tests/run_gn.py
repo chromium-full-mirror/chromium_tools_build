@@ -34,12 +34,13 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
+      api.chromium.ci_build(),
       api.post_process(StepCommandContains, 'gn', [
           'python3',
           'RECIPE_REPO[depot_tools]/gn.py',
       ]),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Release',
+          '[CACHE]/builder/src/out/2796-Linux_Builder',
           '--args=is_debug=false target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -47,6 +48,7 @@ def GenTests(api):
 
   yield api.test(
       'custom_gn_path',
+      api.chromium.ci_build(),
       api.properties(gn_path='some/other/path/gn'),
       api.post_process(StepCommandContains, 'gn', [
           'some/other/path/gn',
@@ -56,10 +58,11 @@ def GenTests(api):
 
   yield api.test(
       'mac',
+      api.chromium.ci_build(),
       api.platform('mac', 64),
       api.properties(target_platform='mac'),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Release',
+          '[CACHE]/builder/src/out/2796-Linux_Builder',
           '--args=is_clang=true is_debug=false target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -67,9 +70,10 @@ def GenTests(api):
 
   yield api.test(
       'android',
+      api.chromium.ci_build(),
       api.properties(target_platform='android'),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Release',
+          '[CACHE]/builder/src/out/2796-Linux_Builder',
           '--args=is_debug=false target_os="android" target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -77,9 +81,10 @@ def GenTests(api):
 
   yield api.test(
       'debug',
+      api.chromium.ci_build(),
       api.properties(build_config='Debug'),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Debug',
+          '[CACHE]/builder/src/out/2796-Linux_Builder',
           '--args=is_debug=true target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -87,9 +92,10 @@ def GenTests(api):
 
   yield api.test(
       'remoteexec',
+      api.chromium.ci_build(),
       api.properties(build_config='Debug', use_remoteexec=True),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Debug',
+          '[CACHE]/builder/src/out/2796-Linux_Builder',
           '--args=is_debug=true target_cpu="x64" use_remoteexec=true',
       ]),
       api.post_process(DropExpectation),

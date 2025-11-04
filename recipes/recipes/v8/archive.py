@@ -350,16 +350,12 @@ def GenTests(api):
 
   # Test Windows-specific things.
   yield (
-      test_defaults(
-          'windows', 'win', build_config='Release', target_bits=64) +
+      test_defaults('windows', 'win', build_config='Release', target_bits=64) +
       # Check that _x64 suffix is correctly removed on windows.
-      api.v8.check_param_equals(
-          'make archive.filter build files',
-          '--dir',
-          '[CACHE]\\builder\\v8\\out\\build') +
+      api.v8.check_param_equals('make archive.filter build files', '--dir',
+                                '[CACHE]\\builder\\v8\\out\\d2ce-V8_Foobar') +
       # Show GN configs to be resiliant to changes of chromium configs.
-      api.post_process(Filter('build.gn'))
-  )
+      api.post_process(Filter('build.gn')))
 
   # Test Mac-specific things.
   yield (

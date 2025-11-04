@@ -5,7 +5,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/node-ci",
       "gen",
-      "[CACHE]/builder/node-ci/out/Debug",
+      "[CACHE]/builder/node-ci/out/81c1-debug_mode",
       "--args=is_clang=true node_enable_deprecated_declarations_warnings=true v8_imminent_deprecation_warnings=false v8_array_buffer_internal_field_count=2 v8_array_buffer_view_internal_field_count=2 use_sysroot=true use_custom_libcxx=true icu_use_data_file=false is_component_build=true symbol_level=1 v8_enable_backtrace=true v8_enable_fast_mksnapshot=true v8_enable_slow_dchecks=true use_siso=true is_debug=true target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/node-ci",

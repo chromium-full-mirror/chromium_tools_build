@@ -115,7 +115,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/builder/v8/out/build"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -186,7 +186,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/v8/out/build"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar"
     ],
     "infra_step": true,
     "luci_context": {
@@ -215,7 +215,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/v8/out/build/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -250,7 +250,7 @@
       "/path/to/tmp/json",
       "copy",
       "ninja",
-      "[CACHE]/builder/v8/out/build/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -278,7 +278,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/v8",
       "gen",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "--args=is_official_build=true chrome_pgo_phase=0 dcheck_always_on=false use_siso=true use_remoteexec=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -313,7 +313,7 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -349,7 +349,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/v8/out/build/.ninja_log",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -448,7 +448,7 @@
     "cmd": [
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "v8_archive",
       "-d",
       "explain",
@@ -483,7 +483,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/v8/out/build/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -513,7 +513,7 @@
       "-u",
       "[CACHE]/builder/v8/tools/release/filter_build_files.py",
       "--dir",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "--platform",
       "linux",
       "--type",
@@ -538,8 +538,8 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/d8\",@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/icudtl.dat\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/d8\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/icudtl.dat\"@@@",
       "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"
     ]
@@ -562,7 +562,7 @@
       }
     },
     "name": "make archive (ref).zipping",
-    "stdin": "{\"comment\": \"\", \"entries\": [{\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/build/d8\", \"type\": \"file\"}, {\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/build/icudtl.dat\", \"type\": \"file\"}], \"mode\": \"w\", \"output\": \"[CLEANUP]/archive.zip\", \"root\": \"[CACHE]/builder/v8/out/build\"}",
+    "stdin": "{\"comment\": \"\", \"entries\": [{\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/d8\", \"type\": \"file\"}, {\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/icudtl.dat\", \"type\": \"file\"}], \"mode\": \"w\", \"output\": \"[CLEANUP]/archive.zip\", \"root\": \"[CACHE]/builder/v8/out/d2ce-V8_Foobar\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

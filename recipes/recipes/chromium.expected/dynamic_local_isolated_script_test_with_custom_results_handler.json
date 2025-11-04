@@ -684,7 +684,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/builder/src/out/Release"
+      "[CACHE]/builder/src/out/bb71-fake-tester"
     ],
     "env": {
       "CHROME_HEADLESS": "1"

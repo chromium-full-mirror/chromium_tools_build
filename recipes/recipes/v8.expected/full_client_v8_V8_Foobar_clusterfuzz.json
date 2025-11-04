@@ -15,7 +15,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "v8_foobar"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -75,7 +75,7 @@
       "python3",
       "RECIPE_MODULE[build::archive]/resources/filter_build_files.py",
       "--dir",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "--platform",
       "linux",
       "--output",
@@ -114,7 +114,7 @@
       "--json-file-list",
       "[\"file1\", \"file2\"]",
       "--file-relative-dir",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "--no-root-dir",
       "--lzma-sdk-dir",
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"

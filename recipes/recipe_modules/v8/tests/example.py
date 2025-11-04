@@ -42,11 +42,12 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield (api.v8.test('client.v8', 'V8 Foobar') +
-         _job_exists(api, 'v8_triggered_bot') +
-         api.v8.check_in_any_arg('compile', 'v8/out/build') +
-         api.v8.check_in_any_arg('isolate tests (perf)', 'v8/out/build') +
-         api.post_process(DropExpectation))
+  yield (
+      api.v8.test('client.v8', 'V8 Foobar') +
+      _job_exists(api, 'v8_triggered_bot') +
+      api.v8.check_in_any_arg('compile', 'v8/out/d2ce-V8_Foobar') +
+      api.v8.check_in_any_arg('isolate tests (perf)', 'v8/out/d2ce-V8_Foobar') +
+      api.post_process(DropExpectation))
 
   yield (api.v8.test('client.v8', 'V8 Foobar', 'compile_failure') +
          api.step_data('compile', retcode=1) + api.expect_status('FAILURE') +

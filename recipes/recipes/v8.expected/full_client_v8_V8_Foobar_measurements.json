@@ -5,7 +5,7 @@
       "-u",
       "RECIPE_MODULE[build::v8]/resources/build-dep-stats.py",
       "-C",
-      "[CACHE]/builder/v8/out/build",
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
       "-x",
       "/third_party/",
       "-o",
@@ -90,7 +90,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "filesizes",
-      "[CACHE]/builder/v8/out/build/d8"
+      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/d8"
     ],
     "infra_step": true,
     "luci_context": {
@@ -108,7 +108,7 @@
     "name": "measurements.Check binary size",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@filesizes@[CACHE]/builder/v8/out/build/d8: \t111@@@",
+      "@@@STEP_LOG_LINE@filesizes@[CACHE]/builder/v8/out/d2ce-V8_Foobar/d8: \t111@@@",
       "@@@STEP_LOG_END@filesizes@@@"
     ]
   },

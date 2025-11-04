@@ -11,7 +11,7 @@
       "--flaky-tests",
       "run",
       "--shell",
-      "[CACHE]/builder/node-ci/out/Release/node",
+      "[CACHE]/builder/node-ci/out/d2ce-V8_Foobar/node",
       "default"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",
@@ -41,7 +41,7 @@
       "--flaky-tests",
       "run",
       "--shell",
-      "[CACHE]/builder/node-ci/out/Release/node",
+      "[CACHE]/builder/node-ci/out/d2ce-V8_Foobar/node",
       "default"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",

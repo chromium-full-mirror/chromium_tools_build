@@ -59,7 +59,7 @@ def GenTests(api):
           'python3',
           'RECIPE_REPO[build]/recipes/runtest.py',
           '--build-dir',
-          '[CACHE]/builder/out/Release',
+          '[CACHE]/builder/out/4dd2-test_buildernam',
           '--no-xvfb',
           '--test-type=base_unittests',
           '--builder-name=test_buildername',

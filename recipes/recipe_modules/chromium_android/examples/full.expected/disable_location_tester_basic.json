@@ -759,7 +759,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/out/Release/bin/run_unittests",
+      "[START_DIR]/src/out/b2d0-disable_locatio/bin/run_unittests",
       "--denylist-file",
       "[START_DIR]/src/out/bad_devices.json",
       "--verbose",
@@ -787,7 +787,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[build]/recipes/tee.py",
-      "[START_DIR]/src/out/Release/full_log",
+      "[START_DIR]/src/out/b2d0-disable_locatio/full_log",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_printer.py",
       "[CLEANUP]/logcat"
@@ -813,10 +813,10 @@
       "--arch",
       "arm",
       "--more-info",
-      "[START_DIR]/src/out/Release/full_log"
+      "[START_DIR]/src/out/b2d0-disable_locatio/full_log"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/b2d0-disable_locatio",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
@@ -842,7 +842,7 @@
       "-w"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/b2d0-disable_locatio",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
