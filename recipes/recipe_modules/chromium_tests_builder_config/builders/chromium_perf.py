@@ -257,6 +257,7 @@ _AddIsolatedTestSpec('win-10-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
+_AddIsolatedTestSpec('win-falcon-rak-5070-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec(
     'win-arm64-snapdragon-elite-perf',
     'win',
@@ -283,6 +284,8 @@ _AddIsolatedTestSpec(
     'mac-m4-mini-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
+_AddIsolatedTestSpec('linux-falcon-rak-5070-perf', 'linux',
+                     'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')
 
 
