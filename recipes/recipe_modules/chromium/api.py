@@ -176,6 +176,11 @@ class ChromiumApi(recipe_api.RecipeApi):
     Args:
       source_dir: The path to the top-level repo.
     """
+    # TODO(crbug.com/380434968): Remove the legacy naming scheme.
+    if ('chromium.use_per_builder_build_dir_name'
+        not in self.m.buildbucket.build.input.experiments):
+      return source_dir / 'out' / self.c.build_config_fs
+
     if self.c.shared_build_dir:
       return source_dir / 'out' / f'shared-{self.c.build_config_fs}'
     # Add "/" to prevent collisions since it can't show up in a builder name.

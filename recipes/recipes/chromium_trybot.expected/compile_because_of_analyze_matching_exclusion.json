@@ -32,7 +32,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/0763-fake-try-builde",
+      "[CACHE]/builder/src/out/Release",
       "base_unittests"
     ],
     "cwd": "[CACHE]/builder/src",

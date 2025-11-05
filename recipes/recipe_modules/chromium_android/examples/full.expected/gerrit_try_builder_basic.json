@@ -311,7 +311,7 @@
       "--",
       "[START_DIR]/src/third_party/ninja/ninja",
       "-C",
-      "[START_DIR]/src/out/c493-gerrit_try_buil"
+      "[START_DIR]/src/out/Release"
     ],
     "cwd": "[START_DIR]/src",
     "env": {
@@ -344,7 +344,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[START_DIR]/src/out/c493-gerrit_try_buil/.ninja_log",
+      "[START_DIR]/src/out/Release/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[START_DIR]/src",
@@ -436,7 +436,7 @@
     "cmd": [
       "[START_DIR]/src/third_party/ninja/ninja",
       "-C",
-      "[START_DIR]/src/out/c493-gerrit_try_buil",
+      "[START_DIR]/src/out/Release",
       "-d",
       "explain",
       "-n"
@@ -465,7 +465,7 @@
       "vpython3",
       "RECIPE_MODULE[build::chromium_android]/resources/archive_build.py",
       "--build-dir",
-      "[START_DIR]/src/out/c493-gerrit_try_buil",
+      "[START_DIR]/src/out/Release",
       "--name",
       "archive.zip",
       "--include-filter",
@@ -900,7 +900,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/out/c493-gerrit_try_buil/bin/run_unittests",
+      "[START_DIR]/src/out/Release/bin/run_unittests",
       "--denylist-file",
       "[START_DIR]/src/out/bad_devices.json",
       "--verbose",
@@ -928,7 +928,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[build]/recipes/tee.py",
-      "[START_DIR]/src/out/c493-gerrit_try_buil/full_log",
+      "[START_DIR]/src/out/Release/full_log",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_printer.py",
       "[CLEANUP]/logcat"
@@ -954,10 +954,10 @@
       "--arch",
       "arm",
       "--more-info",
-      "[START_DIR]/src/out/c493-gerrit_try_buil/full_log"
+      "[START_DIR]/src/out/Release/full_log"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/c493-gerrit_try_buil",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
@@ -983,7 +983,7 @@
       "-w"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/c493-gerrit_try_buil",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,

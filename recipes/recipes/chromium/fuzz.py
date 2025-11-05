@@ -370,6 +370,7 @@ def RunSteps(api, properties):
     else:
       # copy data deps outside the build directory
       # Needed for tests
+      api.path.mock_add_file('[CACHE]/builder/src/out/Release/src_root/path1')
       api.path.mock_add_file('[CACHE]/builder/src/path2')
 
       paths_to_copy = set()
@@ -536,8 +537,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.path.exists(api.path.cache_dir /
-                      'builder/src/out/1826-some-ci-bot/src_root/path1'),
       api.platform.name('linux'),
       generate_test(),
   )

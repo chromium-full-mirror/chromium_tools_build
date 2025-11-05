@@ -758,7 +758,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/out/cd7b-tester/bin/run_unittests",
+      "[START_DIR]/src/out/Release/bin/run_unittests",
       "--denylist-file",
       "[START_DIR]/src/out/bad_devices.json",
       "--verbose",

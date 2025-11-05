@@ -163,9 +163,8 @@ def GenTests(api):
           'profile merge errors', ['--root-dir']),
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
-          'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
-              '[CACHE]/builder/src/out/ceb4-fake-builder/content_shell'
-          ]),
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS),
+                       ['[CACHE]/builder/src/out/Release/content_shell']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1079,14 +1078,13 @@ def GenTests(api):
           'profile merge errors', ['--root-dir']),
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
-          'metadata for overall test coverage in %s tests' % _NUM_TESTS
-      ), [
-          '[CACHE]/builder/src/out/ceb4-fake-builder/content_shell.app/content_shell'
-      ]),
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
+              '[CACHE]/builder/src/out/Debug/content_shell.app/content_shell'
+          ]),
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
-              ('[CACHE]/builder/src/out/ceb4-fake-builder/'
+              ('[CACHE]/builder/src/out/Debug/'
                'ios_chrome_eg2tests.app/ios_chrome_eg2tests'),
           ]),
       api.post_process(post_process.DropExpectation),
@@ -1258,9 +1256,8 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'process clang code coverage data for overall test coverage.filter '
-          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2), [
-              '[CACHE]\\builder\\src\\out\\0763-fake-try-builde\\content_shell.exe'
-          ]),
+          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2),
+          ['[CACHE]\\builder\\src\\out\\Release\\content_shell.exe']),
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'html report for overall test coverage in %s tests' % _NUM_TESTS)),

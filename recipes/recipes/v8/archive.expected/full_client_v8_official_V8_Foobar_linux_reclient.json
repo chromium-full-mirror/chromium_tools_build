@@ -100,7 +100,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/v8",
       "gen",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "--args=dcheck_always_on=false use_siso=true use_remoteexec=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -135,7 +135,7 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -169,7 +169,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/v8",
       "gen",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "--args=v8_static_library=true dcheck_always_on=false use_siso=true use_remoteexec=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",

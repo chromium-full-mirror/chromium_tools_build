@@ -871,7 +871,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/0763-fake-try-builde",
+      "[CACHE]/builder/src/out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"third_party/skia/foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",

@@ -90,7 +90,6 @@ def GenTests(api):
             builder:
                 ctbc.BuilderSpec.create(
                     chromium_config='chromium',
-                    chromium_apply_config=['shared_build_dir'],
                     gclient_config='chromium',
                     skylab_gs_bucket=skylab_gcs,
                     skylab_gs_extra='lacros',
@@ -101,7 +100,6 @@ def GenTests(api):
       builders[builder_group][tester] = ctbc.BuilderSpec.create(
           execution_mode=ctbc.TEST,
           chromium_config='chromium',
-          chromium_apply_config=['shared_build_dir'],
           gclient_config='chromium',
           skylab_gs_bucket=skylab_gcs,
           skylab_gs_extra='lacros',
@@ -165,14 +163,12 @@ def GenTests(api):
     source_dir = api.path.cache_dir / 'builder/src'
     # testing/buildbot/filters should be a folder.
     mock_paths.append(source_dir / 'testing/buildbot/filters/foo')
+    mock_paths.append(source_dir / 'out/Release/chrome')
+    mock_paths.append(source_dir / f'out/Release/bin/run_{target_name}')
 
-    build_dir = source_dir / 'out' / 'shared-Release'
-    mock_paths.append(build_dir / 'chrome')
-    mock_paths.append(build_dir / f'bin/run_{target_name}')
-
-    mock_paths.append(build_dir / f'bin/{target_name}.filter')
+    mock_paths.append(source_dir / f'out/Release/bin/{target_name}.filter')
     if isolate_file_exists:
-      mock_paths.append(build_dir / f'{target_name}.isolate')
+      mock_paths.append(source_dir / f'out/Release/{target_name}.isolate')
     steps += api.path.exists(*mock_paths)
     if isolate_file_exists and should_read_isolate:
       steps += api.step_data(
@@ -210,7 +206,7 @@ def GenTests(api):
            'Generic Archiving Steps.Write file list to copy') %
           UNIFIED_RUNTIME_DEPS_NAME,
           'tmp_tmp_2',
-          ['out/shared-Release/chrome'],
+          ['out/Release/chrome'],
       ),
       api.post_process(
           post_process.LogContains,
@@ -227,7 +223,7 @@ def GenTests(api):
       ),
       api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
                        'tast_expr_file',
-                       f'out/shared-Release/bin/{TAST_TARGET}.filter'),
+                       f'out/Release/bin/{TAST_TARGET}.filter'),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -443,7 +439,7 @@ def GenTests(api):
           'Generic Archiving Steps.'
           'Write file list to copy'.format(target=UNIFIED_RUNTIME_DEPS_NAME),
           'tmp_tmp_2',
-          [f'out/shared-Release/bin/run_{GTEST_TARGET}'],
+          [f'out/Release/bin/run_{GTEST_TARGET}'],
       ),
       api.post_process(
           post_process.MustRun,
@@ -454,8 +450,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),
       api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
-                       'exe_rel_path',
-                       f'out/shared-Release/bin/run_{GTEST_TARGET}'),
+                       'exe_rel_path', f'out/Release/bin/run_{GTEST_TARGET}'),
       api.post_process(
           post_process.StepCommandContains,
           'test_pre_run.basic_EVE_TOT.schedule', [
@@ -722,7 +717,7 @@ def GenTests(api):
           skylab_trigger_properties={
               'vaapi_unittest': {
                   'exe_rel_path':
-                      'out/shared-Release/bin/run_vaapi_unittest',
+                      'out/Release/bin/run_vaapi_unittest',
                   'lacros_gcs_path':
                       'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/vaapi_unittest',
                   'tast_expr_file':
@@ -760,8 +755,7 @@ def GenTests(api):
           'prepare skylab tests.'
           'upload skylab runtime deps for {target}.'
           'Generic Archiving Steps.'
-          'Copy file out/shared-Release/bin/run_{target}'.format(
-              target=GTEST_TARGET),
+          'Copy file out/Release/bin/run_{target}'.format(target=GTEST_TARGET),
       ),
       api.post_process(
           post_process.DoesNotRun,

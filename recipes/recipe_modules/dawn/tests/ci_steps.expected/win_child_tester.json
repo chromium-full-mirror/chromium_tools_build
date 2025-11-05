@@ -538,7 +538,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]\\builder\\dawn\\out\\a582-win-child-teste"
+      "[CACHE]\\builder\\dawn\\out\\Release"
     ],
     "infra_step": true,
     "luci_context": {

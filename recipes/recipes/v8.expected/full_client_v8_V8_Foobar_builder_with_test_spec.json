@@ -79,7 +79,7 @@
       "[CACHE]/builder/v8/infra/mb/gn_isolate_map.pyl",
       "--swarming-targets-file",
       "mjsunit\n",
-      "[CACHE]/builder/v8/out/b716-V8_Foobar_build"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -121,7 +121,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]/builder/v8/out/b716-V8_Foobar_build/mjsunit.isolated.gen.json"
+      "[CACHE]/builder/v8/out/build/mjsunit.isolated.gen.json"
     ],
     "luci_context": {
       "realm": {

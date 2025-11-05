@@ -47,8 +47,8 @@ def GenTests(api):
       for part in parts]
     return sum(checks, api.empty_test_data())
 
-  def test(builder_group, builder_name, target_cpu, is_debug, gs_link,
-           public_link, build_dir):
+  def test(
+      builder_group, builder_name, target_cpu, is_debug, gs_link, public_link):
     return (api.v8.test(builder_group, builder_name) + api.step_data(
         'Code coverage.read build config',
         api.file.read_json({
@@ -74,10 +74,10 @@ def GenTests(api):
             ],
         ) + step_command_contains_multiple(
             'Code coverage.Create report',
-            f'-compilation-dir=[CACHE]/builder/v8/out/{build_dir}',
+            '-compilation-dir=[CACHE]/builder/v8/out/build',
             '-output-dir=[CLEANUP]/report',
             '-instr-profile=[CLEANUP]/profdata/total.profdata',
-            f'[CACHE]/builder/v8/out/{build_dir}/d8',
+            '[CACHE]/builder/v8/out/build/d8',
         ) + api.post_process(
             post_process.StepCommandContains,
             'Code coverage.gsutil coverage report',
@@ -101,7 +101,6 @@ def GenTests(api):
       is_debug=False,
       gs_link=f'{GS_URL}/ci/linux64_rel/{hsh}',
       public_link=f'{PUB_URL}/ci/linux64_rel/{hsh}/index.html',
-      build_dir='d2ce-V8_Foobar',
   )
 
   # Test a trybot with 32 bits and debug mode.
@@ -112,5 +111,4 @@ def GenTests(api):
       is_debug=True,
       gs_link=f'{GS_URL}/try/linux32_dbg/456789/12/1337000001',
       public_link=f'{PUB_URL}/try/linux32_dbg/456789/12/1337000001/index.html',
-      build_dir='1525-v8_foobar',
   )

@@ -197,7 +197,7 @@
       "--git_dir",
       "[START_DIR]/src",
       "--output_file",
-      "[START_DIR]/src/out/dec1-gn_test/cronet/CHANGELIST"
+      "[START_DIR]/src/out/Debug/cronet/CHANGELIST"
     ],
     "luci_context": {
       "realm": {
@@ -250,7 +250,7 @@
       "[START_DIR]/src/third_party/gn/gn",
       "--root=[START_DIR]/src",
       "gen",
-      "[START_DIR]/src/out/dec1-gn_test",
+      "[START_DIR]/src/out/Debug",
       "--args=is_cronet_build=true is_debug=true target_os=\"android\" target_cpu=\"arm\""
     ],
     "cwd": "[START_DIR]/src",
@@ -288,7 +288,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[START_DIR]/src/out/dec1-gn_test",
+      "[START_DIR]/src/out/Debug",
       "cronet_package",
       "cronet_sample_test_apk",
       "cronet_smoketests_missing_native_library_instrumentation_apk",
@@ -335,7 +335,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[START_DIR]/src/out/dec1-gn_test/.ninja_log",
+      "[START_DIR]/src/out/Debug/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[START_DIR]/src",
@@ -437,7 +437,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[START_DIR]/src/out/dec1-gn_test",
+      "[START_DIR]/src/out/Debug",
       "cronet_package",
       "cronet_sample_test_apk",
       "cronet_smoketests_missing_native_library_instrumentation_apk",
@@ -520,7 +520,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[START_DIR]/src/out/dec1-gn_test/cronet/VERSION",
+      "[START_DIR]/src/out/Debug/cronet/VERSION",
       "gs://chromium-cronet/android/51.0.2704.0/Debug/VERSION"
     ],
     "infra_step": true,
@@ -552,7 +552,7 @@
       "----",
       "cp",
       "-R",
-      "[START_DIR]/src/out/dec1-gn_test/cronet",
+      "[START_DIR]/src/out/Debug/cronet",
       "gs://chromium-cronet/android/51.0.2704.0/Debug"
     ],
     "infra_step": true,

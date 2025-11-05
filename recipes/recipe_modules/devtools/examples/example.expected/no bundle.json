@@ -211,7 +211,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
-      "[CACHE]/builder/devtools-frontend/out/e50c-builder",
+      "[CACHE]/builder/devtools-frontend/out/Release",
       "--args=is_official_build=true devtools_skip_typecheck=true devtools_bundle=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",

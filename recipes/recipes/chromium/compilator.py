@@ -426,8 +426,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -451,8 +450,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
       api.post_process(post_process.DoesNotRun, 'skylab trigger properties'),
       api.post_check(lambda check, steps: check(
-          steps['post output trigger properties'].tags[
-              'chromium.outputted_trigger_properties'] ==
+          steps['post output trigger properties'
+               ].tags['chromium.outputted_trigger_properties'] ==
           ('outputted swarming and/or skylab trigger properties'))),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),
@@ -500,8 +499,7 @@ def GenTests(api):
       api.platform.name('linux'),
       api.path.exists(
           api.path.cache_dir.joinpath(
-              'builder/src/out/666d-fake-compilator/lacros_all_tast_tests.isolate'
-          ),
+              'builder/src/out/Release/lacros_all_tast_tests.isolate'),
           api.path.start_dir.joinpath('squashfs', 'squashfs-tools',
                                       'mksquashfs'),
       ),
@@ -571,8 +569,7 @@ def GenTests(api):
       ),
       api.path.exists(
           api.path.cache_dir.joinpath(
-              'builder/src/out/666d-fake-compilator/lacros_all_tast_tests.isolate'
-          ),
+              'builder/src/out/Release/lacros_all_tast_tests.isolate'),
           api.path.start_dir.joinpath('squashfs', 'squashfs-tools',
                                       'mksquashfs'),
       ),
@@ -638,8 +635,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -692,8 +688,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -761,8 +756,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       api.code_coverage(use_clang_coverage=True),
       ctbc_properties(),
       api.properties(
@@ -816,8 +810,7 @@ def GenTests(api):
           revision='deadbeef'),
       api.platform.name('win'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       api.code_coverage(use_clang_coverage=True),
       ctbc_properties(),
       api.properties(
@@ -854,8 +847,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -897,8 +889,7 @@ def GenTests(api):
       ),
       api.platform.name('win'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1000,11 +991,9 @@ def GenTests(api):
           builder='fake-compilator',
           revision='deadbeef',
       ),
-      api.properties(swarming_parent_run_id='some-parent-run-id'),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1029,8 +1018,7 @@ def GenTests(api):
       api.platform.name('linux'),
       api.code_coverage(use_clang_coverage=True),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1065,8 +1053,7 @@ def GenTests(api):
       api.platform.name('linux'),
       api.path.exists(
           api.path.cache_dir.joinpath(
-              'builder/src/out/666d-fake-compilator/lacros_all_tast_tests.isolate'
-          ),
+              'builder/src/out/Release/lacros_all_tast_tests.isolate'),
           api.path.start_dir.joinpath('squashfs', 'squashfs-tools',
                                       'mksquashfs'),
       ),
@@ -1246,8 +1233,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1290,8 +1276,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1339,8 +1324,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1375,8 +1359,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(

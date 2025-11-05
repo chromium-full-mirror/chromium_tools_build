@@ -220,6 +220,11 @@ def RunSteps(api, fail_compile):
   if fail_compile:
     api.chromium_tests.compile_specific_targets = compile_override
 
+  if 'mock_output_files' in api.properties:
+    for f in api.properties['mock_output_files']:
+      api.path.mock_add_paths('[CACHE]/builder/src/out/%s/%s' %
+                              (api.properties['config'], f))
+
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   build_result, _ = api.chromium_tests.main_waterfall_steps(
@@ -937,12 +942,10 @@ def GenTests(api):
   yield api.test(
       'ci_bot_expose_trigger_properties',
       api.properties(
+          mock_output_files=['orchestrator_all.runtime_deps'],
           config='Release',
           swarm_hashes={fake_test: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},
       ),
-      api.path.exists(
-          api.path.cache_dir /
-          'builder/src/out/ceb4-fake-builder/orchestrator_all.runtime_deps'),
       api.platform('linux', 64),
       api.chromium_tests_builder_config.ci_build(
           builder_group=fake_group,

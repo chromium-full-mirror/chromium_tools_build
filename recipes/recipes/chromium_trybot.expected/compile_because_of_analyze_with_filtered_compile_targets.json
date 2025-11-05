@@ -12,7 +12,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/0763-fake-try-builde",
+      "[CACHE]/builder/src/out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -79,7 +79,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/0763-fake-try-builde",
+      "[CACHE]/builder/src/out/Release",
       "base_unittests",
       "browser_tests",
       "chrome"

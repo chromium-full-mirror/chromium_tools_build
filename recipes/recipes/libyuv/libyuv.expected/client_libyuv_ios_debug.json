@@ -297,7 +297,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug"
+      "[CACHE]/builder/src/out/Debug-iphoneos"
     ],
     "infra_step": true,
     "luci_context": {
@@ -323,7 +323,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/Debug-iphoneos/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -357,7 +357,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/src/out/Debug-iphoneos/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -384,7 +384,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/src",
       "gen",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug",
+      "[CACHE]/builder/src/out/Debug-iphoneos",
       "--args=is_clang=true ios_enable_code_signing=false target_environment=\"simulator\" target_os=\"ios\" is_component_build=false use_siso=true is_debug=true target_cpu=\"arm\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -448,7 +448,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug"
+      "[CACHE]/builder/src/out/Debug-iphoneos"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -487,7 +487,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug/.ninja_log",
+      "[CACHE]/builder/src/out/Debug-iphoneos/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -589,7 +589,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug",
+      "[CACHE]/builder/src/out/Debug-iphoneos",
       "-d",
       "explain",
       "-n"
@@ -631,7 +631,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/src/out/ce28-iOS_Debug/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/Debug-iphoneos/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {

@@ -5,7 +5,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/v8",
       "gen",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "--args=v8_enable_slow_dchecks=true use_siso=true use_remoteexec=true is_debug=true target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -40,7 +40,7 @@
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -81,7 +81,7 @@
       "-u",
       "[CACHE]/builder/v8/tools/release/filter_build_files.py",
       "--dir",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "--platform",
       "linux",
       "--type",
@@ -106,8 +106,8 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/d8\",@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/icudtl.dat\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/d8\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/icudtl.dat\"@@@",
       "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"
     ]
@@ -130,7 +130,7 @@
       }
     },
     "name": "make archive.zipping",
-    "stdin": "{\"comment\": \"\", \"entries\": [{\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/d8\", \"type\": \"file\"}, {\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/d2ce-V8_Foobar/icudtl.dat\", \"type\": \"file\"}], \"mode\": \"w\", \"output\": \"[CLEANUP]/archive.zip\", \"root\": \"[CACHE]/builder/v8/out/d2ce-V8_Foobar\"}",
+    "stdin": "{\"comment\": \"\", \"entries\": [{\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/build/d8\", \"type\": \"file\"}, {\"archive_name\": null, \"path\": \"[CACHE]/builder/v8/out/build/icudtl.dat\", \"type\": \"file\"}], \"mode\": \"w\", \"output\": \"[CLEANUP]/archive.zip\", \"root\": \"[CACHE]/builder/v8/out/build\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

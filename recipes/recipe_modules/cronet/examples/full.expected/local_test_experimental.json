@@ -197,7 +197,7 @@
       "--git_dir",
       "[START_DIR]/src",
       "--output_file",
-      "[START_DIR]/src/out/5c15-local_test/cronet/CHANGELIST"
+      "[START_DIR]/src/out/Debug/cronet/CHANGELIST"
     ],
     "luci_context": {
       "realm": {
@@ -295,7 +295,7 @@
       "[START_DIR]/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[START_DIR]/src/out/5c15-local_test"
+      "[START_DIR]/src/out/Debug"
     ],
     "cwd": "[START_DIR]/src",
     "env": {
@@ -332,7 +332,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[START_DIR]/src/out/5c15-local_test/gn_logs.txt",
+      "[START_DIR]/src/out/Debug/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -381,7 +381,7 @@
       }
     },
     "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b local_test --config-file tools/mb/mb_config.pyl out/5c15-local_test```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b local_test --config-file tools/mb/mb_config.pyl out/Debug```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -394,7 +394,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b local_test --config-file tools/mb/mb_config.pyl out/5c15-local_test```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b local_test --config-file tools/mb/mb_config.pyl out/Debug```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -427,7 +427,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[START_DIR]/src/out/5c15-local_test",
+      "[START_DIR]/src/out/Debug",
       "cronet_package",
       "cronet_sample_test_apk",
       "cronet_smoketests_missing_native_library_instrumentation_apk",
@@ -474,7 +474,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[START_DIR]/src/out/5c15-local_test/.ninja_log",
+      "[START_DIR]/src/out/Debug/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[START_DIR]/src",
@@ -576,7 +576,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[START_DIR]/src/out/5c15-local_test",
+      "[START_DIR]/src/out/Debug",
       "cronet_package",
       "cronet_sample_test_apk",
       "cronet_smoketests_missing_native_library_instrumentation_apk",
@@ -659,7 +659,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[START_DIR]/src/out/5c15-local_test/cronet/VERSION",
+      "[START_DIR]/src/out/Debug/cronet/VERSION",
       "gs://chromium-cronet/experimental/android/51.0.2704.0/Debug/VERSION"
     ],
     "infra_step": true,
@@ -691,7 +691,7 @@
       "----",
       "cp",
       "-R",
-      "[START_DIR]/src/out/5c15-local_test/cronet",
+      "[START_DIR]/src/out/Debug/cronet",
       "gs://chromium-cronet/experimental/android/51.0.2704.0/Debug"
     ],
     "infra_step": true,

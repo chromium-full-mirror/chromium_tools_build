@@ -237,7 +237,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_"
+      "[CACHE]/builder/node-ci/out/Release"
     ],
     "env_prefixes": {
       "PATH": [
@@ -271,7 +271,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/node-ci/out/Release/CR_COMPILE_GUARD.txt"
     ],
     "env_prefixes": {
       "PATH": [
@@ -311,7 +311,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/node-ci/out/Release/LAST_BUILD_SYSTEM.txt"
     ],
     "env_prefixes": {
       "PATH": [
@@ -344,7 +344,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/node-ci",
       "gen",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_",
+      "[CACHE]/builder/node-ci/out/Release",
       "--args=is_clang=true node_enable_deprecated_declarations_warnings=true v8_imminent_deprecation_warnings=false v8_array_buffer_internal_field_count=2 v8_array_buffer_view_internal_field_count=2 use_sysroot=true use_custom_libcxx=true icu_use_data_file=false use_siso=true is_debug=false target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/node-ci",
@@ -389,7 +389,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_"
+      "[CACHE]/builder/node-ci/out/Release"
     ],
     "cwd": "[CACHE]/builder/node-ci",
     "env": {
@@ -437,7 +437,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/.ninja_log",
+      "[CACHE]/builder/node-ci/out/Release/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/node-ci",
@@ -561,7 +561,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_",
+      "[CACHE]/builder/node-ci/out/Release",
       "-d",
       "explain",
       "-n"
@@ -612,7 +612,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/node-ci/out/Release/CR_COMPILE_GUARD.txt"
     ],
     "env_prefixes": {
       "PATH": [
@@ -639,7 +639,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/node_cctest"
+      "[CACHE]/builder/node-ci/out/Release/node_cctest"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",
     "luci_context": {
@@ -668,9 +668,9 @@
       "--flaky-tests",
       "run",
       "--shell",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/node",
+      "[CACHE]/builder/node-ci/out/Release/node",
       "--test-root",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/gen/node/test",
+      "[CACHE]/builder/node-ci/out/Release/gen/node/test",
       "addons"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",
@@ -700,7 +700,7 @@
       "--flaky-tests",
       "run",
       "--shell",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/node",
+      "[CACHE]/builder/node-ci/out/Release/node",
       "default"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",
@@ -730,9 +730,9 @@
       "--flaky-tests",
       "run",
       "--shell",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/node",
+      "[CACHE]/builder/node-ci/out/Release/node",
       "--test-root",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/gen/node/test",
+      "[CACHE]/builder/node-ci/out/Release/gen/node/test",
       "js-native-api"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",
@@ -762,9 +762,9 @@
       "--flaky-tests",
       "run",
       "--shell",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/node",
+      "[CACHE]/builder/node-ci/out/Release/node",
       "--test-root",
-      "[CACHE]/builder/node-ci/out/b9af-node_ci_foobar_/gen/node/test",
+      "[CACHE]/builder/node-ci/out/Release/gen/node/test",
       "node-api"
     ],
     "cwd": "[CACHE]/builder/node-ci/node",

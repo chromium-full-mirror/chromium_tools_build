@@ -238,16 +238,18 @@ def GenTests(api):
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
+          experiments=['chromium.use_per_builder_build_dir_name'],
       ),
       api.properties(chromium_configs=['shared_build_dir'],),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'build_dir_name',
+      'build_dir_name_experiment',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder-with-really-long-name',
+          experiments=['chromium.use_per_builder_build_dir_name'],
       ),
       api.path.exists(
           api.path.cache_dir.joinpath('builder', 'src', 'out',

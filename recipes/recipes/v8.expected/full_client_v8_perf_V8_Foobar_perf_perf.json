@@ -15,7 +15,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/v8/out/c4b8-V8_Foobar_perf",
+      "[CACHE]/builder/v8/out/build",
       "d8"
     ],
     "cwd": "[CACHE]/builder/v8",

@@ -258,7 +258,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar"
+      "[CACHE]/builder/v8/out/build"
     ],
     "infra_step": true,
     "luci_context": {
@@ -287,7 +287,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/v8/out/build/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -322,7 +322,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/v8/out/build/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -398,7 +398,7 @@
       "/path/to/tmp/json",
       "--isolate-map-file",
       "[CACHE]/builder/v8/infra/mb/gn_isolate_map.pyl",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -435,7 +435,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/gn_logs.txt",
+      "[CACHE]/builder/v8/out/build/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -485,7 +485,7 @@
       }
     },
     "name": "build.update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"build|generate_build_files instructions\", \"id\": \"buildgenerate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m client.v8 -b \\\"V8 Foobar\\\" --config-file infra/mb/mb_config.pyl --isolate-map-file infra/mb/gn_isolate_map.pyl out/d2ce-V8_Foobar```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"build|generate_build_files instructions\", \"id\": \"buildgenerate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m client.v8 -b \\\"V8 Foobar\\\" --config-file infra/mb/mb_config.pyl --isolate-map-file infra/mb/gn_isolate_map.pyl out/build```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -499,7 +499,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"buildgenerate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m client.v8 -b \\\"V8 Foobar\\\" --config-file infra/mb/mb_config.pyl --isolate-map-file infra/mb/gn_isolate_map.pyl out/d2ce-V8_Foobar```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m client.v8 -b \\\"V8 Foobar\\\" --config-file infra/mb/mb_config.pyl --isolate-map-file infra/mb/gn_isolate_map.pyl out/build```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -535,7 +535,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -578,7 +578,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/.ninja_log",
+      "[CACHE]/builder/v8/out/build/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -687,7 +687,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar",
+      "[CACHE]/builder/v8/out/build",
       "-d",
       "explain",
       "-n"
@@ -733,7 +733,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/v8/out/build/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {

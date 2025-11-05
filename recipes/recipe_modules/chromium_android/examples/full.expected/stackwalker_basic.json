@@ -758,7 +758,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/out/0a90-stackwalker/bin/run_unittests",
+      "[START_DIR]/src/out/Release/bin/run_unittests",
       "--denylist-file",
       "[START_DIR]/src/out/bad_devices.json",
       "--verbose",
@@ -786,7 +786,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[build]/recipes/tee.py",
-      "[START_DIR]/src/out/0a90-stackwalker/full_log",
+      "[START_DIR]/src/out/Release/full_log",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_printer.py",
       "[CLEANUP]/logcat"
@@ -812,10 +812,10 @@
       "--arch",
       "arm",
       "--more-info",
-      "[START_DIR]/src/out/0a90-stackwalker/full_log"
+      "[START_DIR]/src/out/Release/full_log"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/0a90-stackwalker",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
@@ -841,7 +841,7 @@
       "-w"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/0a90-stackwalker",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
@@ -887,7 +887,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[build]/recipes/tee.py",
-      "[START_DIR]/src/out/0a90-stackwalker/full_log",
+      "[START_DIR]/src/out/Release/full_log",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_printer.py",
       "[CLEANUP]/logcat"
@@ -913,10 +913,10 @@
       "--arch",
       "arm",
       "--more-info",
-      "[START_DIR]/src/out/0a90-stackwalker/full_log"
+      "[START_DIR]/src/out/Release/full_log"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/0a90-stackwalker",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
@@ -942,7 +942,7 @@
       "-w"
     ],
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/0a90-stackwalker",
+      "CHROMIUM_OUTPUT_DIR": "[START_DIR]/src/out/Release",
       "PATH": "[START_DIR]/src/third_party/android_sdk/public/platform-tools:[START_DIR]/src/build/android:<PATH>"
     },
     "infra_step": true,
@@ -969,7 +969,7 @@
       "--build-dir",
       "[START_DIR]/src/out/Release",
       "--binary",
-      "[START_DIR]/src/out/0a90-stackwalker/lib.unstripped/libchrome.so"
+      "[START_DIR]/src/out/Release/lib.unstripped/libchrome.so"
     ],
     "luci_context": {
       "realm": {
@@ -994,7 +994,7 @@
       "--build-dir",
       "[START_DIR]/src/out/Release",
       "--binary",
-      "[START_DIR]/src/out/0a90-stackwalker/lib.unstripped/libwebviewchromium.so"
+      "[START_DIR]/src/out/Release/lib.unstripped/libwebviewchromium.so"
     ],
     "luci_context": {
       "realm": {
@@ -1015,9 +1015,9 @@
       "vpython3",
       "[START_DIR]/src/build/android/stacktrace/stackwalker.py",
       "--stackwalker-binary-path",
-      "[START_DIR]/src/out/0a90-stackwalker/microdump_stackwalk",
+      "[START_DIR]/src/out/Release/microdump_stackwalk",
       "--stack-trace-path",
-      "[START_DIR]/src/out/0a90-stackwalker/full_log",
+      "[START_DIR]/src/out/Release/full_log",
       "--symbols-path",
       "[CLEANUP]/symbols_tmp_1"
     ],

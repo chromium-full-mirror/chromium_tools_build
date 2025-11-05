@@ -10,7 +10,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]/builder/v8/out/d2ce-V8_Foobar/run-num-fuzzer.isolated.gen.json"
+      "[CACHE]/builder/v8/out/build/run-num-fuzzer.isolated.gen.json"
     ],
     "luci_context": {
       "realm": {

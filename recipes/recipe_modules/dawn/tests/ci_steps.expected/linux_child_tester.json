@@ -538,7 +538,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/builder/dawn/out/6e17-linux-child-tes"
+      "[CACHE]/builder/dawn/out/Release"
     ],
     "infra_step": true,
     "luci_context": {

@@ -140,7 +140,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl"
+      "[CACHE]\\builder\\src\\out\\Debug"
     ],
     "infra_step": true,
     "luci_context": {
@@ -166,7 +166,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl\\CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\Debug\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -200,7 +200,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl\\LAST_BUILD_SYSTEM.txt"
+      "[CACHE]\\builder\\src\\out\\Debug\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -227,7 +227,7 @@
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\src",
       "gen",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl",
+      "[CACHE]\\builder\\src\\out\\Debug",
       "--args=is_clang=true is_component_build=false use_siso=true is_debug=true target_cpu=\"x86\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -291,7 +291,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl"
+      "[CACHE]\\builder\\src\\out\\Debug"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -330,7 +330,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl\\.ninja_log",
+      "[CACHE]\\builder\\src\\out\\Debug\\.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -432,7 +432,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl",
+      "[CACHE]\\builder\\src\\out\\Debug",
       "-d",
       "explain",
       "-n"
@@ -474,7 +474,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl\\CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\Debug\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -496,7 +496,7 @@
       "python3",
       "RECIPE_REPO[build]\\recipes\\runtest.py",
       "--build-dir",
-      "[CACHE]\\builder\\src\\out\\cc40-Win32_Debug_(Cl",
+      "[CACHE]\\builder\\src\\out\\Debug",
       "--builder-name=Win32 Debug (Clang)",
       "--build-number=1337",
       "libyuv_unittest.exe",
