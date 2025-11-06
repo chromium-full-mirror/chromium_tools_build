@@ -110,7 +110,10 @@ def _run_tests(api, update_result, source_dir):
   ]
   if not api.tryserver.is_tryserver:
     cmd.extend([
-        '--enable-perf-uploading',
+        # TODO(b/449818513): Re-enable uploading when the new perf dashboard
+        # instance is available and the test runner has been moved away
+        # from Chrome's hierarchy-based reporting.
+        # '--enable-perf-uploading',
         '--git-revision',
         # The perf dashboard infra normally accepts a git revision, but the
         # Chrome-related instances use commit position for historical reasons.
@@ -189,8 +192,10 @@ def GenTests(api: RecipeTestApi):
       'basic',
       gen_ci_test_props(),
       api.post_process(post_process.MustRun, 'run eval prompts'),
-      api.post_process(post_process.StepCommandContains, 'run eval prompts',
-                       ['--enable-perf-uploading']),
+      # TODO(b/449818513): Change this to StepCommandContains when perf
+      # uploading is re-enabled.
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'run eval prompts', ['--enable-perf-uploading']),
       api.post_process(post_process.StepCommandContains, 'run eval prompts',
                        ['fake-builder']),
       api.post_process(post_process.StepCommandContains, 'run eval prompts',
