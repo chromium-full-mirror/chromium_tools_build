@@ -5,7 +5,7 @@
 from PB.recipes.build.gofindit.chromium.single_revision import InputProperties
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from recipe_engine.post_process import (DropExpectation, MustRun)
+from recipe_engine.post_process import (DropExpectation, MustRun, StepFailure)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 
@@ -43,21 +43,27 @@ def RunSteps(api, properties):
       # If compile_targets is not there, compile all targets
       compile_targets = build_config.compile_targets
 
-    compile_result, _ = api.chromium_tests.compile_specific_targets(
-        build_dir,
-        builder_id,
-        builder_config,
-        bot_update_step,
-        build_config,
-        compile_targets,
-        override_execution_mode=ctbc.COMPILE_AND_TEST,
-        tests=[],
-    )
-    compile_status = compile_result.status
+    try:
+      compile_result, _ = api.chromium_tests.compile_specific_targets(
+          build_dir,
+          builder_id,
+          builder_config,
+          bot_update_step,
+          build_config,
+          compile_targets,
+          override_execution_mode=ctbc.COMPILE_AND_TEST,
+          tests=[],
+      )
+      compile_status = compile_result.status
+    except api.step.StepFailure:
+      # Handle failures from generate_build_files or compile steps.
+      # These should be treated as FAILURE, not INFRA_FAILURE.
+      compile_status = common_pb.FAILURE
+      raise
     markdown = "LUCI Bisection's compile result from the input commit was {0}.".format(
         api.gofindit.rerun_result(compile_status))
     return result_pb.RawResult(
-        status=compile_result.status, summary_markdown=(markdown))
+        status=compile_status, summary_markdown=(markdown))
   finally:
     api.gofindit.send_result_to_luci_bisection("send_result_to_luci_bisection",
                                                properties.analysis_id,
@@ -133,6 +139,30 @@ def GenTests(api):
       api.post_process(MustRun, 'bot_update'),
       api.post_process(MustRun, 'clobber'),
       api.post_process(MustRun, 'compile'),
+      api.post_process(MustRun, 'send_result_to_luci_bisection'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'compile failure',
+      setup(api),
+      api.step_data('compile', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(MustRun, 'bot_update'),
+      api.post_process(MustRun, 'generate_build_files'),
+      api.post_process(MustRun, 'compile'),
+      api.post_process(MustRun, 'send_result_to_luci_bisection'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'generate_build_files failure',
+      setup(api),
+      api.step_data('generate_build_files', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(StepFailure, 'generate_build_files'),
+      api.post_process(MustRun, 'bot_update'),
+      api.post_process(MustRun, 'generate_build_files'),
       api.post_process(MustRun, 'send_result_to_luci_bisection'),
       api.post_process(DropExpectation),
   )
