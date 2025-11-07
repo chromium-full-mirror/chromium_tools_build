@@ -64,7 +64,7 @@ BUILDERS = freeze({
             'linux-clang-tidy-rel':
                 ClangTidySpec(),
             'mac-clang-tidy-rel':
-                ClangTidySpec(chromium_apply_config=['mac_toolchain']),
+                ClangTidySpec(),
             'win10-clang-tidy-rel':
                 ClangTidySpec(),
         },
