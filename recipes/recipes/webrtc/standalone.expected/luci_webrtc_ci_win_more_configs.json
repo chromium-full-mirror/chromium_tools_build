@@ -406,7 +406,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]\\builder\\src\\out\\Debug_x64"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi"
     ],
     "infra_step": true,
     "luci_context": {
@@ -432,7 +432,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]\\builder\\src\\out\\Debug_x64\\CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -466,7 +466,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]\\builder\\src\\out\\Debug_x64\\LAST_BUILD_SYSTEM.txt"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -540,7 +540,7 @@
       "dummy_audio_file_devices_no_protobuf",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -576,7 +576,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf\\gn_logs.txt",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -625,7 +625,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -657,7 +657,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -690,7 +690,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -729,7 +729,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf\\.ninja_log",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -831,7 +831,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi",
       "-d",
       "explain",
       "-n"
@@ -873,7 +873,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]\\builder\\src\\out\\Debug_x64\\CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -897,10 +897,39 @@
       "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\LAST_BUILD_SYSTEM.txt",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read LAST_BUILD_SYSTEM.txt",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@LAST_BUILD_SYSTEM.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi"
     ],
     "infra_step": true,
     "luci_context": {
@@ -926,7 +955,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf\\CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -960,7 +989,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf\\LAST_BUILD_SYSTEM.txt"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1036,7 +1065,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -1074,7 +1103,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp\\gn_logs.txt",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -1123,7 +1152,7 @@
       }
     },
     "name": "update invocation instructions (4)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1155,7 +1184,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1168,7 +1197,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1201,7 +1230,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -1240,7 +1269,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp\\.ninja_log",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -1342,7 +1371,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi",
       "-d",
       "explain",
       "-n"
@@ -1384,7 +1413,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf\\CR_COMPILE_GUARD.txt"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1487,7 +1516,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp\\dummy_test.isolated.gen.json"
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi\\dummy_test.isolated.gen.json"
     ],
     "luci_context": {
       "realm": {
@@ -1516,7 +1545,7 @@
       "-u",
       "RECIPE_MODULE[build::chromium_tests]\\resources\\find_command_lines.py",
       "--build-dir",
-      "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
+      "[CACHE]\\builder\\src\\out\\3637-Win_(more_confi",
       "--output-json",
       "/path/to/tmp/json"
     ],
@@ -1836,7 +1865,7 @@
       }
     },
     "name": "update invocation instructions (5)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/dummy size] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"dummy_test instructions\", \"id\": \"tag_27061c33fbd705e8013fb6e4911a4cc36922eada\", \"targetedInstructions\": [{\"content\": \"Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/>\", \"targets\": [\"LOCAL\"]}, {\"content\": \"**Download test binary:**<br/>```./tools/luci-go/cas download -cas-instance projects/example-cas-server/instances/default_instance -digest [dummy hash for dummy_test/dummy size] -dir tmp```<br/>Run `./tools/luci-go/cas login` if needed<br/>*See the local instructions tab and run from the tmp dir*\", \"targets\": [\"PREBUILT\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1868,7 +1897,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\dummy_audio_file_devices_no_protobuf```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1881,7 +1910,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\rtti_no_sctp```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc\\\\mb\\\\mb.py gen -m client.webrtc -b \\\"Win (more configs)\\\" --config-file tools_webrtc\\\\mb\\\\mb_config.pyl --phase rtti_no_sctp out\\\\3637-Win_(more_confi```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",

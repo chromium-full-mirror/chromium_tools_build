@@ -113,8 +113,8 @@ def GenTests(api):
       api.post_process(
           api.swarming.check_triggered_request,
           'test_pre_run.[trigger] %s' % fake_test, lambda check, req: check(req[
-              0].env_vars['ISOLATED_OUTDIR'] == '${ISOLATED_OUTDIR}'),
-          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+              0].env_vars['ISOLATED_OUTDIR'] == '${ISOLATED_OUTDIR}'), lambda
+          check, req: check(req[0].relative_cwd == 'out/bb71-fake-tester'),
           lambda check, req: check(
               is_subsequence(req[0].command, fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
@@ -140,8 +140,8 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_check(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s' % fake_test,
-          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          'test_pre_run.[trigger] %s' % fake_test, lambda check, req: check(req[
+              0].relative_cwd == 'out/bb71-fake-tester'),
           lambda check, req: check(
               is_subsequence(req[0].command, fake_command_lines[fake_test])),
           lambda check, req: check(req[0].env_vars['ISOLATED_OUTDIR'] ==
@@ -199,7 +199,7 @@ def GenTests(api):
       api.post_process(post_process.LogContains, 'trigger', 'input',
                        [fake_command_lines_digest]),
       api.post_process(post_process.LogContains, 'trigger', 'input',
-                       ['swarming_command_lines_cwd', 'out/Release']),
+                       ['swarming_command_lines_cwd', 'out/ceb4-fake-builder']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -349,8 +349,8 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s (experimental)' % fake_test,
-          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          'test_pre_run.[trigger] %s (experimental)' % fake_test, lambda check,
+          req: check(req[0].relative_cwd == 'out/bb71-fake-tester'),
           lambda check, req: check(
               is_subsequence(req[0].command, fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
@@ -398,8 +398,8 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s on (nv) GPU on Linux' % fake_test,
-          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          'test_pre_run.[trigger] %s on (nv) GPU on Linux' % fake_test, lambda
+          check, req: check(req[0].relative_cwd == 'out/bb71-fake-tester'),
           lambda check, req: check(
               is_subsequence(req[0].command, [
                   'rdb',
@@ -469,8 +469,8 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s on Ubuntu-16.04' % fake_test,
-          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          'test_pre_run.[trigger] %s on Ubuntu-16.04' % fake_test, lambda check,
+          req: check(req[0].relative_cwd == 'out/bb71-fake-tester'),
           lambda check, req: check(
               is_subsequence(req[0].command, [
                   'rdb',

@@ -572,7 +572,10 @@ class V8Api(recipe_api.RecipeApi):
     return path
 
   def build_dir(self, source_dir: Path):
-    return self.m.chromium.default_build_dir(source_dir)
+    # TODO(crbug.com/457899826): Either restore the call to
+    # chromium.default_build_dir() below, or remove all the hard-coded
+    # references to "out/build" throughout V8 recipe code.
+    return source_dir / 'out' / self.m.chromium.c.build_config_fs
 
   def get_revision(self, revision=None):
     return revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'

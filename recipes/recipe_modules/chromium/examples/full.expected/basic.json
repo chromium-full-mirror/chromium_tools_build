@@ -274,7 +274,7 @@
       "--android-version-name=example",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "[CACHE]/builder/src/out/ceb4-fake-builder"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -310,7 +310,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/Release/gn_logs.txt",
+      "[CACHE]/builder/src/out/ceb4-fake-builder/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -359,7 +359,7 @@
       }
     },
     "name": "update invocation instructions",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/ceb4-fake-builder```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -372,7 +372,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/ceb4-fake-builder```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -400,7 +400,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/Release",
+      "[CACHE]/builder/src/out/ceb4-fake-builder",
       "All"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -452,7 +452,7 @@
       }
     },
     "name": "update invocation instructions (2)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/ceb4-fake-builder```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"compile instructions\", \"id\": \"compile_repro_instructions\", \"targetedInstructions\": [{\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details><br/>*To force non-remote services append --no-rbe and --no-siso, this will dramatically slow the build*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -465,7 +465,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/Release```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m fake-group -b fake-builder --config-file tools/mb/mb_config.pyl --android-version-code=3 --android-version-name=example out/ceb4-fake-builder```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -509,7 +509,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/Release/.ninja_log",
+      "[CACHE]/builder/src/out/ceb4-fake-builder/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -601,7 +601,7 @@
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/Release",
+      "[CACHE]/builder/src/out/ceb4-fake-builder",
       "All",
       "-d",
       "explain",

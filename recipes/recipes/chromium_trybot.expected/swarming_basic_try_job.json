@@ -860,7 +860,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "[CACHE]/builder/src/out/0763-fake-try-builde",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",

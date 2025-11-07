@@ -155,7 +155,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/devtools-frontend/out/Release"
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux"
     ],
     "env_prefixes": {
       "PATH": [
@@ -186,7 +186,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/devtools-frontend/out/Release/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux/CR_COMPILE_GUARD.txt"
     ],
     "env_prefixes": {
       "PATH": [
@@ -225,7 +225,7 @@
       "/path/to/tmp/json",
       "copy",
       "ninja",
-      "[CACHE]/builder/devtools-frontend/out/Release/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux/LAST_BUILD_SYSTEM.txt"
     ],
     "env_prefixes": {
       "PATH": [
@@ -257,7 +257,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
-      "[CACHE]/builder/devtools-frontend/out/Release",
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux",
       "--args=is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
@@ -294,7 +294,7 @@
       "--",
       "[CACHE]/builder/devtools-frontend/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/devtools-frontend/out/Release"
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
@@ -352,7 +352,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/devtools-frontend/out/Release/.ninja_log",
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
@@ -463,7 +463,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/devtools-frontend/out/Release/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/devtools-frontend/out/a26f-linux/CR_COMPILE_GUARD.txt"
     ],
     "env_prefixes": {
       "PATH": [

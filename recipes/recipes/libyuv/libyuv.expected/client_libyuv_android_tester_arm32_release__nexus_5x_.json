@@ -137,7 +137,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/builder/src/out/Release"
+      "[CACHE]/builder/src/out/55ab-Android_Tester_"
     ],
     "infra_step": true,
     "luci_context": {
@@ -188,7 +188,7 @@
     "cmd": [
       "mkdir",
       "-p",
-      "[CACHE]/builder/src/out/Release/exe.unstripped/obj/libyuv_unittest"
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/exe.unstripped/obj/libyuv_unittest"
     ],
     "luci_context": {
       "realm": {
@@ -207,8 +207,8 @@
   {
     "cmd": [
       "cp",
-      "[CACHE]/builder/src/out/Release/libyuv_unittest",
-      "[CACHE]/builder/src/out/Release/exe.unstripped/obj/libyuv_unittest"
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/libyuv_unittest",
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/exe.unstripped/obj/libyuv_unittest"
     ],
     "luci_context": {
       "realm": {
@@ -330,7 +330,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/out/Release/bin/run_libyuv_unittest",
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/bin/run_libyuv_unittest",
       "--denylist-file",
       "[CACHE]/builder/src/out/bad_devices.json",
       "--verbose",
@@ -382,7 +382,7 @@
       "vpython3",
       "[CACHE]/builder/src/build/android/adb_logcat_printer.py",
       "--output-path",
-      "[CACHE]/builder/src/out/Release/full_log",
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/full_log",
       "[CLEANUP]/logcat"
     ],
     "cwd": "[CACHE]/builder",
@@ -412,7 +412,7 @@
       "GSUtil:parallel_composite_upload_threshold=50M",
       "----",
       "cp",
-      "[CACHE]/builder/src/out/Release/full_log",
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/full_log",
       "gs://chromium-libyuv/logcat_dumps/Android Tester ARM32 Release (Nexus 5X)/1337"
     ],
     "cwd": "[CACHE]/builder",
@@ -441,11 +441,11 @@
       "--arch",
       "arm",
       "--more-info",
-      "[CACHE]/builder/src/out/Release/full_log"
+      "[CACHE]/builder/src/out/55ab-Android_Tester_/full_log"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Release"
+      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/55ab-Android_Tester_"
     },
     "infra_step": true,
     "luci_context": {
@@ -473,7 +473,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/Release"
+      "CHROMIUM_OUTPUT_DIR": "[CACHE]/builder/src/out/55ab-Android_Tester_"
     },
     "infra_step": true,
     "luci_context": {
