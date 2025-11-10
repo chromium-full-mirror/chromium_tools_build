@@ -139,11 +139,11 @@ def _run_tests(api, update_result, source_dir, stable):
     ])
   if stable:
     step_name = 'run stable eval prompts'
-    cmd += ['--tag-filter', 'stable']
+    cmd += ['--tag-filter=stable']
     ok_ret = (0,)
   else:
     step_name = 'run unstable eval prompts'
-    cmd += ['--tag-filter', '-stable']
+    cmd += ['--tag-filter=-stable']
     ok_ret = 'any'
   api.step(
       step_name,
