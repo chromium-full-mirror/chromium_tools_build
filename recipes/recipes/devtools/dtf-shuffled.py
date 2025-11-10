@@ -42,7 +42,7 @@ def RunSteps(api, clobber):
                          devtools_skip_typecheck)
   api.devtools.update()
 
-  build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+  build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
     with api.chromium.guard_compile(build_dir):

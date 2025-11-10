@@ -84,7 +84,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(
         gitiles_commit=update_result.out_commit)
-    build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
+    build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
     with api.devtools.depot_on_path():
       api.devtools.clean_out_dir(builder_config, clobber)
       with api.chromium.guard_compile(build_dir):
