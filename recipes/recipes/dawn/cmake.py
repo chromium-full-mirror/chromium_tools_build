@@ -26,22 +26,12 @@ DEPS = [
 
 from contextlib import contextmanager
 from dataclasses import dataclass
+
 from recipe_engine.recipe_api import Property
 
-PROPERTIES = {
-    'target_cpu':
-        Property(default=None, kind=str),
-    'debug':
-        Property(default=False, kind=bool),
-    'clang':
-        Property(default=False, kind=bool),
-    'asan':
-        Property(default=False, kind=bool),
-    'ubsan':
-        Property(default=False, kind=bool),
-    'gen_fuzz_corpus':  # TODO(amaiorano): remove once main.star is updated
-        Property(default=False, kind=bool),
-}
+from PB.recipes.build.dawn.cmake import InputProperties
+
+PROPERTIES = InputProperties
 
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
@@ -336,8 +326,12 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
   return build_path
 
 
-def RunSteps(api, target_cpu: str, debug: bool, clang: bool, asan: bool,
-             ubsan: bool):
+def RunSteps(api, properties):
+  target_cpu = properties.target_cpu
+  debug = properties.debug
+  clang = properties.clang
+  asan = properties.asan
+  ubsan = properties.ubsan
   env = {}
   if asan:
     # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.

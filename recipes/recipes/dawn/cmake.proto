@@ -1,0 +1,19 @@
+// Copyright 2025 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.dawn.cmake;
+
+// Next ID: 7
+message InputProperties {
+  string target_cpu = 1;
+  bool debug = 2;
+  bool clang = 3;
+  bool asan = 4;
+  bool ubsan = 5;
+  // TODO(crbug.com/459517292): Remove this once CMake builders are updated to
+  // not pass this in.
+  bool gen_fuzz_corpus = 6;
+}
