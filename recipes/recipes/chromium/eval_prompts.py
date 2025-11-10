@@ -64,7 +64,11 @@ def RunSteps(api: RecipeApi):
     # ensure_bootstrap to init the repo.
     api.step('bootstrap depot_tools', ['ensure_bootstrap'])
 
-    _run_tests(api, update_result, source_dir)
+    # Run the stable tests that will fail the build first
+    _run_tests(api, update_result, source_dir, True)
+
+    # Run the unstable tests that we just want to collect metrics for
+    _run_tests(api, update_result, source_dir, False)
 
 
 def checkout(api: RecipeApi):
@@ -98,7 +102,7 @@ def _is_btrfs_subvolume(api, path):
   ).retcode == 0
 
 
-def _run_tests(api, update_result, source_dir):
+def _run_tests(api, update_result, source_dir, stable):
   build = api.buildbucket.build
   cmd = [
       'vpython3',
@@ -133,13 +137,22 @@ def _run_tests(api, update_result, source_dir):
         '--build-number',
         build.number,
     ])
+  if stable:
+    step_name = 'run stable eval prompts'
+    cmd += ['--tag-filter', 'stable']
+    ok_ret = (0,)
+  else:
+    step_name = 'run unstable eval prompts'
+    cmd += ['--tag-filter', '-stable']
+    ok_ret = 'any'
   api.step(
-      'run eval prompts',
+      step_name,
       api.resultdb.wrap(
           cmd,
           module_name='//agents/testing:eval_prompts',
           module_scheme='flat',
       ),
+      ok_ret=ok_ret,
   )
 
 
@@ -191,32 +204,51 @@ def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       gen_ci_test_props(),
-      api.post_process(post_process.MustRun, 'run eval prompts'),
+      api.post_process(post_process.MustRun, 'run stable eval prompts'),
+      api.post_process(post_process.MustRun, 'run unstable eval prompts'),
       # TODO(b/449818513): Change this to StepCommandContains when perf
       # uploading is re-enabled.
       api.post_process(post_process.StepCommandDoesNotContain,
-                       'run eval prompts', ['--enable-perf-uploading']),
-      api.post_process(post_process.StepCommandContains, 'run eval prompts',
-                       ['fake-builder']),
-      api.post_process(post_process.StepCommandContains, 'run eval prompts',
-                       ['fake-group']),
+                       'run stable eval prompts', ['--enable-perf-uploading']),
+      api.post_process(post_process.StepCommandContains,
+                       'run stable eval prompts', ['fake-builder']),
+      api.post_process(post_process.StepCommandContains,
+                       'run stable eval prompts', ['fake-group']),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'run unstable eval prompts',
+                       ['--enable-perf-uploading']),
+      api.post_process(post_process.StepCommandContains,
+                       'run unstable eval prompts', ['fake-builder']),
+      api.post_process(post_process.StepCommandContains,
+                       'run unstable eval prompts', ['fake-group']),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'basic_try',
       gen_try_test_props(),
-      api.post_process(post_process.MustRun, 'run eval prompts'),
+      api.post_process(post_process.MustRun, 'run stable eval prompts'),
+      api.post_process(post_process.MustRun, 'run unstable eval prompts'),
       api.post_process(post_process.StepCommandDoesNotContain,
-                       'run eval prompts', ['--enable-perf-uploading']),
+                       'run stable eval prompts', ['--enable-perf-uploading']),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'run unstable eval prompts',
+                       ['--enable-perf-uploading']),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'fail',
       gen_ci_test_props(),
-      api.step_data('run eval prompts', retcode=1),
+      api.step_data('run stable eval prompts', retcode=1),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'fail unstable',
+      gen_ci_test_props(),
+      api.step_data('run unstable eval prompts', retcode=1),
       api.post_process(post_process.DropExpectation),
   )
 
