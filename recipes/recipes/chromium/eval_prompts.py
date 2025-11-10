@@ -114,20 +114,12 @@ def _run_tests(api, update_result, source_dir, stable):
   ]
   if not api.tryserver.is_tryserver:
     cmd.extend([
-        # TODO(b/449818513): Re-enable uploading when the new perf dashboard
-        # instance is available and the test runner has been moved away
-        # from Chrome's hierarchy-based reporting.
-        # '--enable-perf-uploading',
+        '--enable-perf-uploading',
         '--git-revision',
-        # The perf dashboard infra normally accepts a git revision, but the
-        # Chrome-related instances use commit position for historical reasons.
-        'CP:%s' % update_result.out_commit.position,
+        (update_result.properties.get('got_revision') or
+         update_result.properties.get('got_src_revision')),
         '--gcs-bucket',
-        # Despite the name, this only contains public data and is safe to
-        # access from public builders.
-        # TODO(b/450054252): Switch this to the primary Chrome bucket
-        # once we confirm uploading is working as intended.
-        'chrome-perf-experiment-non-public',
+        'germanium-evals',
         '--build-id',
         build.id,
         '--builder',
@@ -206,15 +198,13 @@ def GenTests(api: RecipeTestApi):
       gen_ci_test_props(),
       api.post_process(post_process.MustRun, 'run stable eval prompts'),
       api.post_process(post_process.MustRun, 'run unstable eval prompts'),
-      # TODO(b/449818513): Change this to StepCommandContains when perf
-      # uploading is re-enabled.
-      api.post_process(post_process.StepCommandDoesNotContain,
+      api.post_process(post_process.StepCommandContains,
                        'run stable eval prompts', ['--enable-perf-uploading']),
       api.post_process(post_process.StepCommandContains,
                        'run stable eval prompts', ['fake-builder']),
       api.post_process(post_process.StepCommandContains,
                        'run stable eval prompts', ['fake-group']),
-      api.post_process(post_process.StepCommandDoesNotContain,
+      api.post_process(post_process.StepCommandContains,
                        'run unstable eval prompts',
                        ['--enable-perf-uploading']),
       api.post_process(post_process.StepCommandContains,
