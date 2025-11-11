@@ -253,6 +253,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_config: ctbc.BuilderConfig,
   ) -> Path:
     if builder_config.targets_spec_directory:
+      if builder_config.targets_spec_directory_relative_to_source_dir:
+        return source_dir / builder_config.targets_spec_directory
       return checkout_dir / builder_config.targets_spec_directory
     return self.m.chromium.targets_spec_dir(source_dir)
 

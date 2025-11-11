@@ -216,12 +216,16 @@ def _get_starlark_config(
       skip_reason = (f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
                      ' nothing to verify')
     else:
+      if builder_config.targets_spec_directory_relative_to_source_dir:
+        targets_spec_dir = repo_path / builder_config.targets_spec_directory
+      else:
+        targets_spec_dir = checkout_root / builder_config.targets_spec_directory
       return _get_targets_config(
           api,
           'get starlark targets config',
           builder_config,
           repo_path,
-          checkout_root / builder_config.targets_spec_directory,
+          targets_spec_dir,
           precommit_details,
       )
 
@@ -403,6 +407,7 @@ def GenTests(api):
       with_properties_file: bool = True,
       with_ctbc_property: bool = True,
       with_targets_spec_directory: bool = True,
+      targets_spec_directory_relative_to_source_dir: bool = False,
       with_properties_file_without_patch: bool = True,
       with_targets_spec_directory_without_patch: bool = False,
       starlark_targets_spec: dict | None = None,
@@ -436,6 +441,9 @@ def GenTests(api):
       * with_targets_spec_directory - Whether or not the
         targets_spec_directory field should be set in the
         $build/chromium_tests_builder_config property.
+      * targets_spec_directory_relative_to_source_dir - The value of the
+        targets_spec_directory_relative_to_source_dir field in the
+        $build/chromium_tests_builder_config_property.
       * starlark_targets_spec - The targets spec generated from starlark
       * testing_buildbot_targets_spec - The targets spec generated from
         //testing/buildbot. Cannot be set if non_existent_tester is set.
@@ -526,7 +534,9 @@ def GenTests(api):
                         json_format.MessageToDict(ctbc_prop.assemble()),
                 }))
           ctbc_prop = ctbc_prop.with_targets_spec_directory(
-              f'{builder_dir}/targets')
+              f'{builder_dir}/targets',
+              relative_to_source_dir=targets_spec_directory_relative_to_source_dir
+          )
         t += api.step_data(
             f'{get_targets_config_step}.read properties file',
             api.file.read_json({
@@ -567,6 +577,45 @@ def GenTests(api):
           bucket='fake-bucket',
           builder='fake-builder',
           builder_group='fake-group',
+          starlark_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+          testing_buildbot_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'targets-spec-directory-relative-to-source-dir',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          targets_spec_directory_relative_to_source_dir=True,
           starlark_targets_spec={
               'additional_compile_targets': ['foo'],
               'gtest_tests': [{
