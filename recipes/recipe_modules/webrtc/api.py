@@ -336,7 +336,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     if SKIP_FOOTER in self.m.tryserver.get_footers():
       return result
 
-    build_dir = 'out/' + builder_id.builder
+    build_dir = self.m.chromium.default_build_dir(source_dir)
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True)
     filter_list = json.loads(
@@ -345,7 +345,7 @@ class WebRTCApi(recipe_api.RecipeApi):
             self.m.path.join(source_dir, FILTER_LIST),
             test_data='{"excluded_paths": ["skip.cc"]}'))
     self.m.step('remove compile_commands.json',
-                ['rm', '-f', build_dir + '/compile_commands.json'])
+                ['rm', '-f', build_dir / 'compile_commands.json'])
     for f in affected_files:
       if not _is_cpp_file(f) or _skip_include_cleaner(
           f, filter_list) or not self.m.path.exists(source_dir / f):

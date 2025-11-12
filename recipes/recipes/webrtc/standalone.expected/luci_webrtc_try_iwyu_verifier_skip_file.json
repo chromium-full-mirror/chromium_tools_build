@@ -1352,7 +1352,7 @@
     "cmd": [
       "rm",
       "-f",
-      "out/iwyu_verifier/compile_commands.json"
+      "[CACHE]/builder/src/out/58af-iwyu_verifier/compile_commands.json"
     ],
     "luci_context": {
       "realm": {
