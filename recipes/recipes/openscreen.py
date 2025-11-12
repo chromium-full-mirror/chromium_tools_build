@@ -736,10 +736,10 @@ def GenTests(api):
       api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
-      'mac_x64',
+      'mac_arm64',
       api.platform('mac', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(),
+      api.properties(target_cpu='arm64'),
   )
   yield api.test(
       'win_x64',
