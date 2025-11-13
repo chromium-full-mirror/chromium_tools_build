@@ -20,7 +20,7 @@ SPEC = {
             },
             simulation_platform='linux',
         ),
-    'chromium_mac_x64':
+    'chromium_mac_arm64':
         builder_spec.BuilderSpec.create(
             chromium_config='chromium',
             chromium_apply_config=['mb'],
