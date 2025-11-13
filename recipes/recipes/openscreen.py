@@ -576,8 +576,8 @@ def RunSteps(api):
 
     # ARM64 tests cannot be run on the building bot, since they must be
     # cross-compiled from x86-64.
-    is_arm64 = api.properties.get('target_cpu') == 'arm64'
-    if is_arm64:
+    if api.properties.get(
+        'target_cpu') == 'arm64' and api.platform.name != 'mac':
       assert not use_coverage, "coverage is not supported on ARM64 builds."
       SwarmTests(api, paths, GetSwarmingDimensions(is_ci))
     elif use_coverage:
