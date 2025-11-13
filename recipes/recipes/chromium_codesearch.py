@@ -321,17 +321,11 @@ def RunSteps(api, properties):
     api.chromium.runhooks(
         source_dir, build_dir, name='runhooks%s' % name_suffix)
 
-  sentinel_path = api.path.cache_dir.joinpath('builder', 'cr-cs-sentinel')
-  if api.path.exists(sentinel_path):
-    # If sentinel file is present, it means last build failed to compile, so
-    # remove out directory since it might be in a bad state.
-    api.file.rmtree('remove out directory', source_dir / 'out')
-  else:
-    # Cleans up generated files. This is to prevent old generated files from
-    # being left in the out directory. Note that this needs to be run *before*
-    # generating the compilation database, otherwise some of the files generated
-    # by that step may be deleted (if they've been unchanged for the past week).
-    api.codesearch.cleanup_old_generated()
+  # Cleans up generated files. This is to prevent old generated files from
+  # being left in the out directory. Note that this needs to be run *before*
+  # generating the compilation database, otherwise some of the files generated
+  # by that step may be deleted (if they've been unchanged for the past week).
+  api.codesearch.cleanup_old_generated()
 
   api.chromium.mb_gen(
       source_dir,
@@ -368,11 +362,6 @@ def RunSteps(api, properties):
   kzip_dir = api.codesearch.c.javac_extractor_output_dir
   api.file.ensure_directory('java kzip', kzip_dir)
 
-  # Create sentinel file to keep track of whether compilation succeeded.
-  api.file.write_text(
-      'create sentinel file', sentinel_path, 'cr-cs-sentinel',
-      include_log=False)
-
   # If the compile fails, abort execution and don't upload the pack. When we
   # upload an incomplete (due to compile failures) pack to Kythe, it fails
   # validation and doesn't get pushed out anyway, so there's no point in
@@ -387,9 +376,6 @@ def RunSteps(api, properties):
         source_dir, build_dir, targets=targets, name='compile%s' % name_suffix)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
-
-  # Remove sentinel file after compilation completes.
-  api.file.remove('remove sentinel file', sentinel_path)
 
   # Download and run the clang tool.
   api.codesearch.run_clang_tool(run_dirs=[api.context.cwd])
