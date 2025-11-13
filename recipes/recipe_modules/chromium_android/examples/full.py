@@ -81,7 +81,7 @@ def RunSteps(api):
   for c in config.get('android_apply_config', []):
     api.chromium_android.apply_config(c)
 
-  gclient_cfg = api.gclient.make_config('android_bare')
+  gclient_cfg = api.gclient.make_config('chromium_bare')
   gclient_cfg.target_os = ['android']
 
   update_result = api.bot_update.ensure_checkout(gclient_cfg)

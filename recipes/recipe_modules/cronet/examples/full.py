@@ -56,7 +56,7 @@ def RunSteps(api):
   kwargs = builder_config.get('kwargs', {})
   chromium_apply_config = builder_config.get('chromium_apply_config', [])
 
-  gclient_cfg = api.gclient.make_config('android_bare')
+  gclient_cfg = api.gclient.make_config('chromium_bare')
   gclient_cfg.target_os = ['android']
 
   api.chromium.set_config('main_builder', **kwargs)

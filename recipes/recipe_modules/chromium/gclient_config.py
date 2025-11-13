@@ -73,13 +73,6 @@ def chromium(c):
   s = c.solutions[0]
   s.custom_deps = mirror_only(c, {})
 
-@CONFIG_CTX(includes=['chromium_bare'])
-def android_bare(c):
-  # We inherit from chromium_bare to get the got_revision mapping.
-  # NOTE: We don't set a specific got_revision mapping for src/repo.
-  c.got_revision_reverse_mapping['got_src_revision'] = 'src'
-  del c.got_revision_reverse_mapping['got_revision']
-
 @CONFIG_CTX(includes=['chromium'])
 def blink(c):
   c.solutions[0].revision = 'HEAD'
