@@ -500,8 +500,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       if (include_utr_instruction and builder_id and
           'resultdb.instruction.id' not in ninja_step_result.presentation.tags):
         get_utr_compile_instruction(self, ninja_step_result, builder_id)
-      if ex.was_cancelled:
-        raise
       if ninja_step_result.retcode != 1:
         raise self.m.step.InfraFailure(
             ninja_step_result.name, result=ninja_step_result)
