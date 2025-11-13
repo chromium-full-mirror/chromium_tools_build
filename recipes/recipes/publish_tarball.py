@@ -550,13 +550,17 @@ def publish_tarball(api):
   # The --revision option was introduced in 105.0.5148.2, so we need to skip
   # this call when building earlier versions.
   if [int(x) for x in version.split('.')] >= [105, 0, 5148, 2]:
-    api.step('Generate gpu/webgpu/DAWN_VERSION', [
+    api.step('Generate gpu/webgpu/DAWN_VERSION and dawn_commit_hash.h', [
         'python3',
         lastchange_path,
         '-s',
         source_dir.joinpath('third_party', 'dawn'),
+        '-m',
+        'DAWN_COMMIT_HASH',
         '--revision',
         source_dir.joinpath('gpu', 'webgpu', 'DAWN_VERSION'),
+        '--header',
+        source_dir.joinpath('gpu', 'webgpu', 'dawn_commit_hash.h'),
     ])
 
   api.file.copy('copy clang-format', api.chromium.resource('clang-format'),

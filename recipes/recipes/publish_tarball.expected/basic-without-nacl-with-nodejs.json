@@ -371,8 +371,12 @@
       "[START_DIR]/src/build/util/lastchange.py",
       "-s",
       "[START_DIR]/src/third_party/dawn",
+      "-m",
+      "DAWN_COMMIT_HASH",
       "--revision",
-      "[START_DIR]/src/gpu/webgpu/DAWN_VERSION"
+      "[START_DIR]/src/gpu/webgpu/DAWN_VERSION",
+      "--header",
+      "[START_DIR]/src/gpu/webgpu/dawn_commit_hash.h"
     ],
     "luci_context": {
       "realm": {
@@ -386,7 +390,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Generate gpu/webgpu/DAWN_VERSION"
+    "name": "Generate gpu/webgpu/DAWN_VERSION and dawn_commit_hash.h"
   },
   {
     "cmd": [
