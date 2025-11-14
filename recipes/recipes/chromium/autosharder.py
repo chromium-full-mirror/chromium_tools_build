@@ -200,8 +200,8 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
   def step_test_data():
     return api.raw_io.test_api.stream_output_text(
-        'diff --git a/infra/config/targets/autoshard_exceptions.json'
-        ' b/infra/config/targets/autoshard_exceptions.json')
+        'diff --git a/infra/config/autoshard_exceptions.json'
+        ' b/infra/config/autoshard_exceptions.json')
 
   diff_step = api.git(
       'diff', stdout=api.raw_io.output_text(), step_test_data=step_test_data)
@@ -301,7 +301,7 @@ def _calculate_optimal_shards(
 
 def _load_shardings_file(api: RecipeApi):
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
-      'infra', 'config', 'targets', 'autoshard_exceptions.json')
+      'infra', 'config', 'autoshard_exceptions.json')
   exceptions_json = api.m.file.read_json(
       'read current exceptions file', exceptions_file, test_data={})
   return [

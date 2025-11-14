@@ -100,7 +100,7 @@ def RunSteps(api: RecipeApi):
 def _get_new_shardings(api: RecipeApi) -> tuple[dict[str, list[str]], str]:
   update_result = api.chromium_checkout.ensure_checkout()
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
-      'infra', 'config', 'targets', 'autoshard_exceptions.json')
+      'infra', 'config', 'autoshard_exceptions.json')
   shard_exceptions = api.m.file.read_json(
       'read current exceptions file',
       exceptions_file,
