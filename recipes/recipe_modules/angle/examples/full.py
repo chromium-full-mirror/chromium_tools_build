@@ -39,7 +39,7 @@ _TEST_BUILDERS = builder_db.BuilderDatabase.create({
                 gclient_config='angle_android', chromium_config='angle_clang'),
         'linux-clang-builder':
             builder_spec.BuilderSpec.create(
-                gclient_config='angle', chromium_config='angle_clang'),
+                gclient_config='angle_mesa', chromium_config='angle_clang'),
         'linux-gcc-builder':
             builder_spec.BuilderSpec.create(
                 gclient_config='angle', chromium_config='angle_non_clang'),

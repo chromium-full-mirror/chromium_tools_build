@@ -102,6 +102,12 @@ _SPEC = {
         _create_android_builder_config('Release', 64),
     'android-arm64-exp-test':
         _create_android_builder_config('Release', 64),
+    'android-arm64-ir-pixel4':
+        _create_android_tester_config(64, 'android-arm64-ir-test'),
+    'android-arm64-ir-pixel6':
+        _create_android_tester_config(64, 'android-arm64-ir-test'),
+    'android-arm64-ir-test':
+        _create_android_builder_config('Release', 64),
     'android-arm64-pixel4':
         _create_android_tester_config(64, 'android-arm64-test'),
     'android-arm64-pixel4-perf':
@@ -140,6 +146,16 @@ _SPEC = {
         _create_tester_config('linux', 64, 'linux-test'),
     'linux-intel-perf':
         _create_tester_config('linux', 64, 'linux-perf'),
+    'linux-ir-amd':
+        _create_tester_config('linux', 64, 'linux-ir-test'),
+    'linux-ir-intel':
+        _create_tester_config('linux', 64, 'linux-ir-test'),
+    'linux-ir-nvidia':
+        _create_tester_config('linux', 64, 'linux-ir-test'),
+    'linux-ir-swiftshader':
+        _create_tester_config('linux', 64, 'linux-ir-test'),
+    'linux-ir-test':
+        _create_builder_config('linux', 'Release', 64),
     'linux-nvidia':
         _create_tester_config('linux', 64, 'linux-test'),
     'linux-nvidia-perf':
@@ -154,8 +170,7 @@ _SPEC = {
     'linux-swiftshader-tsan':
         _create_tester_config('linux', 64, 'linux-tsan-test'),
     'linux-test':
-        _create_builder_config(
-            'linux', 'Release', 64, gclient_config='angle_mesa'),
+        _create_builder_config('linux', 'Release', 64),
     'linux-trace':
         _create_builder_config(
             'linux', 'Release', 64, gclient_config='angle_nointernal'),
@@ -177,6 +192,12 @@ _SPEC = {
         _create_builder_config('mac', 'Release', 64),
     'mac-intel':
         _create_tester_config('mac', 64, 'mac-test'),
+    'mac-ir-amd':
+        _create_tester_config('mac', 64, 'mac-ir-test'),
+    'mac-ir-intel':
+        _create_tester_config('mac', 64, 'mac-ir-test'),
+    'mac-ir-test':
+        _create_builder_config('mac', 'Release', 64),
     'mac-test':
         _create_builder_config('mac', 'Release', 64),
     'win-asan-test':
@@ -184,6 +205,8 @@ _SPEC = {
     'win-dbg-compile':
         _create_builder_config('win', 'Debug', 64),
     'win-exp-test':
+        _create_builder_config('win', 'Release', 64),
+    'win-ir-test':
         _create_builder_config('win', 'Release', 64),
     'win-msvc-compile':
         _create_builder_config('win', 'Release', 64, is_clang=False),
@@ -216,6 +239,10 @@ _SPEC = {
         _create_tester_config('win', 64, 'win-test'),
     'win10-x64-intel-perf':
         _create_tester_config('win', 64, 'win-perf'),
+    'win10-x64-ir-intel':
+        _create_tester_config('win', 64, 'win-ir-test'),
+    'win10-x64-ir-nvidia':
+        _create_tester_config('win', 64, 'win-ir-test'),
     'win10-x64-nvidia':
         _create_tester_config('win', 64, 'win-test'),
     'win10-x64-nvidia-perf':

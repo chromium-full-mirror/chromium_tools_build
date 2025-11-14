@@ -26,6 +26,23 @@ _SPEC = {
         _create_compile_spec('android-arm64-dbg'),
     'android-arm64-dbg-compile':
         _create_compile_spec('android-arm64-dbg-compile'),
+    'android-arm64-ir-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='android-arm64-ir-test',
+                    tester='android-arm64-ir-pixel4',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='android-arm64-ir-test',
+                    tester='android-arm64-ir-pixel6',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
     'android-arm64-test':
         try_spec.TrySpec.create(
             mirrors=[
@@ -175,6 +192,33 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
+    'linux-ir-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-ir-test',
+                    tester='linux-ir-amd',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-ir-test',
+                    tester='linux-ir-intel',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-ir-test',
+                    tester='linux-ir-nvidia',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-ir-test',
+                    tester='linux-ir-swiftshader',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
     'linux-nvidia-gtx1660-perf':
         try_spec.TrySpec.create(
             mirrors=[
@@ -242,6 +286,23 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
+    'mac-ir-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='mac-ir-test',
+                    tester='mac-ir-amd',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='mac-ir-test',
+                    tester='mac-ir-intel',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
     'mac-test':
         try_spec.TrySpec.create(
             mirrors=[
@@ -302,6 +363,23 @@ _SPEC = {
                     builder_group='angle',
                     buildername='win-exp-test',
                     tester='win10-x64-exp-nvidia',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
+    'win-ir-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='win-ir-test',
+                    tester='win10-x64-ir-intel',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='win-ir-test',
+                    tester='win10-x64-ir-nvidia',
                 ),
             ],
             analyze_names=['angle'],
