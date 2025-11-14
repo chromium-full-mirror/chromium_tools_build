@@ -116,7 +116,7 @@ def RunSteps(api):
     source_dir = update_result.source_root.path
     build_dir = api.chromium.default_build_dir(source_dir)
     api.chromium.runhooks(source_dir, build_dir, name='runhooks (with patch)')
-    with api.context(cwd=source_dir):
+    with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
       affected = [
           source_dir.joinpath(_normalize_path_for_os(api, f))
           for f in api.chromium_checkout.get_files_affected_by_patch()
@@ -225,3 +225,26 @@ def GenTests(api):
       api.post_process(post_process.PropertiesContain, 'findings'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'set_force_mac_toolchain_env_on_mac',
+      build_with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.tryserver.get_files_affected_by_patch(['path/to/some/cc/file.cpp']),
+      api.platform('mac', 64),
+      api.step_data(
+          'clang-tidy.generate-warnings.read tidy output',
+          api.file.read_json({
+              'diagnostics': [{
+                  'file_path': 'path/to/some/cc/file.cpp',
+                  'line_number': 2,
+                  'diag_name': 'super-cool-diag',
+                  'message': 'hello, world 1',
+                  'replacements': [],
+                  'expansion_locs': [],
+              },]
+          })),
+      api.post_process(
+          post_process.StepEnvContains,
+          'clang-tidy.generate-warnings.tricium_clang_tidy_script.py',
+          {'FORCE_MAC_TOOLCHAIN': '1'}),
+      api.post_process(post_process.DropExpectation))
