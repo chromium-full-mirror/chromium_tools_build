@@ -204,6 +204,15 @@ def GenTests(api):
   )
 
   yield api.test(
+      'mb_allow_dup_isolate_entry',
+      api.properties(
+          chromium_apply_config=['mb', 'mb_allow_dup_isolate_entry']),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       '--allow-dup-isolate-entry'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'use_rts',
       api.chromium.try_build(experiments=['chromium_rts.rts'], build_id=123),
       api.properties(rts_model='smart-test-selection'),

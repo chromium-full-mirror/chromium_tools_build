@@ -1284,6 +1284,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     # support command prefixes.
     if self.c.project_generator.use_luci_auth:
       args += ['--luci-auth']
+    if self.c.project_generator.allow_dup_isolate_entry:
+      args += ['--allow-dup-isolate-entry']
 
     combined_args = args + (additional_args or [])
 

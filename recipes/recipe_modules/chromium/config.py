@@ -79,6 +79,8 @@ def BaseConfig(HOST_PLATFORM, DEFAULT_HOST_PLATFORM, HOST_ARCH, HOST_BITS,
           # TODO(crbug.com/1060857): Remove this once swarming task templates
           # support command prefixes.
           use_luci_auth=Single(bool, empty_val=False, required=False),
+          # Allow duplicated entries from isolate map files.
+          allow_dup_isolate_entry=Single(bool, empty_val=False, required=False),
       ),
       cros_sdk=ConfigGroup(
           external=Single(bool, empty_val=True, required=False),
@@ -259,6 +261,11 @@ def mb_no_luci_auth(c):
   c.project_generator.use_luci_auth = False
 
 
+@config_ctx()
+def mb_allow_dup_isolate_entry(c):
+  c.project_generator.allow_dup_isolate_entry = True
+
+
 @config_ctx(group='builder')
 def ninja(c):
   pass
@@ -414,11 +421,12 @@ def clang_tot(c):
 # can be correctly reported
 
 
-@config_ctx()
+# TODO(crbug.com/433525189): Remove this flag after the migration is done.
+@config_ctx(includes=['mb_allow_dup_isolate_entry'])
 def internal_isolate_paths(c):
   c.project_generator.isolate_map_paths = [
+      'infra/config/generated/testing/gn_isolate_map.pyl',
       'internal/testing/buildbot/gn_isolate_map.pyl',
-      '/infra/config/generated/testing/gn_isolate_map.pyl',
   ]
 
 
@@ -654,6 +662,6 @@ def mac_toolchain(c):
 @config_ctx(includes=['mb'])
 def android_internal_isolate_maps(c):
   c.project_generator.isolate_map_paths = [
-      'clank/build/bot/gn_isolate_map.pyl',
       'infra/config/generated/testing/gn_isolate_map.pyl',
+      'clank/build/bot/gn_isolate_map.pyl',
   ]
