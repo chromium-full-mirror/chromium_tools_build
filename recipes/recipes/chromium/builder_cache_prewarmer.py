@@ -155,13 +155,7 @@ def GenTests(api):
       override_test_spec(),
       api.time.seed(fake_timestamp),
       api.time.step(0),
-      api.step_data(
-          'bot_update',
-          api.bot_update.output_json(
-              patch_root='src',
-              first_sln='src',
-              revision_mapping={'got_revision': 'src'},
-              fixed_revisions={'src': fake_revision})),
+      api.bot_update.revisions({'src': fake_revision}),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun,
                        'delete {}'.format(warmed_file_name)),
