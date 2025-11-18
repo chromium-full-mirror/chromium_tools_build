@@ -88,18 +88,22 @@ class ProdCompilatorHandler(CompilatorHandler):
       project=None,
       bucket=None,
       gerrit_changes=V8OrchestratorApi.INHERIT,
+      gitiles_commit=V8OrchestratorApi.INHERIT,
   ):
     """Trigger a compilator build via buildbucket."""
     project = project or self.api.buildbucket.INHERIT
     bucket = bucket or self.api.buildbucket.INHERIT
     if gerrit_changes == self.api.v8_orchestrator.INHERIT:
       gerrit_changes = self.api.buildbucket.INHERIT
+    if gitiles_commit == self.api.v8_orchestrator.INHERIT:
+      gitiles_commit = self.api.buildbucket.INHERIT
 
     request = self.api.buildbucket.schedule_request(
         builder=compilator_name,
         swarming_parent_run_id=self.api.swarming.task_id,
         tags=self.api.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
         properties=dict(revision=revision) if revision else {},
+        gitiles_commit=gitiles_commit,
         gerrit_changes=gerrit_changes,
         project=project,
         bucket=bucket,
