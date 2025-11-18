@@ -19,6 +19,7 @@ DEPS = [
     'chromium_rts',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/bot_update',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/json',
@@ -295,8 +296,9 @@ def GenTests(api):
       api.chromium.try_build(
           builder='linux-builder-perf',
           builder_group='chromium.perf',
-          git_repo=None,
-          revision=None),
+      ),
+      api.bot_update.revisions(
+          {'src': 'f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9'}),
       api.properties(swarming_gtest=True),
       # the important bit here is the lack of a second "git_hash" entry.
       api.
