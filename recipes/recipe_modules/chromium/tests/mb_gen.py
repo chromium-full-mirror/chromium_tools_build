@@ -25,6 +25,18 @@ def mb_overrides(c):
   c.project_generator.isolate_map_paths = ['override/gn_isolate_map.pyl']
 
 
+@chromium.config.config_ctx()
+def mb_one_isolate_map(c):
+  c.project_generator.isolate_map_paths = ['foo/gn_isolate_map.pyl']
+
+
+@chromium.config.config_ctx()
+def mb_two_isolate_maps(c):
+  c.project_generator.isolate_map_paths = [
+      'foo/gn_isolate_map.pyl', 'bar/gn_isolate_map.pyl'
+  ]
+
+
 def RunSteps(api):
   api.chromium.set_config(
       api.properties.get('chromium_config', 'chromium'),
@@ -204,9 +216,20 @@ def GenTests(api):
   )
 
   yield api.test(
-      'mb_allow_dup_isolate_entry',
-      api.properties(
-          chromium_apply_config=['mb', 'mb_allow_dup_isolate_entry']),
+      'mb_one_isolate_map_allow_dup',
+      api.properties(chromium_apply_config=[
+          'mb_one_isolate_map', 'mb_allow_dup_isolate_entry'
+      ]),
+      api.post_process(_StepCommandNotContains, 'generate_build_files',
+                       '--allow-dup-isolate-entry'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'mb_two_isolate_maps_allow_dup',
+      api.properties(chromium_apply_config=[
+          'mb_two_isolate_maps', 'mb_allow_dup_isolate_entry'
+      ]),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        '--allow-dup-isolate-entry'),
       api.post_process(post_process.DropExpectation),

@@ -1207,6 +1207,10 @@ class ChromiumApi(recipe_api.RecipeApi):
       yield '--isolate-map-file'
       yield source_dir / isolate_map_path
 
+    if (len(self.c.project_generator.isolate_map_paths) > 1 and
+        self.c.project_generator.allow_dup_isolate_entry):
+      yield '--allow-dup-isolate-entry'
+
   @_with_chromium_layout
   def run_mb_cmd(self,
                  name,
@@ -1284,8 +1288,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     # support command prefixes.
     if self.c.project_generator.use_luci_auth:
       args += ['--luci-auth']
-    if self.c.project_generator.allow_dup_isolate_entry:
-      args += ['--allow-dup-isolate-entry']
 
     combined_args = args + (additional_args or [])
 
