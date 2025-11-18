@@ -46,6 +46,7 @@ def RunSteps(api, props):
           generational_cc=props.generational_cc,
           heap_poisoning=props.heap_poisoning,
           gcstress=props.gcstress,
+          continuousgc=props.continuousgc,
           on_virtual_machine=props.on_virtual_machine,
           repo_root=props.repo_root,
           manifest_branch=manifest_branch or 'master-art')
@@ -60,6 +61,7 @@ def RunSteps(api, props):
           generational_cc=props.generational_cc,
           heap_poisoning=props.heap_poisoning,
           gcstress=props.gcstress,
+          continuousgc=props.continuousgc,
           repo_root=props.repo_root,
           manifest_branch=manifest_branch or 'master-art')
 
@@ -162,6 +164,7 @@ def setup_host_x86(api,
                    generational_cc=True,
                    heap_poisoning=False,
                    gcstress=False,
+                   continuousgc=False,
                    repo_root=None,
                    manifest_branch="master-art"):
   checkout(api, manifest_branch, repo_root)
@@ -233,6 +236,9 @@ def setup_host_x86(api,
   if gcstress:
     testrunner_cmd += ['--gcstress']
 
+  if continuousgc:
+    testrunner_cmd += ['--continuousgc']
+
   with api.context(env=env):
     api.step('build',
              [art_tools / 'buildbot-build.sh', '--host', '--installclean'])
@@ -301,6 +307,7 @@ def setup_target(api,
                  build_only=False,
                  concurrent_collector=True,
                  gcstress=False,
+                 continuousgc=False,
                  generational_cc=True,
                  heap_poisoning=False,
                  on_virtual_machine=False,
@@ -494,6 +501,9 @@ def setup_target(api,
     if gcstress:
       testrunner_cmd += ['--gcstress']
 
+    if continuousgc:
+      testrunner_cmd += ['--continuousgc']
+
     with api.context(env=test_env):
       defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
     test_logging(api, 'test optimizing')
@@ -604,6 +614,7 @@ def GenTests(api):
           concurrent_collector=False,
           heap_poisoning=True,
           gcstress=True,
+          continuousgc=True,
       ))
 
   yield api.test(
@@ -639,6 +650,7 @@ def GenTests(api):
           device="fugu",
           concurrent_collector=False,
           gcstress=True,
+          continuousgc=True,
           generational_cc=False,
           heap_poisoning=True,
           on_virtual_machine=True,

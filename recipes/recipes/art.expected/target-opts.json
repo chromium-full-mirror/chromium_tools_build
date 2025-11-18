@@ -710,6 +710,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--optimizing"
     ],
     "cwd": "[CACHE]/art",
@@ -760,6 +761,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--optimizing",
       "--debuggable"
     ],
@@ -811,6 +813,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--jit",
       "--debuggable"
     ],
@@ -862,6 +865,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--interpreter"
     ],
     "cwd": "[CACHE]/art",
@@ -912,6 +916,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--baseline"
     ],
     "cwd": "[CACHE]/art",
@@ -962,6 +967,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--jit"
     ],
     "cwd": "[CACHE]/art",
@@ -1012,6 +1018,7 @@
       "--verbose",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--speed-profile"
     ],
     "cwd": "[CACHE]/art",

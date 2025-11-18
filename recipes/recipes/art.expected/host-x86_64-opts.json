@@ -190,6 +190,7 @@
       "--host",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--optimizing"
     ],
     "cwd": "[CACHE]/art",
@@ -231,6 +232,7 @@
       "--host",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--jit",
       "--debuggable"
     ],
@@ -273,6 +275,7 @@
       "--host",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "-j5",
       "--interpreter"
     ],
@@ -315,6 +318,7 @@
       "--host",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--baseline"
     ],
     "cwd": "[CACHE]/art",
@@ -356,6 +360,7 @@
       "--host",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--jit"
     ],
     "cwd": "[CACHE]/art",
@@ -397,6 +402,7 @@
       "--host",
       "--debug",
       "--gcstress",
+      "--continuousgc",
       "--speed-profile"
     ],
     "cwd": "[CACHE]/art",

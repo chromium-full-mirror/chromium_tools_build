@@ -49,4 +49,7 @@ message InputProperties {
 
   // Base url to use for checkout.
   string repo_root = 14;
+
+  // Whether to enable the continuousgc build variant.
+  bool continuousgc = 15;
 }
