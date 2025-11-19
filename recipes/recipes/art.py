@@ -237,7 +237,7 @@ def setup_host_x86(api,
     testrunner_cmd += ['--gcstress']
 
   if continuousgc:
-    testrunner_cmd += ['--continuousgc']
+    testrunner_cmd += ['--continuous-gc']
 
   with api.context(env=env):
     api.step('build',
@@ -502,7 +502,7 @@ def setup_target(api,
       testrunner_cmd += ['--gcstress']
 
     if continuousgc:
-      testrunner_cmd += ['--continuousgc']
+      testrunner_cmd += ['--continuous-gc']
 
     with api.context(env=test_env):
       defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
