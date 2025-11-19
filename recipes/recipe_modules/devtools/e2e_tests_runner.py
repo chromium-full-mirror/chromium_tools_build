@@ -38,7 +38,7 @@ class E2ENonHostedTests(ExonerableTests):
 
   @property
   def grep_filter_pattern(self):
-    return r'^e2e_non_hosted/[^:]*: '
+    return r'^e2e(_non_hosted)?/[^:]*: '
 
   @property
   def test_type_tag(self):
