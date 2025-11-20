@@ -722,20 +722,6 @@ def fetch(args):
         file=sys.stderr)
     sys.exit(1)
 
-  # Prune stale commit detail files.
-  expected_files = {
-      output_dir / f"{commit_hash}.json" for commit_hash in blame_details
-  }
-  existing_files = set(output_dir.glob('*.json'))
-  stale_files = existing_files - expected_files
-
-  for stale_file in stale_files:
-    try:
-      stale_file.unlink()
-      print(f"Removed stale commit detail file: {stale_file}")
-    except OSError as e:
-      print(f"Error removing stale file {stale_file}: {e}", file=sys.stderr)
-
   print(f"Found {len(blame_details)} commit hashes to process.")
   print(f"Using {args.workers} worker threads.")
 
@@ -747,8 +733,11 @@ def fetch(args):
     print(f"Fetching details for {len(items_to_process)} commits...")
     list(
         executor.map(
-            lambda item: process_commit_hash(item[0], item[1], output_dir,
-                                             git_root), items_to_process))
+            lambda item: process_commit_hash(
+                commit_hash=item[0],
+                commit_data=item[1],
+                output_dir=output_dir,
+                git_root=git_root), items_to_process))
 
 
 def main():

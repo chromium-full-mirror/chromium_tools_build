@@ -25,11 +25,22 @@ DEPS = [
 
 BASE_PKG_NAME = 'infra/history_rag'
 MANIFEST_PKG_NAME = '%s/manifest' % BASE_PKG_NAME
+FILE_BLAME_JSONS_PKG_NAME = '%s/file_blame_jsons' % BASE_PKG_NAME
+COMMIT_HASH_JSONS_PKG_NAME = '%s/commit_hash_jsons' % BASE_PKG_NAME
 
 
 def RunSteps(api):
   source_dir, revision = checkout_source_code(api)
-  generate_blame_jsons(api, source_dir, revision)
+  file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
+      generate_file_blame_jsons(api, source_dir, revision))
+  _, commit_hash_jsons_pkg_name, commit_hash_jsons_pkg_id = (
+      generate_commit_hash_jsons(api, source_dir, revision,
+                                 file_blame_jsons_dir))
+  # update manifest package to point to new cipd
+  update_baseline_package_info(api, revision, file_blame_jsons_pkg_name,
+                               file_blame_jsons_pkg_id,
+                               commit_hash_jsons_pkg_name,
+                               commit_hash_jsons_pkg_id)
 
 
 def checkout_source_code(api):
@@ -49,39 +60,148 @@ def checkout_source_code(api):
     return source_dir, revision
 
 
-def generate_blame_jsons(api, source_dir, current_revision):
-  with api.step.nest('Generate Blame JSONs'):
-    baseline_pkg = get_baseline_package_info(api)
+def generate_file_blame_jsons(api, source_dir, current_revision):
+  """Generates a set of blame jsons for the source code.
+
+  The output of this phase is a set of directories mimicking the file
+  structure of the source directory, where each leaf node is a json file
+  corresponding to a file in the source directory. Each json is a mapping like
+  {
+    "version": "0.1",
+    "file_hash": "9d6fd29f55604702e62482488eb175a51e0a84d3",
+    "lines": [
+      "17e91cb8a3316c05775c566cabfa4b90c266f5f9",
+      "...",
+      "...",
+    ]
+  }
+  Where `lines` correspond to line by line blame list for that file, and
+  `file_hash` is the content hash of the file.
+
+  Returns:
+    merged_dir: The output directory containing the blame jsons.
+    pkg_name: The name of the CIPD package containing the blame jsons.
+    instance_id: The instance ID of the CIPD package containing the blame jsons.
+  """
+  with api.step.nest('Generate File Blame JSONs'):
+    baseline_pkg = _get_baseline_package_info(api)
     if baseline_pkg:
-      baseline_blame_jsons_dir = download_baseline_blame_jsons(
+      baseline_blame_jsons_dir = _download_baseline_file_blame_jsons(
           api, baseline_pkg)
-      fresh_blame_jsons_dir = generate_fresh_blame_jsons(
+      fresh_blame_jsons_dir = _generate_fresh_file_blame_jsons(
           api, source_dir, baseline_pkg)
-      # Merge the fresh jsons into the baseline directory
-      cmd = [
-          'vpython3',
-          api.resource('merge_blame_jsons.py'), baseline_blame_jsons_dir,
-          fresh_blame_jsons_dir
-      ]
-      _ = api.step('merge fresh and baseline blame jsons', cmd)
-      # Remove the .cipd metadata directory from the baseline after merging
-      cipd_meta_dir = baseline_blame_jsons_dir / '.cipd'
-      if api.path.exists(cipd_meta_dir):
-        api.file.rmtree("Remove .cipd from merged set", cipd_meta_dir)
-      merged_dir = baseline_blame_jsons_dir
+      merged_dir = _merge_blame_jsons(api, baseline_blame_jsons_dir,
+                                      fresh_blame_jsons_dir)
     else:
       # No baseline, so the "merged" directory is just the fresh ones
-      merged_dir = generate_fresh_blame_jsons(api, source_dir, None)
+      merged_dir = _generate_fresh_file_blame_jsons(api, source_dir, None)
 
     # Upload the prepared directory
-    pkg_name, instance_id = update_blame_jsons_cipd(api, merged_dir,
-                                                    current_revision)
+    pkg_name, instance_id = _update_cipd_package(
+        api,
+        step_name='Upload File Blame JSONs to CIPD',
+        package_name=f"{FILE_BLAME_JSONS_PKG_NAME}/{current_revision}",
+        package_content_dir=merged_dir,
+        package_description=f"File blame jsons for chrome at commit: {current_revision}"
+    )
 
-    # update manifest package to point to new cipd
-    update_baseline_package_info(api, pkg_name, instance_id)
+    return merged_dir, pkg_name, instance_id
 
 
-def get_baseline_package_info(api):
+def generate_commit_hash_jsons(api, source_dir, current_revision,
+                               file_blame_jsons_dir):
+  """Generate commit_hash jsons from file_blame jsons.
+
+  Creates one json file for each commit_hash in the jsons in
+  `file_blame_jsons_dir`.
+
+  Returns:
+    The output directory containing the commit hash jsons.
+  """
+  with api.step.nest('Generate Commit Hash JSONs'):
+    commit_hash_monolith_json_file = _collect_file_blame_jsons(
+        api, source_dir, file_blame_jsons_dir)
+
+    # The command appends commit level info with blame_hashes.json file
+    # generated in the previous step and creates one JSON file per commit hash
+    # in the output directory. Each file is named {commit_hash}.json
+    # (e.g., a1b2c3d4e5f6.json).
+    output_dir = api.path.cleanup_dir / 'commit_hash_jsons'
+    cmd = [
+        'vpython3',
+        api.resource('git_data_processor.py'), 'fetch', '--source-dir',
+        source_dir, '--output-dir', output_dir, commit_hash_monolith_json_file
+    ]
+    _ = api.step('Generate JSON per commit hash', cmd)
+
+    # Upload the prepared directory
+    pkg_name, instance_id = _update_cipd_package(
+        api,
+        step_name='Upload Commit Hash JSONs to CIPD',
+        package_name=f"{COMMIT_HASH_JSONS_PKG_NAME}/{current_revision}",
+        package_content_dir=output_dir,
+        package_description=f"Commit hash jsons for chrome at commit: {current_revision}"
+    )
+
+    return output_dir, pkg_name, instance_id
+
+
+def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
+  """Collects all blame hash jsons and converts to a monolith inverse map.
+
+  This phase's main purpose is to "invert" the data from the blame_index.
+  Instead of mapping file -> [commits], it scans all those individual JSON
+  files and creates one large map of commit -> [files_and_lines].
+
+  JSON Data Structure
+  The file will contain a single JSON object where:
+  Keys are the unique commit hashes found across all blame files. Values are
+  objects detailing where that commit is blamed and the context of those lines.
+  Here is a simplified example of the structure(--context=2):
+
+  {
+    "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2": {
+      "repository": "v8",
+      "files": {
+        "src/foo.cc": [
+          [10, "  // line 10 context"],
+          [11, "  // line 11 context"],
+          [12, "  if (some_condition) {"],
+          [13, "    // line 13 context"],
+          [14, "    // line 14 context"]
+        ],
+        "src/bar.h": [
+          [41, "    // line 41 context"],
+          [42, "    // line 42 context"],
+          [43, "    int some_variable;"],
+          [44, "    // line 44 context"],
+          [45, "    // line 45 context"]
+        ]
+      }
+    },
+    "b7c8d9e0f1a2b7c8d9e0f1a2b7c8d9e0f1a2b7c8": {
+      ...
+    },
+    ...
+  }
+
+  Where
+  [<line_number>, <line_content>]: This is an array of pairs. The collect
+  command reads the original source files and includes not only the exact line
+  blamed on the commit but also `context` lines around it (`context` lines
+  before and `context` lines after).
+  """
+  blame_hashes_file = api.path.cleanup_dir / 'blame_hashes.json'
+  cmd = [
+      'vpython3',
+      api.resource('git_data_processor.py'), 'collect', '--source-dir',
+      source_dir, '--output-file', blame_hashes_file, blame_json_dir
+  ]
+  _ = api.step('Collect Blame JSONs', cmd)
+  return blame_hashes_file
+
+
+def _get_baseline_package_info(api):
   """
   Fetches a pointer package, reads a manifest file, and returns the content.
 
@@ -126,70 +246,83 @@ def get_baseline_package_info(api):
       'Read manifest.json',
       manifest_file_path,
       test_data={
-          'package': 'infra/history_rag/default_test_pkg',
-          'version': 'default-test-version-id'
+          'file_blame_jsons_package': 'infra/history_rag/default_test_pkg',
+          'file_blame_jsons_version': 'default-test-version-id'
       })
 
-  package = manifest_data.get('package')
-  version = manifest_data.get('version')
+  package = manifest_data.get('file_blame_jsons_package')
+  version = manifest_data.get('file_blame_jsons_version')
   if not package or not isinstance(package, str):
     raise api.step.StepFailure(
-        "Key 'package' missing or not a string in manifest.json")
+        "Key 'file_blame_jsons_package' missing or not a string in manifest.json"
+    )
   if not version or not isinstance(version, str):
     raise api.step.StepFailure(
-        "Key 'version' missing or not a string in manifest.json")
-  expected_prefix = BASE_PKG_NAME + '/'
-  if not package.startswith(expected_prefix):
-    raise api.step.StepFailure(
-        f"Invalid package name format: '{package}'. Expected to start with '{expected_prefix}'"
+        "Key 'file_blame_jsons_version' missing or not a string in manifest.json"
     )
 
   return manifest_data
 
 
-def download_baseline_blame_jsons(api, baseline_package):
-  dest_path = api.path.cleanup_dir / 'blame_jsons'
+def _download_baseline_file_blame_jsons(api, baseline_package):
+  dest_path = api.path.cleanup_dir / 'baseline_blame_jsons'
   with api.step.nest('Fetch baseline blame jsons'):
     pkgs = api.cipd.EnsureFile()
-    pkgs.add_package(baseline_package['package'], baseline_package['version'])
+    pkgs.add_package(baseline_package['file_blame_jsons_package'],
+                     baseline_package['file_blame_jsons_version'])
     api.cipd.ensure(dest_path, pkgs)
   return dest_path
 
 
-def generate_fresh_blame_jsons(api, source_dir, baseline_pkg):
-  output_dir = api.path.cleanup_dir / 'output'
+def _generate_fresh_file_blame_jsons(api, source_dir, baseline_pkg):
+  output_dir = api.path.cleanup_dir / 'fresh_blame_jsons'
   cmd = ['vpython3', api.resource('git_data_processor.py'), 'blame']
   if baseline_pkg:
-    baseline_commit = baseline_pkg['package'].split('/')[-1]
+    baseline_commit = baseline_pkg['file_blame_jsons_package'].split('/')[-1]
     cmd += ['--baseline-commit', baseline_commit]
+  # TODO(): Change the directory to . for chromium codebase
   cmd += ['--source-dir', source_dir, '--output-dir', output_dir, 'v8']
   _ = api.step('Generate fresh blame index', cmd)
   return output_dir
+
+
+def _merge_blame_jsons(api, baseline_dir, fresh_dir):
+  """Merge the fresh jsons into the baseline directory. """
+  cmd = [
+      'vpython3',
+      api.resource('merge_blame_jsons.py'), baseline_dir, fresh_dir
+  ]
+  _ = api.step('Merge Fresh and Baseline Blame JSONs', cmd)
+  # Remove the .cipd metadata directory from the baseline after merging
+  cipd_meta_dir = baseline_dir / '.cipd'
+  api.file.rmtree("Remove .cipd from merged set", cipd_meta_dir)
+  return baseline_dir
 
 
 def _extract_cipd_instance_id(api, step_result):
   """Extracts the instance ID from cipd create stdout."""
   if step_result.stdout:
     # A correct output looks like
-    # Instance: infra/history_rag/revision:instance-id'
+    # Instance: infra/history_rag/.../...:instance-id'
     for line in step_result.stdout.splitlines():
-      if 'Instance:' in line and len(line.split(':')) == 3:
-        instance_id = line.split(':')[2].strip()
+      if 'Instance:' in line:
+        instance_id = line.split(':')[-1].strip()
         return instance_id
   return None
 
 
-def update_blame_jsons_cipd(api, blame_json_dir, current_revision):
-  package_name = f"{BASE_PKG_NAME}/{current_revision}"
-  description = f"Blame jsons for chrome at commit: {current_revision}"
-
+def _update_cipd_package(api,
+                         package_name,
+                         package_content_dir,
+                         package_description='',
+                         step_name='Upload to CIPD'):
   create_cmd = [
-      'cipd', 'create', '-name', package_name, '-in', blame_json_dir,
-      '-install-mode', 'copy', '-metadata', f"description:{description}"
+      'cipd', 'create', '-name', package_name, '-in', package_content_dir,
+      '-install-mode', 'copy', '-metadata', f"description:{package_description}"
   ]
 
   create_step = api.step(
-      name='Upload blame jsons to cipd',
+      name=step_name,
       cmd=create_cmd,
       stdout=api.raw_io.output_text(),
       stderr=api.raw_io.output_text(),
@@ -199,65 +332,50 @@ def update_blame_jsons_cipd(api, blame_json_dir, current_revision):
 
   if instance_id:
     api.step.active_result.presentation.logs['instance_id'] = instance_id
-    api.step.active_result.presentation.links['Blame Indexes Package'] = (
+    api.step.active_result.presentation.links['CIPD Package'] = (
         f"https://chrome-infra-packages.appspot.com/p/{package_name}/+/{instance_id}"
     )
 
     api.step(
-        name=f'set cipd ref latest for {package_name}',
+        name='Set CIPD ref latest',
         cmd=[
             'cipd', 'set-ref', package_name, '-ref', 'latest', '-version',
             instance_id
         ])
-  else:
-    api.step.active_result.presentation.logs['cipd_stdout'] = create_step.stdout
-    api.step.active_result.presentation.logs['cipd_stderr'] = create_step.stderr
-    raise api.step.StepFailure(
-        "CIPD instance ID not found in output for blame package")
-  return package_name, instance_id
+    return package_name, instance_id
+
+  api.step.active_result.presentation.logs['cipd_stdout'] = create_step.stdout
+  api.step.active_result.presentation.logs['cipd_stderr'] = create_step.stderr
+  raise api.step.StepFailure(
+      f"CIPD instance ID not found in output for {package_name}")
 
 
-def update_baseline_package_info(api, package, version):
-  manifest_content = {
-      "package": package,
-      "version": version,
-  }
-  temp_dir = api.path.mkdtemp(prefix='manifest_')
-  manifest_file_path = temp_dir / 'manifest.json'
-  api.file.write_json(
-      name='Create manifest.json',
-      dest=manifest_file_path,
-      data=manifest_content,
-  )
-  create_cmd = [
-      'cipd', 'create', '-name', MANIFEST_PKG_NAME, '-in', temp_dir,
-      '-install-mode', 'copy'
-  ]
-  create_step = api.step(
-      name='Upload new manifest to cipd',
-      cmd=create_cmd,
-      stdout=api.raw_io.output_text(),
-      stderr=api.raw_io.output_text(),
-  )
-  instance_id = _extract_cipd_instance_id(api, create_step)
-  if instance_id:
-    api.step.active_result.presentation.logs[
-        'manifest_instance_id'] = instance_id
-    api.step.active_result.presentation.links['Manifest Package'] = (
-        f"https://chrome-infra-packages.appspot.com/p/{MANIFEST_PKG_NAME}/+/{instance_id}"
+def update_baseline_package_info(api, current_revision,
+                                 file_blame_jsons_package,
+                                 file_blame_jsons_version,
+                                 commit_hash_jsons_package,
+                                 commit_hash_jsons_version):
+  with api.step.nest('Update baseline package'):
+    manifest_content = {
+        "file_blame_jsons_package": file_blame_jsons_package,
+        "file_blame_jsons_version": file_blame_jsons_version,
+        "commit_hash_jsons_package": commit_hash_jsons_package,
+        "commit_hash_jsons_version": commit_hash_jsons_version,
+    }
+    temp_dir = api.path.mkdtemp(prefix='manifest_')
+    manifest_file_path = temp_dir / 'manifest.json'
+    api.file.write_json(
+        name='Create manifest.json',
+        dest=manifest_file_path,
+        data=manifest_content,
     )
-    api.step(
-        name=f'Set cipd ref latest for {MANIFEST_PKG_NAME}',
-        cmd=[
-            'cipd', 'set-ref', MANIFEST_PKG_NAME, '-ref', 'latest', '-version',
-            instance_id
-        ])
-  else:
-    api.step.active_result.presentation.logs['cipd_stdout'] = create_step.stdout
-    api.step.active_result.presentation.logs['cipd_stderr'] = create_step.stderr
-    raise api.step.StepFailure(
-        "CIPD instance ID not found in output for manifest package")
-
+    _update_cipd_package(
+        api,
+        step_name='Upload new manifest to cipd',
+        package_name=MANIFEST_PKG_NAME,
+        package_content_dir=temp_dir,
+        package_description=f"Commit hash jsons for chrome at commit: {current_revision}"
+    )
 
 # Default builder config for tests
 def builder_config_test_data(api):
@@ -288,52 +406,65 @@ def GenTests(api):
       }),
       # Mock cipd describe for manifest package - found
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',
                       api.path.cleanup_dir / 'blame_jsons' / '.cipd'),
       # Mock manifest.json content
       api.step_data(
-          'Generate Blame JSONs.Read manifest.json',
+          'Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({
-              'package': 'infra/history_rag/oldrevision',
-              'version': 'baseline-version-id'
+              'file_blame_jsons_package': 'infra/history_rag/oldrevision',
+              'file_blame_jsons_version': 'baseline-version-id'
           })),
-      # Mock cipd create for blame package
+      # Mock cipd create for file blame json package
       api.step_data(
-          'Generate Blame JSONs.Upload blame jsons to cipd',
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/newrevision:new-blame-instance-id')),
+              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+          )),
+      # Mock cipd create for commit hash json package
+      api.step_data(
+          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
+          stdout=api.raw_io.output_text(
+              'Instance: infra/history_rag/commit_hash_jsons/newrevision:new-blame-instance-id'
+          )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Generate Blame JSONs.Upload new manifest to cipd',
+          'Update baseline package.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
       api.post_process(post_process.MustRun,
                        'Checkout Chrome Source Code.gclient runhooks'),
       api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Check for manifest package'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Fetch manifest package from CIPD'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Read manifest.json'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Fetch baseline blame jsons'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Generate fresh blame index'),
+                       'Generate File Blame JSONs.Check for manifest package'),
       api.post_process(
           post_process.MustRun,
-          'Generate Blame JSONs.merge fresh and baseline blame jsons'),
+          'Generate File Blame JSONs.Fetch manifest package from CIPD'),
       api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Upload blame jsons to cipd'),
+                       'Generate File Blame JSONs.Read manifest.json'),
       api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Create manifest.json'),
+                       'Generate File Blame JSONs.Fetch baseline blame jsons'),
       api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Upload new manifest to cipd'),
+                       'Generate File Blame JSONs.Generate fresh blame index'),
       api.post_process(
           post_process.MustRun,
-          'Generate Blame JSONs.Set cipd ref latest for infra/history_rag/manifest'
-      ),
+          'Generate File Blame JSONs.Merge Fresh and Baseline Blame JSONs'),
+      api.post_process(
+          post_process.MustRun,
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD'),
+      api.post_process(
+          post_process.MustRun,
+          'Generate Commit Hash JSONs.Generate JSON per commit hash'),
+      api.post_process(
+          post_process.MustRun,
+          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
+      api.post_process(post_process.MustRun,
+                       'Update baseline package.Create manifest.json'),
+      api.post_process(post_process.MustRun,
+                       'Update baseline package.Upload new manifest to cipd'),
+      api.post_process(post_process.MustRun,
+                       'Update baseline package.Set CIPD ref latest'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -348,37 +479,50 @@ def GenTests(api):
       }),
       # Mock cipd describe for manifest package - not found
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=1),
-      # Mock cipd create for blame package
+      # Mock cipd create for file blame json package
       api.step_data(
-          'Generate Blame JSONs.Upload blame jsons to cipd',
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/newrevision:new-blame-instance-id')),
+              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+          )),
+      # Mock cipd create for commit hash json package
+      api.step_data(
+          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
+          stdout=api.raw_io.output_text(
+              'Instance: infra/history_rag/commit_hash_jsons/newrevision:new-blame-instance-id'
+          )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Generate Blame JSONs.Upload new manifest to cipd',
+          'Update baseline package.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
-      api.post_process(post_process.DoesNotRun,
-                       'Generate Blame JSONs.Fetch manifest package from CIPD'),
-      api.post_process(post_process.DoesNotRun,
-                       'Generate Blame JSONs.Fetch baseline blame jsons'),
       api.post_process(
           post_process.DoesNotRun,
-          'Generate Blame JSONs.merge fresh and baseline blame jsons'),
+          'Generate File Blame JSONs.Fetch manifest package from CIPD'),
+      api.post_process(post_process.DoesNotRun,
+                       'Generate File Blame JSONs.Fetch baseline blame jsons'),
+      api.post_process(
+          post_process.DoesNotRun,
+          'Generate File Blame JSONs.Merge Fresh and Baseline Blame JSONs'),
       api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Generate fresh blame index'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Upload blame jsons to cipd'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Create manifest.json'),
-      api.post_process(post_process.MustRun,
-                       'Generate Blame JSONs.Upload new manifest to cipd'),
+                       'Generate File Blame JSONs.Generate fresh blame index'),
       api.post_process(
           post_process.MustRun,
-          'Generate Blame JSONs.Set cipd ref latest for infra/history_rag/manifest'
-      ),
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD'),
+      api.post_process(
+          post_process.MustRun,
+          'Generate Commit Hash JSONs.Generate JSON per commit hash'),
+      api.post_process(
+          post_process.MustRun,
+          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
+      api.post_process(post_process.MustRun,
+                       'Update baseline package.Create manifest.json'),
+      api.post_process(post_process.MustRun,
+                       'Update baseline package.Upload new manifest to cipd'),
+      api.post_process(post_process.MustRun,
+                       'Update baseline package.Set CIPD ref latest'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -392,9 +536,9 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=0),
-      api.post_process(post_process.StepFailure, 'Generate Blame JSONs'),
+      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
@@ -408,21 +552,21 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
       api.step_data(
-          'Generate Blame JSONs.Read manifest.json',
+          'Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({}),
           retcode=1  # Simulate JSON parse failure
       ),
-      api.post_process(post_process.StepException, 'Generate Blame JSONs'),
+      api.post_process(post_process.StepException, 'Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='INFRA_FAILURE')
 
-  # Test case: Manifest.json is missing the 'package' key.
+  # Test case: Manifest.json is missing the 'file_blame_jsons_package' key.
   yield api.test(
-      'invalid_manifest_missing_package_key',
+      'invalid_manifest_missing_file_blame_jsons_package_key',
       builder_config_test_data(api),
       api.properties(**{
           '$build/chromium_checkout': {
@@ -430,39 +574,17 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
-          retcode=0),
-      api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
-      api.step_data('Generate Blame JSONs.Read manifest.json',
-                    api.file.read_json({'version': 'some-version'})),
-      api.post_process(post_process.StepFailure, 'Generate Blame JSONs'),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE')
-
-  # Test case: Manifest.json has a package name with the wrong prefix.
-  yield api.test(
-      'invalid_manifest_bad_package_name',
-      builder_config_test_data(api),
-      api.properties(**{
-          '$build/chromium_checkout': {
-              'gclient_config': 'chromium',
-          },
-      }),
-      api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
       api.step_data(
-          'Generate Blame JSONs.Read manifest.json',
-          api.file.read_json({
-              'package': 'wrong_prefix/oldrevision',
-              'version': 'baseline-version-id'
-          })),
-      api.post_process(post_process.StepFailure, 'Generate Blame JSONs'),
+          'Generate File Blame JSONs.Read manifest.json',
+          api.file.read_json({'file_blame_jsons_version': 'some-version'})),
+      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
-  # Test case: Manifest.json is missing the 'version' key.
+  # Test case: Manifest.json is missing the 'file_blame_jsons_version' key.
   yield api.test(
       'invalid_manifest_missing_version',
       builder_config_test_data(api),
@@ -472,21 +594,21 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
       api.step_data(
-          'Generate Blame JSONs.Read manifest.json',
+          'Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({
-              'package': f'{BASE_PKG_NAME}/oldrevision',
+              'file_blame_jsons_package': f'{BASE_PKG_NAME}/oldrevision',
           })),
-      api.post_process(post_process.StepFailure, 'Generate Blame JSONs'),
+      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
-  # Test case: CIPD upload for blame package fails to return instance ID.
+  # Test case: CIPD upload for file blame jsons fails to return instance ID.
   yield api.test(
-      'cipd_upload_blame_fails',
+      'cipd_upload_file_blame_jsons_fails_no_instance_id',
       builder_config_test_data(api),
       api.properties(**{
           '$build/chromium_checkout': {
@@ -494,18 +616,45 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=1),  # No baseline
       api.step_data(
-          'Generate Blame JSONs.Upload blame jsons to cipd',
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text('Something went wrong')),
-      api.post_process(post_process.StepFailure, 'Generate Blame JSONs'),
+      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE')
+
+  # Test case: CIPD upload for commit jsons fails to return instance ID.
+  yield api.test(
+      'cipd_upload_commit_hash_jsons_fails_no_instance_id',
+      builder_config_test_data(api),
+      api.properties(**{
+          '$build/chromium_checkout': {
+              'gclient_config': 'chromium',
+          },
+      }),
+      api.step_data(
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          retcode=1),  # No baseline
+
+      # Mock cipd create for file blame json package
+      api.step_data(
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          stdout=api.raw_io.output_text(
+              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+          )),
+      # Mock cipd create for commit hash json package
+      api.step_data(
+          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
+          stdout=api.raw_io.output_text('Something went wrong')),
+      api.post_process(post_process.StepFailure, 'Generate Commit Hash JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
   # Test case: CIPD upload for manifest package fails to return instance ID.
   yield api.test(
-      'cipd_upload_manifest_fails',
+      'cipd_upload_manifest_fails_no_instance_id',
       builder_config_test_data(api),
       api.properties(**{
           '$build/chromium_checkout': {
@@ -513,15 +662,25 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
           retcode=1),  # No baseline
+
+      # Mock cipd create for file blame json package
       api.step_data(
-          'Generate Blame JSONs.Upload blame jsons to cipd',
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/newrevision:new-blame-instance-id')),
+              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+          )),
+      # Mock cipd create for commit hash json package
       api.step_data(
-          'Generate Blame JSONs.Upload new manifest to cipd',
+          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
+          stdout=api.raw_io.output_text(
+              'Instance: infra/history_rag/commit_hash_jsons/newrevision:new-blame-instance-id'
+          )),
+      # Mock cipd create for manifest package
+      api.step_data(
+          'Update baseline package.Upload new manifest to cipd',
           stdout=api.raw_io.output_text('Oh no, no instance ID here')),
-      api.post_process(post_process.StepFailure, 'Generate Blame JSONs'),
+      api.post_process(post_process.StepFailure, 'Update baseline package'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
