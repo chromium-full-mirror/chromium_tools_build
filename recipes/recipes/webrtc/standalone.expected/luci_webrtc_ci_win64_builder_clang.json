@@ -935,60 +935,6 @@
   },
   {
     "cmd": [
-      "luci-auth",
-      "token",
-      "-lifetime",
-      "3m"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "get access token for default account"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::perf_dashboard]\\resources\\post_json.py",
-      "https://pinpoint-dot-chromeperf.appspot.com/api/isolate",
-      "-i",
-      "{\"builder_name\": \"Win64 Builder (Clang)\", \"change\": \"{\\\"commits\\\": [{\\\"git_hash\\\": \\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\", \\\"repository\\\": \\\"webrtc\\\"}]}\", \"isolate_map\": \"{}\", \"isolate_server\": \"projects/example-cas-server/instances/default_instance\"}",
-      "-o",
-      "/path/to/tmp/json",
-      "-t",
-      "extra.secret.token.should.not.be.logged"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "pinpoint isolate upload",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"status_code\": 200@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "-u",
       "RECIPE_MODULE[build::chromium_tests]\\resources\\find_command_lines.py",

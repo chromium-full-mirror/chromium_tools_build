@@ -209,24 +209,6 @@ class WebRTCApi(recipe_api.RecipeApi):
     if builders.BUILDERS_DB[builder_id].execution_mode == builder_spec.TEST:
       # The tests running on a 'tester' bot are isolated by the 'builder'.
       self.m.isolate.check_swarm_hashes(_get_isolated_targets(tests))
-    elif _is_triggering_perf_tests(builder_id, builder_config):
-      # Set the swarm_hashes name so that it is found by pinpoint.
-      commit_position = self.revision_cp.replace('@', '(at)')
-      swarm_hashes_property_name = '_'.join(
-          ('swarm_hashes', commit_position, 'without_patch'))
-
-      self.m.isolate.isolate_tests(
-          build_dir,
-          targets=_get_isolated_targets(tests),
-          swarm_hashes_property_name=swarm_hashes_property_name)
-
-      # Upload the input files to the pinpoint server.
-      self.m.perf_dashboard.upload_isolate(
-          builder_id.builder,
-          self.m.perf_dashboard.get_change_info([{
-              'repository': 'webrtc',
-              'git_hash': self.revision
-          }]), self.m.cas.instance, self.m.isolate.isolated_tests)
     else:
       self.m.isolate.isolate_tests(
           build_dir, targets=_get_isolated_targets(tests))
@@ -420,10 +402,6 @@ class WebRTCApi(recipe_api.RecipeApi):
       build_dir: Path,
       update_step,
   ):
-    # If the builder is triggered by pinpoint, don't trigger any bots.
-    if any('pinpoint_job_id' in t.key for t in self.m.buildbucket.build.tags):
-      return
-
     if _is_triggering_perf_tests(builder_id, builder_config):
       # Replace ISOLATED_OUTDIR by WILL_BE_ISOLATED_OUTDIR to prevent
       # the variable to be expanded by the builder instead of the tester.
