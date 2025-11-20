@@ -1,9 +1,12 @@
 # For the infra security team's recipes and configurations.
-
+# Intended to be referenced from other OWNERS files.
+albutcher@google.com
+anuragvongur@google.com
 aredulla@google.com
 ayatane@chromium.org
 dlf@google.com
-heidichan@google.com
+evageeva@google.com
+fancl@google.com
 jsca@google.com
 mitchella@google.com
 qjw@chromium.org
