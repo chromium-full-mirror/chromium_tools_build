@@ -1127,135 +1127,6 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/build/linux/debian_bullseye_amd64-sysroot",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune build/linux/debian_bullseye_amd64-sysroot"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/build/linux/debian_bullseye_i386-sysroot",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune build/linux/debian_bullseye_i386-sysroot"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/buildtools/reclient",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune buildtools/reclient"
-  },
-  {
-    "cmd": [
-      "find",
       "[CLEANUP]/tmp_tmp_1/src/chrome/android",
       "-type",
       "f,l",
@@ -1428,135 +1299,6 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/angle/third_party/VK-GL-CTS",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/angle/third_party/VK-GL-CTS"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/apache-linux",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/apache-linux"
-  },
-  {
-    "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/catapult/third_party/vinn/third_party/v8",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "prune third_party/catapult/third_party/vinn/third_party/v8"
-  },
-  {
-    "cmd": [
-      "find",
       "[CLEANUP]/tmp_tmp_1/src/third_party/closure_compiler",
       "-type",
       "f,l",
@@ -1643,7 +1385,7 @@
   {
     "cmd": [
       "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/libphonenumber/dist/resources/metadata",
       "-type",
       "f,l",
       "-regextype",
@@ -1681,37 +1423,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/llvm"
+    "name": "prune third_party/libphonenumber/dist/resources/metadata"
   },
   {
     "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm-build",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/build/linux/debian_bullseye_amd64-sysroot"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:cron"
@@ -1724,37 +1448,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/llvm-build"
+    "name": "purge build/linux/debian_bullseye_amd64-sysroot"
   },
   {
     "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm-build-tools",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/build/linux/debian_bullseye_i386-sysroot"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:cron"
@@ -1767,37 +1473,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/llvm-build-tools"
+    "name": "purge build/linux/debian_bullseye_i386-sysroot"
   },
   {
     "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/node/linux",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/buildtools/reclient"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:cron"
@@ -1810,37 +1498,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/node/linux"
+    "name": "purge buildtools/reclient"
   },
   {
     "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/rust-src",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/angle/third_party/VK-GL-CTS"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:cron"
@@ -1853,37 +1523,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/rust-src"
+    "name": "purge third_party/angle/third_party/VK-GL-CTS"
   },
   {
     "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/rust-toolchain",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/apache-linux"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:cron"
@@ -1896,37 +1548,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/rust-toolchain"
+    "name": "purge third_party/apache-linux"
   },
   {
     "cmd": [
-      "find",
-      "[CLEANUP]/tmp_tmp_1/src/third_party/webgl",
-      "-type",
-      "f,l",
-      "-regextype",
-      "egrep",
-      "!",
-      "-regex",
-      ".*\\.(gn|gni|grd|grdp|isolate|pydeps)(\\.[^ /]+)?",
-      "!",
-      "(",
-      "(",
-      "-iname",
-      "*COPYING*",
-      "-o",
-      "-iname",
-      "*Copyright*",
-      "-o",
-      "-iname",
-      "*LICENSE*",
-      ")",
-      "!",
-      "-iregex",
-      ".*\\.(cc|cfg|cpp|h|java|js|json|m|patch|pl|py|rs|sh|sha1|stderr|ts|ya?ml)",
-      ")",
-      "-delete"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/catapult/third_party/vinn/third_party/v8"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:cron"
@@ -1939,7 +1573,307 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune third_party/webgl"
+    "name": "purge third_party/catapult/third_party/vinn/third_party/v8"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/dawn/third_party/khronos/OpenGL-Registry/specs"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/dawn/third_party/khronos/OpenGL-Registry/specs"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/dawn/tools/golang"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/dawn/tools/golang"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/jetstream"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/jetstream"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/llvm"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm-build"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/llvm-build"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/llvm-build-tools"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/llvm-build-tools"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/node/linux"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/node/linux"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/rust-src"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/rust-src"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/rust-toolchain"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/rust-toolchain"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/speedometer"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/speedometer"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/third_party/webgl"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge third_party/webgl"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/tmp_tmp_1/src/tools/skia_goldctl"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "purge tools/skia_goldctl"
   },
   {
     "cmd": [
@@ -1963,7 +1897,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "prune empty directories"
+    "name": "delete empty directories"
   },
   {
     "cmd": [

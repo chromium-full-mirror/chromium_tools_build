@@ -326,41 +326,48 @@ def copytree_checkout(api, source_dir):
 def export_lite_tarball(api, source_dir, version):
   # Make destructive file operations on the copy of the checkout.
   with copytree_checkout(api, source_dir) as dest_dir:
-    directories = [
+    prune_directories = [
         'android_webview',
-        'build/linux/debian_bullseye_amd64-sysroot',
-        'build/linux/debian_bullseye_i386-sysroot',
-        'buildtools/reclient',
         'chrome/android',
         'chromecast',
         'ios',
         'third_party/android_platform',
+        'third_party/closure_compiler',
+        'third_party/instrumented_libs',
+        'third_party/libphonenumber/dist/resources/metadata',
+    ]
+
+    if version_ships_nacl(version):
+      prune_directories.extend([
+          'native_client',
+          'native_client_sdk',
+      ])
+
+    # These directories will be deleted completely rather than pruned.
+    # Only add items that do not ship to end users! We need to retain
+    # licensing info for anything that does.
+    purge_directories = [
+        'build/linux/debian_bullseye_amd64-sysroot',
+        'build/linux/debian_bullseye_i386-sysroot',
+        'buildtools/reclient',
         'third_party/angle/third_party/VK-GL-CTS',
         'third_party/apache-linux',
         'third_party/catapult/third_party/vinn/third_party/v8',
-        'third_party/closure_compiler',
-        'third_party/instrumented_libs',
+        'third_party/dawn/third_party/khronos/OpenGL-Registry/specs',
+        'third_party/dawn/tools/golang',
+        'third_party/jetstream',
         'third_party/llvm',
         'third_party/llvm-build',
         'third_party/llvm-build-tools',
         'third_party/node/linux',
         'third_party/rust-src',
         'third_party/rust-toolchain',
+        'third_party/speedometer',
         'third_party/webgl',
+        'tools/skia_goldctl',
     ]
-    for directory in [
-        'third_party/blink/manual_tests', 'third_party/blink/perf_tests'
-    ]:
-      if api.path.exists(api.path.join(dest_dir, directory)):
-        directories.append(directory)  # pragma: no cover
 
-    if version_ships_nacl(version):
-      directories.extend([
-          'native_client',
-          'native_client_sdk',
-      ])
-
-    for directory in directories:
+    for directory in prune_directories:
       try:
         api.step('prune %s' % directory, [
             'find', api.path.join(dest_dir, directory),
@@ -383,8 +390,12 @@ def export_lite_tarball(api, source_dir, version):
         # or deleted in different versions of the codebase.
         pass
 
+    for directory in purge_directories:
+      api.file.rmtree('purge %s' % directory,
+                      api.path.join(dest_dir, directory))
+
     # Empty directories take up space in the tarball.
-    api.step('prune empty directories',
+    api.step('delete empty directories',
              ['find', dest_dir, '-depth', '-type', 'd', '-empty', '-delete'])
 
     export_tarball(
