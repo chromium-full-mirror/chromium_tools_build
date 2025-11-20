@@ -26,11 +26,6 @@ _BINARY_SIZE_TARGETS = (
 )
 
 
-def _sanitize_file_name(name):
-  safe_with_spaces = ''.join(c if c.isalnum() else ' ' for c in name)
-  return '_'.join(safe_with_spaces.split())
-
-
 def _replace_string_in_dict(dict_input, old, new):
   dict_output = {}
   for key, values in dict_input.items():
@@ -199,22 +194,7 @@ class WebRTCApi(recipe_api.RecipeApi):
              phase=None,
              tests=None,
              mb_config_path=None):
-    if phase:
-      # Set the out folder to be the same as the phase name, so caches of
-      # consecutive builds don't interfere with each other.
-      self.m.chromium.c.build_config_fs = _sanitize_file_name(phase)
-    elif 'ios' in builder_id.builder.lower():
-      # TODO(crbug.com/1048758): The out folder is hardcoded when calling otool
-      # in the ios script logic for running the tests on multiple shards.
-      pass
-    else:
-      # Set the out folder to be the same as the builder name, so the whole
-      # 'src' folder can be shared between builder types.
-      self.m.chromium.c.build_config_fs = _sanitize_file_name(
-          builder_id.builder)
-
     build_dir = self.m.chromium.default_build_dir(source_dir)
-
     self.m.chromium.mb_gen(
         source_dir,
         build_dir,
@@ -223,7 +203,6 @@ class WebRTCApi(recipe_api.RecipeApi):
         mb_path=source_dir.joinpath('tools_webrtc', 'mb'),
         mb_config_path=mb_config_path,
         isolated_targets=_get_isolated_targets(tests or []))
-
     return build_dir
 
   def isolate(self, build_dir: Path, builder_id, builder_config, tests):
@@ -297,12 +276,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         'ISOLATED_OUTDIR',
     )
     # Tester builders run their tests in the parent builder out directory.
-    parent_buildername = builders.BUILDERS_DB[builder_id].parent_buildername
-    output_dir = str(build_dir).replace(
-        _sanitize_file_name(builder_id.builder),
-        _sanitize_file_name(parent_buildername))
-
-    relative_cwd = self.m.path.relpath(output_dir, source_dir)
+    relative_cwd = self.m.properties.get('swarming_command_lines_cwd')
     for test in tests:
       if test.runs_on_swarming:
         command_line = swarming_command_lines.get(test.target_name, [])
@@ -442,6 +416,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       self,
       builder_id,
       builder_config,
+      source_dir: Path,
       build_dir: Path,
       update_step,
   ):
@@ -458,9 +433,11 @@ class WebRTCApi(recipe_api.RecipeApi):
           'ISOLATED_OUTDIR',
           'WILL_BE_ISOLATED_OUTDIR',
       )
+      relative_cwd = self.m.path.relpath(build_dir, source_dir)
       properties = {
           'swarming_command_lines': swarming_command_lines,
           'swarm_hashes': self.m.isolate.isolated_tests,
+          'swarming_command_lines_cwd': relative_cwd,
       }
       self.m.chromium_tests.trigger_child_builds(
           builder_id, update_step, builder_config, properties,

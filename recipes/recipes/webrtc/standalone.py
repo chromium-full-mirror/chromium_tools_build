@@ -103,8 +103,8 @@ def RunSteps(api):
     if test_failure_summary:
       return test_failure_summary
 
-  api.webrtc.trigger_child_builds(builder_id, builder_config, build_dir,
-                                  update_result)
+  api.webrtc.trigger_child_builds(builder_id, builder_config, source_dir,
+                                  build_dir, update_result)
 
 
 def GenTests(api):
