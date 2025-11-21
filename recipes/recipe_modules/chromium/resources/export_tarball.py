@@ -77,7 +77,6 @@ TEST_DIRS = (
     'third_party/glslang/src/Test',
     'third_party/harfbuzz-ng/src/test',
     'third_party/libc++/src/test/std',
-    'third_party/llvm/llvm/test',
     'third_party/openh264/src/res',
     'third_party/opus/tests/resources',
     'third_party/ots/src/tests/fonts',
