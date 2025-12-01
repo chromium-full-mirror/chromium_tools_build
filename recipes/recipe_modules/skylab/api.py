@@ -95,6 +95,84 @@ class SkylabApi(recipe_api.RecipeApi):
 
     return result
 
+  def calculate_ctp_timeout(self, test_spec_timeout: int) -> int:
+    """
+      Calculate a proper CTP timeout from test_spec_timeout.
+
+      Special CTP timeout handling:
+      When the builder does not have enough time remaining, set CTP timeout
+      to smaller value to ensure the builder can complete normally.
+      Effects/Goal:
+       1. Initial CTP run:
+           1a) CTP completed initial attempt but timed out at retry. Chrome
+               builder returns test failures based on what already have.
+               Without reducing CTP timeout, Chrome builder will timeout.
+           1b) CTP timeouts at initial attempt, Chrome builder will reads
+               INFRA_FAILURE on the shard, causing retry_invalid_shards at
+               Case 4.
+               Without reducing CTP timeouts, Chrome builder will just
+               timeout at initial runs, final state to Chrome builder
+               unchanged.
+       2. Chrome builder retry shards:
+           Even CTP timeouts at initial attempts, Chrome builder reads the
+           shard as INFRA_FAILURE and reports accordingly based on
+           both initial and retry shards runs.
+           Without reducing CTP timeout, Chrome builder will timeout.
+       3. Chrome try builder retry without patch:
+           3a) the CL is the culprit OR CTP level retry is disabled, retry
+               without patch will pass/fail initial runs. There is no
+               difference reducing timeout or not.
+           3b) the CL is not the culprit AND CTP level retry is enabled,
+               retry without patch. As long as the first attempt have a valid
+               result and didn't timeout, timeout at retry will still produce
+               a pass/fail result, which may be inaccurate for flaky tests.
+               Without reducing timeout, the builder may timeout.
+       4. Special case, less than 5 minutes remaining:
+           A 10-minute timeout CTP will be scheduled to mimic builder
+           timeout.
+       Why:
+         This eventually allows setting longer CTP timeout while keep builder
+         timeout not so long.
+         Without reducing timeout dynamically, we have to set maximum of  to
+         3 times CTP timeout as builder timeout to ensure builder does not
+         timeout, which is too long to be possible (any infra problem causing
+         CTP to stuck at any step would potentially cause Chrome builder to
+         run 10+ hours). In that case, the builder will either timeout even
+         there are useful results, or we set much smaller CTP timeout, which
+         would partially kill CTP-level retry depending on the distribution
+         of flaky or regressed tests.
+         By dynamically reducing timeout based on remaining seconds, we give
+         maximum possibility for CTP to retry at CTP level especially the
+         first CTP run, which is most efficient but still keeping builder
+         timeout at not too long time since it's unlikely worst case at all
+         steps happening together. This would also prevent Chrome builder
+         collect() CTP long if something is wrong on CrOS Test Infra side.
+
+      Args:
+        test_spec_timeout: the timeout in secs from test spec.
+      """
+    if self.m.buildbucket.build.execution_timeout.seconds > 0:
+      remaining_sec = int(
+          self.m.buildbucket.build.start_time.seconds +
+          self.m.buildbucket.build.execution_timeout.seconds -
+          self.m.time.time() -
+          # Have 5 minutes buffer for CTP preparation, result processing,
+          # buildbucket.collect() and result processing.
+          300)
+      if remaining_sec < test_spec_timeout:
+        # Override timeout_sec to remaining_sec.
+        with self.m.step.nest('timeout handling') as pres:
+          pres.step_summary_text = (
+              f'CTP timeout reduced to {remaining_sec} seconds.\n'
+              'CTP will return proper results if all shards completed initial '
+              f'attempt within {remaining_sec} seconds.\n')
+          return remaining_sec
+      if remaining_sec < 300:  # pragma: nocover
+        # If remaining_sec is too small, the test will almost for sure
+        # timeout, set slightly longer timeout to mimic the builder timeout.
+        return 600
+    return test_spec_timeout
+
   def schedule_suite(self,
                      test,
                      suffix,
@@ -191,7 +269,8 @@ class SkylabApi(recipe_api.RecipeApi):
           cmd.extend(['--secondary-boards', b])
           cmd.extend(['--secondary-images', img])
 
-      cmd.extend(['--timeout-mins', str(int(test.spec.timeout_sec / 60))])
+      timeout_sec = self.calculate_ctp_timeout(test.spec.timeout_sec)
+      cmd.extend(['--timeout-mins', int(timeout_sec / 60)])
 
       cmd.extend([
           '--qs-account', QS_ACCOUNT_FYI

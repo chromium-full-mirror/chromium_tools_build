@@ -14,11 +14,13 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/time',
     'skylab',
 ]
 
 import base64
 import copy
+import datetime
 import json
 import re
 
@@ -416,6 +418,33 @@ def GenTests(api):
       api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'reduced timeout',
+      api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.ci_build(
+          build_id=8912345678999999999,
+          execution_timeout=3600,  # 1h
+          start_time=datetime.datetime(
+              2025, 10, 30, 6, 50, 0, tzinfo=datetime.timezone.utc)),
+      api.time.seed(
+          datetime.datetime(
+              2025, 10, 30, 7, 0, 0, tzinfo=datetime.timezone.utc).timestamp()),
+      api.time.step(60),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+          [
+              '--timeout-mins',
+              # builder timeout(60min) - elapsed time(10min) -
+              # reserved for all kinds of overhead(5min) - recipe_module/time
+              # step(1min)
+              '44',
+          ]),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.post_process(post_process.DropExpectation),
+  )
+
 
   # This test should fail. Because the test did not run.
   yield api.test(

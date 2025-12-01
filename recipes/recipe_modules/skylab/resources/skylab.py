@@ -29,6 +29,8 @@ BUILDBUCKET_RPC = 'https://beefy-dot-cr-buildbucket.appspot.com/prpc'
 BUILDBUCKET_GET_ENDPOINT = (BUILDBUCKET_RPC + '/buildbucket.v2.Builds/GetBuild')
 BUILDBUCKET_SCHEDULE_ENDPOINT = (
     BUILDBUCKET_RPC + '/buildbucket.v2.Builds/ScheduleBuild')
+BUILDBUCKET_SEARCH_ENDPOINT = (
+    BUILDBUCKET_RPC + '/buildbucket.v2.Builds/SearchBuilds')
 CONTAINER_METADATA_LOC = 'metadata/containers.jsonpb'
 
 Shard = namedtuple('Shard', ['tr_attempt', 'shard'])
@@ -58,6 +60,20 @@ def _call_buildbucket(bb_request_data, json_creds, end_point):
     return None
   content = r.content.decode('utf-8')
   return json.loads(content[content.find('\n') + 1:])
+
+
+def _list_child_trs_status(ctp_bbid, json_creds):
+  bb_request_data = {
+      'predicate': {
+          'childOf': str(ctp_bbid),
+      },
+      'pageSize': 1000,
+      'mask': {
+          'fields': 'id,tags,output.status',
+      },
+  }
+  return _call_buildbucket(
+      json.dumps(bb_request_data), json_creds, BUILDBUCKET_SEARCH_ENDPOINT)
 
 
 def _fix_test_runner_status(task_result):
@@ -354,6 +370,48 @@ def read_ctp_results(opts):
         'log_url': task_result.tr_attempt.log_data.testhaus_url,
         'status': _fix_test_runner_status(task_result.tr_attempt),
     }
+
+  # Canceled test_runners will not present anything in cros_test_platform's
+  # output properties.
+  # List all child test_runners to populate canceled builders as INFRA_FAILURE.
+  # If cancellation occurs on retry test_runner, ignore and preserve the
+  # initial attempt result.
+  # Only canceled builder happening at initial attempt for each shard will
+  # present INFRA_FAILURE.
+  # INFRA_FAILURE will cause any check of whether suite is complete or not to
+  # be false, causing suite failures.
+  # Additionally, incomplete result may launch a retry_invalid_shard step, the
+  # outer recipe will launch a CTP with 10 minutes timeout, making the builder
+  # to timeout.
+  trs = _list_child_trs_status(opts.ctp_build_id, opts.json_creds)
+  for tr in trs['builds']:
+    if tr['output']['status'] != 'CANCELED':
+      continue
+    name = None
+    for tr_tag in tr['tags']:
+      if tr_tag['key'] == 'display_name':
+        name = tr_tag['value']
+
+    if '-retry-' in name:
+      continue
+    if '-shard-' not in name:
+      continue
+
+    tr_shard = int(name.split('-shard-')[-1])
+    has_result = False
+    for v in res.values():
+      if v['shard'] == tr_shard:
+        has_result = True
+    if has_result:
+      continue
+
+    res[f'cancelled-{tr_shard}'] = {
+        'url': f"https://ci.chromium.org/b/{tr['id']}",
+        'shard': tr_shard,
+        'log_url': None,
+        'status': 'INFRA_FAILURE',
+    }
+
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
       json.dump(res, json_file)
