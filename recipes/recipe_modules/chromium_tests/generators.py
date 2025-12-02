@@ -351,7 +351,7 @@ class Generator:
     kwargs['full_test_target'] = raw_test_spec.get('test_target')
     kwargs['test_id_prefix'] = raw_test_spec.get('test_id_prefix')
     kwargs['retry_only_failed_tests'] = raw_test_spec.get(
-        'retry_only_failed_tests', False)
+        'retry_only_failed_tests', True)
     kwargs['check_flakiness_for_new_tests'] = raw_test_spec.get(
         'check_flakiness_for_new_tests', True)
     kwargs['name'] = name

@@ -789,7 +789,7 @@ class TestSpec(AbstractTestSpec):
   test_id_prefix = attrib(str, default=None)
   check_flakiness_for_new_tests = attrib(bool, default=True)
   results_handler_name = attrib(str, default=None)
-  retry_only_failed_tests = attrib(bool, default=False)
+  retry_only_failed_tests = attrib(bool, default=True)
 
   @property
   def name(self):
@@ -3077,7 +3077,7 @@ class MockTestSpec(TestSpec):
   invocation_names = attrib(sequence[str], default=[])
   supports_rts = attrib(bool, default=False)
   option_flags = attrib(TestOptionFlags, default=_DEFAULT_OPTION_FLAGS)
-  retry_only_failed_tests = attrib(bool, default=False)
+  retry_only_failed_tests = attrib(bool, default=True)
 
   @property
   def test_class(self):

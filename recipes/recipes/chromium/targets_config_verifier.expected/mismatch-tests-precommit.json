@@ -45,7 +45,7 @@
       "@@@STEP_LOG_LINE@diff@         \"test_id_prefix\": null,@@@",
       "@@@STEP_LOG_LINE@diff@         \"check_flakiness_for_new_tests\": true,@@@",
       "@@@STEP_LOG_LINE@diff@         \"results_handler_name\": null,@@@",
-      "@@@STEP_LOG_LINE@diff@         \"retry_only_failed_tests\": false,@@@",
+      "@@@STEP_LOG_LINE@diff@         \"retry_only_failed_tests\": true,@@@",
       "@@@STEP_LOG_LINE@diff@-        \"args\": [@@@",
       "@@@STEP_LOG_LINE@diff@-          \"foo\"@@@",
       "@@@STEP_LOG_LINE@diff@-        ],@@@",

@@ -406,7 +406,6 @@ def GenTests(api):
           api.chromium_swarming.canned_summary_output(
               api.test_utils.canned_gtest_output(passing=False),
               shards=2,
-              failure=False)),
+              failure=True)),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
   )

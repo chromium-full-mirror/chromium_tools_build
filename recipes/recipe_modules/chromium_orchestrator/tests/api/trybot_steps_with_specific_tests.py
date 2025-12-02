@@ -433,27 +433,28 @@ def GenTests(api):
     }
 
     # When collecting the swarming, make sure to update the task_id of shard 1.
-    retry_swarming_summary = dict(swarming_summary)
-    retry_swarming_summary['shards'][1]['task_id'] = 'custom_task_id'
+    retry_swarming_summary = {
+        'shards': [
+            api.chromium_swarming.canned_summary_output_raw(
+                shard_indices=[0], failure=True)['shards'][0]
+        ]
+    }
+    retry_swarming_summary['shards'][0]['task_id'] = 'custom_task_id'
 
     browser_tests_retry = 'browser_tests (retry shards with patch)'
 
-    def check_gtest_shard_env(check, req):
-      check(req[0].env_vars['GTEST_SHARD_INDEX'] == '1')
-      check(req[0].env_vars['GTEST_TOTAL_SHARDS'] == '2')
-
     # The shard link names contain more than just shard#X since they have timing
     # and state information appended, so look for the prefix
-    def does_not_have_shard_0_link(check, steps_dict):
-      check(not any(
-          l.startswith('shard #0')
-          for l in steps_dict[browser_tests_retry].links))
-
-    def has_shard_1_link(check, steps_dict):
+    def has_shard_0_link(check, steps_dict):
       check(
           any(
-              l.startswith('shard #1')
+              l.startswith('shard #0')
               for l in steps_dict[browser_tests_retry].links))
+
+    def does_not_have_shard_1_link(check, steps_dict):
+      check(not any(
+          l.startswith('shard #1')
+          for l in steps_dict[browser_tests_retry].links))
 
     yield api.test(
         test_name,
@@ -497,8 +498,6 @@ def GenTests(api):
         # trigger.
         api.post_process(post_process.LogContains, retry_shards_step_name,
                          'json.output', ['"task_id": "custom_task_id"']),
-        api.post_check(api.swarming.check_triggered_request,
-                       retry_shards_step_name, check_gtest_shard_env),
 
         # Override 'retry shards with patch' trigger output.
         api.override_step_data(retry_shards_step_name,
@@ -515,10 +514,10 @@ def GenTests(api):
                 api.test_utils.rdb_results(
                     'browser_tests', failing_tests=['Test.One']))),
 
-        # We should not emit a link for shard #0, since it wasn't retried.
-        api.post_check(does_not_have_shard_0_link),
-        # We should emit a link for shard#1
-        api.post_check(has_shard_1_link),
+        # We should emit a link for shard #0 but not for shard #1, since all
+        # failed tests get grouped into one shard during retry.
+        api.post_check(has_shard_0_link),
+        api.post_check(does_not_have_shard_1_link),
         api.post_process(post_process.DropExpectation),
         api.expect_status(expected_status),
     )
