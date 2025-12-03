@@ -200,6 +200,8 @@ _SPEC = {
         _create_builder_config('mac', 'Release', 64),
     'mac-test':
         _create_builder_config('mac', 'Release', 64),
+    'mac-x64-amd-555x-test':
+        _create_tester_config('mac', 64, 'mac-test'),
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
     'win-dbg-compile':
