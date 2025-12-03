@@ -48,6 +48,7 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
       "FORCE_MAC_TOOLCHAIN": "1",
       "GIT_BACKENDINFO": "1",

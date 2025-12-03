@@ -84,6 +84,7 @@
     ],
     "cwd": "[CACHE]/builder/gyp_presubmit",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_COLLECT_METRICS": "0",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",

@@ -107,6 +107,7 @@
     ],
     "cwd": "[CACHE]/builder/build_presubmit",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "project/try/build_presubmit/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",

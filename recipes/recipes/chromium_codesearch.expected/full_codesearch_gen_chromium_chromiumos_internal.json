@@ -19,6 +19,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/codesearch-gen-chromium-chromiumos-internal/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",

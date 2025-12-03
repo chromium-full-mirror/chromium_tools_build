@@ -107,6 +107,7 @@
     ],
     "cwd": "[CACHE]/builder/v8_presubmit_infra_config",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "v8/try/v8_presubmit/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
