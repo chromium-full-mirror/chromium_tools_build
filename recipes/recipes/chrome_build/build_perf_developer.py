@@ -29,6 +29,7 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'reclient',
@@ -102,6 +103,26 @@ def _incremental_build_with_one_day_changes(
         step_name_suffix=suffix)
     _raise_raw_result_on_failure(api, raw_result)
 
+    ## Siso disabling clang modules
+    siso_no_clang_modules_build_dir = build_dir_parent / 'siso_no_clang_modules'
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      api.chromium_build_perf.recreate_build_dir(
+          source_dir,
+          siso_no_clang_modules_build_dir,
+          phase='siso_no_clang_modules')
+      suffix = ' with Siso disabling clang modules at current revision (warmup)'
+      raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          siso_no_clang_modules_build_dir,
+          target,
+          with_remote_cache=True,
+          step_name_suffix=suffix)
+      _raise_raw_result_on_failure(api, raw_result)
+
+
     # Clean up deps cache and check out to the base revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, base_rev)
 
@@ -128,6 +149,25 @@ def _incremental_build_with_one_day_changes(
         step_name_suffix=' with Siso in native mode at base revision (warmup)')
     _raise_raw_result_on_failure(api, raw_result)
 
+    ## Siso disabling clang modules
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      api.chromium_build_perf.recreate_build_dir(
+          source_dir,
+          siso_no_clang_modules_build_dir,
+          phase='siso_native',
+          remove_deps_cache=True)
+      raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          siso_no_clang_modules_build_dir,
+          target,
+          with_remote_cache=True,
+          step_name_suffix=' with Siso disabling clang modules at base revision (warmup)'
+      )
+      _raise_raw_result_on_failure(api, raw_result)
+
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
@@ -144,6 +184,19 @@ def _incremental_build_with_one_day_changes(
         with_remote_cache=True,
         step_name_suffix=' with Siso in native mode')
     _raise_raw_result_on_failure(api, raw_result)
+
+    ## Siso disabling clang modules
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          siso_no_clang_modules_build_dir,
+          target,
+          with_remote_cache=True,
+          step_name_suffix=' with Siso disabling clang modules')
+      _raise_raw_result_on_failure(api, raw_result)
 
 
 def _incremental_builds_with_patch(
@@ -224,6 +277,14 @@ def _incremental_builds_with_patch(
         build_dir_parent / 'siso',
         phase='siso_native',
         remove_deps_cache=True)
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      api.chromium_build_perf.recreate_build_dir(
+          source_dir,
+          build_dir_parent / 'siso_no_clang_modules',
+          phase='siso_no_clang_modules',
+          remove_deps_cache=True)
 
     # Run a build at each revision.
     for i, rev in enumerate(revs):
@@ -258,6 +319,19 @@ def _incremental_builds_with_patch(
           with_remote_cache=with_remote_cache,
           step_name_suffix=' with Siso in native mode' + step_name_suffix)
       _raise_raw_result_on_failure(api, raw_result)
+
+      # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+      # enabling clang modules on Windows.
+      if not api.platform.is_win:
+        siso_build_dir = build_dir_parent / 'siso_no_clang_modules'
+        raw_result = api.chromium_build_perf.build_with_siso(
+            source_dir,
+            siso_build_dir,
+            target,
+            with_remote_cache=with_remote_cache,
+            step_name_suffix=' with Siso disabling clang modules' +
+            step_name_suffix)
+        _raise_raw_result_on_failure(api, raw_result)
 
 
 def _clean_builds(api, source_dir: Path, build_dir: Path, target):
@@ -298,6 +372,32 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target):
         with_remote_cache=True,
         step_name_suffix=step_name_suffix)
     _raise_raw_result_on_failure(api, result)
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      # Siso builds without clang modules.
+      phase = 'siso_no_clang_modules'
+      step_name_suffix = ' with Siso disabling clang modules'
+      api.chromium_build_perf.recreate_build_dir(
+          source_dir, build_dir, phase=phase, remove_deps_cache=True)
+      result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          build_dir,
+          target,
+          with_remote_cache=False,
+          step_name_suffix=step_name_suffix)
+      _raise_raw_result_on_failure(api, result)
+
+      api.chromium_build_perf.recreate_build_dir(
+          source_dir, build_dir, phase=phase)
+      result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          build_dir,
+          target,
+          with_remote_cache=True,
+          step_name_suffix=step_name_suffix)
+      _raise_raw_result_on_failure(api, result)
 
 
 def RunSteps(api):
