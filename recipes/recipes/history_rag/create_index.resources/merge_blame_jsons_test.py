@@ -8,16 +8,7 @@ import shutil
 import tempfile
 import stat
 from unittest.mock import patch, MagicMock
-
-# Import the function to be tested. Assuming merge_blame_jsons.py is in the same directory
-try:
-  from merge_blame_jsons import merge_directories
-except ImportError:
-  # Fallback for execution within a test environment where module structure might be flat
-  # (If the original code was provided in the same file as the test, this would need adjustment)
-  # For the purpose of this file generation, we assume the import will work or the code
-  # needs to be run in an environment where the import path is correct.
-  pass
+from merge_blame_jsons import merge_directories
 
 
 class TestMergeDirectories(unittest.TestCase):

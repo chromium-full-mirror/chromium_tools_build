@@ -29,6 +29,8 @@ FILE_BLAME_JSONS_PKG_NAME = '%s/file_blame_jsons' % BASE_PKG_NAME
 COMMIT_HASH_JSONS_PKG_NAME = '%s/commit_hash_jsons' % BASE_PKG_NAME
 
 
+GCS_BUCKET = 'historyrag-chrome-internal-staging'
+
 def RunSteps(api):
   source_dir, revision = checkout_source_code(api)
   file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
@@ -36,12 +38,11 @@ def RunSteps(api):
   _, commit_hash_jsons_pkg_name, commit_hash_jsons_pkg_id = (
       generate_commit_hash_jsons(api, source_dir, revision,
                                  file_blame_jsons_dir))
-  # update manifest package to point to new cipd
-  update_baseline_package_info(api, revision, file_blame_jsons_pkg_name,
-                               file_blame_jsons_pkg_id,
-                               commit_hash_jsons_pkg_name,
-                               commit_hash_jsons_pkg_id)
-
+  # update manifest package to point to new CIPDs
+  update_pointers_to_latest_CIPDs(api, revision, file_blame_jsons_pkg_name,
+                                  file_blame_jsons_pkg_id,
+                                  commit_hash_jsons_pkg_name,
+                                  commit_hash_jsons_pkg_id)
 
 def checkout_source_code(api):
   with api.step.nest('Checkout Chrome Source Code'):
@@ -201,6 +202,7 @@ def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
   return blame_hashes_file
 
 
+
 def _get_baseline_package_info(api):
   """
   Fetches a pointer package, reads a manifest file, and returns the content.
@@ -350,12 +352,12 @@ def _update_cipd_package(api,
       f"CIPD instance ID not found in output for {package_name}")
 
 
-def update_baseline_package_info(api, current_revision,
-                                 file_blame_jsons_package,
-                                 file_blame_jsons_version,
-                                 commit_hash_jsons_package,
-                                 commit_hash_jsons_version):
-  with api.step.nest('Update baseline package'):
+def update_pointers_to_latest_CIPDs(api, current_revision,
+                                    file_blame_jsons_package,
+                                    file_blame_jsons_version,
+                                    commit_hash_jsons_package,
+                                    commit_hash_jsons_version):
+  with api.step.nest('Update pointers to all json CIPD packages'):
     manifest_content = {
         "file_blame_jsons_package": file_blame_jsons_package,
         "file_blame_jsons_version": file_blame_jsons_version,
@@ -431,7 +433,7 @@ def GenTests(api):
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update baseline package.Upload new manifest to cipd',
+          'Update pointers to all json CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
       api.post_process(post_process.MustRun,
@@ -459,12 +461,16 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
-      api.post_process(post_process.MustRun,
-                       'Update baseline package.Create manifest.json'),
-      api.post_process(post_process.MustRun,
-                       'Update baseline package.Upload new manifest to cipd'),
-      api.post_process(post_process.MustRun,
-                       'Update baseline package.Set CIPD ref latest'),
+      api.post_process(
+          post_process.MustRun,
+          'Update pointers to all json CIPD packages.Create manifest.json'),
+      api.post_process(
+          post_process.MustRun,
+          'Update pointers to all json CIPD packages.Upload new manifest to cipd'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Update pointers to all json CIPD packages.Set CIPD ref latest'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -495,7 +501,7 @@ def GenTests(api):
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update baseline package.Upload new manifest to cipd',
+          'Update pointers to all json CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
       api.post_process(
@@ -517,12 +523,16 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
-      api.post_process(post_process.MustRun,
-                       'Update baseline package.Create manifest.json'),
-      api.post_process(post_process.MustRun,
-                       'Update baseline package.Upload new manifest to cipd'),
-      api.post_process(post_process.MustRun,
-                       'Update baseline package.Set CIPD ref latest'),
+      api.post_process(
+          post_process.MustRun,
+          'Update pointers to all json CIPD packages.Create manifest.json'),
+      api.post_process(
+          post_process.MustRun,
+          'Update pointers to all json CIPD packages.Upload new manifest to cipd'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Update pointers to all json CIPD packages.Set CIPD ref latest'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -679,8 +689,9 @@ def GenTests(api):
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update baseline package.Upload new manifest to cipd',
+          'Update pointers to all json CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text('Oh no, no instance ID here')),
-      api.post_process(post_process.StepFailure, 'Update baseline package'),
+      api.post_process(post_process.StepFailure,
+                       'Update pointers to all json CIPD packages'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
