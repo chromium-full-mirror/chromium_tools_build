@@ -453,6 +453,14 @@ def _run_clang_tidy(
 
     command.extend(pieces)
 
+    # Disable warnings-as-errors.  crbug.com/447626453
+    # We run clang-tidy to get tidying recommendations, not to catch Clang
+    # compiler warnings. If -Werror is allowed, then the flow will produce
+    # *no* results for issues unrelated to tidiness, such as "unknown pragma".
+    #
+    # Flag -Wno-error must appear after -Werror, so use append here.
+    command.append('-Wno-error')
+
     logging.debug('In %r, running %s', in_dir,
                   ' '.join(pipes.quote(c) for c in command))
 
