@@ -157,7 +157,7 @@ def _incremental_build_with_one_day_changes(
       api.chromium_build_perf.recreate_build_dir(
           source_dir,
           siso_no_clang_modules_build_dir,
-          phase='siso_native',
+          phase='siso_no_clang_modules',
           remove_deps_cache=True)
       raw_result = api.chromium_build_perf.build_with_siso(
           source_dir,
