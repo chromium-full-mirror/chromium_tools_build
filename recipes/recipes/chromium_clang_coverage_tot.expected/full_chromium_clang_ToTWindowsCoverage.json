@@ -424,7 +424,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "[CACHE]\\builder\\src\\tools\\code_coverage\\coverage.py",
       "base_unittests",
       "boringssl_crypto_tests",

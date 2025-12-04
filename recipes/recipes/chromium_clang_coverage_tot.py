@@ -94,7 +94,7 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   output_dir_name = 'clang_tot_coverage_report'
   output_dir_path = source_dir.joinpath('out', output_dir_name)
 
-  cmd = ['python3', coverage_script_path]
+  cmd = ['vpython3', coverage_script_path]
   cmd.extend(SAMPLE_TARGETS)
 
   for target in SAMPLE_TARGETS:
