@@ -57,8 +57,7 @@ def RunSteps(api):
   api.chromium.runhooks(source_dir, build_dir)
 
   with api.chromium.guard_compile(build_dir):
-    # run_mb creates a build_dir depending on the builder and phase
-    build_dir = api.webrtc.run_mb(source_dir, builder_id)
+    api.webrtc.run_mb(source_dir, build_dir, builder_id)
     with api.context(cwd=source_dir):
       args = [
           '--root=%s' % str(source_dir),

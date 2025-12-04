@@ -190,22 +190,19 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def run_mb(self,
              source_dir: Path,
+             build_dir: Path,
              builder_id,
              phase=None,
-             tests=None,
-             mb_config_path=None):
-    build_dir = self.m.chromium.default_build_dir(source_dir)
+             tests=None):
     self.m.chromium.mb_gen(
         source_dir,
         build_dir,
         builder_id,
         phase=phase,
         mb_path=source_dir.joinpath('tools_webrtc', 'mb'),
-        mb_config_path=mb_config_path,
         isolated_targets=_get_isolated_targets(tests or []))
-    return build_dir
 
-  def isolate(self, build_dir: Path, builder_id, builder_config, tests):
+  def isolate(self, build_dir: Path, builder_id, tests):
     if builders.BUILDERS_DB[builder_id].execution_mode == builder_spec.TEST:
       # The tests running on a 'tester' bot are isolated by the 'builder'.
       self.m.isolate.check_swarm_hashes(_get_isolated_targets(tests))
@@ -283,7 +280,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         step_test_data=self.test_api.example_binary_sizes)
     result.presentation.properties['binary_sizes'] = result.json.output
 
-  def include_cleaner(self, source_dir: Path, builder_id):
+  def include_cleaner(self, source_dir: Path, build_dir: Path):
     INCLUDE_CLEANER = 'tools_webrtc/iwyu/apply_include_cleaner.py'
     FILTER_LIST = 'tools_webrtc/iwyu/iwyu-verifier-filter_list.json'
     SKIP_FOOTER = 'No-Iwyu'
@@ -292,7 +289,6 @@ class WebRTCApi(recipe_api.RecipeApi):
     if SKIP_FOOTER in self.m.tryserver.get_footers():
       return result
 
-    build_dir = self.m.chromium.default_build_dir(source_dir)
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True)
     filter_list = json.loads(
