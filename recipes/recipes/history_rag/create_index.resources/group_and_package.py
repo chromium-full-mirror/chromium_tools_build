@@ -35,6 +35,8 @@ from pathlib import Path
 from google import genai
 import numpy as np
 
+import gemini_client
+
 
 def load_summarized_topics(input_file: Path) -> dict:
   """
@@ -51,24 +53,6 @@ def load_summarized_topics(input_file: Path) -> dict:
     return data
   except (IOError, json.JSONDecodeError) as e:
     print(f"Error loading summarized topics: {e}", file=sys.stderr)
-    sys.exit(1)
-
-
-def initialize_gemini_client() -> genai.Client:
-  """
-    Initializes and returns a Gemini API client.
-    Requires GOOGLE_API_KEY environment variable to be set.
-    """
-  try:
-    client = genai.Client()
-    print("Successfully initialized Gemini API client.")
-    return client
-  except Exception as e:
-    print("Error: Could not initialize the GenAI client.", file=sys.stderr)
-    print(
-        "Please ensure GOOGLE_API_KEY environment variable is set.",
-        file=sys.stderr)
-    print(f"Underlying error: {e}", file=sys.stderr)
     sys.exit(1)
 
 
@@ -455,7 +439,7 @@ def main():
   parser.add_argument(
       "--grouping-model",
       type=str,
-      default="gemini-2.5-flash-lite-preview-09-2025",
+      default="gemini-2.5-flash-lite",
       help="Name of the Gemini model for topic grouping.")
   parser.add_argument(
       "--cache-dir",
@@ -522,7 +506,7 @@ def main():
     cache_dir.mkdir(parents=True, exist_ok=True)
     print(f"Using cache directory: {cache_dir}")
 
-    client = initialize_gemini_client()
+    client = gemini_client.initialize_gemini_client()
 
     if args.custom_groups:
       # Use custom categories

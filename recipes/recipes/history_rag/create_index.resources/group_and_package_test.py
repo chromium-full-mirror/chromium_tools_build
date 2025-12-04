@@ -63,20 +63,6 @@ class TestGroupAndPackage(unittest.TestCase):
     with self.assertRaises(SystemExit):
       group_and_package.load_summarized_topics(Path("bad.json"))
 
-  # -------------------------------------------------------------------------
-  # Test: initialize_gemini_client
-  # -------------------------------------------------------------------------
-
-  @patch("group_and_package.genai.Client")
-  def test_initialize_gemini_client_success(self, mock_client_cls):
-    client = group_and_package.initialize_gemini_client()
-    mock_client_cls.assert_called_once()
-    self.assertIsNotNone(client)
-
-  @patch("group_and_package.genai.Client", side_effect=Exception("No API Key"))
-  def test_initialize_gemini_client_failure(self, mock_client_cls):
-    with self.assertRaises(SystemExit):
-      group_and_package.initialize_gemini_client()
 
   # -------------------------------------------------------------------------
   # Test: call_llm_with_cache
@@ -260,7 +246,7 @@ class TestGroupAndPackage(unittest.TestCase):
     mock_pkg.assert_called_once()
 
   @patch("group_and_package.load_summarized_topics")
-  @patch("group_and_package.initialize_gemini_client")
+  @patch("gemini_client.initialize_gemini_client")
   @patch("group_and_package.generate_group_categories")
   @patch("group_and_package.group_topics_with_fixed_categories")
   @patch("group_and_package.package_topics_to_zip")

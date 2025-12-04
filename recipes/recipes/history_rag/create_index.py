@@ -20,6 +20,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/time',
     'recipe_engine/properties',
 ]
 
@@ -28,14 +29,17 @@ MANIFEST_PKG_NAME = '%s/manifest' % BASE_PKG_NAME
 FILE_BLAME_JSONS_PKG_NAME = '%s/file_blame_jsons' % BASE_PKG_NAME
 COMMIT_HASH_JSONS_PKG_NAME = '%s/commit_hash_jsons' % BASE_PKG_NAME
 
-
 GCS_BUCKET = 'historyrag-chrome-internal-staging'
+
+# Configuration for Vertex AI
+GOOGLE_CLOUD_PROJECT = 'skia-infra-corp'
+GOOGLE_CLOUD_LOCATION = 'us-central1'
 
 def RunSteps(api):
   source_dir, revision = checkout_source_code(api)
   file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
       generate_file_blame_jsons(api, source_dir, revision))
-  _, commit_hash_jsons_pkg_name, commit_hash_jsons_pkg_id = (
+  commit_hash_jsons_dir, commit_hash_jsons_pkg_name, commit_hash_jsons_pkg_id = (
       generate_commit_hash_jsons(api, source_dir, revision,
                                  file_blame_jsons_dir))
   # update manifest package to point to new CIPDs
@@ -43,6 +47,8 @@ def RunSteps(api):
                                   file_blame_jsons_pkg_id,
                                   commit_hash_jsons_pkg_name,
                                   commit_hash_jsons_pkg_id)
+  generate_topics(api, commit_hash_jsons_dir, revision)
+
 
 def checkout_source_code(api):
   with api.step.nest('Checkout Chrome Source Code'):
@@ -202,6 +208,74 @@ def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
   return blame_hashes_file
 
 
+def generate_topics(api, commit_hash_jsons_dir, revision):
+  with api.step.nest('Generate and Upload Topics'):
+    with api.context(
+        env={
+            'GOOGLE_GENAI_USE_VERTEXAI': 'true',
+            'GOOGLE_CLOUD_PROJECT': GOOGLE_CLOUD_PROJECT,
+            'GOOGLE_CLOUD_LOCATION': GOOGLE_CLOUD_LOCATION,
+        }):
+      prepared_commit_file = api.path.cleanup_dir / 'prepared_commits.pkl'
+      cmd = [
+          'vpython3',
+          api.resource('prepare_commits.py'), commit_hash_jsons_dir,
+          '--output-file', prepared_commit_file
+      ]
+      _ = api.step('Prepare Commits', cmd)
+
+      embeddings_file = api.path.cleanup_dir / 'embeddings.npz'
+      cmd = [
+          'vpython3',
+          api.resource('generate_embeddings.py'), prepared_commit_file,
+          '--output-file', embeddings_file
+      ]
+      _ = api.step('Generate Embeddings', cmd)
+
+      cluster_json_file = api.path.cleanup_dir / 'clusters.json'
+      cmd = [
+          'vpython3',
+          api.resource('cluster_topics.py'), embeddings_file,
+          prepared_commit_file, '--output-file', cluster_json_file,
+          '--min-cluster-size', 100
+      ]
+      _ = api.step('Cluster Topics', cmd)
+
+      summarized_topics_file = api.path.cleanup_dir / 'summarized_topics.json'
+      cmd = [
+          'vpython3',
+          api.resource('summarize_topics.py'), cluster_json_file,
+          '--output-file', summarized_topics_file, '--top-n', 5000, '--workers',
+          20
+      ]
+      _ = api.step('Summarize Topics', cmd)
+
+      topic_zip_file = api.path.cleanup_dir / 'topics.zip'
+      cmd = [
+          'vpython3',
+          api.resource('group_and_package.py'), summarized_topics_file,
+          '--output-file', topic_zip_file, '--gen-groups', 10, '--workers', 20
+      ]
+      _ = api.step('Group and Package', cmd)
+
+      topic_dest_path = _get_topics_dest_path(api, revision)
+      api.gsutil.upload(
+          source=topic_zip_file,
+          bucket=GCS_BUCKET,
+          dest=topic_dest_path,
+          name=f'Upload topics for {revision}',
+          link_name='GCS Topics File')
+      api.step.active_result.presentation.links[
+          'GCS Topics File'] = f"https://storage.cloud.google.com/{GCS_BUCKET}/{topic_dest_path}"
+
+
+def _get_topics_dest_path(api, current_revision):
+  """Generates the GCS destination path for the embeddings file."""
+  now = api.time.utcnow()
+  date_path = now.strftime('%Y/%m/%d')
+  return f"embeddings/{date_path}/{current_revision}/topics.zip"
+
+
 
 def _get_baseline_package_info(api):
   """
@@ -357,7 +431,7 @@ def update_pointers_to_latest_CIPDs(api, current_revision,
                                     file_blame_jsons_version,
                                     commit_hash_jsons_package,
                                     commit_hash_jsons_version):
-  with api.step.nest('Update pointers to all json CIPD packages'):
+  with api.step.nest('Update Pointers to all JSON CIPD packages'):
     manifest_content = {
         "file_blame_jsons_package": file_blame_jsons_package,
         "file_blame_jsons_version": file_blame_jsons_version,
@@ -433,7 +507,7 @@ def GenTests(api):
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update pointers to all json CIPD packages.Upload new manifest to cipd',
+          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
       api.post_process(post_process.MustRun,
@@ -463,14 +537,24 @@ def GenTests(api):
           'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
       api.post_process(
           post_process.MustRun,
-          'Update pointers to all json CIPD packages.Create manifest.json'),
+          'Update Pointers to all JSON CIPD packages.Create manifest.json'),
       api.post_process(
           post_process.MustRun,
-          'Update pointers to all json CIPD packages.Upload new manifest to cipd'
+          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd'
       ),
       api.post_process(
           post_process.MustRun,
-          'Update pointers to all json CIPD packages.Set CIPD ref latest'),
+          'Update Pointers to all JSON CIPD packages.Set CIPD ref latest'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Prepare Commits'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Generate Embeddings'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Cluster Topics'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Summarize Topics'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Group and Package'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -501,7 +585,7 @@ def GenTests(api):
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update pointers to all json CIPD packages.Upload new manifest to cipd',
+          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
       api.post_process(
@@ -525,14 +609,24 @@ def GenTests(api):
           'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
       api.post_process(
           post_process.MustRun,
-          'Update pointers to all json CIPD packages.Create manifest.json'),
+          'Update Pointers to all JSON CIPD packages.Create manifest.json'),
       api.post_process(
           post_process.MustRun,
-          'Update pointers to all json CIPD packages.Upload new manifest to cipd'
+          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd'
       ),
       api.post_process(
           post_process.MustRun,
-          'Update pointers to all json CIPD packages.Set CIPD ref latest'),
+          'Update Pointers to all JSON CIPD packages.Set CIPD ref latest'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Prepare Commits'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Generate Embeddings'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Cluster Topics'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Summarize Topics'),
+      api.post_process(post_process.MustRun,
+                       'Generate and Upload Topics.Group and Package'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -689,9 +783,9 @@ def GenTests(api):
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update pointers to all json CIPD packages.Upload new manifest to cipd',
+          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text('Oh no, no instance ID here')),
       api.post_process(post_process.StepFailure,
-                       'Update pointers to all json CIPD packages'),
+                       'Update Pointers to all JSON CIPD packages'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')

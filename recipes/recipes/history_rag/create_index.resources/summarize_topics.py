@@ -49,6 +49,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 import llm_prompts
 
+import gemini_client
 
 def load_clustering_results(input_file: Path) -> dict:
   """
@@ -65,24 +66,6 @@ def load_clustering_results(input_file: Path) -> dict:
     return data
   except (IOError, json.JSONDecodeError) as e:
     print(f"Error loading clustering results: {e}", file=sys.stderr)
-    sys.exit(1)
-
-
-def initialize_gemini_client() -> genai.Client:
-  """
-    Initializes and returns a Gemini API client.
-    Requires GOOGLE_API_KEY environment variable to be set.
-    """
-  try:
-    client = genai.Client()
-    print("Successfully initialized Gemini API client.")
-    return client
-  except Exception as e:
-    print("Error: Could not initialize the GenAI client.", file=sys.stderr)
-    print(
-        "Please ensure GOOGLE_API_KEY environment variable is set.",
-        file=sys.stderr)
-    print(f"Underlying error: {e}", file=sys.stderr)
     sys.exit(1)
 
 
@@ -210,20 +193,24 @@ def chunk_summary(summary: str, chunk_size: int = 3000) -> list[str]:
 
 
 def get_summary_embedding_with_cache(
-    text: str, cache_dir: Path, client: genai.Client) -> list[float] | None:
+    text: str, cache_dir: Path, client: genai.Client, model_name: str,
+    output_dimensionality: int) -> list[float] | None:
   """
     Gets a retrieval document embedding for a single text, with caching.
     Args:
         text: Text to embed
         cache_dir: Directory for caching embeddings
         client: Initialized Gemini client
+        model_name: Name of the embedding model to use
+        output_dimensionality: Target dimension size (e.g., 768)
     Returns:
         Embedding as a list of floats, or None if failed
     """
   summary_embeddings_cache_dir = cache_dir / "summary_embeddings"
   summary_embeddings_cache_dir.mkdir(parents=True, exist_ok=True)
 
-  cache_key = hashlib.sha256(text.encode('utf-8')).hexdigest()
+  cache_key_input = text + model_name + str(output_dimensionality)
+  cache_key = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
   cache_file = summary_embeddings_cache_dir / f"{cache_key}.npy"
 
   if cache_file.exists():
@@ -235,9 +222,11 @@ def get_summary_embedding_with_cache(
   for retry in range(5):
     try:
       result = client.models.embed_content(
-          model="gemini-embedding-001",
+          model=model_name,
           contents=[text],
-          config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"))
+          config=types.EmbedContentConfig(
+              task_type="RETRIEVAL_DOCUMENT",
+              output_dimensionality=output_dimensionality))
       embedding = np.array(result.embeddings[0].values)
 
       # Cache the embedding
@@ -354,16 +343,20 @@ def format_code_context(commits: list[dict]) -> str:
   return "\n".join(output_parts)
 
 
-def process_topic(topic_data: dict, model_name: str, client: genai.Client,
-                  llm_cache_dir: Path, embedding_cache_dir: Path) -> dict:
+def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
+                  client: genai.Client, llm_cache_dir: Path,
+                  embedding_cache_dir: Path,
+                  output_dimensionality: int) -> dict:
   """
     Processes a single topic: generates title, summary, chunks, and embeddings.
     Args:
         topic_data: Topic dictionary from clustering results
         model_name: Name of the Gemini model for summarization
+        embedding_model_name: Name of the Gemini model for embeddings
         client: Initialized Gemini client
         llm_cache_dir: Cache directory for LLM responses
         embedding_cache_dir: Cache directory for embeddings
+        output_dimensionality: The target dimension size for embeddings
     Returns:
         Enriched topic dictionary with title, summary, chunks, embeddings
     """
@@ -391,7 +384,8 @@ def process_topic(topic_data: dict, model_name: str, client: genai.Client,
   chunk_embeddings = []
   for chunk in summary_chunks:
     embedding = get_summary_embedding_with_cache(chunk, embedding_cache_dir,
-                                                 client)
+                                                 client, embedding_model_name,
+                                                 output_dimensionality)
     chunk_embeddings.append(embedding)
 
   # Remove 'files' field from commits to reduce output size
@@ -444,11 +438,18 @@ def main():
   parser.add_argument(
       "--llm-model",
       type=str,
-      # default="gemini-embedding-001",
-      # default="text-embedding-005",
-      default="gemini-2.5-flash",
-      # default="gemini-2.5-flash-lite-preview-09-2025",
+      default="gemini-2.5-flash-lite",
       help="Name of the Gemini model for summarization.")
+  parser.add_argument(
+      "--embedding-model",
+      type=str,
+      default="gemini-embedding-001",
+      help="Name of the Gemini model for embeddings.")
+  parser.add_argument(
+      "--output-dimensionality",
+      type=int,
+      default=768,
+      help="Dimension size of the output embeddings (default: 768).")
   parser.add_argument(
       "--cache-dir",
       type=str,
@@ -484,7 +485,7 @@ def main():
   print(f"Using cache directory: {cache_dir}")
 
   # Initialize Gemini client
-  client = initialize_gemini_client()
+  client = gemini_client.initialize_gemini_client()
 
   # Load clustering results
   cluster_data = load_clustering_results(clusters_file)
@@ -498,6 +499,7 @@ def main():
   print(
       f"\nSummarizing top {len(topics_to_summarize)} topics (out of {len(all_topics)} total)..."
   )
+  print(f"Embedding dimensions: {args.output_dimensionality}")
 
   if len(topics_to_summarize) < len(all_topics):
     skipped_count = len(all_topics) - len(topics_to_summarize)
@@ -509,8 +511,9 @@ def main():
   print(f"\nProcessing topics with {args.workers} workers...")
 
   def process_with_args(topic):
-    return process_topic(topic, args.llm_model, client, llm_cache_dir,
-                         embedding_cache_dir)
+    return process_topic(topic, args.llm_model, args.embedding_model, client,
+                         llm_cache_dir, embedding_cache_dir,
+                         args.output_dimensionality)
 
   with concurrent.futures.ThreadPoolExecutor(
       max_workers=args.workers) as executor:
@@ -533,6 +536,8 @@ def main():
       'num_topics_summarized': len(summarized_topics),
       'top_n': args.top_n,
       'llm_model': args.llm_model,
+      'embedding_model': args.embedding_model,
+      'embedding_dim': args.output_dimensionality,
       'clustering_metadata': cluster_data.get('metadata', {}),
       'summarized_at': datetime.now().isoformat()
   }

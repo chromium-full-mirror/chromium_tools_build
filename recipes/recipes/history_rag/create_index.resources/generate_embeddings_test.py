@@ -82,17 +82,21 @@ class TestGenerateEmbeddings(unittest.TestCase):
 
     messages = ["msg1", "msg2", "msg3"]
 
-    # Run with batch size 2
+    # Run with batch size 2 and dummy model name
     embeddings = generate_embeddings.generate_embeddings_batch(
-        messages, mock_client, batch_size=2)
+        messages,
+        mock_client,
+        model_name="test-model",
+        output_dimensionality=768,
+        batch_size=2)
 
-    # Verify logic
     self.assertEqual(embeddings.shape, (3, 2))  # 3 messages, dimension 2
     self.assertEqual(mock_client.models.embed_content.call_count, 2)
 
-    # Verify first call arguments
     call_args = mock_client.models.embed_content.call_args_list[0]
     self.assertEqual(call_args.kwargs['contents'], ["msg1", "msg2"])
+    self.assertEqual(call_args.kwargs['model'], "test-model")
+    self.assertEqual(call_args.kwargs['config'].output_dimensionality, 768)
 
   def test_generate_embeddings_retry_logic(self):
     """Test that the function retries on API failure."""
@@ -111,10 +115,13 @@ class TestGenerateEmbeddings(unittest.TestCase):
 
     # Patch time.sleep to speed up test
     with patch('time.sleep') as mock_sleep:
-      embeddings = generate_embeddings.generate_embeddings_batch(["msg1"],
-                                                                 mock_client,
-                                                                 batch_size=1,
-                                                                 max_retries=3)
+      embeddings = generate_embeddings.generate_embeddings_batch(
+          ["msg1"],
+          mock_client,
+          model_name="test-model",
+          output_dimensionality=768,
+          batch_size=1,
+          max_retries=3)
 
     self.assertEqual(len(embeddings), 1)
     self.assertEqual(mock_client.models.embed_content.call_count, 2)
@@ -132,7 +139,11 @@ class TestGenerateEmbeddings(unittest.TestCase):
     messages = [d['cleaned_message'] for d in self.dummy_commits]
 
     embeddings = generate_embeddings.get_embeddings_with_cache(
-        messages, self.cache_dir, mock_client)
+        messages,
+        self.cache_dir,
+        mock_client,
+        model_name="test-model",
+        output_dimensionality=768)
 
     # Should have called API once
     mock_client.models.embed_content.assert_called_once()
@@ -146,8 +157,12 @@ class TestGenerateEmbeddings(unittest.TestCase):
     """Test scenario where some items are already cached."""
     mock_client = MagicMock()
     messages = ["cached_msg", "new_msg"]
+    model_name = "test-model"
+    output_dim = 768
 
-    h = hashlib.sha256("cached_msg".encode('utf-8')).hexdigest()
+    cache_key_input = "cached_msg" + model_name + str(output_dim)
+    h = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
+
     cache_path = self.cache_dir / "embeddings" / f"{h}.npy"
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     np.save(cache_path, np.array([0.9] * 768))
@@ -158,9 +173,12 @@ class TestGenerateEmbeddings(unittest.TestCase):
     mock_client.models.embed_content.return_value = mock_response
 
     embeddings = generate_embeddings.get_embeddings_with_cache(
-        messages, self.cache_dir, mock_client)
+        messages,
+        self.cache_dir,
+        mock_client,
+        model_name=model_name,
+        output_dimensionality=output_dim)
 
-    # Should call API only for "new_msg"
     mock_client.models.embed_content.assert_called_once()
     called_messages = mock_client.models.embed_content.call_args.kwargs[
         'contents']
@@ -170,7 +188,7 @@ class TestGenerateEmbeddings(unittest.TestCase):
     self.assertAlmostEqual(embeddings[0][0], 0.9)
     self.assertAlmostEqual(embeddings[1][0], 0.1)
 
-  @patch('generate_embeddings.initialize_gemini_client')
+  @patch('gemini_client.initialize_gemini_client')
   def test_main_flow(self, mock_init_client):
     """Test the end-to-end main function."""
     # Setup mocks
@@ -189,7 +207,6 @@ class TestGenerateEmbeddings(unittest.TestCase):
         str(self.input_file), "--output-file",
         str(self.output_file), "--cache-dir",
         str(self.cache_dir)
-        # Removed "--use-cleaned" as it is now the default/only behavior
     ]
 
     with patch.object(sys, 'argv', test_args):
@@ -206,8 +223,7 @@ class TestGenerateEmbeddings(unittest.TestCase):
       # Check metadata
       meta = data['metadata'][0]
       self.assertEqual(meta['num_documents'], 3)
-      # Verify it used 'cleaned_message' by default
-      self.assertEqual(meta['message_field'], 'cleaned_message')
+      self.assertEqual(meta['model'], 'gemini-embedding-001')
 
 
 if __name__ == '__main__':

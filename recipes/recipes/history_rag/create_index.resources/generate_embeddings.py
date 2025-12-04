@@ -24,10 +24,14 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+import os
 
 from google import genai
 import numpy as np
 from google.genai import types
+
+
+import gemini_client
 
 
 def load_prepared_commits(input_file: Path) -> list[dict]:
@@ -53,6 +57,8 @@ def load_prepared_commits(input_file: Path) -> list[dict]:
 
 def generate_embeddings_batch(messages: list[str],
                               client: genai.Client,
+                              model_name: str,
+                              output_dimensionality: int,
                               batch_size: int = 100,
                               max_retries: int = 5) -> np.ndarray:
   """
@@ -60,6 +66,8 @@ def generate_embeddings_batch(messages: list[str],
     Args:
         messages: List of text strings to embed
         client: Initialized Gemini API client
+        model_name: Name of the embedding model to use
+        output_dimensionality: Target dimension size (e.g., 768)
         batch_size: Number of messages to send per API call
         max_retries: Maximum number of retry attempts per batch
     Returns:
@@ -81,9 +89,11 @@ def generate_embeddings_batch(messages: list[str],
     for retry in range(max_retries):
       try:
         result = client.models.embed_content(
-            model="gemini-embedding-001",
+            model=model_name,
             contents=batch,
-            config=types.EmbedContentConfig(task_type="CLUSTERING"))
+            config=types.EmbedContentConfig(
+                task_type="CLUSTERING",
+                output_dimensionality=output_dimensionality))
         embeddings.extend([e.values for e in result.embeddings])
         break
       except Exception as e:
@@ -105,7 +115,8 @@ def generate_embeddings_batch(messages: list[str],
 
 
 def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
-                              client: genai.Client) -> np.ndarray:
+                              client: genai.Client, model_name: str,
+                              output_dimensionality: int) -> np.ndarray:
   """
     Gets embeddings for messages, using a 1-to-1 cache for each message.
 
@@ -116,6 +127,8 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
         messages: List of text strings to embed
         cache_dir: Directory to store cached embeddings
         client: Initialized Gemini API client
+        model_name: Name of the embedding model used for caching
+        output_dimensionality: Target dimension size (e.g., 768)
     Returns:
         Numpy array of embeddings with shape (len(messages), embedding_dim)
     """
@@ -132,7 +145,8 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
     if i % 1000 == 0 and i > 0:
       print(f"Checked {i}/{len(messages)} messages...", end='\r')
 
-    message_hash = hashlib.sha256(message.encode('utf-8')).hexdigest()
+    cache_key_input = message + model_name + str(output_dimensionality)
+    message_hash = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
     cache_file = embeddings_cache_dir / f"{message_hash}.npy"
 
     if cache_file.exists():
@@ -155,7 +169,9 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
   # Generate embeddings for cache misses
   if messages_to_embed:
     print(f"Generating embeddings for {len(messages_to_embed)} new messages...")
-    new_embeddings = generate_embeddings_batch(messages_to_embed, client)
+    new_embeddings = generate_embeddings_batch(messages_to_embed, client,
+                                               model_name,
+                                               output_dimensionality)
 
     # Store new embeddings in cache and result array
     print("Saving new embeddings to cache...")
@@ -165,8 +181,9 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
 
       # Save to cache
       message_to_cache = messages_to_embed[i]
-      message_hash = hashlib.sha256(
-          message_to_cache.encode('utf-8')).hexdigest()
+      cache_key_input = message_to_cache + model_name + str(
+          output_dimensionality)
+      message_hash = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
       cache_file = embeddings_cache_dir / f"{message_hash}.npy"
 
       try:
@@ -181,24 +198,6 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
   return np.array(all_embeddings)
 
 
-def initialize_gemini_client() -> genai.Client:
-  """
-    Initializes and returns a Gemini API client.
-    Requires GOOGLE_API_KEY environment variable to be set.
-    """
-  try:
-    client = genai.Client()
-    print("Successfully initialized Gemini API client.")
-    return client
-  except Exception as e:
-    print("Error: Could not initialize the GenAI client.", file=sys.stderr)
-    print(
-        "Please ensure GOOGLE_API_KEY environment variable is set.",
-        file=sys.stderr)
-    print(f"Underlying error: {e}", file=sys.stderr)
-    sys.exit(1)
-
-
 def main():
   """Main function to orchestrate embedding generation."""
   parser = argparse.ArgumentParser(
@@ -211,6 +210,16 @@ def main():
       type=str,
       required=True,
       help="Path to save the embeddings NPZ file.")
+  parser.add_argument(
+      "--embedding-model",
+      type=str,
+      default="gemini-embedding-001",
+      help="Name of the Gemini model (default: gemini-embedding-001).")
+  parser.add_argument(
+      "--output-dimensionality",
+      type=int,
+      default=768,
+      help="Dimension size of the output embeddings (default: 768).")
   parser.add_argument(
       "--cache-dir",
       type=str,
@@ -241,7 +250,7 @@ def main():
   print(f"Using cache directory: {cache_dir}")
 
   # Initialize Gemini client
-  client = initialize_gemini_client()
+  client = gemini_client.initialize_gemini_client()
 
   # Load prepared commits
   documents = load_prepared_commits(input_file)
@@ -252,7 +261,6 @@ def main():
     documents = documents[:args.limit]
 
   # Extract messages to embed
-  # HARDCODED: Always use cleaned_message
   message_field = 'cleaned_message'
   try:
     messages = [doc[message_field] for doc in documents]
@@ -261,15 +269,18 @@ def main():
         f"Error: The key '{message_field}' was not found in one or more documents.",
         file=sys.stderr)
     print(
-        "Ensure your input pickle file contains prepared documents with 'cleaned_message'.",
-        file=sys.stderr)
+        "Ensureyour input pickle file contains prepared documents with 'cleaned_message'.",
+        file=sysstderr)
     sys.exit(1)
 
   print(
-      f"\nEmbedding {len(messages)} documents using field '{message_field}'...")
+      f"\nEmbedding {len(messages)} documents using model '{args.embedding_model}' with dimension {args.output_dimensionality}..."
+  )
 
   # Generate embeddings with caching
-  embeddings = get_embeddings_with_cache(messages, cache_dir, client)
+  embeddings = get_embeddings_with_cache(messages, cache_dir, client,
+                                         args.embedding_model,
+                                         args.output_dimensionality)
 
   print(f"\nGenerated embeddings with shape: {embeddings.shape}")
 
@@ -279,7 +290,7 @@ def main():
 
   # Create metadata
   metadata = {
-      'model': 'gemini-embedding-001',
+      'model': args.embedding_model,
       'task_type': 'CLUSTERING',
       'num_documents': len(documents),
       'embedding_dim': embeddings.shape[1],

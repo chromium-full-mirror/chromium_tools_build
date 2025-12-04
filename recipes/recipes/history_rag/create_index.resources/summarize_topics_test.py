@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
+import numpy as np
 import summarize_topics
 
 
@@ -172,7 +173,11 @@ class TestSummarizeTopics(unittest.TestCase):
     self.mock_client.models.embed_content.return_value = mock_result
 
     embedding = summarize_topics.get_summary_embedding_with_cache(
-        "text", self.cache_dir, self.mock_client)
+        "text",
+        self.cache_dir,
+        self.mock_client,
+        "embedding-model",
+        output_dimensionality=768)
 
     self.assertEqual(embedding, [0.1, 0.2, 0.3])
     self.mock_client.models.embed_content.assert_called_once()
@@ -206,9 +211,14 @@ class TestSummarizeTopics(unittest.TestCase):
     }
 
     # Run process_topic
-    result = summarize_topics.process_topic(topic_data, "model-name",
-                                            self.mock_client, self.cache_dir,
-                                            self.cache_dir)
+    result = summarize_topics.process_topic(
+        topic_data,
+        "llm-model-name",
+        "embedding-model-name",
+        self.mock_client,
+        self.cache_dir,
+        self.cache_dir,
+        output_dimensionality=768)
 
     # Assertions
     self.assertEqual(result['topic_id'], 123)
@@ -223,13 +233,12 @@ class TestSummarizeTopics(unittest.TestCase):
     # IMPORTANT: Check that 'files' key was removed from commits to save space
     self.assertNotIn('files', result['commits'][0])
 
-  def test_extract_topic_keywords(self):
-    """Test keyword extraction returns correct structure (mocking sklearn logic implicitly)."""
-    # Since sklearn is a complex dependency, we test that it handles the empty case gracefully
-    # and returns the expected dictionary structure for simple inputs.
+    mock_get_embedding.assert_called_with('Summary text', self.cache_dir,
+                                          self.mock_client,
+                                          'embedding-model-name', 768)
 
-    # Updated to match new signature: extract_topic_keywords(topics)
-    # Topics now need to contain 'commits' with 'message' fields.
+  def test_extract_topic_keywords(self):
+    """Test keyword extraction returns correct structure."""
     topics = [{
         'topic_id': 1,
         'commits': [{
@@ -244,17 +253,23 @@ class TestSummarizeTopics(unittest.TestCase):
         }]
     }]
 
-    # We patch CountVectorizer to avoid actual ML computation during unit test
     with patch("summarize_topics.CountVectorizer") as mock_cv:
       mock_instance = mock_cv.return_value
-      # Mock fit_transform to return a dummy matrix
-      # 2 topics -> 2 rows
-      mock_instance.fit_transform.return_value.toarray.return_value = [[1, 0],
-                                                                       [0, 1]]
-      # Mock feature names
+
+      # Prepare a mock for the matrix returned by fit_transform
+      mock_X = MagicMock()
+
+      # Define what X.toarray() returns (dense matrix)
+      mock_X.toarray.return_value = np.array([[1, 0], [0, 1]])
+
+      # Define what (X > 0) returns (boolean mask for c-TF-IDF calculation)
+      # We just return a numpy boolean array so .sum(axis=0) works
+      mock_X.__gt__.return_value = np.array([[True, False], [False, True]])
+
+      mock_instance.fit_transform.return_value = mock_X
       mock_instance.get_feature_names_out.return_value = ["bug", "feature"]
 
-      # Call the function with single argument 'topics'
+      # Call the function
       keywords = summarize_topics.extract_topic_keywords(topics)
 
       self.assertIsInstance(keywords, dict)
