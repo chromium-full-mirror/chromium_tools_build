@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 syntax = "proto3";
 
-package recipe_modules.build.proto_validation.tests;
+package recipe_modules.build.proto_validation.tests.test_protos;
 
 message EmptyMessage {}
 
