@@ -51,6 +51,7 @@ PROPERTIES = {
     'swarming': Property(default=None, kind=dict),
     'target_cpu': Property(default=None, kind=str),
     'target_os': Property(default=None, kind=str),
+    'use_cxx23': Property(default=False, kind=bool),
     'v8': Property(default=True, kind=bool),
     'xfa': Property(default=False, kind=bool),
 }
@@ -221,7 +222,7 @@ def _generate_out_path(memory_tool, skia, rust, xfa, v8, rel, component):
 # _gn_gen_builds() calls 'gn gen' and returns a dictionary of
 # the used build configuration to be used by Gold.
 def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
-                   target_cpu, rel, component, target_os, out_dir):
+                   target_cpu, rel, component, target_os, use_cxx23, out_dir):
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
   gn_cmd = api.depot_tools.gn_py_path
@@ -238,6 +239,7 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
       'pdf_enable_xfa=%s' % gn_bool[xfa],
       'pdf_is_standalone=true',
       'pdf_use_skia=%s' % gn_bool[skia],
+      'use_cxx23=%s' % gn_bool[use_cxx23],
       'use_reclient=false',
       'use_remoteexec=true',
       'use_siso=true',
@@ -954,7 +956,7 @@ def _gen_properties(api, **kwargs):
 
 def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, rel,
              run_skia_gold, component, skip_test, target_os, renderers,
-             swarming):
+             swarming, use_cxx23):
   update_result = _checkout_step(api, target_os, rust)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
@@ -969,7 +971,7 @@ def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, rel,
 
     build_config = _gn_gen_builds(api, source_dir, memory_tool, skia, rust, xfa,
                                   v8, target_cpu, rel, component, target_os,
-                                  out_dir)
+                                  use_cxx23, out_dir)
     if not run_skia_gold:
       build_config = {}
     _build_steps(api, source_dir, out_dir)
@@ -994,6 +996,13 @@ def GenTests(api):
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
       _gen_properties(api),
+      _gen_ci_build(api, 'linux'),
+  )
+  yield api.test(
+      'linux_cxx23',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, use_cxx23=True),
       _gen_ci_build(api, 'linux'),
   )
   yield api.test(

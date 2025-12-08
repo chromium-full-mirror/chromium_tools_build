@@ -218,7 +218,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_xfa_v8_asan",
-      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=true pdf_is_standalone=true pdf_use_skia=false use_reclient=false use_remoteexec=true use_siso=true is_asan=true use_raw_ptr_asan_unowned_impl=true is_lsan=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=true pdf_is_standalone=true pdf_use_skia=false use_cxx23=false use_reclient=false use_remoteexec=true use_siso=true is_asan=true use_raw_ptr_asan_unowned_impl=true is_lsan=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -390,7 +390,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "env": {
@@ -440,7 +440,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux rust_png false skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux rust_png false skia false suite javascript_disabled use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -491,7 +491,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite xfa_disabled use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -542,7 +542,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "env": {
@@ -592,7 +592,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite oneshot use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite oneshot use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -643,7 +643,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite reverse_byte_order use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite reverse_byte_order use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -694,7 +694,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux rust_png false skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux rust_png false skia false suite javascript_disabled use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -745,7 +745,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite xfa_disabled use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -796,7 +796,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "env": {
@@ -846,7 +846,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite oneshot use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite oneshot use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -897,7 +897,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite reverse_byte_order use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite reverse_byte_order use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -948,7 +948,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux rust_png false skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux rust_png false skia false suite javascript_disabled use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -999,7 +999,7 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "asan true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux rust_png false skia false suite xfa_disabled use_cxx23 false use_raw_ptr_asan_unowned_impl true use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",

@@ -49,7 +49,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/mac/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/linux/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -128,7 +128,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/mac/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/linux/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -151,118 +151,6 @@
   },
   {
     "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[CACHE]/osx_sdk",
-      "-ensure-file",
-      "infra/tools/mac_toolchain/${platform} git_revision:b0c0a706097c27444dbe3f84e5553f1aaa77c1a6",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_installed",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:b0c\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/mac_toolchain/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "sw_vers",
-      "-productVersion"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "find macOS version",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@Running on '14.4'.@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]/osx_sdk/mac_toolchain",
-      "install",
-      "-kind",
-      "mac",
-      "-xcode-version",
-      "15e204a",
-      "-output-dir",
-      "[CACHE]/osx_sdk/XCode.app"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "install xcode"
-  },
-  {
-    "cmd": [
-      "sudo",
-      "xcode-select",
-      "--switch",
-      "[CACHE]/osx_sdk/XCode.app"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "select XCode"
-  },
-  {
-    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gn.py",
@@ -270,7 +158,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_v8",
-      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=false pdf_is_standalone=true pdf_use_skia=false use_cxx23=false use_reclient=false use_remoteexec=true use_siso=true use_clang_modules=false"
+      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=false pdf_is_standalone=true pdf_use_skia=false use_cxx23=true use_reclient=false use_remoteexec=true use_siso=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -337,7 +225,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_unittests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:pdfium_unittests",
       "-tag",
@@ -375,7 +263,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_embeddertests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:pdfium_embeddertests",
       "-tag",
@@ -413,7 +301,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:javascript",
       "-tag",
@@ -432,7 +320,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os mac rust_png false skia false use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -456,7 +344,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:javascript_javascript_disabled",
       "-tag",
@@ -475,7 +363,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac rust_png false skia false suite javascript_disabled use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux rust_png false skia false suite javascript_disabled use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -500,7 +388,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:pixel",
       "-tag",
@@ -519,7 +407,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os mac rust_png false skia false use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -543,7 +431,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:pixel_oneshot",
       "-tag",
@@ -562,7 +450,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os mac rust_png false skia false suite oneshot use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite oneshot use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -587,7 +475,51 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
+      "-var",
+      "test_suite:pixel_reverse_byte_order",
+      "-tag",
+      "step_name:pixel tests (reverse byte order)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite reverse_byte_order use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "--reverse-byte-order"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "pixel tests (reverse byte order)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_pixel_tests/",
+      "-var",
+      "builder:linux",
       "-var",
       "test_suite:pixel_javascript_disabled",
       "-tag",
@@ -606,7 +538,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac rust_png false skia false suite javascript_disabled use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux rust_png false skia false suite javascript_disabled use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -631,7 +563,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:corpus",
       "-tag",
@@ -650,7 +582,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os mac rust_png false skia false use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -674,7 +606,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
       "-var",
       "test_suite:corpus_oneshot",
       "-tag",
@@ -693,7 +625,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os mac rust_png false skia false suite oneshot use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite oneshot use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -718,7 +650,51 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:mac",
+      "builder:linux",
+      "-var",
+      "test_suite:corpus_reverse_byte_order",
+      "-tag",
+      "step_name:corpus tests (reverse byte order)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_corpus_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite reverse_byte_order use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "--reverse-byte-order"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "corpus tests (reverse byte order)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_corpus_tests/",
+      "-var",
+      "builder:linux",
       "-var",
       "test_suite:corpus_javascript_disabled",
       "-tag",
@@ -737,7 +713,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac rust_png false skia false suite javascript_disabled use_clang_modules false use_cxx23 false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux rust_png false skia false suite javascript_disabled use_cxx23 true use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -754,27 +730,6 @@
       }
     },
     "name": "corpus tests (javascript disabled)"
-  },
-  {
-    "cmd": [
-      "sudo",
-      "xcode-select",
-      "--reset"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "reset XCode"
   },
   {
     "name": "$result"
