@@ -116,7 +116,13 @@ def RunSteps(api):
   # enabling clang modules on Windows.
   if not api.platform.is_win:
     # Builds without clang modules.
-    _run_builds(api, source_dir, build_dir, 'all', phase='no_clang_modules')
+    _run_builds(
+        api,
+        source_dir,
+        build_dir,
+        'all',
+        phase='no_clang_modules',
+        step_name_suffix=' with Siso disabling clang modules')
 
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
