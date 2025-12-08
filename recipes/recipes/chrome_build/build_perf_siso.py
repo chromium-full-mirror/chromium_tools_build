@@ -112,6 +112,12 @@ def RunSteps(api):
   # Build target: all
   _run_builds(api, source_dir, build_dir, 'all', phase='builtin')
 
+  # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+  # enabling clang modules on Windows.
+  if not api.platform.is_win:
+    # Builds without clang modules.
+    _run_builds(api, source_dir, build_dir, 'all', phase='no_clang_modules')
+
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
 
