@@ -51,7 +51,7 @@ PROPERTIES = {
     'swarming': Property(default=None, kind=dict),
     'target_cpu': Property(default=None, kind=str),
     'target_os': Property(default=None, kind=str),
-    'use_cxx23': Property(default=False, kind=bool),
+    'use_cxx23': Property(default=None, kind=bool),
     'v8': Property(default=True, kind=bool),
     'xfa': Property(default=False, kind=bool),
 }
@@ -239,11 +239,13 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
       'pdf_enable_xfa=%s' % gn_bool[xfa],
       'pdf_is_standalone=true',
       'pdf_use_skia=%s' % gn_bool[skia],
-      'use_cxx23=%s' % gn_bool[use_cxx23],
       'use_reclient=false',
       'use_remoteexec=true',
       'use_siso=true',
   ]
+
+  if use_cxx23 is not None:
+    args.append('use_cxx23=%s' % gn_bool[use_cxx23])
 
   # TODO(crbug.com/452209505): Enable clang modules when all Macs have Xcode 26
   # or later.
