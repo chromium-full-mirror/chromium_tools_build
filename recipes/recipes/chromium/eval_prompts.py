@@ -6,6 +6,8 @@
 from recipe_engine import post_process
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.recipe_engine import result as result_pb2
 
 DEPS = [
     'builder_group',
@@ -65,10 +67,31 @@ def RunSteps(api: RecipeApi):
     api.step('bootstrap depot_tools', ['ensure_bootstrap'])
 
     # Run the stable tests that will fail the build first
-    _run_tests(api, update_result, source_dir, True)
+    status = common_pb2.SUCCESS
+    try:
+      _run_tests(api, update_result, source_dir, True)
 
-    # Run the unstable tests that we just want to collect metrics for
-    _run_tests(api, update_result, source_dir, False)
+      # Run the unstable tests that we just want to collect metrics for
+      _run_tests(api, update_result, source_dir, False)
+    except Exception:
+      status = common_pb2.FAILURE
+
+    summary_markdown = 'Build Succeeded.'
+    if status != common_pb2.SUCCESS:
+      summary_markdown = 'Build Failed.'
+
+    dashboard_link = 'http://go/chrome-agentic-evals-dash'
+    if api.tryserver.is_tryserver:
+      change = api.buildbucket.build.input.gerrit_changes[0]
+      # Open the dashboard to the CL view e.g.:
+      # go/chrome-agentic-evals-dash/?av=m64wtezy%3Ab0yp07j7&p=Change:7103486%2F38
+      dashboard_link += f'?av=m64wtezy%3Ab0yp07j7&p=Change:{change.change}%2F{change.patchset}'
+    summary_markdown += (f'\nSee the [dashboard results]({dashboard_link}) for '
+                         'more info (internal only).')
+    return result_pb2.RawResult(
+        summary_markdown=summary_markdown,
+        status=status,
+    )
 
 
 def checkout(api: RecipeApi):
