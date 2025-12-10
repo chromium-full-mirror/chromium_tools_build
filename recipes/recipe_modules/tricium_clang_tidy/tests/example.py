@@ -17,7 +17,6 @@ DEPS = [
     'recipe_engine/proto',
     'recipe_engine/step',
     'tricium_clang_tidy',
-    'reclient',
     'chromium',
 ]
 
@@ -87,7 +86,6 @@ def GenTests(api):
       'no_files',
       with_patch(affected_files=[]),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
@@ -97,7 +95,6 @@ def GenTests(api):
       'no_analysis_non_cpp',
       with_patch(affected_files=['some/cc/file.txt']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
@@ -108,7 +105,6 @@ def GenTests(api):
       with_patch(
           affected_files=['path/to/some/cc/file.cpp'], auto_exist_files=False),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(_has_no_finding),
       api.post_process(post_process.DropExpectation),
@@ -118,7 +114,6 @@ def GenTests(api):
       'analyze_cpp_timed_out_files',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data('clang-tidy.generate-warnings.read tidy output',
                     api.file.read_json({'timed_out_src_files': ['oh/no.cpp']})),
       api.post_process(post_process.StepWarning,
@@ -141,7 +136,6 @@ def GenTests(api):
       'analyze_cpp_failed_files',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({'failed_src_files': ['path/to/some/cc/file.cpp']
@@ -156,7 +150,6 @@ def GenTests(api):
       'analyze_cpp_failed_tidy_files',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json(
@@ -171,7 +164,6 @@ def GenTests(api):
       'analyze_cpp',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -241,7 +233,6 @@ def GenTests(api):
       'analyze_cpp_check_name_without_hyphen',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -283,7 +274,6 @@ def GenTests(api):
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.properties(skip_checks=['super-cool-diag', 'moderately-cool-diag']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data('clang-tidy.generate-warnings.read tidy output',
                     api.file.read_json({'diagnostics': []})),
       api.post_process(post_process.StepSuccess,
@@ -299,7 +289,6 @@ def GenTests(api):
       'analyze_cpp_windows',
       with_patch(affected_files=['path/to/some/cc/file.cpp'], is_windows=True),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -340,7 +329,6 @@ def GenTests(api):
       'only_warnings_and_errors_are_silenced',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -374,7 +362,6 @@ def GenTests(api):
       'prefer_complaints_about_timeout_over_tidy_failures',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -410,7 +397,6 @@ def GenTests(api):
       'append_complaint_on_failure',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -445,7 +431,6 @@ def GenTests(api):
       'prefer_complaints_about_build_failures_over_tidy_ones',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -481,7 +466,6 @@ def GenTests(api):
       'append_complaint_on_tidy_failure',
       api.chromium.try_build(),
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -516,7 +500,6 @@ def GenTests(api):
       'diagnostic_suggestions',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -634,7 +617,6 @@ def GenTests(api):
         'expansion_%d' % num_expansions,
         with_patch(affected_files=['path/to/some/cc/file.cpp']),
         api.chromium.try_build(),
-        api.reclient.properties(),
         api.step_data('clang-tidy.generate-warnings.read tidy output',
                       api.file.read_json({'diagnostics': diags})),
         api.post_process(post_process.StepSuccess,
@@ -666,7 +648,6 @@ def GenTests(api):
       'diagnostic_use_after_move',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
       api.chromium.try_build(),
-      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({

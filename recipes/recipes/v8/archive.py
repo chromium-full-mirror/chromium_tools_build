@@ -548,9 +548,8 @@ def GenTests(api):
       status='FAILURE',
   )
 
-  # Test reclient
   yield api.test(
-      api.v8.test_name('client.v8.official', 'V8 Foobar', 'linux_reclient'),
+      api.v8.test_name('client.v8.official', 'V8 Foobar', 'no_upload'),
       api.chromium.ci_build(
           builder_group='client.v8.official',
           project='v8',

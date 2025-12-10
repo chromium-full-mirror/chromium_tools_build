@@ -155,8 +155,6 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       'ensure builder cache dir',
       'read MB config',
       'tweak MB config',
-      'preprocess for reclient',
-      'postprocess for reclient',
       'read revision',
     )
 
@@ -315,7 +313,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
           experiments=experiments,
       )
 
-    # Skip some reclient and swarming related steps in expectations.
+    # Skip some swarming related steps in expectations.
     test += self.hide_infra_steps()
 
     # Only show the command for swarming trigger steps (i.e. drop logs).
