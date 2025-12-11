@@ -24,7 +24,7 @@ DEPS = [
     'recipe_engine/properties',
 ]
 
-BASE_PKG_NAME = 'infra/history_rag'
+BASE_PKG_NAME = 'infra/history_rag/chrome'
 MANIFEST_PKG_NAME = '%s/manifest' % BASE_PKG_NAME
 FILE_BLAME_JSONS_PKG_NAME = '%s/file_blame_jsons' % BASE_PKG_NAME
 COMMIT_HASH_JSONS_PKG_NAME = '%s/commit_hash_jsons' % BASE_PKG_NAME
@@ -61,8 +61,7 @@ def checkout_source_code(api):
     api.chromium.ensure_toolchains(checkout_dir)
     api.chromium.runhooks(source_dir, build_dir, clobber=True)
 
-    # TODO: Change this to got_revision for chrome
-    revision = update_result.properties.get('got_v8_revision', 'fake_revision')
+    revision = update_result.properties.get('got_revision', 'fake_revision')
 
     return source_dir, revision
 
@@ -281,12 +280,12 @@ def _get_baseline_package_info(api):
   """
   Fetches a pointer package, reads a manifest file, and returns the content.
 
-  The pointer package 'infra/history_rag/manifest' is expected to contain
+  The pointer package 'infra/history_rag/chrome/manifest' is expected to contain
   a 'manifest.json' file specifying the actual data package and version.
 
   Returns:
     dict: The parsed content of manifest.json if successful.
-    None: If the pointer package 'infra/history_rag/manifest' with ref 'latest'
+    None: If the pointer package 'infra/history_rag/chrome/manifest' with ref 'latest'
           does not exist.
 
   Raises:
@@ -356,8 +355,7 @@ def _generate_fresh_file_blame_jsons(api, source_dir, baseline_pkg):
   if baseline_pkg:
     baseline_commit = baseline_pkg['file_blame_jsons_package'].split('/')[-1]
     cmd += ['--baseline-commit', baseline_commit]
-  # TODO(): Change the directory to . for chromium codebase
-  cmd += ['--source-dir', source_dir, '--output-dir', output_dir, 'v8']
+  cmd += ['--source-dir', source_dir, '--output-dir', output_dir, '.']
   _ = api.step('Generate fresh blame index', cmd)
   return output_dir
 
@@ -482,7 +480,7 @@ def GenTests(api):
       }),
       # Mock cipd describe for manifest package - found
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',
                       api.path.cleanup_dir / 'blame_jsons' / '.cipd'),
@@ -509,7 +507,8 @@ def GenTests(api):
       api.step_data(
           'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
+              'Instance: infra/history_rag/chrome/manifest:new-manifest-instance-id'
+          )),
       api.post_process(post_process.MustRun,
                        'Checkout Chrome Source Code.gclient runhooks'),
       api.post_process(post_process.MustRun,
@@ -569,7 +568,7 @@ def GenTests(api):
       }),
       # Mock cipd describe for manifest package - not found
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=1),
       # Mock cipd create for file blame json package
       api.step_data(
@@ -587,7 +586,8 @@ def GenTests(api):
       api.step_data(
           'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/manifest:new-manifest-instance-id')),
+              'Instance: infra/history_rag/chrome/manifest:new-manifest-instance-id'
+          )),
       api.post_process(
           post_process.DoesNotRun,
           'Generate File Blame JSONs.Fetch manifest package from CIPD'),
@@ -640,7 +640,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=0),
       api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
@@ -656,7 +656,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
       api.step_data(
@@ -678,7 +678,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
       api.step_data(
@@ -698,7 +698,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=0),
       api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
       api.step_data(
@@ -720,7 +720,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=1),  # No baseline
       api.step_data(
           'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
@@ -739,7 +739,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=1),  # No baseline
 
       # Mock cipd create for file blame json package
@@ -766,7 +766,7 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/manifest',
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
           retcode=1),  # No baseline
 
       # Mock cipd create for file blame json package
