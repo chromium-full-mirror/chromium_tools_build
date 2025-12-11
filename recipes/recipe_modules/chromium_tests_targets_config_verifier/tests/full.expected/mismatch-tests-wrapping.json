@@ -1,7 +1,7 @@
 [
   {
     "cmd": [],
-    "name": "verify builder-config-dir/fake-bucket/fake-builder",
+    "name": "verify fake-builder-config-dir/fake-bucket/fake-builder",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>builder configs differ, see 'diff' log for details@@@",
       "@@@STEP_LOG_LINE@diff@--- pyl targets config@@@",

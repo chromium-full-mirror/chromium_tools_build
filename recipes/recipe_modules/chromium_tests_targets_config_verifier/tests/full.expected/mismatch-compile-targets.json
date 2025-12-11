@@ -1,0 +1,23 @@
+[
+  {
+    "cmd": [],
+    "name": "verify fake-builder-config-dir/fake-bucket/fake-builder",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>builder configs differ, see 'diff' log for details@@@",
+      "@@@STEP_LOG_LINE@diff@--- pyl targets config@@@",
+      "@@@STEP_LOG_LINE@diff@+++ starlark targets config@@@",
+      "@@@STEP_LOG_LINE@diff@@@ -1,8 +1,8 @@@@@",
+      "@@@STEP_LOG_LINE@diff@ {@@@",
+      "@@@STEP_LOG_LINE@diff@   \"fake-group:fake-builder\": {@@@",
+      "@@@STEP_LOG_LINE@diff@     \"_tests\": [],@@@",
+      "@@@STEP_LOG_LINE@diff@     \"_additional_compile_targets\": [@@@",
+      "@@@STEP_LOG_LINE@diff@-      \"bar\"@@@",
+      "@@@STEP_LOG_LINE@diff@+      \"foo\"@@@",
+      "@@@STEP_LOG_LINE@diff@     ]@@@",
+      "@@@STEP_LOG_LINE@diff@   }@@@",
+      "@@@STEP_LOG_LINE@diff@ }@@@",
+      "@@@STEP_LOG_END@diff@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  }
+]
