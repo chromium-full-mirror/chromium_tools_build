@@ -115,6 +115,13 @@ class Chromium3ppApi(recipe_api.RecipeApi):
         step_result = self.m.step('No 3pp related changes', cmd=None)
         return
 
+    if is_report_bcid := not (self.m.tryserver.is_tryserver or
+                              self.m.runtime.is_experimental):
+      try:
+        self.m.bcid_reporter.report_stage("start")
+      except Exception:  # pragma: no cover
+        self.m.step.active_result.presentation.status = self.m.step.FAILURE
+
     # Special preprocess steps for scripts that auto-generate 3pp PB files.
     if self._preprocess:
       for process in self._preprocess:
@@ -168,3 +175,9 @@ class Chromium3ppApi(recipe_api.RecipeApi):
       step_name = 'Unsupported packages'
       step_result = self.m.step(step_name, cmd=None)
       step_result.presentation.step_text = '\n'.join(unsupported)
+
+    if is_report_bcid:
+      try:
+        self.m.bcid_reporter.report_stage("upload-complete")
+      except Exception:  # pragma: no cover
+        self.m.step.active_result.presentation.status = self.m.step.FAILURE

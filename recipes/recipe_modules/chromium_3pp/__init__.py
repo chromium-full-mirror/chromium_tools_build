@@ -12,6 +12,7 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/tryserver',
     'infra/support_3pp',
+    'recipe_engine/bcid_reporter',
     'recipe_engine/context',
     'recipe_engine/path',
     'recipe_engine/raw_io',
