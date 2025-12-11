@@ -38,6 +38,9 @@ def RunSteps(api):
 
       files = api.chromium_checkout.get_files_affected_by_patch()
       readme_files = [f for f in files if str(f).endswith('README.chromium')]
+      if not readme_files:
+        api.step('no readme changes', cmd=None)
+        return
 
       failed_files = []
       for readme_rel_path in readme_files:
@@ -58,15 +61,21 @@ def RunSteps(api):
 
           # Check stdout/stderr for errors and warnings.
           errors = []
+          warnings = []
           if step_result.stdout:
             for line in step_result.stdout.splitlines():
               if 'ERROR -' in line:
                 errors.append(line)
+              elif 'WARNING -' in line:
+                warnings.append(line)
 
           if errors:
             step.status = api.step.FAILURE
             step.logs['errors'] = errors
             failed_files.append(readme_rel_path)
+
+          if warnings:
+            step.logs['warnings'] = warnings
 
       # 6. Fail if issues found.
       if failed_files:
@@ -98,4 +107,24 @@ def GenTests(api):
               'Done.')),
       api.expect_status('FAILURE'),
       api.post_process(StatusFailure),
+  )
+
+  yield api.test(
+      'no_readme',
+      api.chromium.try_build(builder='linux-readme-validator'),
+      api.tryserver.get_files_affected_by_patch(['src/foo/bar.txt']),
+      api.post_process(StatusSuccess),
+  )
+
+  yield api.test(
+      'warnings_only',
+      api.chromium.try_build(builder='linux-readme-validator'),
+      api.tryserver.get_files_affected_by_patch(
+          ['src/third_party/baz/README.chromium']) +
+      api.step_data(
+          'validate src/third_party/baz/README.chromium.run validator on src/third_party/baz/README.chromium',
+          stdout=api.raw_io.output_text('Found 1 metadata files.\n'
+                                        'WARNING - License file not found.\n'
+                                        'Done.')),
+      api.post_process(StatusSuccess),
   )
