@@ -4,6 +4,8 @@
 """Recipe to measure siso build step performance.
 """
 
+from datetime import datetime, timedelta
+
 from recipe_engine import post_process
 from recipe_engine.config_types import Path
 
@@ -20,6 +22,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'depot_tools/gclient',
+    'depot_tools/git',
     'profiles',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -27,6 +30,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
     'reclient',
     'siso',
@@ -42,6 +46,115 @@ def _get_builder_id(api):
   buildername = api.buildbucket.builder_name
   return chromium_types.BuilderId.create_for_group(
       api.builder_group.for_current, buildername)
+
+
+def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
+  with api.step.nest('Clean builds'):
+    # Build target: all
+    _run_builds(api, source_dir, build_dir, target, phase='builtin')
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      # Builds without clang modules.
+      _run_builds(
+          api,
+          source_dir,
+          build_dir,
+          target,
+          phase='no_clang_modules',
+          step_name_suffix=' with Siso disabling clang modules')
+
+
+def _incremental_build_with_one_hour_changes(
+    api,
+    source_dir: Path,
+    default_build_dir: Path,
+    target,
+):
+  """Steps to run an incremental build with 1-hour of changes
+     to simulate CI/CQ builder's incremental builds.
+  """
+  time_format = '%Y-%m-%d %H:%M:%S %z'
+
+  with api.step.nest('Incremental build with 1-hour of changes'):
+    cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
+    cur_rev_at = api.git(
+        'show',
+        '--quiet',
+        '--format=%ci',
+        cur_rev,
+        stdout=api.raw_io.output_text(),
+        step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+            '2023-05-02 11:28:30 +0000\n')).stdout.strip()
+    cur_rev_at = datetime.strptime(cur_rev_at, time_format)
+
+    base_rev = api.git(
+        'log',
+        '--pretty=%H',
+        '--since="%s"' %
+        (cur_rev_at - timedelta(hours=1)).strftime(time_format),
+        '--reverse',
+        stdout=api.raw_io.output_text(),
+        step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+            'abcd\nefgh\n')).stdout.split()[0]
+
+    # Clean up deps cache and check out to the base revision.
+    api.chromium_build_perf.checkout(source_dir, default_build_dir, base_rev)
+
+    # Run a warm up build for local build dir.
+    ## Default
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, default_build_dir, phase='builtin', remove_deps_cache=True)
+    raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir,
+        default_build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=' at base revision (warmup)')
+    _raise_raw_result_on_failure(api, raw_result)
+
+    ## Disabling clang modules
+    no_clang_modules_build_dir = default_build_dir.parent / 'no_clang_modules'
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      api.chromium_build_perf.recreate_build_dir(
+          source_dir,
+          no_clang_modules_build_dir,
+          phase='no_clang_modules',
+          remove_deps_cache=True)
+      raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          no_clang_modules_build_dir,
+          target,
+          with_remote_cache=True,
+          step_name_suffix=' disabling clang modules at base revision (warmup)')
+      _raise_raw_result_on_failure(api, raw_result)
+
+    # Incremental build with remote caches at the current revision.
+    api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
+
+    ## Default
+    raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir, default_build_dir, target, with_remote_cache=True)
+    _raise_raw_result_on_failure(api, raw_result)
+
+    ## Disabling clang modules
+
+    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
+    # enabling clang modules on Windows.
+    if not api.platform.is_win:
+      raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
+          no_clang_modules_build_dir,
+          target,
+          with_remote_cache=True,
+          step_name_suffix=' disabling clang modules')
+      _raise_raw_result_on_failure(api, raw_result)
+
+
 
 
 def _run_builds(api,
@@ -89,7 +202,6 @@ def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
-
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       _get_builder_id(api), use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
@@ -109,24 +221,13 @@ def RunSteps(api):
 
   api.step('check siso version', [api.siso.siso_path(source_dir), 'version'])
 
-  # Build target: all
-  _run_builds(api, source_dir, build_dir, 'all', phase='builtin')
-
-  # TODO(https://crbug.com/425537956): Add disabling clang modules build after
-  # enabling clang modules on Windows.
-  if not api.platform.is_win:
-    # Builds without clang modules.
-    _run_builds(
-        api,
-        source_dir,
-        build_dir,
-        'all',
-        phase='no_clang_modules',
-        step_name_suffix=' with Siso disabling clang modules')
+  target = 'all'
+  _clean_builds(api, source_dir, build_dir, target)
+  _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
 
   # Remove the out dir to reduce the builder cache size.
-  api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
-
+  out_dir = build_dir.parent
+  api.file.rmtree('rmtree %s' % str(out_dir), str(out_dir))
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
@@ -199,7 +300,7 @@ def GenTests(api):
               **builder).assemble()),
       api.siso.properties(),
       api.reclient.properties(),
-      api.step_data('Build all without remote cache', retcode=1),
+      api.step_data('Clean builds.Build all without remote cache', retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
