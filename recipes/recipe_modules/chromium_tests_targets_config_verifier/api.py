@@ -51,21 +51,49 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
 
   def verify_target_configs(
       self,
-      gclient_config_name: str,
+      gclient_config,
       builder_config_directory: str,
       precommit_buckets: collections.abc.Collection[str],
   ) -> result_pb.RawResult | None:
-    self.m.gclient.set_config(gclient_config_name)
+    """Verify migrated targets configs.
+
+    For each builder that has modified starlark-generated targets spec
+    files, if without the patch applied the builder does not have
+    starlark-generated targets spec files, the targets config with the
+    patch and without the patch will be computed and compared to ensure
+    they are equivalent.
+
+    Args:
+      gclient_config: The gclient config to use for the checkout.
+      builder_config_directory: The path to the root directory for all
+        builder configs, relative to the repo of the CL being tested.
+        For each builder, the properties file for the builder should be
+        located at <bucket>/<builder>/properties.json and the targets
+        spec files should be located at
+        <bucket>/<builder>/targets/*.json.
+      precommit_buckets: The buckets that should be treated as precommit
+        buckets for the purposes of comparison.
+
+    Returns:
+      A result indicating the outcome of the comparisons.
+    """
+    self.m.tryserver.require_is_tryserver()
+    # bot_update.deapply_patch expects the gclient config to be set on the
+    # gclient module
+    self.m.gclient.c = gclient_config
 
     checkout_root = self.m.path.cache_dir / 'builder'
     with self.m.context(cwd=checkout_root):
       update_result = self.m.bot_update.ensure_checkout(patch=True)
 
-    repo_path = update_result.source_root.path
+    source_dir = update_result.source_root.path
+    patch_dir = update_result.patch_root.path
 
     with self.m.step.nest('determine affected targets spec files'):
-      with self.m.context(cwd=repo_path):
-        affected_files = set(self.m.tryserver.get_files_affected_by_patch(''))
+      with self.m.context(cwd=patch_dir):
+        affected_files = set(
+            self.m.tryserver.get_files_affected_by_patch(
+                '', report_files_via_property='affected_files'))
 
     fake_precommit_details = generators.PrecommitDetails()
     precommit_details_by_builder_dir = {}
@@ -80,9 +108,10 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
         # distinguish, so just assume a deletion and don't try to verify the
         # builder.
         if (properties_file in affected_files and
-            not self.m.path.exists(repo_path / properties_file)):
+            not self.m.path.exists(patch_dir / properties_file)):
           continue
         bucket = match.group(2)
+        builder_dir = patch_dir / builder_dir
         precommit_details_by_builder_dir[builder_dir] = (
             fake_precommit_details if bucket in precommit_buckets else None)
 
@@ -96,7 +125,8 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
           precommit_details_by_builder_dir.items()):
         starlark_config = self._get_starlark_config(
             builder_dir,
-            repo_path,
+            patch_dir,
+            source_dir,
             checkout_root,
             precommit_details,
         )
@@ -114,7 +144,8 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       precommit_details = precommit_details_by_builder_dir[builder_dir]
       if not self._verify_target_configs(
           builder_dir,
-          repo_path,
+          patch_dir,
+          source_dir,
           precommit_details,
           starlark_config,
       ):
@@ -127,10 +158,9 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
 
   def _get_builder_config(
       self,
-      builder_dir: str,
-      repo_path: config_types.Path,
+      builder_dir: config_types.Path,
   ) -> ctbc.BuilderConfig | None:
-    properties_json_path = repo_path.joinpath(builder_dir, 'properties.json')
+    properties_json_path = builder_dir / 'properties.json'
     if not self.m.path.exists(properties_json_path):
       return None
 
@@ -169,13 +199,15 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
 
   def _get_starlark_config(
       self,
-      builder_dir: str,
-      repo_path: config_types.Path,
+      builder_dir: config_types.Path,
+      patch_dir: config_types.Path,
+      source_dir: config_types.Path,
       checkout_root: config_types.Path,
       precommit_details: generators.PrecommitDetails | None,
   ) -> targets_config_module.TargetsConfig | None:
-    with self.m.step.nest(builder_dir) as presentation:
-      builder_config = self._get_builder_config(builder_dir, repo_path)
+    with self.m.step.nest(str(
+        builder_dir.relative_to(patch_dir))) as presentation:
+      builder_config = self._get_builder_config(builder_dir)
       if not builder_config:
         skip_reason = (
             "builder doesn't have bootstrapped builder config, can't verify")
@@ -184,13 +216,13 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
                        ' nothing to verify')
       else:
         if builder_config.targets_spec_directory_relative_to_source_dir:
-          targets_spec_dir = repo_path / builder_config.targets_spec_directory
+          targets_spec_dir = source_dir / builder_config.targets_spec_directory
         else:
           targets_spec_dir = checkout_root / builder_config.targets_spec_directory
         return self._get_targets_config(
             'get starlark targets config',
             builder_config,
-            repo_path,
+            source_dir,
             targets_spec_dir,
             precommit_details,
         )
@@ -200,18 +232,20 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
 
   def _verify_target_configs(
       self,
-      builder_dir: str,
-      repo_path: config_types.Path,
+      builder_dir: config_types.Path,
+      patch_dir: config_types.Path,
+      source_dir: config_types.Path,
       precommit_details: generators.PrecommitDetails | None,
       starlark_config: targets_config_module.TargetsConfig,
   ) -> bool:
-    with self.m.step.nest(f'verify {builder_dir}') as presentation:
+    with self.m.step.nest(
+        f'verify {builder_dir.relative_to(patch_dir)}') as presentation:
 
       def success(message: str) -> bool:
-        presentation.step_text = '\n' + message
+        presentation.step_text = message
         return True
 
-      builder_config = self._get_builder_config(builder_dir, repo_path)
+      builder_config = self._get_builder_config(builder_dir)
       if not builder_config:
         return success(
             "builder didn't have bootstrapped builder config without patch,"
@@ -227,7 +261,7 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       for c in builder_config.chromium_apply_config:
         self.m.chromium.apply_config(c, chromium_config)
 
-      targets_spec_dir = repo_path / chromium_config.targets_spec_dir
+      targets_spec_dir = source_dir / chromium_config.targets_spec_dir
 
       # If someone adds a builder with a new builder group and doesn't set tests
       # in the initial CL, then a subsequent CL that sets the tests would
@@ -250,7 +284,7 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       pyl_config = self._get_targets_config(
           'get pyl targets config',
           builder_config,
-          repo_path,
+          source_dir,
           targets_spec_dir,
           precommit_details,
       )

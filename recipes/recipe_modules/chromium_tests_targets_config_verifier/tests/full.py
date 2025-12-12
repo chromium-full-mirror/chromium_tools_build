@@ -14,6 +14,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'chromium_tests_targets_config_verifier',
+    'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
@@ -23,8 +24,11 @@ DEPS = [
 
 
 def RunSteps(api):
+  gclient_config = api.gclient.make_config('chromium')
+  if (apply_gclient_config := api.properties.get('gclient_apply_config', None)):
+    api.gclient.apply_config(apply_gclient_config, gclient_config)
   return api.chromium_tests_targets_config_verifier.verify_target_configs(
-      'chromium', 'fake-builder-config-dir', ['fake-try-bucket'])
+      gclient_config, 'fake-builder-config-dir', ['fake-try-bucket'])
 
 
 _CTBC_PROPERTY = '$build/chromium_tests_builder_config'
@@ -52,6 +56,8 @@ def GenTests(api):
       with_targets_spec_directory_without_patch: bool = False,
       starlark_targets_spec: dict | None = None,
       testing_buildbot_targets_spec: dict | None = None,
+      patch_dep: bool = False,
+      testing_buildbot_targets_specs_in_patch_repo: bool = True,
   ) -> recipe_test_api.StepTestData:
     """Set necessary step test data for calling verify_builder_configs.
 
@@ -87,9 +93,13 @@ def GenTests(api):
       starlark_targets_spec: The targets spec generated from starlark
       testing_buildbot_targets_spec: The targets spec generated from
         //testing/buildbot. Cannot be set if non_existent_tester is set.
+      patch_dep: Whether the test data should be simulating a patch to a
+        dependency repo instead of the top-level repo.
+      testing_buildbot_targets_specs_in_patch_repo: Whether the targets
+        specs generated from //testing/buildbot are in the repo that the
+        patch is for. If False, the specs will be present in the
+        top-level repo.
     """
-    t = api.buildbucket.try_build()
-
     def assert_set_together(name1, val1, name2, val2):
       assert (val1 is None) == (val2 is None), (
           f'{name1} and {name2} must both be set or both be unset')
@@ -109,6 +119,18 @@ def GenTests(api):
           'non_existent_tester and testing_buildbot_targets_spec'
           " can't both be set")
 
+    t = api.empty_test_data()
+
+    if patch_dep:
+      git_repo = 'https://chrome-internal.googlesource.com/chrome/src-internal'
+      repo_rel_path = 'internal/'
+      t += api.properties(gclient_apply_config='checkout_src_internal_infra')
+    else:
+      git_repo = 'https://chromium.googlesource.com/chromium/src'
+      repo_rel_path = ''
+
+    t += api.buildbucket.try_build(git_repo=git_repo)
+
     builder_dir = f'fake-builder-config-dir/{try_bucket or bucket}/{try_builder or builder}'
     t += api.tryserver.get_files_affected_by_patch(
         [f'{builder_dir}/targets/{builder_group}.json'],
@@ -121,14 +143,19 @@ def GenTests(api):
     existing_paths = []
 
     if with_properties_file:
-      existing_paths.append(api.path.cache_dir /
-                            f'builder/src/{builder_dir}/properties.json')
+      existing_paths.append(
+          api.path.cache_dir /
+          f'builder/src/{repo_rel_path}{builder_dir}/properties.json')
       if with_ctbc_property:
-        builder_spec = builder_spec or ctbc.BuilderSpec.create(
-            gclient_config='chromium',
-            chromium_config='chromium',
-            chromium_apply_config=['mb'],
-        )
+        if not builder_spec:
+          chromium_apply_config = ['mb']
+          if patch_dep and testing_buildbot_targets_specs_in_patch_repo:
+            chromium_apply_config.append('internal_targets_specs')
+          builder_spec = ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+              chromium_apply_config=chromium_apply_config,
+          )
         if try_bucket:
           ctbc_prop = ctbc_api.properties_assembler_for_try_builder(
           ).with_mirrored_builder(
@@ -181,9 +208,13 @@ def GenTests(api):
           starlark_targets_spec,
           step_prefix=f'{get_targets_config_step}.get starlark targets config.')
     if testing_buildbot_targets_spec is not None:
+      if testing_buildbot_targets_specs_in_patch_repo:
+        rel_path = repo_rel_path
+      else:
+        rel_path = ''
       existing_paths.append(
           api.path.cache_dir /
-          f'builder/src/testing/buildbot/{builder_group}.json')
+          f'builder/src/{rel_path}testing/buildbot/{builder_group}.json')
       t += read_targets_spec(
           testing_buildbot_targets_spec,
           step_prefix=f'{verify_step}.get pyl targets config.')
@@ -192,7 +223,7 @@ def GenTests(api):
     if non_existent_tester:
       existing_paths.append(
           api.path.cache_dir /
-          f'builder/src/testing/buildbot/{builder_group}.json')
+          f'builder/src/{repo_rel_path}testing/buildbot/{builder_group}.json')
 
     if existing_paths:
       t += api.path.exists(*existing_paths)
@@ -234,6 +265,9 @@ def GenTests(api):
               }],
           },
       ),
+      api.post_check(post_process.StepTextContains,
+                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
+                     ['starlark config matches pyl config']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -273,6 +307,9 @@ def GenTests(api):
               }],
           },
       ),
+      api.post_check(post_process.StepTextContains,
+                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
+                     ['starlark config matches pyl config']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -537,5 +574,92 @@ def GenTests(api):
       ),
       api.post_check(post_process.MustRun,
                      'all affected builders are being deleted'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'patch-dir-is-not-source-dir',
+      test_data(
+          patch_dep=True,
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          targets_spec_directory_relative_to_source_dir=True,
+          starlark_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+          testing_buildbot_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+      ),
+      api.post_check(post_process.StepTextContains,
+                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
+                     ['starlark config matches pyl config']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'patch-dir-is-not-source-dir-without-patch-specs-in-source-dir',
+      test_data(
+          patch_dep=True,
+          testing_buildbot_targets_specs_in_patch_repo=False,
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          targets_spec_directory_relative_to_source_dir=True,
+          starlark_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+          testing_buildbot_targets_spec={
+              'additional_compile_targets': ['foo'],
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'swarming': {},
+                  'merge': {
+                      'script': '//merge-script',
+                  },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
+          },
+      ),
+      api.post_check(post_process.StepTextContains,
+                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
+                     ['starlark config matches pyl config']),
       api.post_process(post_process.DropExpectation),
   )

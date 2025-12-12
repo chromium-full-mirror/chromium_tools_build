@@ -28,6 +28,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'chromium_tests_targets_config_verifier',
+    'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
@@ -46,8 +47,10 @@ def RunSteps(api, properties: targets_config_verifier_pb.InputProperties):
         elements=errors,
         header='The following errors were found with the input properties:')
 
+  gclient_config = api.gclient.make_config('chromium')
+
   return api.chromium_tests_targets_config_verifier.verify_target_configs(
-      'chromium',
+      gclient_config,
       properties.builder_config_directory,
       properties.precommit_buckets,
   )
@@ -222,6 +225,9 @@ def GenTests(api):
               }],
           },
       ),
+      api.post_check(post_process.StepTextContains,
+                     'verify builder-config-dir/fake-bucket/fake-builder',
+                     ['starlark config matches pyl config']),
       api.post_process(post_process.DropExpectation),
   )
 
