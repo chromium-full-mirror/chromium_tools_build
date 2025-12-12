@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Collection, Mapping
 import functools
+import itertools
 import posixpath
 import re
 from typing import Any
@@ -259,7 +260,7 @@ class FilterApi(recipe_api.RecipeApi):
 
     step_result.presentation.step_text = 'No compile necessary'
     step_result.presentation.properties['no_compile'] = sorted(
-        test_targets + additional_compile_targets)
+        itertools.chain(test_targets, additional_compile_targets))
     return [], []
 
   def analyze(
@@ -270,7 +271,7 @@ class FilterApi(recipe_api.RecipeApi):
       test_targets: Collection[str] | None,
       additional_compile_targets: Collection[str] | None,
       *,
-      config_path: config_types.Path = None,
+      config_path: config_types.Path | None = None,
       additional_names: Collection[str] | None = None,
       additional_exclusions: Mapping[str, str] | None = None,
       builder_id: chromium_types.BuilderId | None = None,
