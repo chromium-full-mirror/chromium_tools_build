@@ -135,7 +135,6 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/builder/boringssl",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -169,7 +168,6 @@
       "sw_vers",
       "-productVersion"
     ],
-    "cwd": "[CACHE]/builder/boringssl",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -199,7 +197,6 @@
       "-output-dir",
       "[CACHE]/osx_sdk/XCode.app"
     ],
-    "cwd": "[CACHE]/builder/boringssl",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -222,7 +219,6 @@
       "--switch",
       "[CACHE]/osx_sdk/XCode.app"
     ],
-    "cwd": "[CACHE]/builder/boringssl",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -307,11 +303,53 @@
   },
   {
     "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "build",
+      "--verbose_failures",
+      "--lockfile_mode=error",
+      "..."
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel build example"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "shutdown"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel shutdown (2)"
+  },
+  {
+    "cmd": [
       "sudo",
       "xcode-select",
       "--reset"
     ],
-    "cwd": "[CACHE]/builder/boringssl",
     "infra_step": true,
     "luci_context": {
       "realm": {

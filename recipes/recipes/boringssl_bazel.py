@@ -51,17 +51,24 @@ def RunSteps(api):
   # Bazel find the depot_tools copy of MSVC. See
   # https://bazel.build/configure/windows#build_cpp
 
-  src = update_result.source_root.path
-  bazel = src / 'util/bot/bazel/bazel'
-  with api.context(cwd=src), api.osx_sdk('ios'), _BazelShutdown(api, bazel):
-    api.step(
-        'bazel build',
-        [bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'])
-    api.step('bazel test', [
-        bazel, 'test', '--verbose_failures', '--lockfile_mode=error',
-        '--test_output=errors', '...'
-    ])
+  with api.osx_sdk('ios'):
+    src = update_result.source_root.path
+    bazel = src / 'util/bot/bazel/bazel'
+    with api.context(cwd=src), _BazelShutdown(api, bazel):
+      api.step('bazel build', [
+          bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'
+      ])
+      api.step('bazel test', [
+          bazel, 'test', '--verbose_failures', '--lockfile_mode=error',
+          '--test_output=errors', '...'
+      ])
 
+    bazel_example = src / "util/bazel-example"
+    with api.context(cwd=bazel_example), _BazelShutdown(api, bazel):
+      api.step('bazel build example', [
+          bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'
+      ])
+      # The example consumer has no tests. Just make sure it builds.
 
 def _CIBuild(api, builder):
   return api.buildbucket.ci_build(

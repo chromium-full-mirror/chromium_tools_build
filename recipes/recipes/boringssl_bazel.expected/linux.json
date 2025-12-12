@@ -209,6 +209,49 @@
     "name": "bazel shutdown"
   },
   {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "build",
+      "--verbose_failures",
+      "--lockfile_mode=error",
+      "..."
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel build example"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "shutdown"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel shutdown (2)"
+  },
+  {
     "name": "$result"
   }
 ]
