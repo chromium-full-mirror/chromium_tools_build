@@ -51,13 +51,13 @@ def _get_builder_id(api):
 def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
   with api.step.nest('Clean builds'):
     # Build target: all
-    _run_builds(api, source_dir, build_dir, target, phase='builtin')
+    _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
 
     # TODO(https://crbug.com/425537956): Add disabling clang modules build after
     # enabling clang modules on Windows.
     if not api.platform.is_win:
       # Builds without clang modules.
-      _run_builds(
+      _run_clean_builds(
           api,
           source_dir,
           build_dir,
@@ -157,12 +157,12 @@ def _incremental_build_with_one_hour_changes(
 
 
 
-def _run_builds(api,
-                source_dir: Path,
-                build_dir: Path,
-                target,
-                phase,
-                step_name_suffix=None):
+def _run_clean_builds(api,
+                      source_dir: Path,
+                      build_dir: Path,
+                      target,
+                      phase,
+                      step_name_suffix=None):
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir(
       source_dir, build_dir, phase=phase, remove_deps_cache=True)
@@ -223,7 +223,11 @@ def RunSteps(api):
 
   target = 'all'
   _clean_builds(api, source_dir, build_dir, target)
-  _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
+
+  # TODO: b/465035813 - Allocate larger disk for Android builder to have
+  # multiple build dirs.
+  if api.chromium.c.TARGET_PLATFORM != 'android':
+    _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
 
   # Remove the out dir to reduce the builder cache size.
   out_dir = build_dir.parent
