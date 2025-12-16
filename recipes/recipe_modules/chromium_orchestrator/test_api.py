@@ -98,8 +98,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
             'lacros_gcs_path':
                 ('gs://chromium-ci-skylab/8766310705120332289_with_patch/{}'
                 ).format(t),
-            'tast_expr_file':
-                'out/Release/bin/{}.filter'.format(t),
             'build_output_dir':
                 'out/Release',
         } for t in tests

@@ -330,11 +330,6 @@ class SkylabApi(recipe_api.RecipeApi):
           test_args.append(
               ('exe_rel_path', os.path.join(test.build_output_dir, 'chrome')))
 
-        if test.tast_expr_file:
-          test_args.append(('tast_expr_file', test.tast_expr_file))
-          if test.spec.tast_expr_key:
-            test_args.append(('tast_expr_key', test.spec.tast_expr_key))
-
         if test.spec.extra_browser_args:
           test_args.append(('extra_browser_args_b64',
                             _base64_encode_str(test.spec.extra_browser_args)))

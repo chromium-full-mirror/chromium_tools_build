@@ -91,7 +91,6 @@ SKYLAB_TEST_SPEC_TEMPLATE = dict(
     autotest_name='tast.lacros',
     cros_board='eve',
     cros_model='',
-    tast_expr_key='default',
     test_args=None,
     cros_img='eve-release/R88-13545.0.0',
     retries=0,
@@ -101,7 +100,6 @@ SKYLAB_TEST_SPEC_TEMPLATE = dict(
 
 
 def gen_skylab_test(name, **kwargs):
-  tast_expr_file = kwargs.pop('tast_expr_file', None)
   telemetry_shard_index = kwargs.pop('telemetry_shard_index', None)
   k = copy.deepcopy(SKYLAB_TEST_SPEC_TEMPLATE)
   k.update(**kwargs)
@@ -111,8 +109,6 @@ def gen_skylab_test(name, **kwargs):
 
   t.exe_rel_path = 'out/Release/bin/run_foo_unittest'
   t.build_output_dir = 'out/Release'
-  if tast_expr_file:
-    t.tast_expr_file = tast_expr_file
   if telemetry_shard_index is not None:
     t.telemetry_shard_index = telemetry_shard_index
   return t
@@ -120,8 +116,7 @@ def gen_skylab_test(name, **kwargs):
 
 REQUESTS = [
     gen_skylab_test(
-        'm88_tast_with_retry',
-        tast_expr_file='tast.filter',
+        'm88_ctp_with_retry',
         retries=3,
         shard_level_retries_on_ctp=1,
         cros_model='baks',
@@ -136,7 +131,6 @@ REQUESTS = [
     gen_skylab_test(
         'm88_nearby_dut_pool',
         dut_pool='cross_device_multi_cb',
-        tast_expr_file='tast_expr_file.filter',
         autotest_name='tast.nearby-share'),
     gen_skylab_test(
         'telemetry_test_args',
@@ -147,9 +141,9 @@ REQUESTS = [
         telemetry_shard_index=0,
         autotest_name='chromium_Telemetry'),
     gen_skylab_test(
-        'sharded_tast_req',
+        # TODO(b/430180607): Remove no longer useful sharding args.
+        'sharded_ctp_req',
         dut_pool='cross_device_multi_cb',
-        tast_expr_file='tast_expr_file.filter',
         max_run_sec=TAST_MAX_RUN_SEC,
         shards=SHARD_COUNT),
     gen_skylab_test(
@@ -218,13 +212,11 @@ MULTI_DUT_REQUESTS = [
         'multi_dut',
         secondary_cros_board='eve',
         secondary_cros_img='eve-release/R88-13545.0.0',
-        tast_expr_file='tast.filter',
         autotest_name='tast.nearby-share'),
     gen_skylab_test(
         'multi_dut_skip_secondary_lacros_paths',
         secondary_cros_board='pixel6',
         secondary_cros_img='',
-        tast_expr_file='tast.filter',
         should_provision_browser_files=[False],
         autotest_name='tast.nearby-share',
     ),
@@ -232,7 +224,6 @@ MULTI_DUT_REQUESTS = [
         'multi_dut_partial_skip_secondary_lacros_paths',
         secondary_cros_board='atlas,pixel6,octopus',
         secondary_cros_img='atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
-        tast_expr_file='tast.filter',
         should_provision_browser_files=[True, False, True],
         autotest_name='tast.nearby-share',
     ),
@@ -246,8 +237,7 @@ MULTI_DUT_REQUESTS = [
 
 LKGM_REQUESTS = [
     gen_skylab_test(
-        'm88_tast_with_retry_lkgm',
-        tast_expr_file='tast.filter',
+        'm88_ctp_with_retry_lkgm',
         use_lkgm=True,
         cros_img='',
         retries=3,
@@ -258,8 +248,7 @@ LKGM_REQUESTS = [
 
 PUBLIC_LKGM_REQUESTS = [
     gen_skylab_test(
-        'm88_tast_with_retry_lkgm',
-        tast_expr_file='tast.filter',
+        'm88_ctp_with_retry_lkgm',
         use_lkgm=True,
         cros_img='',
         retries=3,
@@ -464,9 +453,6 @@ def GenTests(api):
           'schedule skylab test.' + REQUESTS[2].name + '.schedule',
           ['--test-arg', 'resultdb_settings',
            re.compile('[^-].*')]),
-      api.post_process(post_process.StepCommandContains,
-                       'schedule skylab test.' + REQUESTS[2].name + '.schedule',
-                       ['tast_expr_file', REQUESTS[2].tast_expr_file]),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -728,14 +714,12 @@ def GenTests(api):
       api.properties(requests=LKGM_REQUESTS),
       api.post_process(
           check_use_external_config,
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
-          False),
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API', False),
       api.post_process(
           check_find_lkgm_build_target,
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
-          'eve'),
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API', 'eve'),
       api.step_data(
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API',
           api.json.output({
               "chromeosLkgm": "15581.0.0",
               "configName": "eve-release",
@@ -744,7 +728,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab test.' + LKGM_REQUESTS[0].name + '.schedule', [
-              'request', '--chromium-suite-name', 'm88_tast_with_retry_lkgm',
+              'request', '--chromium-suite-name', 'm88_ctp_with_retry_lkgm',
               '--parent-build-id', '0', '--board', 'eve', '--bucket',
               'chromeos-image-archive', '--public-builder',
               'ctp-public-builder', '--public-builder-bucket', 'public-bucket',
@@ -760,13 +744,12 @@ def GenTests(api):
       api.properties(requests=PUBLIC_LKGM_REQUESTS),
       api.post_process(
           check_use_external_config,
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API', True),
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API', True),
       api.post_process(
           check_find_lkgm_build_target,
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
-          'eve'),
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API', 'eve'),
       api.step_data(
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API',
           api.json.output({
               "chromeosLkgm": "15581.0.0",
               "configName": "eve-public",
@@ -776,7 +759,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
           [
-              'request', '--chromium-suite-name', 'm88_tast_with_retry_lkgm',
+              'request', '--chromium-suite-name', 'm88_ctp_with_retry_lkgm',
               '--parent-build-id', '0', '--board', 'eve', '--bucket',
               'chromiumos-image-archive', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-public/R118-15580.0.0', '--timeout-mins', '60',
@@ -789,7 +772,7 @@ def GenTests(api):
       'lkgm_error',
       api.properties(requests=LKGM_REQUESTS),
       api.step_data(
-          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_ctp_with_retry_lkgm.call build API',
           api.json.output({"error": "error occurred, unable to find version"})),
       api.post_process(post_process.StepFailure, 'schedule skylab test'),
       api.post_process(post_process.DropExpectation),

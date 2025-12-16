@@ -1217,17 +1217,6 @@ class AbstractSkylabTest(AbstractTest):
   def build_output_dir(self, value: str) -> None:
     raise NotImplementedError()  # pragma: no cover
 
-  @property
-  @abc.abstractmethod
-  def tast_expr_file(self) -> str:
-    raise NotImplementedError()  # pragma: no cover
-
-  @tast_expr_file.setter
-  @abc.abstractmethod
-  def tast_expr_file(self, value: str) -> None:
-    raise NotImplementedError()  # pragma: no cover
-
-
 @attrs()
 class TestWrapperSpec(AbstractTestSpec):
   """Abstract base class for specs for test wrappers.
@@ -3289,9 +3278,6 @@ class SkylabTestSpec(TestSpec):
   # autotest wrapper is required. e.g. tast.lacros
   autotest_name = attrib(str, default='')
 
-  # The key to extract the tast expression from the tast_expr_file.
-  tast_expr_key = attrib(str, default='default')
-
   # Spec for the Multi-DUT tests.
   secondary_cros_board = attrib(str, default='')
   secondary_cros_img = attrib(str, default='')
@@ -3346,10 +3332,6 @@ class SkylabTest(AbstractSkylabTest, Test):
     self._lacros_gcs_path = ''
     self._exe_rel_path = ''
     self._build_output_dir = ''
-    # The relative path of the filter file for tast tests. The
-    # filter stores tast expression in a dict. Users need to provide the
-    # tast_expr_key to extract them.
-    self._tast_expr_file = ''
     self.telemetry_shard_index = None
 
   @property
@@ -3410,14 +3392,6 @@ class SkylabTest(AbstractSkylabTest, Test):
   @build_output_dir.setter
   def build_output_dir(self, value: str) -> None:
     self._build_output_dir = value
-
-  @property
-  def tast_expr_file(self) -> str:
-    return self._tast_expr_file
-
-  @tast_expr_file.setter
-  def tast_expr_file(self, value: str) -> None:
-    self._tast_expr_file = value
 
   def _raise_failed_nested_step(self, suffix, step, status, failure_msg):
     step.status = status

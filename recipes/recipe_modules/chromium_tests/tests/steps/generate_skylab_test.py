@@ -225,9 +225,6 @@ def GenTests(api):
           ('prepare skylab tests.upload skylab runtime deps for %s.'
            'write metadata.json') % UNIFIED_RUNTIME_DEPS_NAME,
       ),
-      api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
-                       'tast_expr_file',
-                       f'out/shared-Release/bin/{TAST_TARGET}.filter'),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -725,8 +722,6 @@ def GenTests(api):
                       'out/shared-Release/bin/run_vaapi_unittest',
                   'lacros_gcs_path':
                       'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/vaapi_unittest',
-                  'tast_expr_file':
-                      None
               }
           }),
       api.chromium_tests.read_targets_spec(

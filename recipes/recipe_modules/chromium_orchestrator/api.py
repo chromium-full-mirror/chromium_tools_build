@@ -781,7 +781,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       target_properties = skylab_props[t.target_name]
       t.exe_rel_path = target_properties.get("exe_rel_path", '')
       t.lacros_gcs_path = target_properties.get("lacros_gcs_path", '')
-      t.tast_expr_file = target_properties.get("tast_expr_file", '')
       t.build_output_dir = target_properties.get('build_output_dir', '')
     return tests
 
