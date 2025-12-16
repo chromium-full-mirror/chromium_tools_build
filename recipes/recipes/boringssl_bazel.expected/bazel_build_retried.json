@@ -209,10 +209,31 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bazel build (retry)",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
-    ]
+    "name": "bazel build (retry)"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "test",
+      "--verbose_failures",
+      "--lockfile_mode=error",
+      "--test_output=errors",
+      "..."
+    ],
+    "cwd": "[CACHE]/builder/boringssl",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel test"
   },
   {
     "cmd": [
@@ -235,10 +256,49 @@
     "name": "bazel shutdown"
   },
   {
-    "failure": {
-      "failure": {},
-      "humanReason": "Step('bazel build (retry)') (retcode: 1)"
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "build",
+      "--verbose_failures",
+      "--lockfile_mode=error",
+      "..."
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
     },
+    "name": "bazel build example"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "shutdown"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel shutdown (2)"
+  },
+  {
     "name": "$result"
   }
 ]

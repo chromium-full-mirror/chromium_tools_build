@@ -162,38 +162,15 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bazel build",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
-    ]
+    "name": "bazel build"
   },
   {
     "cmd": [
       "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
-      "clean",
-      "--expunge"
-    ],
-    "cwd": "[CACHE]/builder/boringssl",
-    "luci_context": {
-      "realm": {
-        "name": "boringssl:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "bazel clean"
-  },
-  {
-    "cmd": [
-      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
-      "build",
+      "test",
       "--verbose_failures",
       "--lockfile_mode=error",
+      "--test_output=errors",
       "..."
     ],
     "cwd": "[CACHE]/builder/boringssl",
@@ -209,10 +186,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bazel build (retry)",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
-    ]
+    "name": "bazel test"
   },
   {
     "cmd": [
@@ -235,9 +209,102 @@
     "name": "bazel shutdown"
   },
   {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "build",
+      "--verbose_failures",
+      "--lockfile_mode=error",
+      "..."
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel build example",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "clean",
+      "--expunge"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel clean"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "build",
+      "--verbose_failures",
+      "--lockfile_mode=error",
+      "..."
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel build example (retry)",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/bazel/bazel",
+      "shutdown"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/util/bazel-example",
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel shutdown (2)"
+  },
+  {
     "failure": {
       "failure": {},
-      "humanReason": "Step('bazel build (retry)') (retcode: 1)"
+      "humanReason": "Step('bazel build example (retry)') (retcode: 1)"
     },
     "name": "$result"
   }

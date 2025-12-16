@@ -26,6 +26,17 @@ def _BazelShutdown(api, bazel):
     api.step('bazel shutdown', [bazel, 'shutdown'], ok_ret='any')
 
 
+def _RetryStepAfterBazelClean(api, bazel, name, cmd):
+  # If the first Bazel operation in a project fails, we retry after expunging
+  # all state. See https://crbug.com/463446310 and https://crbug.com/466089105,
+  # where Bazel is seemingly remembering an old Xcode location.
+  try:
+    api.step(name, cmd)
+  except api.step.StepFailure:
+    api.step('bazel clean', [bazel, 'clean', '--expunge'])
+    api.step(name + ' (retry)', cmd)
+
+
 def RunSteps(api):
   # Print the kernel version on Linux builders. BoringSSL is sensitive to
   # whether the kernel has getrandom support.
@@ -55,7 +66,7 @@ def RunSteps(api):
     src = update_result.source_root.path
     bazel = src / 'util/bot/bazel/bazel'
     with api.context(cwd=src), _BazelShutdown(api, bazel):
-      api.step('bazel build', [
+      _RetryStepAfterBazelClean(api, bazel, 'bazel build', [
           bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'
       ])
       api.step('bazel test', [
@@ -65,7 +76,7 @@ def RunSteps(api):
 
     bazel_example = src / "util/bazel-example"
     with api.context(cwd=bazel_example), _BazelShutdown(api, bazel):
-      api.step('bazel build example', [
+      _RetryStepAfterBazelClean(api, bazel, 'bazel build example', [
           bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'
       ])
       # The example consumer has no tests. Just make sure it builds.
@@ -90,10 +101,19 @@ def GenTests(api):
     )
 
   yield api.test(
+      'bazel_build_retried',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.override_step_data('bazel build', retcode=1),
+      # The retry succeeded.
+  )
+
+  yield api.test(
       'bazel_build_failed',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
       api.override_step_data('bazel build', retcode=1),
+      api.override_step_data('bazel build (retry)', retcode=1),
       api.expect_status('FAILURE'),
   )
 
@@ -102,5 +122,22 @@ def GenTests(api):
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
       api.override_step_data('bazel test', retcode=1),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'bazel_build_example_retried',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.override_step_data('bazel build example', retcode=1),
+      # The retry succeeded.
+  )
+
+  yield api.test(
+      'bazel_build_example_failed',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.override_step_data('bazel build example', retcode=1),
+      api.override_step_data('bazel build example (retry)', retcode=1),
       api.expect_status('FAILURE'),
   )
