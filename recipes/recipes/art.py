@@ -279,6 +279,8 @@ def setup_host_x86(api,
         libcore_command.append('--debug')
       if gcstress:
         libcore_command += ['--gcstress']
+      if continuousgc:
+        libcore_command += ['--continuous-gc']
 
       defer(api.step, 'test libcore', libcore_command)
 
@@ -545,6 +547,8 @@ def setup_target(api,
       libcore_command.append('--debug')
     if gcstress:
       libcore_command += ['--gcstress']
+    if continuousgc:
+      libcore_command += ['--continuous-gc']
     # Ignore failures from Libcore tests using the getrandom() syscall (present
     # since Linux 3.17) on fugu devices, as they run a Linux 3.10 kernel.
     if device == 'fugu':

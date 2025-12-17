@@ -443,7 +443,8 @@
       "--mode=host",
       "--variant=X64",
       "--debug",
-      "--gcstress"
+      "--gcstress",
+      "--continuous-gc"
     ],
     "cwd": "[CACHE]/art",
     "env": {
