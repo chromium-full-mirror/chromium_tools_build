@@ -158,7 +158,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_v8",
-      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=false pdf_is_standalone=true pdf_use_skia=false use_reclient=false use_remoteexec=true use_siso=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_fontations=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=false pdf_is_standalone=true pdf_use_partition_alloc=true pdf_use_skia=false use_reclient=false use_remoteexec=true use_siso=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -320,7 +320,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -363,7 +363,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux rust_png false skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux partition_alloc true rust_png false skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -407,7 +407,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -450,7 +450,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite oneshot use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false suite oneshot use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -497,7 +497,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite reverse_byte_order use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false suite reverse_byte_order use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -541,7 +541,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux rust_png false skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux partition_alloc true rust_png false skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -585,7 +585,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -628,7 +628,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite oneshot use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false suite oneshot use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -672,7 +672,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux rust_png false skia false suite reverse_byte_order use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_png false skia false suite reverse_byte_order use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -716,7 +716,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux rust_png false skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux partition_alloc true rust_png false skia false suite javascript_disabled use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
