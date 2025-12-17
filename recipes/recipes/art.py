@@ -534,6 +534,12 @@ def setup_target(api,
       defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
     test_logging(api, 'test jit')
 
+    if bitness == 64:
+      with api.context(env=test_env):
+        defer(api.step, 'test jit-on-first-use',
+              testrunner_cmd + ['--jit-on-first-use'])
+      test_logging(api, 'test jit-on-first-use')
+
     with api.context(env=test_env):
       defer(api.step, 'test speed-profile',
             testrunner_cmd + ['--speed-profile'])
@@ -643,6 +649,19 @@ def GenTests(api):
           on_virtual_machine=False,
           bitness=32,
           product="arm_krait",
+      ),
+  )
+
+  yield api.test(
+      'target.arm.64',
+      api.buildbucket.ci_build(project='art',),
+      api.properties(
+          bitness=64,
+          concurrent_collector=True,
+          debug=True,
+          device="target.arm.64",
+          generational_cc=True,
+          product="armv8",
       ),
   )
 
