@@ -26,7 +26,7 @@
       "--spec-path",
       "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'checkout_bazel': True, 'checkout_cmake': False, 'checkout_go': False, 'checkout_perl': False}, 'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]",
       "--revision_mapping_file",
-      "{}",
+      "{\"got_revision\": \"boringssl\"}",
       "--git-cache-dir",
       "[CACHE]/git",
       "--cleanup-dir",

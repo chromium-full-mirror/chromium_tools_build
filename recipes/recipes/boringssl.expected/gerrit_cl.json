@@ -84,7 +84,7 @@
       "--patch_root",
       "boringssl",
       "--revision_mapping_file",
-      "{}",
+      "{\"got_revision\": \"boringssl\"}",
       "--git-cache-dir",
       "[CACHE]/git",
       "--cleanup-dir",

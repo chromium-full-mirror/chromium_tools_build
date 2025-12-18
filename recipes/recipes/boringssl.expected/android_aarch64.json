@@ -26,7 +26,7 @@
       "--spec-path",
       "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]\ntarget_os = ['android']",
       "--revision_mapping_file",
-      "{}",
+      "{\"got_revision\": \"boringssl\"}",
       "--git-cache-dir",
       "[CACHE]/git",
       "--cleanup-dir",
