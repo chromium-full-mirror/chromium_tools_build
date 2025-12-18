@@ -47,8 +47,3 @@ def cronet_builder(c):
 @CONFIG_CTX(includes=['clobber'])
 def cronet_official(c):
   c.gn_args.append('is_official_build=true')
-
-
-@CONFIG_CTX()
-def disable_neon(c):  # pragma: no cover
-  c.gn_args.append('arm_use_neon=false')
