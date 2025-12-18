@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 from recipe_engine.post_process import StatusFailure, StatusSuccess
 
+SKIP_FOOTER = 'Metadata-Validate-Bypass'
+
 DEPS = [
     'chromium',
     'chromium_checkout',
@@ -23,6 +25,12 @@ DEPS = [
 def RunSteps(api):
   # Ensure depot_tools is on PATH.
   with api.depot_tools.on_path():
+
+    # Check for bypass footer
+    bypass_validation = bool(api.tryserver.get_footers(SKIP_FOOTER))
+
+    if bypass_validation:
+      api.step('Validation bypassed', cmd=None)
 
     # Set up standard chromium checkout paths.
     builder_dir = api.path.cache_dir / 'builder'
@@ -63,7 +71,11 @@ def RunSteps(api):
           errors = []
           warnings = []
           if step_result.stdout:
-            for line in step_result.stdout.splitlines():
+            # metadata/scan.py prints a summary after "Done.".
+            # We only care about the detailed errors before that.
+            output_body = step_result.stdout.split('Done.', 1)[0]
+            for line in output_body.splitlines():
+              line = line.strip()
               if 'ERROR -' in line:
                 errors.append(line)
               elif 'WARNING -' in line:
@@ -72,10 +84,22 @@ def RunSteps(api):
           if errors:
             step.status = api.step.FAILURE
             step.logs['errors'] = errors
-            failed_files.append(readme_rel_path)
+            step.step_text = '<br/>'.join(errors)
+
+            if bypass_validation:
+              step.status = api.step.WARNING
+              step.step_text += '<br/><br/><b>Validation bypassed by footer.</b>'
+            else:
+              step.step_text += ('<br/><br/>To bypass this check, add '
+                                 '\'Metadata-Validate-Bypass: <reason>\' '
+                                 'to your CL description.')
+              failed_files.append(readme_rel_path)
 
           if warnings:
+            if step.status != api.step.FAILURE:
+              step.status = api.step.WARNING
             step.logs['warnings'] = warnings
+            step.step_text += '<br/>' + '<br/>'.join(warnings)
 
       # 6. Fail if issues found.
       if failed_files:
@@ -107,6 +131,21 @@ def GenTests(api):
               'Done.')),
       api.expect_status('FAILURE'),
       api.post_process(StatusFailure),
+  )
+
+  yield api.test(
+      'bypass_validation',
+      api.chromium.try_build(builder='linux-readme-validator'),
+      api.tryserver.get_files_affected_by_patch(
+          ['src/third_party/bar/README.chromium']) +
+      api.tryserver.get_footers({SKIP_FOOTER: ['reason for bypass']}) +
+      api.step_data(
+          'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
+          stdout=api.raw_io.output_text(
+              'Found 1 metadata files.\n'
+              'ERROR - Required field \'Name\' is missing.\n'
+              'Done.')),
+      api.post_process(StatusSuccess),
   )
 
   yield api.test(

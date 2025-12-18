@@ -1,6 +1,40 @@
 [
   {
     "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/git_footers.py",
+      "--json",
+      "/path/to/tmp/json"
+    ],
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "parse description",
+    "stdin": "Metadata-Validate-Bypass",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
@@ -588,6 +622,7 @@
     "cmd": [],
     "name": "validate src/third_party/bar/README.chromium",
     "~followup_annotations": [
+      "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.<br/><br/>To bypass this check, add 'Metadata-Validate-Bypass: <reason>' to your CL description.@@@",
       "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Name' is missing.@@@",
       "@@@STEP_LOG_END@errors@@@",
       "@@@STEP_FAILURE@@@"
