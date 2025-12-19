@@ -24,6 +24,7 @@ CONFIG = {
         "extensions/cxx_debugging/third_party/llvm/src",
         "third_party/cmake",
         "third_party/esbuild",
+        "third_party/rollup_libs",
         "scripts/ai_assistance/suite/outputs",
     ],
     "show_commit_log": False,
