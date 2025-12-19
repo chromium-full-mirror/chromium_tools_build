@@ -614,15 +614,125 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/src/foo/bar.txt@@@",
+      "@@@STEP_LOG_LINE@files@src/src/third_party/bar/README.chromium@@@",
+      "@@@STEP_LOG_LINE@files@src/src/third_party/foo/README.chromium@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "no readme changes"
+    "name": "validate src/third_party/bar/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@ERROR - Required field 'Description' is missing.@@@",
+      "@@@STEP_LOG_LINE@debug_errors@ERROR - Required field 'Description' is missing.@@@",
+      "@@@STEP_LOG_END@debug_errors@@@",
+      "@@@STEP_LOG_END@debug_warnings@@@",
+      "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Description' is missing.@@@",
+      "@@@STEP_LOG_END@errors@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/metadata/scan.py",
+      "[CACHE]/builder/src/src/third_party/bar"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@Found 1 metadata files.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@ERROR - Required field 'Description' is missing.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@Done.@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "validate src/third_party/foo/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.<br/>WARNING - License file not found.@@@",
+      "@@@STEP_LOG_LINE@debug_errors@ERROR - Required field 'Name' is missing.@@@",
+      "@@@STEP_LOG_END@debug_errors@@@",
+      "@@@STEP_LOG_LINE@debug_warnings@WARNING - License file not found.@@@",
+      "@@@STEP_LOG_END@debug_warnings@@@",
+      "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Name' is missing.@@@",
+      "@@@STEP_LOG_END@errors@@@",
+      "@@@STEP_LOG_LINE@warnings@WARNING - License file not found.@@@",
+      "@@@STEP_LOG_END@warnings@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/metadata/scan.py",
+      "[CACHE]/builder/src/src/third_party/foo"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@Found 1 metadata files.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@ERROR - Required field 'Name' is missing.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@WARNING - License file not found.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@Done.@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Validation Issues",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@src/third_party/bar/README.chromium:<br/>* ERROR - Required field 'Description' is missing.<br/><br/>src/third_party/foo/README.chromium:<br/>* ERROR - Required field 'Name' is missing.<br/>* WARNING - License file not found.<br/><br/><br/>To `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description.@@@"
+    ]
+  },
+  {
+    "failure": {
+      "failure": {},
+      "humanReason": "src/third_party/bar/README.chromium:\n* ERROR - Required field 'Description' is missing.\n\nsrc/third_party/foo/README.chromium:\n* ERROR - Required field 'Name' is missing.\n* WARNING - License file not found.\n\n\nTo `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description."
+    },
     "name": "$result"
   }
 ]

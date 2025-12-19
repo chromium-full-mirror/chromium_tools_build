@@ -271,7 +271,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "chromium/try/linux-metadata-validator/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "chromium/try/linux-readme-validator/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -546,14 +546,14 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"try:linux-metadata-validator\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"try:linux-readme-validator\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:linux-metadata-validator\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:linux-readme-validator\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
@@ -614,15 +614,75 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/src/foo/bar.txt@@@",
+      "@@@STEP_LOG_LINE@files@src/src/third_party/mixed/README.chromium@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "no readme changes"
+    "name": "validate src/third_party/mixed/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@ERROR - Critical issue.<br/>WARNING - Minor issue.@@@",
+      "@@@STEP_LOG_LINE@debug_errors@ERROR - Critical issue.@@@",
+      "@@@STEP_LOG_END@debug_errors@@@",
+      "@@@STEP_LOG_LINE@debug_warnings@WARNING - Minor issue.@@@",
+      "@@@STEP_LOG_END@debug_warnings@@@",
+      "@@@STEP_LOG_LINE@errors@ERROR - Critical issue.@@@",
+      "@@@STEP_LOG_END@errors@@@",
+      "@@@STEP_LOG_LINE@warnings@WARNING - Minor issue.@@@",
+      "@@@STEP_LOG_END@warnings@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/metadata/scan.py",
+      "[CACHE]/builder/src/src/third_party/mixed"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "validate src/third_party/mixed/README.chromium.run validator on src/third_party/mixed/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@Found 1 metadata files.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@ERROR - Critical issue.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@WARNING - Minor issue.@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@Done.@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Validation Issues",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@* ERROR - Critical issue.<br/>* WARNING - Minor issue.<br/><br/>To `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description.@@@"
+    ]
+  },
+  {
+    "failure": {
+      "failure": {},
+      "humanReason": "* ERROR - Critical issue.\n* WARNING - Minor issue.\n\nTo `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description."
+    },
     "name": "$result"
   }
 ]

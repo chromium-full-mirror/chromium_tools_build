@@ -271,7 +271,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "chromium/try/linux-readme-validator/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "chromium/try/linux-metadata-validator/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -546,14 +546,14 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"try:linux-readme-validator\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"try:linux-metadata-validator\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:linux-readme-validator\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:linux-metadata-validator\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
@@ -623,6 +623,9 @@
     "name": "validate src/third_party/baz/README.chromium",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>WARNING - License file not found.@@@",
+      "@@@STEP_LOG_END@debug_errors@@@",
+      "@@@STEP_LOG_LINE@debug_warnings@WARNING - License file not found.@@@",
+      "@@@STEP_LOG_END@debug_warnings@@@",
       "@@@STEP_LOG_LINE@warnings@WARNING - License file not found.@@@",
       "@@@STEP_LOG_END@warnings@@@",
       "@@@STEP_WARNINGS@@@"
@@ -665,6 +668,14 @@
     ]
   },
   {
-    "name": "$result"
+    "cmd": [],
+    "name": "Validation Issues",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@WARNING - License file not found.<br/><br/>To `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description.@@@"
+    ]
+  },
+  {
+    "name": "$result",
+    "summaryMarkdown": "WARNING - License file not found.\n\nTo `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description."
   }
 ]
