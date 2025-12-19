@@ -211,6 +211,8 @@ class SkylabApi(recipe_api.RecipeApi):
           test.spec.name,
           '--parent-build-id',
           str(self.m.buildbucket.build.id),
+          '--builder-name',
+          self.m.buildbucket.build.builder.builder,
       ]
 
       cmd.extend(['--board', test.spec.cros_board])

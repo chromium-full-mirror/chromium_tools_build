@@ -501,9 +501,10 @@ def GenTests(api):
           post_process.StepCommandContains, 'schedule skylab test.' +
           BUILD_VARIANT_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'build_variant',
-              '--parent-build-id', '0', '--board', 'eve', '--pool',
-              'DUT_POOL_QUOTA', '--image', 'eve-arc-t-release/R111-15300.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-arc-t-release/R111-15300.0.0', '--timeout-mins', '60',
+              '--qs-account', 'lacros'
           ]),
       # Multi-DUT
       api.post_process(
@@ -537,6 +538,8 @@ def GenTests(api):
               'multi_dut_build_variant',
               '--parent-build-id',
               '0',
+              '--builder-name',
+              '',
               '--board',
               'eve',
               '--pool',
@@ -600,11 +603,11 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'multi_dut',
-              '--parent-build-id', '0', '--board', 'eve', '--pool',
-              'DUT_POOL_QUOTA', '--image', 'eve-release/R88-13545.0.0',
-              '--secondary-boards', 'eve', '--secondary-images',
-              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
+              '--pool', 'DUT_POOL_QUOTA', '--image',
+              'eve-release/R88-13545.0.0', '--secondary-boards', 'eve',
+              '--secondary-images', 'eve-release/R88-13545.0.0',
+              '--timeout-mins', '60', '--qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -687,6 +690,8 @@ def GenTests(api):
               'multi_dut_secondary_cros_img_use_lkgm',
               '--parent-build-id',
               '0',
+              '--builder-name',
+              '',
               '--board',
               'eve',
               '--pool',
@@ -729,8 +734,8 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + LKGM_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'm88_ctp_with_retry_lkgm',
-              '--parent-build-id', '0', '--board', 'eve', '--bucket',
-              'chromeos-image-archive', '--public-builder',
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
+              '--bucket', 'chromeos-image-archive', '--public-builder',
               'ctp-public-builder', '--public-builder-bucket', 'public-bucket',
               '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R118-15580.0.0', '--timeout-mins', '60',
@@ -760,10 +765,10 @@ def GenTests(api):
           'schedule skylab test.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
           [
               'request', '--chromium-suite-name', 'm88_ctp_with_retry_lkgm',
-              '--parent-build-id', '0', '--board', 'eve', '--bucket',
-              'chromiumos-image-archive', '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-public/R118-15580.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
+              '--bucket', 'chromiumos-image-archive', '--pool',
+              'DUT_POOL_QUOTA', '--image', 'eve-public/R118-15580.0.0',
+              '--timeout-mins', '60', '--qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -805,8 +810,8 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
-              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
+              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'lacros'
           ]),
@@ -845,8 +850,8 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
-              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
+              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'lacros'
           ]),
@@ -888,8 +893,8 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
-              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
+              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'lacros'
           ]),
@@ -925,8 +930,8 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + TFC_REQUESTS[1].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_explicit_test_list',
-              '--parent-build-id', '0', '--board', 'brya', '--model', 'kano',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
+              '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
+              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'lacros'
           ]),

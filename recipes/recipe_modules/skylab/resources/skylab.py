@@ -217,7 +217,12 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
     sw_kv.value = img
 
 
-def _tests_from_file(f, board):
+def _clear_builder_name(builder_name):
+  pattern = r'(?:-(?:tests|tast|gtest-and-tast))+$'
+  return re.sub(pattern, '', builder_name)
+
+
+def _tests_from_file(f, board, builder_name):
   v = []
   with open(f, encoding='utf-8') as d:
     for l in d:
@@ -228,7 +233,15 @@ def _tests_from_file(f, board):
         continue
       splitted = stripped.split('@')
       test_name = splitted[0]
-      if len(splitted) > 1 and splitted[1] != board:
+      include = False
+      if len(splitted) == 1:
+        include = True
+      elif splitted[1] == board:
+        include = True
+      elif _clear_builder_name(
+          splitted[1]) == _clear_builder_name(builder_name):
+        include = True
+      if not include:
         continue
       if not test_name.startswith('tast.'):
         test_name = 'tast.' + test_name
@@ -236,10 +249,10 @@ def _tests_from_file(f, board):
   return v
 
 
-def _tests_from_files(root, files, board):
+def _tests_from_files(root, files, board, builder_name):
   v = []
   for f in files:
-    v.extend(_tests_from_file(os.path.join(root, f), board))
+    v.extend(_tests_from_file(os.path.join(root, f), board, builder_name))
   return list(set(v))
 
 
@@ -273,11 +286,14 @@ def schedule_skylab_tests(opts):
       req.suite_request.test_suite.test_case_tag_criteria.tags.append(v)
     for v in opts.cros_test_tags_exclude:
       req.suite_request.test_suite.test_case_tag_criteria.tag_excludes.append(v)
-    for v in set(opts.cros_test_names + _tests_from_files(
-        opts.chromium_src, opts.cros_test_names_from_file, opts.board)):
+    for v in set(
+        opts.cros_test_names +
+        _tests_from_files(opts.chromium_src, opts.cros_test_names_from_file,
+                          opts.board, opts.builder_name)):
       req.suite_request.test_suite.test_case_tag_criteria.test_names.append(v)
     for v in set(opts.cros_test_names_exclude + _tests_from_files(
-        opts.chromium_src, opts.cros_test_names_exclude_from_file, opts.board)):
+        opts.chromium_src, opts.cros_test_names_exclude_from_file, opts.board,
+        opts.builder_name)):
       req.suite_request.test_suite.test_case_tag_criteria.test_name_excludes.append(
           v)
     if opts.cros_test_max_in_shard > 0:
@@ -454,6 +470,8 @@ def main(args):
   # Subcommand: request
   subparser = subparsers.add_parser(
       'request', help=('Schedule Skylab test requests via Buildbucket API.'))
+  subparser.add_argument(
+      '--builder-name', type=str, help='Buildbucket builder name.')
   subparser.add_argument('--board', type=str, help='ChromeOS board name.')
   subparser.add_argument(
       '--model', type=str, default=None, help='ChromeOS model name.')
