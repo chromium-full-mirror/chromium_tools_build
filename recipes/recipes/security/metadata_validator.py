@@ -75,7 +75,7 @@ def RunSteps(api):
   with api.depot_tools.on_path():
 
     # Check for bypass footer
-    bypass_validation = bool(api.tryserver.get_footers(SKIP_FOOTER))
+    bypass_validation = SKIP_FOOTER in api.tryserver.get_footers()
     if bypass_validation:
       api.step('Validation bypassed', cmd=None)
 
