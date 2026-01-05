@@ -224,10 +224,7 @@ def RunSteps(api):
   target = 'all'
   _clean_builds(api, source_dir, build_dir, target)
 
-  # TODO: b/465035813 - Allocate larger disk for Android builder to have
-  # multiple build dirs.
-  if api.chromium.c.TARGET_PLATFORM != 'android':
-    _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
+  _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
 
   # Remove the out dir to reduce the builder cache size.
   out_dir = build_dir.parent
