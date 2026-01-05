@@ -275,10 +275,10 @@ def RunSteps(api):
   second_dir = default_build_dir.parent / (
       str(default_build_dir.name).rstrip('\\/') + '.2')
 
-  # Whether do first build in local or use reclient.
+  # Whether do first build in local or use remoteexec.
   compare_local = recipe_config.get('compare_local', False)
 
-  remote_phase = 'reclient'
+  remote_phase = 'remoteexec'
 
   # Do a first build and move the build artifact to the temp directory.
   builder_id = chromium_types.BuilderId.create_for_group(
