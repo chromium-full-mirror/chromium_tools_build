@@ -4,19 +4,14 @@
 
 from __future__ import annotations
 
-import attr
 import collections
-import copy
-import inspect
+import collections.abc
 import random
 import re
-import sys
 
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
 from RECIPE_MODULES.build.chromium_tests import steps
-from PB.go.chromium.org.luci.buildbucket.proto \
-    import builds_service as builds_service_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import common as common_weetbix_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import predicate as predicate_pb2
@@ -199,7 +194,11 @@ class FlakinessApi(recipe_api.RecipeApi):
               variant_hash=test_entry.get('variant_hash', None)))
     return tests
 
-  def verify_new_tests(self, prelim_tests, builder):
+  def verify_new_tests(
+      self,
+      prelim_tests: set[utils.TestDefinition],
+      builder: str,
+  ) -> set[utils.TestDefinition]:
     """Verify the newly identified tests are new by cross-checking ResultDB.
 
     Queries ResultDB for the instances of the given test_ids on the builder for
@@ -207,15 +206,14 @@ class FlakinessApi(recipe_api.RecipeApi):
     positives from the preliminary new test list.
 
     Args:
-      prelim_tests (set of TestDefinition objects): the set of TestDefinition
-        objects identified as potential new tests to be cross-referenced
-        with ResultDB. This set will be modified by this method to contain only
-        tests not found in ResultDB existing tests.
-      builder (str): The name of the builder to query test results for.
+      prelim_tests: The set of TestDefinition objects identified as potential
+        new tests to be cross-referenced with ResultDB. This set will be
+        modified by this method to contain only tests not found in ResultDB
+        existing tests.
+      builder: The name of the builder to query test results for.
 
     Returns:
-      A set of TestDefinition objects.
-
+      The set of TestDefinition objects for the tests that are actually new.
     """
 
     def _ensure_new(test_id):
@@ -263,7 +261,12 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return prelim_tests
 
-  def trim_new_tests(self, new_tests, limit: int, step_name=None):
+  def trim_new_tests(
+      self,
+      new_tests: collections.abc.Sequence[utils.TestDefinition],
+      limit: int,
+      step_name: str | None = None,
+  ) -> collections.abc.Collection[utils.TestDefinition]:
     """trim_new_tests will return a subset of new_tests according to the limit
 
     Our infrastructure won't allow us to test for flakiness for every single
@@ -299,7 +302,10 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return res
 
-  def identify_new_tests(self, test_objects):
+  def identify_new_tests(
+      self,
+      test_objects: collections.abc.Iterable[steps.Test],
+  ) -> set[utils.TestDefinition]:
     """Coordinating method for identifying new tests on the current build.
 
     This method queries ResultDB for the historical tests run on the specified
@@ -308,11 +314,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     from the current CL.
 
     Args:
-      test_objects (list): List of step.Test objects with RDB results for
-        current build.
+      test_objects: The step.Test objects with RDB results for current build.
 
     Returns:
-        A set of TestDefinition objects.
+        A set of TestDefinition objects for newly-added tests.
     """
     with self.m.step.nest(self.IDENTIFY_STEP_NAME) as p:
       builder_name = self.m.buildbucket.builder_name
@@ -392,8 +397,10 @@ class FlakinessApi(recipe_api.RecipeApi):
         return set()
 
       # Trim once before verify_new_tests to avoid input too large for RDB RPC.
-      preliminary_new_tests = self.trim_new_tests(
-          preliminary_new_tests, self._max_test_variants_to_cross_reference)
+      preliminary_new_tests = set(
+          self.trim_new_tests(
+              list(preliminary_new_tests),
+              self._max_test_variants_to_cross_reference))
 
       # Cross-referencing the potential new tests with ResultDB to ensure they
       # are not present in existing builds.
@@ -439,7 +446,7 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests
 
-  def identify_new_test_variants(self) -> (str, str):
+  def identify_new_test_variants(self) -> set[tuple[str, str]]:
     """Utilize ResultDB to determine if tests are new
 
     Query for new test variants through ResultDB QueryNewTestVariants RPC.
@@ -472,12 +479,12 @@ class FlakinessApi(recipe_api.RecipeApi):
       if not resp.is_baseline_ready:
         # baseline is not ready, which means we cannot calculate for new tests.
         self.m.step.empty('Baseline is not yet ready to calculate new tests')
-        return []
+        return set()
 
       resp_new_tests = resp.new_test_variants
       if not resp_new_tests:
         self.m.step.empty('No new tests detected')
-        return []
+        return set()
 
       # Add all new tests into a set as tuples that we can check against while
       # we loop the test objects to find the correct ones.
@@ -494,8 +501,8 @@ class FlakinessApi(recipe_api.RecipeApi):
 
   def _map_test_object(
       self,
-      test_objects: list[steps.Test],
-      new_test_tuples: tuple[str, str],
+      test_objects: collections.abc.Iterable[steps.Test],
+      new_test_tuples: collections.abc.Collection[tuple[str, str]],
   ) -> dict[steps.Test, tuple[str, str]]:
     """_map_test_object formats tests objects to test filters and durations.
 
@@ -544,7 +551,11 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests
 
-  def check_test_files(self, new_tests, affected_files):
+  def check_test_files(
+      self,
+      new_tests: collections.abc.Iterable[utils.TestDefinition],
+      affected_files: list[str],
+  ) -> list[utils.TestDefinition]:
     """Determines whether the correct test files are being modified by the patch
 
     This is used to determine whether the flakiness workflow should run.
@@ -556,10 +567,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     If a test does not define a path, it will by default be added to the list.
 
     Args:
-      * new_tests: (list) of test objects that are deemed new, meaning that they
-                   have not been run in the past.
-      * affected_files: (list) of files associated with the given change. see
-                        self.m.chromium_checkout.get_files_affected_by_patch.
+      new_tests: Test objects that are deemed new, meaning that they have not
+        been run in the past.
+      affected_files: The files affected by the change under test. see
+        self.m.chromium_checkout.get_files_affected_by_patch.
 
     Returns:
       (list) list of new tests that have a file being modified from the patchset
@@ -632,7 +643,11 @@ class FlakinessApi(recipe_api.RecipeApi):
       remaining = remaining - runs_per_shard
     return shards
 
-  def find_tests_for_flakiness(self, test_objects, affected_files=None):
+  def find_tests_for_flakiness(
+      self,
+      test_objects: collections.abc.Iterable[steps.Test],
+      affected_files: list[str] | None = None,
+  ) -> collections.abc.Mapping[str, list[steps.Test]]:
     """Searches for new tests in a given change
 
     This method coordinates the workflow for searching and identifying new
@@ -654,16 +669,17 @@ class FlakinessApi(recipe_api.RecipeApi):
        be skipped.
 
     Args:
-      * test_objects = list of step.Test objects
-      * affected_files = a list of affected files (Paths), provided by the
-                         analyze step.
+      test_objects: list of step.Test objects
+      affected_files: The files affected by the change under test. see
+        self.m.chromium_checkout.get_files_affected_by_patch.
+
     Returns:
       A mapping from test suffixes to lists of steps.Test objects.
     """
     # Do not run anything if both properties are not set.
     if not (self.check_for_flakiness or
             self._check_for_flakiness_with_resultdb):
-      return []
+      return {}
 
     # Check if there are endorser footers to parse
     commit_footer_values = [
@@ -676,7 +692,7 @@ class FlakinessApi(recipe_api.RecipeApi):
           'skipping flaky test check since commit footer '
           '\'Validate-Test-Flakiness: Skip\' was detected.',
           cmd=None)
-      return []
+      return {}
 
     # TODO (crbug/1456545) - With ResultDB, the new test detection system is
     # more accurate as we don't rely on a cron-based system to compute the
@@ -700,7 +716,7 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     if not self.is_test_file_present(affected_files=affected_files):
       self.m.step.empty('no test files were detected with this change.')
-      return []
+      return {}
 
     # This is a map of test object to a tuple of ([test_names], total_duration).
     filter_and_time_by_test_object = {}
@@ -747,7 +763,7 @@ class FlakinessApi(recipe_api.RecipeApi):
     # should deprecate once all CQ builders migrate to the workflow above.
     else:
       new_tests = self.identify_new_tests(test_objects)
-      new_tests = self.trim_new_tests(new_tests, self._max_test_targets)
+      new_tests = self.trim_new_tests(list(new_tests), self._max_test_targets)
       new_tests = self.check_test_files(new_tests, affected_files)
 
       s = self.m.step('match single new tests with test suites', cmd=None)
