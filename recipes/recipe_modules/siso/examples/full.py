@@ -129,6 +129,25 @@ def GenTests(api):
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.buildbucket.ci_build(project='chromium', builder='linux-rel'),
       api.siso.properties(
+          project='test-rbe-proj',
+          enable_cloud_monitoring=True,
+      ),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--enable_cloud_monitoring']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--metrics_project', 'test-rbe-proj']),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '--metrics_labels',
+          'type=ci,host_os=linux,project=chromium,bucket=ci,builder=linux-rel,source=prod,tool=siso',
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'cloud_monitoring_with_custom_metrics_project',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.buildbucket.ci_build(project='chromium', builder='linux-rel'),
+      api.siso.properties(
+          project='test-rbe-proj',
           enable_cloud_monitoring=True,
           metrics_project='test-metrics-proj',
       ),

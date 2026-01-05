@@ -176,14 +176,20 @@ class SisoApi(recipe_api.RecipeApi):
         cmd.append('--enable_cloud_profiler')
       if self._props.enable_cloud_trace:
         cmd.append('--enable_cloud_trace')
-      # Enable Cloud Monitoring and set relevant options.
-      # The options should be in sync with Reclient.
-      # https://source.chromium.org/chromium/infra/infra_superproject/+/main:build/recipes/recipe_modules/reclient/api.py;l=594-610;drc=6a8613f092a556c9e9554cb5249a2a97e0e4edb8
-      if self._props.enable_cloud_monitoring and self._props.metrics_project:
-        cmd.extend([
-            '--enable_cloud_monitoring', '--metrics_project',
-            self._props.metrics_project
-        ])
+      if self._props.enable_cloud_monitoring:
+        cmd.append('--enable_cloud_monitoring')
+        if self._props.metrics_project:
+          cmd.extend([
+              '--metrics_project',
+              self._props.metrics_project,
+          ])
+        else:
+          # Old Siso versions require specifying --metrics_project explicitly.
+          # e.g. http://crbug.com/449542599
+          cmd.extend([
+              '--metrics_project',
+              self._props.project,
+          ])
         labels = ''
         run_type = 'cq' if self.m.tryserver.is_tryserver else 'ci'
         labels += f'type={run_type},'
