@@ -39,14 +39,12 @@ def RunSteps(api):
   source_dir, revision = checkout_source_code(api)
   file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
       generate_file_blame_jsons(api, source_dir, revision))
-  commit_hash_jsons_dir, commit_hash_jsons_pkg_name, commit_hash_jsons_pkg_id = (
+  commit_hash_jsons_dir = (
       generate_commit_hash_jsons(api, source_dir, revision,
                                  file_blame_jsons_dir))
   # update manifest package to point to new CIPDs
   update_pointers_to_latest_CIPDs(api, revision, file_blame_jsons_pkg_name,
-                                  file_blame_jsons_pkg_id,
-                                  commit_hash_jsons_pkg_name,
-                                  commit_hash_jsons_pkg_id)
+                                  file_blame_jsons_pkg_id)
   generate_topics(api, commit_hash_jsons_dir, revision)
 
 
@@ -140,16 +138,7 @@ def generate_commit_hash_jsons(api, source_dir, current_revision,
     ]
     _ = api.step('Generate JSON per commit hash', cmd)
 
-    # Upload the prepared directory
-    pkg_name, instance_id = _update_cipd_package(
-        api,
-        step_name='Upload Commit Hash JSONs to CIPD',
-        package_name=f"{COMMIT_HASH_JSONS_PKG_NAME}/{current_revision}",
-        package_content_dir=output_dir,
-        package_description=f"Commit hash jsons for chrome at commit: {current_revision}"
-    )
-
-    return output_dir, pkg_name, instance_id
+    return output_dir
 
 
 def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
@@ -426,15 +415,11 @@ def _update_cipd_package(api,
 
 def update_pointers_to_latest_CIPDs(api, current_revision,
                                     file_blame_jsons_package,
-                                    file_blame_jsons_version,
-                                    commit_hash_jsons_package,
-                                    commit_hash_jsons_version):
+                                    file_blame_jsons_version):
   with api.step.nest('Update Pointers to all JSON CIPD packages'):
     manifest_content = {
         "file_blame_jsons_package": file_blame_jsons_package,
         "file_blame_jsons_version": file_blame_jsons_version,
-        "commit_hash_jsons_package": commit_hash_jsons_package,
-        "commit_hash_jsons_version": commit_hash_jsons_version,
     }
     temp_dir = api.path.mkdtemp(prefix='manifest_')
     manifest_file_path = temp_dir / 'manifest.json'
@@ -497,12 +482,6 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
           )),
-      # Mock cipd create for commit hash json package
-      api.step_data(
-          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
-          stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/commit_hash_jsons/newrevision:new-blame-instance-id'
-          )),
       # Mock cipd create for manifest package
       api.step_data(
           'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
@@ -531,9 +510,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'Generate Commit Hash JSONs.Generate JSON per commit hash'),
-      api.post_process(
-          post_process.MustRun,
-          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
       api.post_process(
           post_process.MustRun,
           'Update Pointers to all JSON CIPD packages.Create manifest.json'),
@@ -576,12 +552,6 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
           )),
-      # Mock cipd create for commit hash json package
-      api.step_data(
-          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
-          stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/commit_hash_jsons/newrevision:new-blame-instance-id'
-          )),
       # Mock cipd create for manifest package
       api.step_data(
           'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
@@ -604,9 +574,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'Generate Commit Hash JSONs.Generate JSON per commit hash'),
-      api.post_process(
-          post_process.MustRun,
-          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD'),
       api.post_process(
           post_process.MustRun,
           'Update Pointers to all JSON CIPD packages.Create manifest.json'),
@@ -729,33 +696,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
-  # Test case: CIPD upload for commit jsons fails to return instance ID.
-  yield api.test(
-      'cipd_upload_commit_hash_jsons_fails_no_instance_id',
-      builder_config_test_data(api),
-      api.properties(**{
-          '$build/chromium_checkout': {
-              'gclient_config': 'chromium',
-          },
-      }),
-      api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
-          retcode=1),  # No baseline
-
-      # Mock cipd create for file blame json package
-      api.step_data(
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
-          stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
-          )),
-      # Mock cipd create for commit hash json package
-      api.step_data(
-          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
-          stdout=api.raw_io.output_text('Something went wrong')),
-      api.post_process(post_process.StepFailure, 'Generate Commit Hash JSONs'),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE')
-
   # Test case: CIPD upload for manifest package fails to return instance ID.
   yield api.test(
       'cipd_upload_manifest_fails_no_instance_id',
@@ -774,12 +714,6 @@ def GenTests(api):
           'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
               'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
-          )),
-      # Mock cipd create for commit hash json package
-      api.step_data(
-          'Generate Commit Hash JSONs.Upload Commit Hash JSONs to CIPD',
-          stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/commit_hash_jsons/newrevision:new-blame-instance-id'
           )),
       # Mock cipd create for manifest package
       api.step_data(
