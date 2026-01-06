@@ -313,11 +313,6 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.autotest_name:
         cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
 
-        test_retries = '2'
-        if test.spec.test_level_retries != None:
-          test_retries = test.spec.test_level_retries
-        test_args.append(('retries', test_retries))
-
         # TODO(crbug.com/1233676): Support chromium perf tests.
         # if test.telemetry_shard_index is not None:
         #   test_args.append(('test_shard_index', str(test.telemetry_shard_index)))

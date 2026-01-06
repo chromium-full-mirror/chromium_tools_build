@@ -3244,11 +3244,8 @@ class SkylabTestSpec(TestSpec):
   shards = attrib(int, default=1)
   # Deprecated. Skylab tests retries once for infra failure
   # same with swarming tests. For test failure retry, consider
-  # test_level_retries within one test run.
+  # shard_level_retries_on_ctp.
   retries = attrib(int, default=1)
-  # Only applies to Tast tests.
-  # When set to non zero, failed test will be immediatelly retried.
-  test_level_retries = attrib(int, default=0)
   # Maximum number to retry a failed shard.
   # When set to zero, retries continue infinitely until timeout.
   shard_level_retries_on_ctp = attrib(int, default=-1)
