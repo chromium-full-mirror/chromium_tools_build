@@ -54,28 +54,7 @@ def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   with api.chromium.chromium_layout():
-    api.chromium_tests.report_builders(builder_config)
-    _, task = api.chromium_tests.build_affected_targets(builder_id,
-                                                        builder_config)
-
-    if api.properties.get('assert_tests'):
-      assert task.test_suites
-
-    api.step.empty('mark: before_tests')
-
-    _, unrecoverable_test_suites = api.chromium_tests._run_tests_with_retries(
-        builder_id, task, api.chromium_tests.deapply_patch)
-
-    api.chromium_swarming.report_stats()
-    api.chromium_tests.handle_invalid_test_suites(unrecoverable_test_suites)
-
-    new_tests = api.flakiness.find_tests_for_flakiness(
-        test_objects=task.test_suites)
-    if new_tests:
-      return api.chromium_tests.run_tests_for_flakiness(task.checkout_dir,
-                                                        task.source_dir,
-                                                        task.build_dir,
-                                                        new_tests)
+    return api.chromium_tests.trybot_steps(builder_id, builder_config)
 
 
 def GenTests(api):
@@ -244,7 +223,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -386,7 +364,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-android-builder': {
@@ -443,7 +420,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-android-builder': {
@@ -491,7 +467,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -604,7 +579,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -677,7 +651,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -764,7 +737,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -845,7 +817,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -941,7 +912,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -1021,7 +991,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.properties(assert_tests=True),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
@@ -1096,9 +1065,22 @@ def GenTests(api):
                       ),
               },
           })),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      "test": "base_unittests",
+                      "name": "base_unittests",
+                      "swarming": {
+                          "dimensions": {
+                              "os": "Mac-11"
+                          },
+                      },
+                      "test_id_prefix": "ninja://base:base_unittests/",
+                  },],
+              },
+          }),
+      api.flakiness(check_for_flakiness=True),
       api.step_data('git diff to analyze patch (2)',
                     api.raw_io.stream_output('chrome/file1.cc\nsrc/DEPS')),
       api.post_check(post_process.MustRun,
@@ -1122,9 +1104,22 @@ def GenTests(api):
                       ),
               },
           })),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      "test": "base_unittests",
+                      "name": "base_unittests",
+                      "swarming": {
+                          "dimensions": {
+                              "os": "Mac-11"
+                          },
+                      },
+                      "test_id_prefix": "ninja://base:base_unittests/",
+                  },],
+              },
+          }),
+      api.flakiness(check_for_flakiness=True),
       api.step_data(
           'git diff to analyze patch (2)',
           api.raw_io.stream_output('testing/buildbot/test_suites.pyl\n'
@@ -1150,9 +1145,22 @@ def GenTests(api):
                       ),
               },
           })),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      "test": "base_unittests",
+                      "name": "base_unittests",
+                      "swarming": {
+                          "dimensions": {
+                              "os": "Mac-11"
+                          },
+                      },
+                      "test_id_prefix": "ninja://base:base_unittests/",
+                  },],
+              },
+          }),
+      api.flakiness(check_for_flakiness=True),
       api.step_data(
           'git diff to analyze patch (2)',
           api.raw_io.stream_output('chrome/file1.cc\ncomponents/file2.cc')),
@@ -1177,9 +1185,22 @@ def GenTests(api):
                       ),
               },
           })),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'isolated_scripts': [{
+                      "test": "base_unittests",
+                      "name": "base_unittests",
+                      "swarming": {
+                          "dimensions": {
+                              "os": "Mac-11"
+                          },
+                      },
+                      "test_id_prefix": "ninja://base:base_unittests/",
+                  },],
+              },
+          }),
+      api.flakiness(check_for_flakiness=True),
       api.step_data('parse description',
                     api.json.output({'Validate-Test-Flakiness': ['Skip']})),
       api.post_check(

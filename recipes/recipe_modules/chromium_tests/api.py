@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import attr
 import collections
-from collections.abc import Collection, Iterable, Mapping
+from collections.abc import Callable, Collection, Iterable, Mapping
 import contextlib
 from functools import reduce
 import itertools
@@ -1431,43 +1431,46 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     failing_swarming_tests = [t for t in failing_tests if t.uses_isolate]
 
     source_dir = update_result.source_root.path
-    raw_result = self.run_mb_and_compile(
-        source_dir,
-        build_dir,
-        builder_id,
-        compile_targets,
-        [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
-        ' (%s)' % suffix,
-        include_utr_instruction=include_utr_instruction)
-    if raw_result:
-      # Clobber the bot upon compile failure without patch.
-      # See crbug.com/724533 for more detail.
-      if raw_result.status == common_pb.FAILURE:
-        self.m.file.rmtree('clobber', build_dir)
-
-      if raw_result.status != common_pb.SUCCESS:
-        return raw_result, None
-
-    if skylab_isolates:
-      self.prepare_artifact_for_skylab(
-          builder_config,
-          update_result.checkout_dir,
+    with self.m.context(
+        cwd=update_result.checkout_dir,
+        env=self.m.chromium.get_env(source_dir)):
+      raw_result = self.run_mb_and_compile(
           source_dir,
           build_dir,
-          [t for t in failing_tests if t.target_name in skylab_isolates],
-          phase=suffix)
-    if not failing_swarming_tests:
-      return None, None
+          builder_id,
+          compile_targets,
+          [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
+          ' (%s)' % suffix,
+          include_utr_instruction=include_utr_instruction)
+      if raw_result:
+        # Clobber the bot upon compile failure without patch.
+        # See crbug.com/724533 for more detail.
+        if raw_result.status == common_pb.FAILURE:
+          self.m.file.rmtree('clobber', build_dir)
 
-    return None, self.isolate_tests(
-        source_dir,
-        build_dir,
-        builder_config,
-        failing_swarming_tests,
-        suffix,
-        update_result.properties.get('got_revision_cp'),
-        swarm_hashes_property_name='swarm_hashes',
-    )
+        if raw_result.status != common_pb.SUCCESS:
+          return raw_result, None
+
+      if skylab_isolates:
+        self.prepare_artifact_for_skylab(
+            builder_config,
+            update_result.checkout_dir,
+            source_dir,
+            build_dir,
+            [t for t in failing_tests if t.target_name in skylab_isolates],
+            phase=suffix)
+      if not failing_swarming_tests:
+        return None, None
+
+      return None, self.isolate_tests(
+          source_dir,
+          build_dir,
+          builder_config,
+          failing_swarming_tests,
+          suffix,
+          update_result.properties.get('got_revision_cp'),
+          swarm_hashes_property_name='swarm_hashes',
+      )
 
   def should_skip_without_patch(
       self,
@@ -1543,21 +1546,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     self.m.test_utils.record_suite_statuses(test_suites, 'with patch')
     return culpable_failures
 
-  def _run_tests_with_retries(self,
-                              builder_id,
-                              task,
-                              deapply_changes,
-                              *,
-                              include_utr_instruction=False):
-    """This function runs tests with the CL patched in. On failure, this will
-    deapply the patch, rebuild/isolate binaries, and run the failing tests.
+  def _run_tests_with_patch(self, task: Task) -> tuple[bool, list[steps.Test]]:
+    """Run tests with the patch applied.
+
+    Args:
+      task: The task object for the build.
 
     Returns:
-      A Tuple of
-        A RawResult object with the failure message and status
-          A non-None value here means test were not run and compile failed,
-        An array of test suites which irrecoverably failed.
-          If all test suites succeeded, returns an empty array.
+      A tuple (run_without_patch, failing_tests):
+        run_without_patch: Whether or not the failing tests should be rerun
+          without the patch
+        failing_tests: The failing tests
     """
     self.configure_swarming(
         self.m.tryserver.is_tryserver, task_output_stdout='none')
@@ -1604,7 +1603,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # Exit without retries if there were invalid tests or if all tests passed
       if invalid_test_suites or not failing_test_suites:
         self.summarize_test_failures(task.test_suites)
-        return None, invalid_test_suites or []
+        return False, invalid_test_suites or []
 
       # Also exit if there are failures but we shouldn't deapply the patch
       targets_spec_dir = self.get_targets_spec_dir(task.checkout_dir,
@@ -1613,24 +1612,34 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if self.should_skip_without_patch(task.builder_config, task.source_dir,
                                         task.affected_files, targets_spec_dir):
         self.summarize_test_failures(task.test_suites)
-        return None, failing_test_suites
+        return False, failing_test_suites
 
-      deapply_changes(task.update_result, task.build_dir)
-      raw_result, _ = self.build_and_isolate_failing_tests(
-          task.build_dir,
-          builder_id,
-          task.builder_config,
-          failing_test_suites,
-          task.update_result,
-          'without patch',
-          include_utr_instruction=True)
-      if raw_result and raw_result.status != common_pb.SUCCESS:
-        return raw_result, []
+    return True, failing_test_suites
 
-      output_without_patch_property = self.m.step.empty(
-          'record ran_tests_without_patch')
-      output_without_patch_property.presentation.properties[
-          'ran_tests_without_patch'] = True
+  def _run_tests_without_patch(
+      self,
+      task: Task,
+      failing_test_suites: list[steps.Test],
+  ) -> list[steps.Test]:
+    """Run tests without the patch applied.
+
+    Args:
+      task: The task object for the build.
+      failing_tests_suites: The failing tests to potentially exonerate with the
+        results from running without the patch.
+
+    Returns:
+      The tests that could not be exonerated.
+    """
+    output_without_patch_property = self.m.step.empty(
+        'record ran_tests_without_patch')
+    output_without_patch_property.presentation.properties[
+        'ran_tests_without_patch'] = True
+    with self.wrap_chromium_tests(
+        task.checkout_dir,
+        task.source_dir,
+        task.build_dir,
+        tests=failing_test_suites):
       self.m.test_utils.run_tests(
           task.checkout_dir,
           task.source_dir,
@@ -1640,9 +1649,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           sort_by_shard=True,
           include_utr_instruction=True)
 
-      # Returns test suites whose failure is probably the CL's fault
-      return None, self.summarize_test_failures(task.test_suites,
-                                                failing_test_suites)
+      return self.summarize_test_failures(task.test_suites, failing_test_suites)
 
   def get_common_args_for_scripts(self, source_dir: Path, build_dir: Path):
     args = []
@@ -2113,17 +2120,23 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           source_dir, build_dir, name='runhooks (without patch)')
 
   def integration_steps(self, builder_id, builder_config):
-    return self.run_tests_with_and_without_changes(
+    return self.trybot_steps(
         builder_id, builder_config, deapply_changes=self.deapply_deps)
 
-  def trybot_steps(self,
-                   builder_id,
-                   builder_config,
-                   root_solution_revision=None,
-                   files_relative_to=None):
+  def trybot_steps(
+      self,
+      builder_id: chromium_types.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      root_solution_revision: str | None = None,
+      files_relative_to: str | None = None,
+      deapply_changes: Callable[[bot_update.Result, Path], None] | None = None,
+  ) -> result_pb2.RawResult | None:
     """Compiles and runs tests for chromium recipe.
 
     Args:
+      builder_id: A BuilderId for identifying a builder.
+      builder_config: A BuilderConfig for accessing the static builder
+        configuration.
       root_solution_revision: Git revision of Chromium to check out.
         Passed down to bot_update.ensure_checkout.
         Used by bots on CQs of projects which are Chromium components,
@@ -2132,18 +2145,97 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       files_relative_to: Directory that files should be made relative to.
         Passed down to chromium_checkout.get_files_affected_by_patch. If
         omitted, the default value set by that function will be used.
+      deapply_changes: A callable that takes the bot_update result and
+        the build directory and updates the checkout to deapply the
+        patch under test. Will be called when necessary to run tests
+        without the patch to exonerate failures that occurred with the
+        patch.
 
     Returns:
-      - A RawResult object with the status of the build
-        and a failure message if a failure occurred.
-      - None if no failures
+      A result with the status of the build and a failure message if a
+      failure occurred, None otherwise.
     """
-    return self.run_tests_with_and_without_changes(
+    self.raise_failure_if_cq_depends_footer_exists()
+
+    self.report_builders(builder_config)
+    self.print_link_to_results()
+    self.m.chromium_rts.init_rts_options(builder_config)
+
+    self.configure_build(builder_config)
+    self.m.chromium.apply_config('trybot_flavor')
+
+    # This rolls chromium checkout, applies the patch, runs gclient sync to
+    # update all DEPS.
+    # Chromium has a lot of tags which slow us down, we don't need them on
+    # trybots, so don't fetch them.
+    update_result, build_dir, targets_config = self.prepare_checkout(
+        builder_config,
+        timeout=3600,
+        no_fetch_tags=True,
+        root_solution_revision=root_solution_revision)
+
+    compile_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
-        deapply_changes=self.deapply_patch,
-        root_solution_revision=root_solution_revision,
+        update_result,
+        build_dir,
+        targets_config,
         files_relative_to=files_relative_to)
+    assert compile_result
+    if compile_result.status != common_pb.SUCCESS:
+      return compile_result
+
+    self.archive_build(
+        build_dir, update_result, enable_snoopy=self._enable_snoopy)
+
+    self.m.step.empty('mark: before_tests')
+    if not task.test_suites:
+      return None
+
+    try:
+      run_without_patch, failing_test_suites = self._run_tests_with_patch(task)
+      if not run_without_patch:
+        if failing_test_suites:
+          return self.handle_unrecoverable_test_suites(failing_test_suites)
+
+      else:
+        deapply_changes = deapply_changes or self.deapply_patch
+        deapply_changes(update_result, build_dir)
+        compile_result, _ = self.build_and_isolate_failing_tests(
+            build_dir,
+            builder_id,
+            task.builder_config,
+            failing_test_suites,
+            update_result,
+            'without patch',
+            include_utr_instruction=True)
+        if compile_result and compile_result.status != common_pb.SUCCESS:
+          return compile_result
+
+        unrecoverable_test_suites = self._run_tests_without_patch(
+            task, failing_test_suites)
+        if unrecoverable_test_suites:
+          return self.handle_unrecoverable_test_suites(
+              unrecoverable_test_suites)
+
+    finally:
+      if not self.m.runtime.in_global_shutdown:
+        self.m.chromium_swarming.report_stats()
+
+    # If this point is reached, it means the tests have passed and/or been
+    # exonerated and we'll check for new flaky tests if enabled for the builder
+    new_tests = self.m.flakiness.find_tests_for_flakiness(task.test_suites)
+    if new_tests:
+      # Executing for flakiness checks is done in chromium_tests so that we
+      # avoid a circular dependency between chromium_tests and flakiness.
+      return self.run_tests_for_flakiness(
+          task.checkout_dir,
+          task.source_dir,
+          build_dir,
+          new_tests,
+      )
+
+    return None
 
   def raise_failure_if_cq_depends_footer_exists(self):
     # CrOS CQ supports linking & testing CLs across different repos in one
@@ -2159,80 +2251,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             'Please remove the line(s) from the commit message and try '
             'again.'.format(self.m.tryserver.constants.CQ_DEPEND_FOOTER))
 
-  def run_tests_with_and_without_changes(self,
-                                         builder_id,
-                                         builder_config,
-                                         deapply_changes,
-                                         root_solution_revision=None,
-                                         files_relative_to=None):
-    """Compile and run tests for chromium_trybot recipe.
-
-    Args:
-      builder_id: A BuilderId for identifying a builder.
-      builder_config: A BuilderConfig for accessing the static builder
-        configuration.
-      deapply_changes: A function which deapplies changes to the code being
-        tested.
-      root_solution_revision: Git revision of Chromium to check out.
-      files_relative_to: Directory that files should be made relative to.
-        Passed down to chromium_checkout.get_files_affected_by_patch. If
-        omitted, the default value set by that function will be used.
-
-    Returns:
-      - A RawResult object with the status of the build and
-      failure message if an error occurred.
-      - None if no failures
-    """
-    self.raise_failure_if_cq_depends_footer_exists()
-
-    self.report_builders(builder_config)
-    self.print_link_to_results()
-    self.m.chromium_rts.init_rts_options(builder_config)
-    raw_result, task = self.build_affected_targets(
-        builder_id,
-        builder_config,
-        root_solution_revision=root_solution_revision,
-        files_relative_to=files_relative_to)
-    if raw_result and raw_result.status != common_pb.SUCCESS:
-      return raw_result
-
-    self.archive_build(
-        task.build_dir, task.update_result, enable_snoopy=self._enable_snoopy)
-
-    self.m.step.empty('mark: before_tests')
-    if task.test_suites:
-      compile_failure, unrecoverable_test_suites = self._run_tests_with_retries(
-          builder_id, task, deapply_changes)
-      if compile_failure:
-        return compile_failure
-
-      self.m.chromium_swarming.report_stats()
-
-      if unrecoverable_test_suites:
-        self.handle_invalid_test_suites(unrecoverable_test_suites)
-        status = self.determine_build_status_from_tests(
-            unrecoverable_test_suites, 'with patch')
-        return result_pb2.RawResult(
-            summary_markdown=self.format_unrecoverable_failures(
-                unrecoverable_test_suites, 'with patch'),
-            status=status)
-
-      # This means the tests passed, and we'll check for new flaky tests if
-      # enabled for the builder.
-      if (raw_result and raw_result.status == common_pb.SUCCESS and
-          self.m.flakiness.check_for_flakiness):
-        new_tests = self.m.flakiness.find_tests_for_flakiness(task.test_suites)
-        if new_tests:
-          # Executing for flakiness checks is done in chromium_tests so that we
-          # avoid a circular dependency between chromium_tests and flakiness.
-          return self.run_tests_for_flakiness(
-              task.checkout_dir,
-              task.source_dir,
-              task.build_dir,
-              new_tests,
-          )
-
-    return None
+  def handle_unrecoverable_test_suites(self, test_suites):
+    self.handle_invalid_test_suites(test_suites)
+    status = self.determine_build_status_from_tests(test_suites, 'with patch')
+    return result_pb2.RawResult(
+        summary_markdown=self.format_unrecoverable_failures(
+            test_suites, 'with patch'),
+        status=status)
 
   def handle_invalid_test_suites(self, test_suites):
     # This means there was a failure of some sort
@@ -2514,20 +2539,21 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self,
       builder_id: chromium_types.BuilderId,
       builder_config: ctbc.BuilderConfig,
+      update_result: bot_update.Result,
+      build_dir: Path,
+      targets_config: targets_config_module.TargetsConfig,
       *,
-      root_solution_revision: str | None = None,
       isolate_output_files_for_coverage: bool = False,
-      additional_compile_targets: Iterable[str] = None,
+      additional_compile_targets: Iterable[str] | None = None,
       skip_analysis_reasons: Iterable[str] | None = None,
       files_relative_to: str | None = None,
-  ):
+  ) -> tuple[result_pb2.RawResult | None, Task]:
     """Builds targets affected by change.
 
     Args:
       builder_id: A BuilderId for identifying a builder.
       builder_config: A BuilderConfig for accessing the static builder
         configuration.
-      root_solution_revision: Git revision of Chromium to check out.
       isolate_output_files_for_coverage: Whether to also upload all test
         binaries and other required code coverage output files to one hash. If
         code_coverage.instrument sets skipping_coverage to True, then this
@@ -2550,19 +2576,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           and the failure message if it failed
         Configuration of the build/test.
     """
-    self.configure_build(builder_config)
-
-    self.m.chromium.apply_config('trybot_flavor')
-
-    # This rolls chromium checkout, applies the patch, runs gclient sync to
-    # update all DEPS.
-    # Chromium has a lot of tags which slow us down, we don't need them on
-    # trybots, so don't fetch them.
-    update_result, build_dir, targets_config = self.prepare_checkout(
-        builder_config,
-        timeout=3600,
-        no_fetch_tags=True,
-        root_solution_revision=root_solution_revision)
 
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True, relative_to=files_relative_to)

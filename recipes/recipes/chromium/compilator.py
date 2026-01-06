@@ -80,14 +80,13 @@ def compilator_steps(api, properties):
     # with RTS independent of compilator
     api.chromium_rts.rts_model = properties.rts_model
 
+    api.chromium_tests.configure_build(orch_builder_config)
+    api.chromium.apply_config('trybot_flavor')
+
     # test_targets implies that this compilator build must be compiled
     # without a patch so that the orchestrator can retry these tests
     # without patch
     if properties.test_targets:
-      api.chromium_tests.configure_build(
-          orch_builder_config,
-      )
-      api.chromium.apply_config('trybot_flavor')
       update_result, build_dir, targets_config = api.chromium_tests.prepare_checkout(
           orch_builder_config,
           timeout=3600,
@@ -118,9 +117,16 @@ def compilator_steps(api, properties):
               'without patch',
               additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME]))
     else:
+      update_result, build_dir, targets_config = (
+          api.chromium_tests.prepare_checkout(
+              orch_builder_config, timeout=3600, no_fetch_tags=True))
+
       raw_result, task = api.chromium_tests.build_affected_targets(
           orch_builder_id,
           orch_builder_config,
+          update_result,
+          build_dir,
+          targets_config,
           isolate_output_files_for_coverage=True,
           additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
           skip_analysis_reasons=properties.skip_analysis_reasons)

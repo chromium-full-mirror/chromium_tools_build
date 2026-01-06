@@ -36,29 +36,7 @@ def RunSteps(api):
   # flakiness workflow for testing.
   b_id, b_config = api.chromium_tests_builder_config.lookup_builder()
   with api.chromium.chromium_layout():
-    api.chromium_tests.report_builders(b_config)
-
-    # Tasks must have test suites for the flakiness workflow.
-    _, task = api.chromium_tests.build_affected_targets(b_id, b_config)
-    curr_tests = task.test_suites
-    assert curr_tests
-
-    api.step.empty('mark: before_tests')
-
-    _, unrecoverable_test_suites = api.chromium_tests._run_tests_with_retries(
-        b_id, task, api.chromium_tests.deapply_patch)
-
-    api.chromium_swarming.report_stats()
-    api.chromium_tests.handle_invalid_test_suites(unrecoverable_test_suites)
-
-    new_tests = api.flakiness.find_tests_for_flakiness(task.test_suites)
-    if new_tests:
-      api.chromium_tests.run_tests_for_flakiness(
-          task.checkout_dir,
-          task.source_dir,
-          task.build_dir,
-          new_tests,
-      )
+    api.chromium_tests.trybot_steps(b_id, b_config)
 
 
 def GenTests(api):

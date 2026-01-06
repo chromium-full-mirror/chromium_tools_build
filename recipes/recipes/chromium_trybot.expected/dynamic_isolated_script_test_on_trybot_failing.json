@@ -6343,6 +6343,15 @@
   },
   {
     "cmd": [],
+    "name": "TRYJOB DO NOT RETRY",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/cq/output@{\"retry\": \"OUTPUT_RETRY_DENIED\"}@@@",
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/cv/output@{\"retry\": \"OUTPUT_RETRY_DENIED\"}@@@",
+      "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "Test statistics",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>Stats<br/>Total shards: 3<br/>Total deduped shards: 0<br/><br/>Total runtime: 1m 35s<br/>Total saved runtime from deduping: 0s<br/>@@@",
@@ -6353,15 +6362,6 @@
       "@@@STEP_LOG_LINE@detailed stats@Total saved runtime from deduping: 0s@@@",
       "@@@STEP_LOG_LINE@detailed stats@Min/mean/max: 32s / 32s / 32s@@@",
       "@@@STEP_LOG_END@detailed stats@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "TRYJOB DO NOT RETRY",
-    "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/cq/output@{\"retry\": \"OUTPUT_RETRY_DENIED\"}@@@",
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/cv/output@{\"retry\": \"OUTPUT_RETRY_DENIED\"}@@@",
-      "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@"
     ]
   },
   {

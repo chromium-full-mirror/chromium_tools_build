@@ -42,9 +42,15 @@ def RunSteps(api, properties):
           builder_id=orch_builder_id))
   api.chromium_tests.configure_build(orch_builder_config)
 
+  update_result, build_dir, targets_config = (
+      api.chromium_tests.prepare_checkout(orch_builder_config))
+
   _, task = api.chromium_tests.build_affected_targets(
       orch_builder_id,
       orch_builder_config,
+      update_result,
+      build_dir,
+      targets_config,
       isolate_output_files_for_coverage=True,
       additional_compile_targets=['infra_orchestrator:orchestrator_all'])
 
