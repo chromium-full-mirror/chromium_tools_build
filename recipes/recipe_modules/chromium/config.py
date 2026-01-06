@@ -263,6 +263,9 @@ def mb_no_luci_auth(c):
 
 @config_ctx()
 def mb_allow_dup_isolate_entry(c):
+  """This config allows duplicated isolate entries from isolate map files.
+  Should only be used during a migration from multiple isolate map files to a
+  single starlark-generated isolate map file."""
   c.project_generator.allow_dup_isolate_entry = True
 
 
@@ -421,12 +424,10 @@ def clang_tot(c):
 # can be correctly reported
 
 
-# TODO(crbug.com/433525189): Remove this flag after the migration is done.
-@config_ctx(includes=['mb_allow_dup_isolate_entry'])
+@config_ctx()
 def internal_isolate_paths(c):
   c.project_generator.isolate_map_paths = [
-      'infra/config/generated/testing/gn_isolate_map.pyl',
-      'internal/testing/buildbot/gn_isolate_map.pyl',
+      'internal/infra/config/generated/testing/gn_isolate_map.pyl',
   ]
 
 
