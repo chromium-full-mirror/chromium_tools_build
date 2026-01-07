@@ -65,6 +65,8 @@ PROPERTIES = {
     # loops). Repetitions are doubled on each attempt until there's enough
     # confidence.
     'max_calibration_attempts': Property(default=5, kind=Single((int, float))),
+    # Minimum number of flakes needed to have confidence in a run.
+    'min_flake_threshold': Property(default=4, kind=Single((int, float))),
     # Name of the isolated file (e.g. bot_default, mjsunit).
     'isolated_name': Property(kind=str),
     # Bisection mode: one of {regression|progression|combined|repro}.
@@ -128,9 +130,6 @@ MAX_LABEL_SIZE = 32
 # Maximum number of swarming shards to be used for a single attempt.
 MAX_SWARMING_SHARDS = 8
 
-# Minimim number of flakes needed to have confidence in a run.
-MIN_FLAKE_THRESHOLD = 4
-
 # Response of gsutil when non-existing objects are looked up.
 GSUTIL_NO_MATCH_TXT = 'One or more URLs matched no objects'
 
@@ -174,11 +173,12 @@ FLAG_HISTORY = [
 class Command:
   """Helper class representing a command line to V8's run-tests.py."""
   def __init__(self, outdir, test_name, variant, repetitions, repro_only,
-               total_timeout_sec, timeout, extra_args, flag_history):
+               total_timeout_sec, timeout, extra_args, flag_history,
+               min_flake_threshold):
     self.repetitions = repetitions
     self.test_name = test_name
     self.total_timeout_sec = total_timeout_sec
-    self.min_failures = 1 if repro_only else MIN_FLAKE_THRESHOLD
+    self.min_failures = 1 if repro_only else min_flake_threshold
     self.flag_history = flag_history
     self.base_cmd = [
         'tools/run-tests.py',
@@ -551,7 +551,7 @@ class Builds:
 class Runner:
   """Helper class for executing the V8 test runner to check for flakes."""
   def __init__(self, api, builds, command, num_shards, repro_only,
-               max_calibration_attempts, failure_regexp):
+               max_calibration_attempts, min_flake_threshold, failure_regexp):
     self.api = api
     self.builds = builds
     self.command = command
@@ -559,6 +559,7 @@ class Runner:
     self.repro_only = repro_only
     self.multiplier = 1
     self.max_calibration_attempts = max_calibration_attempts
+    self.min_flake_threshold = min_flake_threshold
     self.failure_regexp = None
     if failure_regexp:
       self.failure_regexp = re.compile(failure_regexp)
@@ -567,7 +568,7 @@ class Runner:
     """Calibrates the multiplier for test time or repetitions of the runner for
     the given offset.
 
-    Testing is repeated until MIN_FLAKE_THRESHOLD test failures are counted in
+    Testing is repeated until min_flake_threshold test failures are counted in
     an attempt. First the number of swarming shards, then the multiplier is
     doubled on each fresh attempt.
 
@@ -579,7 +580,7 @@ class Runner:
       with self.api.step.nest(f'calibration attempt {i + 1}') as parent:
         num_failures = self.check_num_flakes(offset)
         if (self.repro_only and num_failures or
-            num_failures >= MIN_FLAKE_THRESHOLD):
+            num_failures >= self.min_flake_threshold):
           parent.step_text = 'successfully reproduced flaky test'
           return True
         if self.num_shards < MAX_SWARMING_SHARDS:
@@ -703,7 +704,7 @@ class Runner:
       for task in tasks:
         num_failures += collect_task(task)
         if (self.repro_only and num_failures or
-            num_failures >= MIN_FLAKE_THRESHOLD):
+            num_failures >= self.min_flake_threshold):
           # Stop waiting for more tasks early if already enough failures are
           # found.
           # TODO(machenbach): Cancel the tasks we don't collect. During
@@ -912,14 +913,16 @@ def create_flakes_pyl_entry_step(api, config):
 
 
 def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
-             failure_regexp, max_calibration_attempts, isolated_name, mode,
-             num_shards, outdir, override_flag_history, repetitions, revision,
-             swarming_dimensions, swarming_priority, swarming_expiration,
-             test_name, timeout_sec, total_timeout_sec, to_revision, variant):
+             failure_regexp, max_calibration_attempts, min_flake_threshold,
+             isolated_name, mode, num_shards, outdir, override_flag_history,
+             repetitions, revision, swarming_dimensions, swarming_priority,
+             swarming_expiration, test_name, timeout_sec, total_timeout_sec,
+             to_revision, variant):
   # Convert floats to ints.
   assert mode in BISECTORS
   repro_only = mode == 'repro'
   max_calibration_attempts = max(min(int(max_calibration_attempts), 5), 1)
+  min_flake_threshold = max(min(int(min_flake_threshold), 4), 1)
   num_shards = int(num_shards)
   repetitions = int(repetitions)
   timeout_sec = int(timeout_sec)
@@ -944,9 +947,10 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
   builds = Builds(
       api, depot, bisect_builder_group, bisect_buildername, isolated_name)
   command = Command(outdir, test_name, variant, repetitions, repro_only,
-                    total_timeout_sec, timeout_sec, extra_args, flag_history)
+                    total_timeout_sec, timeout_sec, extra_args, flag_history,
+                    min_flake_threshold)
   runner = Runner(api, builds, command, num_shards, repro_only,
-                  max_calibration_attempts, failure_regexp)
+                  max_calibration_attempts, min_flake_threshold, failure_regexp)
   bisector = BISECTORS[mode](api, depot, builds, runner.check_num_flakes)
 
   known_bad_offset = builds.find_closest_build(0)
