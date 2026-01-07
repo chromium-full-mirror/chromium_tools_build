@@ -957,7 +957,7 @@
       "@@@STEP_LOG_LINE@json.output[failure_summary] (exception)@Expecting value: line 1 column 1 (char 0)@@@",
       "@@@STEP_LOG_END@json.output[failure_summary] (exception)@@@",
       "@@@STEP_LOG_LINE@analyze_details@{@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": null,@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
       "@@@STEP_LOG_LINE@analyze_details@    \"//foo/bar:target2\",@@@",
       "@@@STEP_LOG_LINE@analyze_details@    \"//foo/bar:target3\"@@@",

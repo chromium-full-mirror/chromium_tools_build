@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Mapping
+from collections.abc import Callable, Collection, Iterable, Mapping
 import functools
 import itertools
 import posixpath
 import re
-from typing import Any
+import typing
 
 from recipe_engine import config_types
 from recipe_engine import recipe_api
@@ -17,10 +17,45 @@ from recipe_engine import step_data
 
 from RECIPE_MODULES.build import chromium_types
 
-_AnalyzeInput = dict[str, Collection[str]]
-_AnalyzeOutput = dict[str, Any]
+_AnalyzeInput: typing.TypeAlias = dict[str, Collection[str]]
+_AnalyzeOutput: typing.TypeAlias = dict[str, typing.Any]
 # _AnalyzeOutput is the test data value
-_Analyzer = Callable[[_AnalyzeInput, _AnalyzeOutput], step_data.StepData]
+_Analyzer: typing.TypeAlias = Callable[[_AnalyzeInput, _AnalyzeOutput],
+                                       step_data.StepData]
+
+
+class ResultsCallback(typing.Protocol):
+  """A callback to report the results of an analyze operation."""
+
+  def __call__(
+      self,
+      reason: str,
+      compile_targets: Iterable[str],
+      test_targets: Iterable[str],
+      /,
+      *,
+      skip_reasons: Iterable[str] = (),
+  ) -> None:
+    """Execute the callback to report the results.
+
+    Args:
+      reason: The reason that the provided results were computed.
+      compile_targets: The affected compile targets.
+      test_targets: The affected test targets.
+      skip_reasons: If provided, any reasons why analysis was skipped.
+    """
+
+
+def _noop_results_callback(
+    reason: str,
+    compile_targets: Iterable[str],
+    test_targets: Iterable[str],
+    /,
+    *,
+    skip_reasons: Iterable[str] = (),
+) -> None:
+  pass
+
 
 
 class FilterApi(recipe_api.RecipeApi):
@@ -198,6 +233,7 @@ class FilterApi(recipe_api.RecipeApi):
 
   def _determine_affected_targets(
       self,
+      results_callback: ResultsCallback,
       paths: Collection[str],
       test_targets: Collection[str],
       additional_compile_targets: Collection[str],
@@ -217,7 +253,19 @@ class FilterApi(recipe_api.RecipeApi):
             log_text=f'{path} (regex = \'{matched_pattern.pattern}\'), '
             f'exclusion source: {exclusions[matched_pattern]}')
         all_targets = set(test_targets) | set(additional_compile_targets)
-        return sorted(test_targets), sorted(all_targets)
+
+        all_targets = sorted(all_targets)
+        test_targets = sorted(test_targets)
+
+        results_callback(
+            'skipping analysis',
+            all_targets,
+            test_targets,
+            skip_reasons=[(f'matched exclusion: {path}'
+                           f' matched regex "{matched_pattern.pattern}"'
+                           f' from {exclusions[matched_pattern]}')])
+
+        return test_targets, all_targets
 
     analyze_input = {
         'files': paths,
@@ -245,7 +293,7 @@ class FilterApi(recipe_api.RecipeApi):
 
     if (step_result.json.output['status'] in ('Found dependency',
                                               'Found dependency (all)')):
-      test_targets = step_result.json.output['test_targets']
+      test_targets = sorted(step_result.json.output['test_targets'])
       compile_targets = step_result.json.output['compile_targets']
 
       # TODO(dpranke) crbug.com/557505 - we need to not prune meta
@@ -256,11 +304,16 @@ class FilterApi(recipe_api.RecipeApi):
       # test_targets into compile_targets to be safe.
       compile_targets = sorted(set(test_targets + compile_targets))
 
+      results_callback('analysis complete', compile_targets, test_targets)
+
       return test_targets, compile_targets
 
     step_result.presentation.step_text = 'No compile necessary'
     step_result.presentation.properties['no_compile'] = sorted(
         itertools.chain(test_targets, additional_compile_targets))
+
+    results_callback('analysis complete, found no dependencies', [], [])
+
     return [], []
 
   def analyze(
@@ -278,6 +331,7 @@ class FilterApi(recipe_api.RecipeApi):
       mb_path: config_types.Path | None = None,
       mb_config_path: config_types.Path | None = None,
       phase: str | None = None,
+      results_callback: ResultsCallback | None = None,
   ) -> tuple[Collection[str], Collection[str]]:
     """Runs "analyze" step to determine targets affected by the patch.
 
@@ -336,6 +390,8 @@ class FilterApi(recipe_api.RecipeApi):
         script.
       mb_config_path: The path to the MB config file.
       phase: String to distinguish the phase of a builder.
+      results_callback: Callback that will be called with the results of
+        the analyze operation.
 
     Returns:
       A 2-element tuple: * The collection of provided test targets that
@@ -379,11 +435,16 @@ class FilterApi(recipe_api.RecipeApi):
     else:
       analyzer = functools.partial(self._run_chromium_gyp_analyze, source_dir)
 
+    test_targets = list(test_targets or [])
+    additional_compile_targets = list(additional_compile_targets or [])
+    results_callback = results_callback or _noop_results_callback
+
     analyze_test_targets, analyze_compile_targets = (
         self._determine_affected_targets(
+            results_callback,
             paths,
-            test_targets or [],
-            additional_compile_targets or [],
+            test_targets,
+            additional_compile_targets,
             exclusions,
             ignores,
             analyzer,
