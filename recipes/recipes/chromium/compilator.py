@@ -3,23 +3,27 @@
 # found in the LICENSE file.
 """Compiles with patch and isolates tests"""
 
+from recipe_engine import post_process
 from recipe_engine.config_types import Path
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from PB.recipes.build.chromium.compilator import InputProperties
-from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
-from RECIPE_MODULES.build.chromium_tests.api import (
-    ALL_TEST_BINARIES_ISOLATE_NAME)
 from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES
-from recipe_engine import post_process
+
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import common as resultdb_common
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.recipe_engine import result as result_pb2
+from PB.recipes.build.chromium.compilator import InputProperties
+from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
+from PB.turboci.graph.orchestrator.v1.check_state import CheckState
+from PB.turboci.graph.orchestrator.v1.graph_view import GraphView
+
 
 DEPS = [
     'chromium',
@@ -93,7 +97,8 @@ def compilator_steps(api, properties):
           no_fetch_tags=True,
           enforce_fetch=True,
           patch=False,
-          runhooks_suffix='without patch')
+          runhooks_suffix='without patch',
+          turboci_source_check_id=chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID)
 
       # code coverage is ignored for without patch steps, but compile will
       # error if there is no files_to_instrument.txt file
@@ -119,7 +124,10 @@ def compilator_steps(api, properties):
     else:
       update_result, build_dir, targets_config = (
           api.chromium_tests.prepare_checkout(
-              orch_builder_config, timeout=3600, no_fetch_tags=True))
+              orch_builder_config,
+              timeout=3600,
+              no_fetch_tags=True,
+              turboci_source_check_id=chromium_tests.SOURCE_CHECK_ID))
 
       raw_result, task = api.chromium_tests.build_affected_targets(
           orch_builder_id,
@@ -423,6 +431,18 @@ def GenTests(api):
             builder='fake-tester',
         ).assemble())
 
+  def basic_assert_graph(assert_, graph: GraphView):
+    check_ids = set(graph.checks.keys())
+    if not assert_(check_ids == {chromium_tests.SOURCE_CHECK_ID}):
+      return  # pragma: no cover
+
+    # The source check is created by bot_update, just verify it's of appropriate
+    # kind and is final, none of the other details since the check isn't being
+    # read by the recipe code
+    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
+    assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
+
   yield api.test(
       'basic',
       api.chromium.try_build(
@@ -466,6 +486,7 @@ def GenTests(api):
                        'angle_unittests_no_swarm (with patch)'),
       api.post_process(post_process.DoesNotRun, 'angle_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
+      api.assert_turboci_graph(basic_assert_graph),
   )
 
   yield api.test(
@@ -806,7 +827,7 @@ def GenTests(api):
           post_process.LogDoesNotContain,
           'isolate tests (with patch)',
           'json.output',
-          [ALL_TEST_BINARIES_ISOLATE_NAME],
+          [chromium_tests.ALL_TEST_BINARIES_ISOLATE_NAME],
       ),
       api.post_process(post_process.PropertyEquals, 'skipping_coverage', True),
       api.post_process(post_process.MustRun,

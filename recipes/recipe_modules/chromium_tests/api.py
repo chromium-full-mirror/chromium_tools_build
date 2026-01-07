@@ -52,6 +52,9 @@ REPOSITORY_MAPPING = {
 TEST_TRIGGER_AND_COLLECT_DEPS_TARGET = 'infra/orchestrator:orchestrator_all'
 TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE = 'orchestrator_all.runtime_deps'
 
+SOURCE_CHECK_ID = 'checkout'
+WITHOUT_PATCH_SOURCE_CHECK_ID = 'checkout (without patch)'
+
 
 @attrs()
 class SwarmingExecutionInfo:
@@ -428,12 +431,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       set_output_commit=True,
       root_solution_revision=None,
       runhooks_suffix=None,
+      *,
+      turboci_source_check_id: str = '',
       **kwargs,
   ) -> tuple[bot_update.Result, Path, targets_config_module.TargetsConfig]:
     """Perform the checkout to enable testing.
 
     Args:
       runhooks_suffix: Suffix for gclient runhooks step name
+      turboci_source_check_id: The ID of the TurboCI source check to
+        create for the checkout.
 
     Returns:
       A tuple containing:
@@ -455,6 +462,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         clobber=builder_config.clobber,
         set_output_commit=set_output_commit,
         root_solution_revision=root_solution_revision,
+        turboci_check_id=turboci_source_check_id,
         **kwargs)
     source_dir = update_result.source_root.path
     build_dir = self.m.chromium.default_build_dir(source_dir)
@@ -1370,11 +1378,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             self.m.chromium_android.common_tests_final_steps(
                 source_dir, build_dir, run_stackwalker=True)
 
-  def deapply_patch(self, update_result, build_dir: Path):
+  def deapply_patch(
+      self,
+      update_result: bot_update.Result,
+      build_dir: Path,
+      turboci_source_check_id: str = '',
+  ) -> None:
     assert self.m.tryserver.is_tryserver
 
     with self.m.context(cwd=update_result.checkout_dir):
-      self.m.bot_update.deapply_patch(update_result)
+      self.m.bot_update.deapply_patch(
+          update_result, turboci_check_id=turboci_source_check_id)
 
     source_dir = update_result.source_root.path
     with self.m.context(cwd=source_dir):
@@ -2092,7 +2106,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return valid, invalid
 
-  def deapply_deps(self, update_result: bot_update.Result, build_dir: Path):
+  def deapply_deps(
+      self,
+      update_result: bot_update.Result,
+      build_dir: Path,
+      turboci_source_check_id: str,
+  ) -> None:
     with self.m.context(cwd=update_result.checkout_dir):
       # If tests fail, we want to fix Chromium revision only. Tests will use
       # the dependencies versioned in 'src' tree.
@@ -2111,7 +2130,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           no_fetch_tags=True,
           update_presentation=False,
           ignore_input_commit=True,
-          set_output_commit=False)
+          set_output_commit=False,
+          turboci_check_id=turboci_source_check_id)
 
     source_dir = update_result.source_root.path
     with self.m.context(cwd=source_dir):
@@ -2129,7 +2149,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_config: ctbc.BuilderConfig,
       root_solution_revision: str | None = None,
       files_relative_to: str | None = None,
-      deapply_changes: Callable[[bot_update.Result, Path], None] | None = None,
+      deapply_changes: Callable[[bot_update.Result, Path, str], None]
+      | None = None,
   ) -> result_pb2.RawResult | None:
     """Compiles and runs tests for chromium recipe.
 
@@ -2172,7 +2193,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_config,
         timeout=3600,
         no_fetch_tags=True,
-        root_solution_revision=root_solution_revision)
+        root_solution_revision=root_solution_revision,
+        turboci_source_check_id=SOURCE_CHECK_ID)
 
     compile_result, task = self.build_affected_targets(
         builder_id,
@@ -2200,7 +2222,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       else:
         deapply_changes = deapply_changes or self.deapply_patch
-        deapply_changes(update_result, build_dir)
+        deapply_changes(update_result, build_dir, WITHOUT_PATCH_SOURCE_CHECK_ID)
         compile_result, _ = self.build_and_isolate_failing_tests(
             build_dir,
             builder_id,

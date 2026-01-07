@@ -10,17 +10,19 @@ from recipe_engine import post_process
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
+from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
 
-from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import common as resultdb_common
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
+from PB.turboci.graph.orchestrator.v1.check_state import CheckState
+from PB.turboci.graph.orchestrator.v1.graph_view import GraphView
 
 DEPS = [
     'chromium',
@@ -146,6 +148,18 @@ def RunSteps(api: RecipeApi):
 def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
+  def basic_assert_graph(assert_, graph: GraphView):
+    check_ids = set(graph.checks.keys())
+    if not assert_(check_ids == {chromium_tests.SOURCE_CHECK_ID}):
+      return  # pragma: no cover
+
+    # The source check is created by bot_update, just verify it's of appropriate
+    # kind and is final, none of the other details since the check isn't being
+    # read by the recipe code
+    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
+    assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
+
   yield api.test(
       'basic',
       api.platform('linux', 64),
@@ -158,13 +172,16 @@ def GenTests(api: RecipeTestApi):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_targets_spec('fake-group', {
-          'fake-builder': {
-              'gtest_tests': [{
-                  'test': 'base_unittests',
-              }],
+      api.chromium_tests.read_targets_spec(
+          'fake-group',
+          {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                  }],
+              },
           },
-      }),
+      ),
       api.post_process(post_process.StepSuccess,
                        'gerrit fetch current CL info'),
       api.post_process(post_process.StepCommandContains, 'bot_update', [
@@ -176,6 +193,7 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.StepSuccess, 'compile (with patch)'),
       api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
+      api.assert_turboci_graph(basic_assert_graph),
   )
 
   yield api.test(
@@ -418,6 +436,27 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.DropExpectation),
   )
 
+  def retry_shards_without_patch_assert_graph(assert_, graph: GraphView):
+    check_ids = set(graph.checks.keys())
+    if not assert_(
+        check_ids == {
+            chromium_tests.SOURCE_CHECK_ID,
+            chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
+        }):
+      return  # pragma: no cover
+
+    # The source check is created by bot_update, just verify it's of appropriate
+    # kind and is final, none of the other details since the check isn't being
+    # read by the recipe code
+    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
+    assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
+
+    without_patch_source_check = graph.checks[
+        chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID].check
+    assert_(without_patch_source_check.kind == CheckKind.CHECK_KIND_SOURCE)
+    assert_(without_patch_source_check.state == CheckState.CHECK_STATE_FINAL)
+
   yield api.test(
       'retry_shards_without_patch',
       custom_props(),
@@ -440,6 +479,7 @@ def GenTests(api: RecipeTestApi):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
       api.post_process(post_process.DropExpectation),
+      api.assert_turboci_graph(retry_shards_without_patch_assert_graph),
   )
 
   yield api.test(
