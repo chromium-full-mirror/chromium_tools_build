@@ -62,8 +62,8 @@ message InputProperties {
   // Siso flag for `--output_local_strategy`.
   string output_local_strategy = 12;
 
-  // Siso flag whether to set `-k 0` or not.
-  bool keep_going = 16;
+  // Siso flag for setting `-k`.
+  optional int32 keep_going = 16;
 
   // Disable batch mode for `siso ninja` by setting `-batch=false`.
   bool disable_batch_mode = 17;
