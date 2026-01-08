@@ -1,0 +1,43 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package turboci.data.chrome.build.v1;
+
+option go_package = "go.chromium.org/turboci/proto/go/data/chrome/build/v1;buildpb";
+option java_multiple_files = true;
+
+// AnalyzeOptions provides inputs to analyze. Analyze is used to reduce the set
+// of compile targets that are built to only those that have a build graph
+// dependency on a file changed by the CL under test.
+message AnalyzeOptions {
+  // The compile targets that are explicitly requested for compilation.
+  repeated string compile_targets = 1;
+  // The compile targets corresponding to the tests to potentially execute.
+  repeated string test_targets = 2;
+
+  // A path relative to the top-level repo to a file with configuration for
+  // affected files that cause analyze to be skipped. The path should be
+  // relative to the root of the top-level repo.
+  //
+  // The format of the file is a json object with attributes that are analyze
+  // configs. An analyze config with the name "base" must be present and will
+  // always be used. Additional analyze configs may be present and will be used
+  // if the name is present in analyze_names.
+  //
+  // Each analyze config is a json object that may contain "exclusions" and/or
+  // "ignores" attributes. The value of either attribute is a list of regexes
+  // that will be matched against the affected file paths . For each file path,
+  // if the entire path matches an exclusion regex and doesn't match any ignore
+  // regexes then analyze will be skipped, causing all of the input compile
+  // targets to be built.
+  optional string analyze_config_path = 3;
+  // Names of additional analyze configs to use.
+  repeated string analyze_config_names = 4;
+
+  // Additional exclusions provided by the workflow. The keys are the file-path
+  // relative to the top-level repo with the values being a description of the
+  // reason for the exclusion.
+  map<string, string> additional_exclusions = 5;
+}

@@ -1,0 +1,22 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package turboci.data.chrome.build.v1;
+
+option go_package = "go.chromium.org/turboci/proto/go/data/chrome/build/v1;buildpb";
+option java_multiple_files = true;
+
+// AnalyzeResults provides the results of analyze. Analyze is used to reduce the
+// set of compile targets that are built to only those that have a build graph
+// dependency on a file changed by the CL under test.
+message AnalyzeResults {
+  // The compile targets to build after considering build graph dependencies.
+  // This includes both targets corresponding to the tests that should be
+  // executed and targets explicitly requested for compilation.
+  repeated string compile_targets = 1;
+  // The compile targets corresponding to the tests that should be executed.
+  // This will be a subset of compile_targets.
+  repeated string test_targets = 2;
+}
