@@ -257,8 +257,9 @@ class SisoApi(recipe_api.RecipeApi):
         with self.m.step.nest('upload siso reports') as s:
           s.step_text = name
           now = self.m.time.utcnow()
+          report_id = ninja_invocation_id or self.m.uuid.random()
           report_foldername = 'reports.%s.%s' % (now.strftime('%Y%m%dT%H%M%SZ'),
-                                                 self.m.uuid.random())
+                                                 report_id)
           gs_foldername = '%s/siso/%s' % (now.date().strftime('%Y/%m/%d'),
                                           report_foldername)
           for file in [

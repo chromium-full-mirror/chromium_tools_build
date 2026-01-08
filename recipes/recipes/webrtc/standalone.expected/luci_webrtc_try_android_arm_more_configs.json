@@ -1053,7 +1053,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz"
+      "[TMP_BASE]/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1083,8 +1083,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz"
+      "[TMP_BASE]/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1105,9 +1105,9 @@
     },
     "name": "gsutil upload ninja_log",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\"}@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
     ]
   },
   {
@@ -1799,7 +1799,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
-      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001343"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000133d"
     },
     "luci_context": {
       "realm": {
@@ -1815,7 +1815,7 @@
     },
     "name": "compile (2)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
     }
   },
   {
@@ -1864,7 +1864,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz"
+      "[TMP_BASE]/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1894,8 +1894,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz"
+      "[TMP_BASE]/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1916,9 +1916,9 @@
     },
     "name": "gsutil upload ninja_log (2)",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz\"}@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz\"}@@@"
     ]
   },
   {
@@ -1944,7 +1944,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001343"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000133d"
     },
     "luci_context": {
       "realm": {
@@ -1960,7 +1960,7 @@
     },
     "name": "compile confirm no-op (2)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
+      "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
     }
   },
   {
@@ -2642,7 +2642,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
-      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000134f"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001343"
     },
     "luci_context": {
       "realm": {
@@ -2658,7 +2658,7 @@
     },
     "name": "compile (3)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-00000000134f"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     }
   },
   {
@@ -2707,7 +2707,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz"
+      "[TMP_BASE]/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -2737,8 +2737,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz"
+      "[TMP_BASE]/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -2759,9 +2759,9 @@
     },
     "name": "gsutil upload ninja_log (3)",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz\", \"gsutil upload ninja_log (3)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz\"}@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz\", \"gsutil upload ninja_log (3)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz\"}@@@"
     ]
   },
   {
@@ -2788,7 +2788,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000134f"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001343"
     },
     "luci_context": {
       "realm": {
@@ -2804,7 +2804,7 @@
     },
     "name": "compile confirm no-op (3)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-00000000134f"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     }
   },
   {
@@ -3505,7 +3505,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
-      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000135b"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001349"
     },
     "luci_context": {
       "realm": {
@@ -3521,7 +3521,7 @@
     },
     "name": "compile (4)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-00000000135b"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
     }
   },
   {
@@ -3570,7 +3570,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125336.00000000-0000-0000-0000-000000001361.gz"
+      "[TMP_BASE]/ninja_log.20120514-125336.00000000-0000-0000-0000-00000000134c.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -3600,8 +3600,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]/ninja_log.20120514-125336.00000000-0000-0000-0000-000000001361.gz",
-      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-000000001361.gz"
+      "[TMP_BASE]/ninja_log.20120514-125336.00000000-0000-0000-0000-00000000134c.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-00000000134c.gz"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -3622,9 +3622,9 @@
     },
     "name": "gsutil upload ninja_log (4)",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-000000001361.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-000000001361.gz@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001349.gz\", \"gsutil upload ninja_log (3)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001355.gz\", \"gsutil upload ninja_log (4)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-000000001361.gz\"}@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-00000000134c.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-00000000134c.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz\", \"gsutil upload ninja_log (3)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz\", \"gsutil upload ninja_log (4)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125336.00000000-0000-0000-0000-00000000134c.gz\"}@@@"
     ]
   },
   {
@@ -3650,7 +3650,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "SISO_BUILD_ID": "00000000-0000-0000-0000-00000000135b"
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001349"
     },
     "luci_context": {
       "realm": {
@@ -3666,7 +3666,7 @@
     },
     "name": "compile confirm no-op (4)",
     "tags": {
-      "ninja_invocation_id": "00000000-0000-0000-0000-00000000135b"
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
     }
   },
   {

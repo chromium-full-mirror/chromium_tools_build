@@ -168,7 +168,7 @@
     "name": "gsutil upload",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/v8_clusterfoo/linux64-release/d8_bar-linux64-release-v8-component-50110.zip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133d.gz\", \"gsutil upload\": \"gs://v8_clusterfoo/linux64-release/d8_bar-linux64-release-v8-component-50110.zip\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload\": \"gs://v8_clusterfoo/linux64-release/d8_bar-linux64-release-v8-component-50110.zip\"}@@@"
     ]
   }
 ]
