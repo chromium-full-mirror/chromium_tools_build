@@ -2,7 +2,7 @@
 # and treat these folks as a fallback in case it's unclear, or if you're making
 # a sweeping change across many modules.
 
-gbeaty@google.com
+bpastene@chromium.org
 sshrimp@google.com
 
 per-file v8*/**=file:v8/v8:main:/INFRA_OWNERS

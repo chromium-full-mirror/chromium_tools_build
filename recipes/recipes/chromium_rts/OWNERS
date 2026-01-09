@@ -2,5 +2,5 @@
 # reviews to the alias allows the owners to distribute code review loads.
 chrome-dev-infra-reviewers@google.com
 
-gbeaty@google.com #{LAST_RESORT_SUGGESTION}
+bpastene@chromium.org #{LAST_RESORT_SUGGESTION}
 sshrimp@google.com #{LAST_RESORT_SUGGESTION}

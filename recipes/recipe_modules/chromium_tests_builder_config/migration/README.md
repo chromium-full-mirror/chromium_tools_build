@@ -183,7 +183,8 @@ the chrome project.
 1. If any of the builders in the chromium/src CL have a branch selector set,
    cherry-pick the CL to the appropriate branches. The appropriate branches are
    determined by the branch selector value of the builder(s) and what the
-   currently maintained branches are. Contact gbeaty@ for assistance.
+   currently maintained branches are. Contact chrome-dev-infra-team@ for
+   assistance.
 
     1. Cherry-pick the CL in gerrit. If there are no conflicts then land the CL
        by adding Rubber Stamper as a reviewer and set Auto-Submit+1.
