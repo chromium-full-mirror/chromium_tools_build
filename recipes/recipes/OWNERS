@@ -31,7 +31,6 @@ per-file openscreen.py=file:openscreen.expected/OWNERS
 per-file pdfium*.py=file:pdfium.expected/OWNERS
 per-file publish_tarball.py=file:publish_tarball.expected/OWNERS
 per-file reclient*=file://recipes/reclient/OWNERS
-per-file tint.py=file:tint.expected/OWNERS
 per-file tricium_clang_tidy_wrapper.py=file://recipes/BUILD_TEAM_OWNERS
 per-file v8.py=file:v8.expected/OWNERS
 
