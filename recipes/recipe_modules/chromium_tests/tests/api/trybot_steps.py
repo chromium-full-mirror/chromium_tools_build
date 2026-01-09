@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import base64
 
-from recipe_engine import post_process
+from recipe_engine import post_process, turboci
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -20,6 +20,15 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 \
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.turboci.data.build.v1.build_check_options import (
+    BuildCheckOptions,
+    Product,
+)
+from PB.turboci.data.build.v1.build_check_results import BuildCheckResult
+from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
+from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
+from PB.turboci.data.chrome.build.v1.compile_targets_options import (
+    CompileTargetsOptions)
 from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
 from PB.turboci.graph.orchestrator.v1.check_state import CheckState
 from PB.turboci.graph.orchestrator.v1.graph_view import GraphView
@@ -149,16 +158,80 @@ def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
   def basic_assert_graph(assert_, graph: GraphView):
+    analyze_check_id = f'{chromium_tests.BUILD_CHECK_ID} analyze'
     check_ids = set(graph.checks.keys())
-    if not assert_(check_ids == {chromium_tests.SOURCE_CHECK_ID}):
+    if not assert_(
+        check_ids == {
+            chromium_tests.SOURCE_CHECK_ID,
+            chromium_tests.BUILD_CHECK_ID,
+            analyze_check_id,
+        }):
       return  # pragma: no cover
 
+    # source check verifications ###############################################
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
     source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
+
+    # build check verifications ################################################
+    build_check = graph.checks[chromium_tests.BUILD_CHECK_ID].check
+    assert_(build_check.kind == CheckKind.CHECK_KIND_BUILD)
+    assert_(build_check.state == CheckState.CHECK_STATE_FINAL)
+
+    # Verify that the build check depends on the source and analyze checks
+    build_check_deps = {
+        edge.check.identifier.id for edge in build_check.dependencies.edges
+    }
+    assert_(
+        build_check_deps == {chromium_tests.SOURCE_CHECK_ID, analyze_check_id})
+
+    # Verify the options on the build check
+    build_check_options = turboci.get_option(BuildCheckOptions, build_check)
+    expected_build_check_options = BuildCheckOptions(
+        target=BuildCheckOptions.BuildTarget(
+            name='chromium/try/fake-try-builder',
+            product=Product.PRODUCT_BROWSER,
+        ))
+    assert_(build_check_options == expected_build_check_options)
+
+    compile_targets_options = turboci.get_option(CompileTargetsOptions,
+                                                 build_check)
+    expected_compile_targets_options = CompileTargetsOptions(
+        compile_targets=['base_unittests', 'foo'])
+    assert_(compile_targets_options == expected_compile_targets_options)
+
+    # Verify the results on the build check
+    build_check_results = turboci.get_results(BuildCheckResult, build_check)
+    expected_build_check_results = [BuildCheckResult(success=True)]
+    assert_(build_check_results == expected_build_check_results)
+
+    # analyze check verifications ##############################################
+    analyze_check = graph.checks[analyze_check_id].check
+    assert_(analyze_check.kind == CheckKind.CHECK_KIND_ANALYSIS)
+    assert_(analyze_check.state == CheckState.CHECK_STATE_FINAL)
+
+    # Verify the options on the analyze check
+    analyze_options = turboci.get_option(AnalyzeOptions, analyze_check)
+    expected_analyze_options = AnalyzeOptions(
+        compile_targets=['foo'],
+        test_targets=['base_unittests'],
+        analyze_config_path='testing/buildbot/trybot_analyze_config.json',
+        analyze_config_names=['chromium', 'linux'],
+    )
+    assert_(analyze_options == expected_analyze_options)
+
+    # Verify the results on the analyze check
+    analyze_results = turboci.get_results(AnalyzeResults, analyze_check)
+    expected_analyze_results = [
+        AnalyzeResults(
+            compile_targets=['base_unittests', 'foo'],
+            test_targets=['base_unittests'],
+        ),
+    ]
+    assert_(analyze_results == expected_analyze_results)
 
   yield api.test(
       'basic',
@@ -176,6 +249,7 @@ def GenTests(api: RecipeTestApi):
           'fake-group',
           {
               'fake-builder': {
+                  'additional_compile_targets': ['foo'],
                   'gtest_tests': [{
                       'test': 'base_unittests',
                   }],
@@ -437,25 +511,62 @@ def GenTests(api: RecipeTestApi):
   )
 
   def retry_shards_without_patch_assert_graph(assert_, graph: GraphView):
+    analyze_check_id = f'{chromium_tests.BUILD_CHECK_ID} analyze'
     check_ids = set(graph.checks.keys())
     if not assert_(
         check_ids == {
             chromium_tests.SOURCE_CHECK_ID,
+            chromium_tests.BUILD_CHECK_ID,
+            analyze_check_id,
             chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
+            chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID,
         }):
       return  # pragma: no cover
 
+    # The basic test case already verifies the source, build and analyze checks
+    # with the patch applied, just verify the without patch checks
+
+    # without patch source check verifications #################################
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
-    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    source_check = graph.checks[
+        chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID].check
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
 
-    without_patch_source_check = graph.checks[
-        chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID].check
-    assert_(without_patch_source_check.kind == CheckKind.CHECK_KIND_SOURCE)
-    assert_(without_patch_source_check.state == CheckState.CHECK_STATE_FINAL)
+    # without patch build check verifications ##################################
+    build_check = graph.checks[
+        chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID].check
+    assert_(build_check.kind == CheckKind.CHECK_KIND_BUILD)
+    assert_(build_check.state == CheckState.CHECK_STATE_FINAL)
+
+    # Verify that the without patch build check depends on the without patch
+    # source check
+    build_check_deps = {
+        edge.check.identifier.id for edge in build_check.dependencies.edges
+    }
+    assert_(build_check_deps == {chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID})
+
+    # Verify the options on the without patch build check
+    build_check_options = turboci.get_option(BuildCheckOptions, build_check)
+    expected_build_check_options = BuildCheckOptions(
+        target=BuildCheckOptions.BuildTarget(
+            name='chromium/try/retry-shards',
+            product=Product.PRODUCT_BROWSER,
+        ))
+    assert_(build_check_options == expected_build_check_options)
+
+    compile_targets_options = turboci.get_option(CompileTargetsOptions,
+                                                 build_check)
+    expected_compile_targets_options = CompileTargetsOptions(
+        compile_targets=['base_unittests'])
+    assert_(compile_targets_options == expected_compile_targets_options)
+
+    # Verify the results on the without patch build check
+    build_check_results = turboci.get_results(BuildCheckResult, build_check)
+    expected_build_check_results = [BuildCheckResult(success=True)]
+    assert_(build_check_results == expected_build_check_results)
 
   yield api.test(
       'retry_shards_without_patch',

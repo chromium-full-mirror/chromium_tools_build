@@ -14,7 +14,7 @@ import time
 import traceback
 
 from google.protobuf import timestamp_pb2
-from recipe_engine import recipe_api
+from recipe_engine import recipe_api, turboci
 from recipe_engine.config_types import Path
 from recipe_engine.engine_types import freeze
 
@@ -23,10 +23,21 @@ from PB.recipe_modules.build.archive import properties as arch_prop
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.buildbucket.proto \
   import builds_service as builds_service_pb2
+from PB.turboci.data.build.v1.build_check_options import (
+    BuildCheckOptions,
+    Product,
+)
+from PB.turboci.data.build.v1.build_check_results import BuildCheckResult
+from PB.turboci.data.common.v1.display_message import DisplayMessage
+from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
+from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
+from PB.turboci.data.chrome.build.v1.compile_targets_options import (
+    CompileTargetsOptions)
 
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
+from RECIPE_MODULES.build.filter import api as filter_api
 from RECIPE_MODULES.depot_tools import bot_update
 
 from . import generators, steps
@@ -54,6 +65,9 @@ TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE = 'orchestrator_all.runtime_deps
 
 SOURCE_CHECK_ID = 'checkout'
 WITHOUT_PATCH_SOURCE_CHECK_ID = 'checkout (without patch)'
+
+BUILD_CHECK_ID = 'compile'
+WITHOUT_PATCH_BUILD_CHECK_ID = 'compile (without patch)'
 
 
 @attrs()
@@ -161,6 +175,272 @@ class Task:
     return self.update_result.source_root.path
 
 
+class _TurboCi:
+  """Class for encapsulating chromium_tests TurboCI interactions."""
+
+  def __init__(self, api: 'ChromiumTestsApi'):
+    self._api = api
+
+  def ensure_check_id(
+      self,
+      check_id: str,
+      default_check_id_prefix: str,
+  ) -> str:
+    """Ensure a non-empty check ID.
+
+    chromium_tests module code is shared by multiple recipes, some of which are
+    in scope for migrating to TurboCI and some of which are not. The recipe
+    engine provides a fake for TurboCI that works regardless of whether the
+    caller is in scope for migration. However, valid check ID values are still
+    necessary because the fake enforces the TurboCI constraints. This provides
+    the means to get a unique non-empty ID so that non-TurboCI-aware callers
+    don't need to worry about providing non-empty, non-colliding IDs so that
+    chromium_tests doesn't need to litter the code with conditionals.
+
+    Args:
+      check_id: The check ID provided to the module.
+      default_check_id_prefix: The prefix to use when generating a check ID if
+        check_id is empty.
+
+    Returns:
+      check_id if it is non-empty, otherwise a unique check ID beginning with
+      default_check_id_prefix.
+    """
+    if check_id:
+      return check_id
+    return f'{default_check_id_prefix}-{self._api.m.uuid.random()}'
+
+  def create_build_check(
+      self,
+      build_check_id: str,
+      source_check_id: str,
+      *,
+      create_analyze_check: bool = False,
+      builder_full_name: str = '',
+  ) -> str:
+    """Create a build check.
+
+    Args:
+      build_check_id: The check ID for the build check to create. The check will
+        be created in the PLANNING state and have a BuildCheckOptions attached.
+      source_check_id: The check ID for an existing source check. The build
+        check will have a dependency on the source check.
+      create_analyze_check: If true, an analyze check will be created. The check
+        will be created in the PLANNING state. The build check will have a
+        dependency on the analyze check.
+      builder_full_name: The fully-qualified builder name to report. If a
+        non-empty value is not provided, the name of the currently running
+        builder be used.
+
+    Returns:
+      The check ID of the analyze check if create_analyze_check is True, an
+      empty string otherwise.
+    """
+    assert build_check_id, 'build_check_id'
+    assert source_check_id, 'source_id'
+    checks = []
+    analyze_check_id = ''
+    build_check_deps = [source_check_id]
+
+    if create_analyze_check:
+      analyze_check_id = f'{build_check_id} analyze'
+      checks.append(
+          turboci.check(
+              analyze_check_id,
+              kind='CHECK_KIND_ANALYSIS',
+          ))
+      build_check_deps.append(analyze_check_id)
+
+    # When the workflows are decomposed, this may need to change to some
+    # identity that identifies the configuration across stages rather than a
+    # builder name
+    builder_full_name = (
+        builder_full_name or self._api.m.buildbucket.builder_full_name)
+    checks.append(
+        turboci.check(
+            build_check_id,
+            kind='CHECK_KIND_BUILD',
+            options=[
+                BuildCheckOptions(
+                    target=BuildCheckOptions.BuildTarget(
+                        name=builder_full_name,
+                        product=Product.PRODUCT_BROWSER,
+                    ))
+            ],
+            deps=turboci.dep_group(*build_check_deps),
+        ))
+
+    turboci.write_nodes(turboci.reason('initializing build check'), *checks)
+
+    return analyze_check_id
+
+  def prepare_analyze_check(
+      self,
+      analyze_check_id: str,
+      test_targets: Collection[str],
+      additional_compile_targets: Collection[str],
+      analyze_config_names: Collection[str],
+      additional_exclusions: Mapping[str, str],
+  ) -> filter_api.ResultsCallback:
+    """Make the analyze check ready to execute analyze.
+
+    Args:
+      analyze_check_id: The check ID for the analyze check. The check may or may
+        not already exist. The check will be left in the PLANNED state and have
+        an AnalyzeOptions attached.
+      test_targets: Targets corresponding to the tests to be executed.
+      additional_compile_targets: Targets explicitly requested for compilation.
+      analyze_config_names: Analyze config names to use in addition to the
+        always used "base".
+      additional_exclusions: Additional file paths to skip analysis for. Keys
+        are the file path relative to the root of the top-level repo with the
+        corresponding value describing why the file is excluded.
+
+    Returns:
+      A results callback that can be used to write the results into the analyze
+      check and set its state to FINAL.
+    """
+    assert analyze_check_id, 'analyze_check_id'
+    turboci.write_nodes(
+        turboci.reason('performing analyze to reduce targets'),
+        turboci.check(
+            analyze_check_id,
+            kind='CHECK_KIND_ANALYSIS',
+            options=[
+                AnalyzeOptions(
+                    compile_targets=sorted(additional_compile_targets),
+                    test_targets=sorted(test_targets),
+                    analyze_config_path=(
+                        self._api.m.chromium.c.analyze_config_path),
+                    analyze_config_names=analyze_config_names,
+                    additional_exclusions=additional_exclusions,
+                ),
+            ],
+            state='CHECK_STATE_PLANNED',
+        ),
+    )
+
+    def results_callback(
+        reason: str,
+        compile_targets: Iterable[str],
+        test_targets: Iterable[str],
+    ) -> None:
+      """Results callback that will update the analyze check.
+
+      After execution, the analyze check will have an AnalyzeResults attached
+      and be in state FINAL.
+      """
+      turboci.write_nodes(
+          turboci.reason(reason),
+          turboci.check(
+              analyze_check_id,
+              results=[
+                  AnalyzeResults(
+                      compile_targets=sorted(compile_targets),
+                      test_targets=sorted(test_targets))
+              ],
+              state='CHECK_STATE_FINAL',
+          ),
+      )
+
+    return results_callback
+
+  def update_build_check_compile_targets(
+      self,
+      build_check_id: str,
+      compile_targets: Iterable[str],
+      reason: str,
+  ) -> None:
+    """Update the compile targets on a build check.
+
+    Args:
+      build_check_id: The check ID to update the targets for. The check may or
+        may not already exist. The check will have a CompileTargetsOptions
+        attached.
+      compile_targets: The set of compile targets to be passed to the build
+        system.
+      reason: A description of the reason the compile targets are being updated.
+    """
+    assert build_check_id, 'build_check_id'
+    turboci.write_nodes(
+        turboci.reason(reason),
+        turboci.check(
+            build_check_id,
+            kind='CHECK_KIND_BUILD',
+            options=[
+                CompileTargetsOptions(compile_targets=sorted(compile_targets))
+            ],
+        ),
+    )
+
+  def set_build_check_planned(
+      self,
+      build_check_id: str,
+      reason: str,
+  ) -> None:
+    """Set the build check's state to PLANNED.
+
+    This indicates that planning for the check is done; a check can't be moved
+    from the PLANNING state directly to FINAL state and the options can't be
+    updated in the PLANNED state, so this must be called before calling
+    finalize_build_check for the build check.
+
+    Args:
+      build_check_id: The check ID of an existing build check in the PLANNING
+        state. The check should have BuildCheckOptions and CompileTargetOptions
+        attached.
+      reason: A description of the reason to update the check's state.
+    """
+    assert build_check_id, 'build_check_id'
+    turboci.write_nodes(
+        turboci.reason(reason),
+        turboci.check(
+            build_check_id,
+            state='CHECK_STATE_PLANNED',
+        ),
+    )
+
+  def finalize_build_check(
+      self,
+      build_check_id: str,
+      reason: str,
+      *,
+      raw_result: result_pb2.RawResult | None = None,
+  ) -> None:
+    """Record the results of a compile.
+
+    Args:
+      build_check_id: The check ID of an existing build check in the PLANNED
+        state.
+      reason: A description of the reason to finalize the check.
+      raw_result: The result of the compile operation. If provided, a
+        BuildCheckResult will be attached to the build check containing the
+        summary markdown if present.
+    """
+    assert build_check_id, 'build_check_id'
+    results = []
+    if raw_result is not None:
+      display_message = None
+      if raw_result.summary_markdown:
+        display_message = DisplayMessage(
+            message=raw_result.summary_markdown,
+            message_format=DisplayMessage.MessageFormat.MESSAGE_FORMAT_MARKDOWN,
+        )
+      results.append(
+          BuildCheckResult(
+              success=raw_result.status == common_pb.SUCCESS,
+              display_message=display_message,
+          ))
+    turboci.write_nodes(
+        turboci.reason(reason),
+        turboci.check(
+            build_check_id,
+            state='CHECK_STATE_FINAL',
+            results=results,
+        ),
+    )
+
+
 class ChromiumTestsApi(recipe_api.RecipeApi):
 
   # These are defined in //infra/config/lib/try.star in chromium/src.
@@ -170,6 +450,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def __init__(self, input_properties, **kwargs):
     super().__init__(**kwargs)
+
+    self._turboci = _TurboCi(self)
 
     self.filter_files_dir = None
     self.base_variant_getter = lambda _: {
@@ -188,6 +470,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       result = self.m.step.empty('parent build link')
       result.presentation.links['parent build'] = (
           f'https://ci.chromium.org/ui/b/{parent_build_id}')
+
+  @property
+  def turboci(self):
+    return self._turboci
 
   def log(self, message):
     presentation = self.m.step.active_result.presentation
@@ -1404,7 +1690,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       suffix,
                                       *,
                                       additional_compile_targets=None,
-                                      include_utr_instruction=False):
+                                      include_utr_instruction=False,
+                                      turboci_build_check_id: str = ''):
     """Builds and isolates test suites in |failing_tests|.
 
     Args:
@@ -1421,6 +1708,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         outputs (which should be specified src-side in waterfalls.pyl).
       include_utr_instruction: Whether or not to include UTR reproduction
                                instructions
+      turboci_build_check_id: The check ID of the build check to create for the
+        without patch compile. If empty, a unique check ID will be used instead.
+
     Returns:
       A tuple of:
         A RawResult object with the failure message and status or None if
@@ -1431,17 +1721,33 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     skylab_isolates = [t.target_name for t in failing_tests if t.runs_on_skylab]
 
-    compile_targets = list(
+    compile_targets = set(
         itertools.chain(*[t.compile_targets() for t in failing_tests]))
 
+    turboci_build_check_id = self.turboci.ensure_check_id(
+        turboci_build_check_id, WITHOUT_PATCH_BUILD_CHECK_ID)
+
+    self.turboci.update_build_check_compile_targets(turboci_build_check_id,
+                                                    compile_targets,
+                                                    'failing test targets')
+
     if additional_compile_targets:
-      compile_targets.extend(additional_compile_targets)
+      compile_targets.update(additional_compile_targets)
+      self.turboci.update_build_check_compile_targets(
+          turboci_build_check_id,
+          compile_targets,
+          'targets explicitly requested by recipe',
+      )
+
+    self.turboci.set_build_check_planned(turboci_build_check_id,
+                                         'compile targets determined')
 
     if not compile_targets:
+      self.turboci.finalize_build_check(turboci_build_check_id,
+                                        'no compile necessary')
       return None, None
 
-    # Remove duplicate targets.
-    compile_targets = sorted(set(compile_targets))
+    compile_targets = sorted(compile_targets)
     failing_swarming_tests = [t for t in failing_tests if t.uses_isolate]
 
     source_dir = update_result.source_root.path
@@ -1456,6 +1762,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
           ' (%s)' % suffix,
           include_utr_instruction=include_utr_instruction)
+
+      self.turboci.finalize_build_check(
+          turboci_build_check_id, 'executed compile', raw_result=raw_result)
+
       if raw_result:
         # Clobber the bot upon compile failure without patch.
         # See crbug.com/724533 for more detail.
@@ -2196,13 +2506,24 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         root_solution_revision=root_solution_revision,
         turboci_source_check_id=SOURCE_CHECK_ID)
 
+    turboci_analyze_check_id = self.turboci.create_build_check(
+        BUILD_CHECK_ID, SOURCE_CHECK_ID, create_analyze_check=True)
+
+    # When everything is on TurboCI, this could possibly be flattened further by
+    # lifting the analyze-related logic out of build_affected_targets; at that
+    # point there wouldn't need to be separate trybot and compilator recipes and
+    # so there wouldn't be a concern with having to keep the sequence of calls
+    # in sync
     compile_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
         update_result,
         build_dir,
         targets_config,
-        files_relative_to=files_relative_to)
+        files_relative_to=files_relative_to,
+        turboci_build_check_id=BUILD_CHECK_ID,
+        turboci_analyze_check_id=turboci_analyze_check_id,
+    )
     assert compile_result
     if compile_result.status != common_pb.SUCCESS:
       return compile_result
@@ -2223,6 +2544,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         deapply_changes = deapply_changes or self.deapply_patch
         deapply_changes(update_result, build_dir, WITHOUT_PATCH_SOURCE_CHECK_ID)
+        self.turboci.create_build_check(WITHOUT_PATCH_BUILD_CHECK_ID,
+                                        WITHOUT_PATCH_SOURCE_CHECK_ID)
         compile_result, _ = self.build_and_isolate_failing_tests(
             build_dir,
             builder_id,
@@ -2230,7 +2553,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             failing_test_suites,
             update_result,
             'without patch',
-            include_utr_instruction=True)
+            include_utr_instruction=True,
+            turboci_build_check_id=WITHOUT_PATCH_BUILD_CHECK_ID)
         if compile_result and compile_result.status != common_pb.SUCCESS:
           return compile_result
 
@@ -2476,6 +2800,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       targets_config: targets_config_module.TargetsConfig,
       *,
       skip_analysis_reasons: Iterable[str] | None = None,
+      turboci_analyze_check_id: str = '',
   ) -> tuple[list[str], list[str]]:
     """Determine the targets to build.
 
@@ -2500,54 +2825,77 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       * Targets that should be built for tests that are to be run
       * Additional targets that should be built
     """
+    self.m.tryserver.require_is_tryserver()
+
     tests = targets_config.all_tests
     compile_targets = targets_config.compile_targets
     test_targets = sorted(set(self._all_compile_targets(tests)))
 
+    additional_compile_targets = sorted(
+        set(compile_targets) - set(test_targets))
+    analyze_names = [
+        'chromium',
+        *builder_config.analyze_names,
+        self.m.chromium.c.TARGET_PLATFORM,
+    ]
+    additional_exclusions = {
+        exclusion: 'builder config additional exclusions'
+        for exclusion in builder_config.additional_exclusions
+    }
+
+    turboci_analyze_check_id = self.turboci.ensure_check_id(
+        turboci_analyze_check_id, f'{BUILD_CHECK_ID} analyze')
+
+    results_callback = self.turboci.prepare_analyze_check(
+        turboci_analyze_check_id,
+        test_targets,
+        additional_compile_targets,
+        analyze_names,
+        additional_exclusions,
+    )
+
     # Use analyze to determine the compile targets that are affected by the CL.
     # Use this to prune the relevant compile targets and test targets.
-    if self.m.tryserver.is_tryserver:
-      skip_analysis_reasons = list(skip_analysis_reasons or [])
-      skip_analysis_reasons.extend(
-          self.m.chromium_bootstrap.skip_analysis_reasons)
-      skip_analysis_logs = {}
+    skip_analysis_reasons = list(skip_analysis_reasons or [])
+    skip_analysis_reasons.extend(
+        self.m.chromium_bootstrap.skip_analysis_reasons)
+    skip_analysis_logs = {}
 
-      affected_spec_files = self._get_affected_spec_files(
-          source_dir, affected_files, builder_config,
-          self.get_targets_spec_dir(checkout_dir, source_dir, builder_config))
-      # If any of the spec files that we used for determining the targets/tests
-      # is affected, skip doing analysis, just build/test all of them
-      if affected_spec_files:
-        skip_analysis_reasons.append(
-            'test specs that are consumed by the builder '
-            'are also affected by the CL')
-        skip_analysis_logs['affected_spec_files'] = sorted(affected_spec_files)
+    affected_spec_files = self._get_affected_spec_files(
+        source_dir, affected_files, builder_config,
+        self.get_targets_spec_dir(checkout_dir, source_dir, builder_config))
+    # If any of the spec files that we used for determining the targets/tests
+    # is affected, skip doing analysis, just build/test all of them
+    if affected_spec_files:
+      skip_analysis_reasons.append(
+          'test specs that are consumed by the builder '
+          'are also affected by the CL')
+      skip_analysis_logs['affected_spec_files'] = sorted(affected_spec_files)
 
-      if skip_analysis_reasons:
-        step_result = self.m.step('analyze', [])
-        text = ['skipping analyze'] + skip_analysis_reasons
-        step_result.presentation.step_text = '\n* '.join(text)
-        for log, contents in sorted(skip_analysis_logs.items()):
-          step_result.presentation.logs[log] = contents
-        return test_targets, compile_targets
+    if skip_analysis_reasons:
+      step_result = self.m.step('analyze', [])
+      text = ['skipping analyze'] + skip_analysis_reasons
+      step_result.presentation.step_text = '\n* '.join(text)
+      for log, contents in sorted(skip_analysis_logs.items()):
+        step_result.presentation.logs[log] = contents
 
-      additional_compile_targets = sorted(
-          set(compile_targets) - set(test_targets))
-      analyze_names = ['chromium'] + list(builder_config.analyze_names)
-      analyze_names.append(self.m.chromium.c.TARGET_PLATFORM)
-      additional_exclusions = {
-          exclusion: 'builder config additional exclusions'
-          for exclusion in builder_config.additional_exclusions
-      }
-      test_targets, compile_targets = self.m.filter.analyze(
-          source_dir,
-          build_dir,
-          affected_files,
-          test_targets,
-          additional_compile_targets,
-          builder_id=builder_id,
-          additional_names=analyze_names,
-          additional_exclusions=additional_exclusions)
+      results_callback(
+          '\n  '.join(['skipping analyze:', *skip_analysis_reasons]),
+          sorted(compile_targets),
+          sorted(test_targets),
+      )
+      return test_targets, compile_targets
+
+    test_targets, compile_targets = self.m.filter.analyze(
+        source_dir,
+        build_dir,
+        affected_files,
+        test_targets,
+        additional_compile_targets,
+        builder_id=builder_id,
+        additional_names=analyze_names,
+        additional_exclusions=additional_exclusions,
+        results_callback=results_callback)
 
     return test_targets, compile_targets
 
@@ -2569,6 +2917,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       additional_compile_targets: Iterable[str] | None = None,
       skip_analysis_reasons: Iterable[str] | None = None,
       files_relative_to: str | None = None,
+      turboci_build_check_id: str = '',
+      turboci_analyze_check_id: str = '',
   ) -> tuple[result_pb2.RawResult | None, Task]:
     """Builds targets affected by change.
 
@@ -2619,6 +2969,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
 
+    turboci_build_check_id = self.turboci.ensure_check_id(
+        turboci_build_check_id, BUILD_CHECK_ID)
+
     test_targets, compile_targets = self.determine_compilation_targets(
         builder_id,
         builder_config,
@@ -2627,7 +2980,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_dir,
         affected_files,
         targets_config,
-        skip_analysis_reasons=skip_analysis_reasons)
+        skip_analysis_reasons=skip_analysis_reasons,
+        turboci_analyze_check_id=turboci_analyze_check_id,
+    )
+
+    self.turboci.update_build_check_compile_targets(
+        turboci_build_check_id,
+        compile_targets,
+        'results from analyze',
+    )
 
     # Compiles and isolates test suites.
     raw_result = result_pb2.RawResult(status=common_pb.SUCCESS)
@@ -2637,8 +2998,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if additional_compile_targets:
         compile_targets = list(compile_targets)
         compile_targets.extend(additional_compile_targets)
-      tests = self.tests_in_compile_targets(test_targets, tests)
+        self.turboci.update_build_check_compile_targets(
+            turboci_build_check_id,
+            compile_targets,
+            'targets explicitly requested by recipe',
+        )
 
+      self.turboci.set_build_check_planned(turboci_build_check_id,
+                                           'compile targets determined')
+
+      tests = self.tests_in_compile_targets(test_targets, tests)
       compile_targets = sorted(set(compile_targets))
       raw_result, execution_info = self.compile_specific_targets(
           build_dir,
@@ -2651,7 +3020,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           override_execution_mode=ctbc.COMPILE_AND_TEST,
           isolate_output_files_for_coverage=isolate_output_files_for_coverage,
           include_utr_instruction=True)
+
+      self.turboci.finalize_build_check(
+          turboci_build_check_id, 'executed compile', raw_result=raw_result)
+
     else:
+      self.turboci.set_build_check_planned(turboci_build_check_id,
+                                           'compile targets determined')
+      self.turboci.finalize_build_check(turboci_build_check_id,
+                                        'no compile necessary')
 
       def is_source_file(filepath):
         # DEPS files embed include_rules, which we want to run the checkdeps
