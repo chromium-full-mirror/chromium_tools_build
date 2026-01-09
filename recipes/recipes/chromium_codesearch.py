@@ -384,8 +384,7 @@ def RunSteps(api, properties):
   api.codesearch.add_kythe_metadata()
 
   # Create the initial kythe index pack.
-  initial_index_pack_path = api.codesearch.create_kythe_index_pack(
-      use_siso=(platform == 'linux'))
+  initial_index_pack_path = api.codesearch.create_kythe_index_pack()
 
   # Create the Rust index pack on supported platforms.
   # The extractor is currently only built for Linux and Mac.
