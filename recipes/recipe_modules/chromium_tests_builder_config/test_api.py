@@ -70,7 +70,6 @@ class _PropertiesAssembler:
     self._builder_ids = []
     self._builder_ids_in_scope_for_testing = []
     self._targets_spec_directory = None
-    self._targets_spec_directory_relative_to_source_dir = False
 
   def assemble(self, **kwargs):
     return properties_pb.InputProperties(
@@ -81,8 +80,6 @@ class _PropertiesAssembler:
             builder_ids_in_scope_for_testing=(
                 self._builder_ids_in_scope_for_testing),
             targets_spec_directory=self._targets_spec_directory,
-            targets_spec_directory_relative_to_source_dir=(
-                self._targets_spec_directory_relative_to_source_dir),
             **kwargs))
 
   def add_builder(self, details):
@@ -108,12 +105,8 @@ class _PropertiesAssembler:
   def add_builder_id_in_scope_for_testing(self, builder_id):
     self._builder_ids_in_scope_for_testing.append(builder_id)
 
-  def set_targets_spec_directory(self,
-                                 targets_spec_directory: str,
-                                 *,
-                                 relative_to_source_dir: bool = False):
+  def set_targets_spec_directory(self, targets_spec_directory: str):
     self._targets_spec_directory = targets_spec_directory
-    self._targets_spec_directory_relative_to_source_dir = relative_to_source_dir
 
   def _get_builder_spec(self, details):
     builder_spec = details.builder_spec
@@ -260,12 +253,8 @@ class _CiBuilderPropertiesAssembler:
             group=builder_group, builder=builder))
     return self
 
-  def with_targets_spec_directory(self,
-                                  targets_spec_directory: str,
-                                  *,
-                                  relative_to_source_dir: bool = False):
-    self._props_assembler.set_targets_spec_directory(
-        targets_spec_directory, relative_to_source_dir=relative_to_source_dir)
+  def with_targets_spec_directory(self, targets_spec_directory: str):
+    self._props_assembler.set_targets_spec_directory(targets_spec_directory)
     return self
 
   def assemble(self):
@@ -314,12 +303,8 @@ class _CiTesterPropertiesAssembler:
 
     return self
 
-  def with_targets_spec_directory(self,
-                                  targets_spec_directory: str,
-                                  *,
-                                  relative_to_source_dir: bool = False):
-    self._props_assembler.set_targets_spec_directory(
-        targets_spec_directory, relative_to_source_dir=relative_to_source_dir)
+  def with_targets_spec_directory(self, targets_spec_directory: str):
+    self._props_assembler.set_targets_spec_directory(targets_spec_directory)
     return self
 
   def assemble(self):
@@ -402,12 +387,8 @@ class _TryBuilderPropertiesAssembler:
 
     return self
 
-  def with_targets_spec_directory(self,
-                                  targets_spec_directory: str,
-                                  *,
-                                  relative_to_source_dir: bool = False):
-    self._props_assembler.set_targets_spec_directory(
-        targets_spec_directory, relative_to_source_dir=relative_to_source_dir)
+  def with_targets_spec_directory(self, targets_spec_directory: str):
+    self._props_assembler.set_targets_spec_directory(targets_spec_directory)
     return self
 
   def assemble(self):

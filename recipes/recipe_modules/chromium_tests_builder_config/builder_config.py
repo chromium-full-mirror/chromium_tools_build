@@ -156,18 +156,12 @@ class BuilderConfig:
   # wraps
   mirroring_try_builders = attrib(sequence[BuilderId], default=())
 
-  # The path to the directory where the targets spec files are read
-  # from. The directory that the path is relative to is determined by
-  # the value of the targets_spec_directory_relative_to_source_dir
-  # attribute: if true, then it will be relative to the top-level
-  # repository (e.g.
-  # infra/config/generated/builders/try/linux-rel/targets), otherwise it
-  # will be relative to the root of the checkout (e.g.
-  # src/infra/config/generated/builders/try/linux-rel/targets)
+  # The path to the directory where the targets spec files are read from,
+  # relative to the top-level repository (e.g.
+  # infra/config/generated/builders/try/linux-rel/targets)
   #
   # This is used by builders that specify their tests in starlark
   targets_spec_directory = attrib(str, default=None)
-  targets_spec_directory_relative_to_source_dir = attrib(bool, default=False)
 
   # TODO(gbeaty) The following fields are copied from TrySpec (with some
   # changed defaults), but if all builders are switched to using the

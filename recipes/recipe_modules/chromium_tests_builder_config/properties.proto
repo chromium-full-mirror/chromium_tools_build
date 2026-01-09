@@ -242,21 +242,11 @@ message BuilderConfig {
   // The directory to look up the targets spec for the builder
   //
   // If set, this will be used in preference to the targets_spec_dir field
-  // on the chromium config. The path should use forward slashes for the
-  // separator. See targets_spec_directory_relative_to_source_dir for
-  // information on the root to which the path should be relative.
+  // on the chromium config. The path should be relative to the top-level
+  // repository (e.g. infra/config/...) and use forward slashes.
   string targets_spec_directory = 10;
-  // Whether targets_spec_directory is relative to the source directory
-  //
-  // By default, the targets_spec_directory is relative to the root of the
-  // checkout (e.g. src/infra/config/... for builders in the chromium project).
-  // If this is true, it will instead be relative to the root of the top-level
-  // repo (e.g. infra/config/.. for builders in the chromium project).
-  //
-  // TODO: crbug.com/458607662 - Once all builders are setting this to true,
-  // remove this field and make the targets spec directory relative to the
-  // source directory.
-  bool targets_spec_directory_relative_to_source_dir = 13;
+  reserved 13;
+  reserved "targets_spec_directory_relative_to_source_dir";
 
   // Whether the builder should skip running tests and just compile
   bool is_compile_only = 5;

@@ -261,8 +261,6 @@ def convert_builder_config(obj, default_retry_failed_shards=True):
           for x in obj.mirroring_builder_group_and_names
       ],
       targets_spec_directory=obj.targets_spec_directory or None,
-      targets_spec_directory_relative_to_source_dir=(
-          obj.targets_spec_directory_relative_to_source_dir),
       include_all_triggered_testers=False,
       is_compile_only=obj.is_compile_only,
       analyze_names=obj.analyze_names,

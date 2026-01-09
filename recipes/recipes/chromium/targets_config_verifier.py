@@ -161,8 +161,7 @@ def GenTests(api):
                 json_format.MessageToDict(ctbc_prop.assemble()),
         }))
 
-    ctbc_prop = ctbc_prop.with_targets_spec_directory(
-        f'{builder_dir}/targets', relative_to_source_dir=True)
+    ctbc_prop = ctbc_prop.with_targets_spec_directory(f'{builder_dir}/targets')
     t += api.step_data(
         f'{get_targets_config_step}.read properties file',
         api.file.read_json({

@@ -293,7 +293,7 @@ def archive_src_side_deps(
     # Include the targets spec files so that the orchestrator can create the
     # test objects for running remote tests
     targets_spec_dir = api.chromium_tests.get_targets_spec_dir(
-        checkout_dir, source_dir, orch_builder_config)
+        source_dir, orch_builder_config)
     dep_paths.update(
         str(targets_spec_dir / f)
         for f in orch_builder_config.targets_spec_files.values())
@@ -313,7 +313,7 @@ def archive_src_side_deps(
     api.file.remove('rm %s' % isolate_file, isolate_file)
 
     targets_spec_dir = api.chromium_tests.get_targets_spec_dir(
-        checkout_dir, source_dir, orch_builder_config)
+        source_dir, orch_builder_config)
     relative_test_spec_dir = api.path.relpath(targets_spec_dir, source_dir)
     # On windows compilators, this would use a `\\` path separator instead of
     # a `/` that the linux orchestrators need to construct Paths

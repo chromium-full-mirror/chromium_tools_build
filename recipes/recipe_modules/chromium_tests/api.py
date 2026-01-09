@@ -537,14 +537,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def get_targets_spec_dir(
       self,
-      checkout_dir: Path,
       source_dir: Path,
       builder_config: ctbc.BuilderConfig,
   ) -> Path:
     if builder_config.targets_spec_directory:
-      if builder_config.targets_spec_directory_relative_to_source_dir:
-        return source_dir / builder_config.targets_spec_directory
-      return checkout_dir / builder_config.targets_spec_directory
+      return source_dir / builder_config.targets_spec_directory
     return self.m.chromium.targets_spec_dir(source_dir)
 
   def check_builder_cache(self, checkout_dir: Path):
@@ -650,8 +647,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not targets_spec_dir:
       assert checkout_dir, (
           'either checkout_dir or targets_spec_dir must be passed')
-      targets_spec_dir = self.get_targets_spec_dir(checkout_dir, source_dir,
-                                                   builder_config)
+      targets_spec_dir = self.get_targets_spec_dir(source_dir, builder_config)
 
     # The scripts_compile_targets is indirected through a function so that we
     # don't execute unnecessary steps if there are no scripts that need to be
@@ -1930,8 +1926,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         return False, invalid_test_suites or []
 
       # Also exit if there are failures but we shouldn't deapply the patch
-      targets_spec_dir = self.get_targets_spec_dir(task.checkout_dir,
-                                                   task.source_dir,
+      targets_spec_dir = self.get_targets_spec_dir(task.source_dir,
                                                    task.builder_config)
       if self.should_skip_without_patch(task.builder_config, task.source_dir,
                                         task.affected_files, targets_spec_dir):
@@ -2863,7 +2858,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     affected_spec_files = self._get_affected_spec_files(
         source_dir, affected_files, builder_config,
-        self.get_targets_spec_dir(checkout_dir, source_dir, builder_config))
+        self.get_targets_spec_dir(source_dir, builder_config))
     # If any of the spec files that we used for determining the targets/tests
     # is affected, skip doing analysis, just build/test all of them
     if affected_spec_files:

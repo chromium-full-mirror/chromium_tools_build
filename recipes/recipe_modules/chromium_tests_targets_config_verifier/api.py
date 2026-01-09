@@ -215,10 +215,7 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
         skip_reason = (f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
                        ' nothing to verify')
       else:
-        if builder_config.targets_spec_directory_relative_to_source_dir:
-          targets_spec_dir = source_dir / builder_config.targets_spec_directory
-        else:
-          targets_spec_dir = checkout_root / builder_config.targets_spec_directory
+        targets_spec_dir = source_dir / builder_config.targets_spec_directory
         return self._get_targets_config(
             'get starlark targets config',
             builder_config,
