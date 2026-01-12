@@ -326,7 +326,7 @@ solutions = [
       ),
       api.post_process(
           post_process.SummaryMarkdown,
-          'Additional arguments are not supported on skylab tests'),
+          'Modifying test arguments is not supported on skylab tests'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -1186,9 +1186,10 @@ target_os=[]
   )
 
   yield api.test(
-      'single_test_case_filter',
+      'single_test_case_filter_and_override',
       boilerplate(
           test_names=['browser_tests'],
+          omit_default_test_args=True,
           additional_test_args=['--gtest_filter=Foo.Bar'],
           target_spec={
               'fake-tester': {

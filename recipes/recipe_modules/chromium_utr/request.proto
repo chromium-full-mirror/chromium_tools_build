@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipe_modules.build.chromium_utr;
 
-// Next ID: 15
+// Next ID: 16
 message Request {
   // Required, the directory where chromium is checked out not including the src
   // dir
@@ -73,6 +73,10 @@ message Request {
 
   // Any extra cmd-line flags to pass to the tests (eg: "--gtest_filter=...")
   repeated string additional_test_args = 8;
+
+  // If set, will remove all test args normally set for the builder's tests.
+  // Likely used in tandem with additional_test_args to override various args.
+  bool omit_default_test_args = 15;
 
   // Custom swarming dimensions to overwrite all tests with in this run
   // These are merged with the tests' existing dimensions. These should

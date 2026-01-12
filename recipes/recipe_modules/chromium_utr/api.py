@@ -960,9 +960,12 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       # parallel multiple times to suss out flakiness.
       if test.runs_on_swarming:
         test.spec = attr.evolve(test.spec, idempotent=False)
-      if test.runs_on_skylab and properties.additional_test_args:
+      if test.runs_on_skylab and (properties.additional_test_args or
+                                  properties.omit_default_test_args):
         raise self.m.step.StepFailure(
-            'Additional arguments are not supported on skylab tests')
+            'Modifying test arguments is not supported on skylab tests')
+      if properties.omit_default_test_args:
+        test.spec = attr.evolve(test.spec, args=tuple())
       if properties.additional_test_args:
         test.spec = attr.evolve(
             test.spec,
