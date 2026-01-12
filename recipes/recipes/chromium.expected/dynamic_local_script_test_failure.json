@@ -1591,10 +1591,9 @@
     },
     "name": "test_script_with_broken_tests results",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"test_script_with_broken_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"FailSuite.Test1\"}], \"testId\": \"ninja://test_script_with_broken_tests/FailSuite.Test1\", \"variant\": {\"def\": {\"test_suite\": \"test_script_with_broken_tests\"}}, \"variantHash\": \"test_script_with_broken_tests_hash\"}}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"test_script_with_broken_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv1\"}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv1\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"FlakySuite.TestA\"}], \"testId\": \"ninja://test_script_with_broken_tests/FlakySuite.TestA\", \"variant\": {\"def\": {\"test_suite\": \"test_script_with_broken_tests\"}}, \"variantHash\": \"test_script_with_broken_tests_hash\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"test_script_with_broken_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"FailSuite.Test1\"}], \"testId\": \"ninja://test_script_with_broken_tests/FailSuite.Test1\", \"variant\": {\"def\": {\"test_suite\": \"test_script_with_broken_tests\"}}, \"variantHash\": \"test_script_with_broken_tests_hash\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"FlakySuite.TestA\"}], \"testId\": \"ninja://test_script_with_broken_tests/FlakySuite.TestA\", \"variant\": {\"def\": {\"test_suite\": \"test_script_with_broken_tests\"}}, \"variantHash\": \"test_script_with_broken_tests_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },

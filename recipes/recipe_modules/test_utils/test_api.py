@@ -176,13 +176,13 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
           (FAIL, PASS)
     """
 
-    def _generate_invocation(test, status, expected):
+    def _generate_test_result(test, status, expected):
       failure_reason = None
       if status == rdb_test_result.FAIL:
         failure_reason = rdb_failure_reason.FailureReason(
             primary_error_message='paint_op_writer.cc(106): Check failed:')
 
-      test_result = rdb_test_result.TestResult(
+      return rdb_test_result.TestResult(
           test_id='ninja://{}/{}'.format(suite_name, test),
           tags=[rdb_common.StringPair(key="test_name", value=test)],
           variant=rdb_common.Variant(**{
@@ -194,31 +194,29 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
           variant_hash=suite_name + '_hash',
           status=status,
           failure_reason=failure_reason)
-      return self.m.resultdb.Invocation(
-          proto=rdb_invocation.Invocation(
-              state=rdb_invocation.Invocation.FINALIZED,
-              name=suite_name + '_results'),
-          test_results=[test_result])
 
-    invocations = []
+    test_results = []
     for t in passing_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
+      test_results.append(_generate_test_result(t, rdb_test_result.PASS, True))
     for t in failing_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))
+      test_results.append(_generate_test_result(t, rdb_test_result.FAIL, False))
     for t in expected_failing_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.FAIL, True))
+      test_results.append(_generate_test_result(t, rdb_test_result.FAIL, True))
     for t in skipped_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.SKIP, False))
+      test_results.append(_generate_test_result(t, rdb_test_result.SKIP, False))
     for t in expected_skipped_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.SKIP, True))
+      test_results.append(_generate_test_result(t, rdb_test_result.SKIP, True))
     for t in flaky_failing_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
-      invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))
+      test_results.append(_generate_test_result(t, rdb_test_result.PASS, True))
+      test_results.append(_generate_test_result(t, rdb_test_result.FAIL, False))
     for t in flaky_passing_tests or []:
-      invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))
-      invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
+      test_results.append(_generate_test_result(t, rdb_test_result.FAIL, False))
+      test_results.append(_generate_test_result(t, rdb_test_result.PASS, True))
 
-    invocations_by_inv_id = {}
-    for i, inv in enumerate(invocations):
-      invocations_by_inv_id['inv%d' % i] = inv
+    invocation = self.m.resultdb.Invocation(
+        proto=rdb_invocation.Invocation(
+            state=rdb_invocation.Invocation.FINALIZED,
+            name=suite_name + '_results'),
+        test_results=test_results)
+    invocations_by_inv_id = {'inv': invocation}
     return self.m.resultdb.serialize(invocations_by_inv_id)

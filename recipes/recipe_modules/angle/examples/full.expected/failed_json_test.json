@@ -1219,8 +1219,8 @@
     },
     "name": "basic_isolate_tests results",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"basic_isolate_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://basic_isolate_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"basic_isolate_tests\"}}, \"variantHash\": \"basic_isolate_tests_hash\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"basic_isolate_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://basic_isolate_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"basic_isolate_tests\"}}, \"variantHash\": \"basic_isolate_tests_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
