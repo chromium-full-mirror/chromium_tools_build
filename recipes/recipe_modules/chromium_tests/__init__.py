@@ -51,7 +51,6 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
     'recipe_engine/time',
-    'recipe_engine/uuid',
     'repro_instructions',
     'siso',
     'skylab',

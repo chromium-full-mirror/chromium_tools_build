@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Compiles with patch and isolates tests"""
 
-from recipe_engine import post_process, turboci
+from recipe_engine import post_process
 from recipe_engine.config_types import Path
 
 from RECIPE_MODULES.build import chromium_types
@@ -20,15 +20,6 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 \
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 from PB.recipe_engine import result as result_pb2
 from PB.recipes.build.chromium.compilator import InputProperties
-from PB.turboci.data.build.v1.build_check_options import (
-    BuildCheckOptions,
-    Product,
-)
-from PB.turboci.data.build.v1.build_check_results import BuildCheckResult
-from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
-from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
-from PB.turboci.data.chrome.build.v1.compile_targets_options import (
-    CompileTargetsOptions)
 from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
 from PB.turboci.graph.orchestrator.v1.check_state import CheckState
 from PB.turboci.graph.orchestrator.v1.graph_view import GraphView
@@ -96,12 +87,6 @@ def compilator_steps(api, properties):
     api.chromium_tests.configure_build(orch_builder_config)
     api.chromium.apply_config('trybot_flavor')
 
-    # Assumes that the compilator is in the same project and bucket as the
-    # orchestrator
-    bb_id = api.buildbucket.build.builder
-    builder_full_name = (
-        f'{bb_id.project}/{bb_id.bucket}/{orch_builder_id.builder}')
-
     # test_targets implies that this compilator build must be compiled
     # without a patch so that the orchestrator can retry these tests
     # without patch
@@ -127,12 +112,6 @@ def compilator_steps(api, properties):
           if t.target_name in properties.test_targets and
           (t.runs_on_swarming or t.runs_on_skylab)
       ]
-
-      api.chromium_tests.turboci.create_build_check(
-          chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID,
-          chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
-          builder_full_name=builder_full_name)
-
       raw_result, execution_info = (
           api.chromium_tests.build_and_isolate_failing_tests(
               build_dir,
@@ -141,9 +120,7 @@ def compilator_steps(api, properties):
               test_suites,
               update_result,
               'without patch',
-              additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
-              turboci_build_check_id=chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID
-          ))
+              additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME]))
     else:
       update_result, build_dir, targets_config = (
           api.chromium_tests.prepare_checkout(
@@ -151,12 +128,6 @@ def compilator_steps(api, properties):
               timeout=3600,
               no_fetch_tags=True,
               turboci_source_check_id=chromium_tests.SOURCE_CHECK_ID))
-
-      turboci_analyze_check_id = api.chromium_tests.turboci.create_build_check(
-          chromium_tests.BUILD_CHECK_ID,
-          chromium_tests.SOURCE_CHECK_ID,
-          create_analyze_check=True,
-          builder_full_name=builder_full_name)
 
       raw_result, task = api.chromium_tests.build_affected_targets(
           orch_builder_id,
@@ -166,10 +137,7 @@ def compilator_steps(api, properties):
           targets_config,
           isolate_output_files_for_coverage=True,
           additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
-          skip_analysis_reasons=properties.skip_analysis_reasons,
-          turboci_build_check_id=chromium_tests.BUILD_CHECK_ID,
-          turboci_analyze_check_id=turboci_analyze_check_id,
-      )
+          skip_analysis_reasons=properties.skip_analysis_reasons)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       update_result = task.update_result
@@ -464,89 +432,16 @@ def GenTests(api):
         ).assemble())
 
   def basic_assert_graph(assert_, graph: GraphView):
-    analyze_check_id = f'{chromium_tests.BUILD_CHECK_ID} analyze'
     check_ids = set(graph.checks.keys())
-    if not assert_(
-        check_ids == {
-            chromium_tests.SOURCE_CHECK_ID,
-            chromium_tests.BUILD_CHECK_ID,
-            analyze_check_id,
-        }):
+    if not assert_(check_ids == {chromium_tests.SOURCE_CHECK_ID}):
       return  # pragma: no cover
 
-    # source check verifications ###############################################
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
     source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
-
-    # build check verifications ################################################
-    build_check = graph.checks[chromium_tests.BUILD_CHECK_ID].check
-    assert_(build_check.kind == CheckKind.CHECK_KIND_BUILD)
-    assert_(build_check.state == CheckState.CHECK_STATE_FINAL)
-
-    # Verify that the build check depends on the source and analyze checks
-    build_check_deps = {
-        edge.check.identifier.id for edge in build_check.dependencies.edges
-    }
-    assert_(
-        build_check_deps == {chromium_tests.SOURCE_CHECK_ID, analyze_check_id})
-
-    # Verify the options on the build check
-    build_check_options = turboci.get_option(BuildCheckOptions, build_check)
-    expected_build_check_options = BuildCheckOptions(
-        target=BuildCheckOptions.BuildTarget(
-            name='chromium/try/fake-orchestrator',
-            product=Product.PRODUCT_BROWSER,
-        ))
-    assert_(build_check_options == expected_build_check_options)
-
-    compile_targets_options = turboci.get_option(CompileTargetsOptions,
-                                                 build_check)
-    expected_compile_targets_options = CompileTargetsOptions(compile_targets=[
-        'angle_unittests',
-        'angle_unittests_no_swarm',
-        'browser_tests',
-        'infra/orchestrator:orchestrator_all',
-    ])
-    assert_(compile_targets_options == expected_compile_targets_options)
-
-    # Verify the results on the build check
-    build_check_results = turboci.get_results(BuildCheckResult, build_check)
-    expected_build_check_results = [BuildCheckResult(success=True)]
-    assert_(build_check_results == expected_build_check_results)
-
-    # analyze check verifications ##############################################
-    analyze_check = graph.checks[analyze_check_id].check
-    assert_(analyze_check.kind == CheckKind.CHECK_KIND_ANALYSIS)
-    assert_(analyze_check.state == CheckState.CHECK_STATE_FINAL)
-
-    # Verify the options on the analyze check
-    analyze_options = turboci.get_option(AnalyzeOptions, analyze_check)
-    expected_analyze_options = AnalyzeOptions(
-        test_targets=[
-            'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests'
-        ],
-        analyze_config_path='testing/buildbot/trybot_analyze_config.json',
-        analyze_config_names=['chromium', 'linux'],
-    )
-    assert_(analyze_options == expected_analyze_options)
-
-    # Verify the results on the analyze check
-    analyze_results = turboci.get_results(AnalyzeResults, analyze_check)
-    expected_analyze_results = [
-        AnalyzeResults(
-            compile_targets=[
-                'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests'
-            ],
-            test_targets=[
-                'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests'
-            ],
-        ),
-    ]
-    assert_(analyze_results == expected_analyze_results)
 
   yield api.test(
       'basic',
@@ -1151,58 +1046,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  def without_patch_assert_graph(assert_, graph: GraphView):
-    check_ids = set(graph.checks.keys())
-    if not assert_(
-        check_ids == {
-            chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
-            chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID,
-        }):
-      return  # pragma: no cover
-
-    # without patch source check verifications #################################
-    # The source check is created by bot_update, just verify it's of appropriate
-    # kind and is final, none of the other details since the check isn't being
-    # read by the recipe code
-    source_check = graph.checks[
-        chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID].check
-    assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
-    assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
-
-    # without patch build check verifications ##################################
-    build_check = graph.checks[
-        chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID].check
-    assert_(build_check.kind == CheckKind.CHECK_KIND_BUILD)
-    assert_(build_check.state == CheckState.CHECK_STATE_FINAL)
-
-    # Verify that the without patch build check depends on the without patch
-    # source check
-    build_check_deps = {
-        edge.check.identifier.id for edge in build_check.dependencies.edges
-    }
-    assert_(build_check_deps == {chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID})
-
-    # Verify the options on the without patch build check
-    build_check_options = turboci.get_option(BuildCheckOptions, build_check)
-    expected_build_check_options = BuildCheckOptions(
-        target=BuildCheckOptions.BuildTarget(
-            name='chromium/try/fake-orchestrator',
-            product=Product.PRODUCT_BROWSER,
-        ))
-    assert_(build_check_options == expected_build_check_options)
-
-    compile_targets_options = turboci.get_option(CompileTargetsOptions,
-                                                 build_check)
-    expected_compile_targets_options = CompileTargetsOptions(compile_targets=[
-        'browser_tests', 'infra/orchestrator:orchestrator_all'
-    ])
-    assert_(compile_targets_options == expected_compile_targets_options)
-
-    # Verify the results on the without patch build check
-    build_check_results = turboci.get_results(BuildCheckResult, build_check)
-    expected_build_check_results = [BuildCheckResult(success=True)]
-    assert_(build_check_results == expected_build_check_results)
-
   yield api.test(
       'without_patch',
       api.chromium.try_build(
@@ -1237,7 +1080,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'check_static_initializers (with patch)'),
       api.post_process(post_process.DropExpectation),
-      api.assert_turboci_graph(without_patch_assert_graph),
   )
 
   yield api.test(

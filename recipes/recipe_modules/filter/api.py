@@ -24,20 +24,35 @@ _Analyzer: typing.TypeAlias = Callable[[_AnalyzeInput, _AnalyzeOutput],
                                        step_data.StepData]
 
 
-ResultsCallback = Callable[[str, Iterable[str], Iterable[str]], None]
-"""A callback to report the results of an analyze operation.
+class ResultsCallback(typing.Protocol):
+  """A callback to report the results of an analyze operation."""
 
-The callback takes 3 arguments:
-1. A description of why the outcome was reached.
-2. The affected compile targets.
-3. The affected test targets.
-"""
+  def __call__(
+      self,
+      reason: str,
+      compile_targets: Iterable[str],
+      test_targets: Iterable[str],
+      /,
+      *,
+      skip_reasons: Iterable[str] = (),
+  ) -> None:
+    """Execute the callback to report the results.
+
+    Args:
+      reason: The reason that the provided results were computed.
+      compile_targets: The affected compile targets.
+      test_targets: The affected test targets.
+      skip_reasons: If provided, any reasons why analysis was skipped.
+    """
 
 
 def _noop_results_callback(
     reason: str,
     compile_targets: Iterable[str],
     test_targets: Iterable[str],
+    /,
+    *,
+    skip_reasons: Iterable[str] = (),
 ) -> None:
   pass
 
@@ -243,12 +258,12 @@ class FilterApi(recipe_api.RecipeApi):
         test_targets = sorted(test_targets)
 
         results_callback(
-            ('skipping analyze because an exclusion matched:'
-             f' {path} matched regex "{matched_pattern.pattern}"'
-             f' from {exclusions[matched_pattern]}'),
+            'skipping analysis',
             all_targets,
             test_targets,
-        )
+            skip_reasons=[(f'matched exclusion: {path}'
+                           f' matched regex "{matched_pattern.pattern}"'
+                           f' from {exclusions[matched_pattern]}')])
 
         return test_targets, all_targets
 
