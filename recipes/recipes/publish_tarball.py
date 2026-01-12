@@ -232,6 +232,17 @@ DENYLISTED_VERSIONS = [
     # by https://crrev.com/c/6899997.
     '141.0.7382.0',
     '141.0.7383.0',
+    # third_party/angle/DEPS pointed to VK-GL-CTS commit 2e03601bd4ee, which
+    # was removed upstream after the main branch was force-pushed (which seems
+    # to happen occasionally, see ANGLE bug 449156265). Skip some M145
+    # revisions that depend on an ANGLE revision that depends on this commit
+    # were not built before it disappeared to avoid errors like
+    # https://ci.chromium.org/ui/b/8692896401331842305
+    # This was fixed in Chromium with the ANGLE roll in commit 4b114ef7d
+    # (present in 145.0.7624.0).
+    '145.0.7620.2',
+    '145.0.7620.3',
+    '145.0.7623.0',
 ]
 
 # NaCl support was removed from the Linux builds in
