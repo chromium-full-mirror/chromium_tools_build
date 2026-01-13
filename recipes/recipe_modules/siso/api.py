@@ -140,6 +140,22 @@ class SisoApi(recipe_api.RecipeApi):
       ])
 
     ninja_dir = self._ninja_dir(ninja_command)
+
+    if self._props.profile_mode == 'local':
+      assert not self._props.enable_cloud_profiler, \
+        'siso is configured to use local profiler and cloud profiler at the same time'
+
+      cmd.extend([
+          '-cpuprofile',
+          self.m.path.join(ninja_dir, 'siso_cpu.prof'),
+          '-memprofile',
+          self.m.path.join(ninja_dir, 'siso_mem.prof'),
+          '-blockprofile',
+          self.m.path.join(ninja_dir, 'siso_block.prof'),
+          '-mutexprofile',
+          self.m.path.join(ninja_dir, 'siso_mutex.prof'),
+      ])
+
     cmd.extend([
         self.siso_path(source_dir),
         'ninja',
@@ -169,7 +185,7 @@ class SisoApi(recipe_api.RecipeApi):
           self._props.reapi_instance,
       ])
     if not skip_log_upload:
-      if self._props.enable_cloud_profiler:
+      if self._props.enable_cloud_profiler or self._props.profile_mode == 'cloud':
         cmd.append('--enable_cloud_profiler')
       if self._props.enable_cloud_trace:
         cmd.append('--enable_cloud_trace')
@@ -262,7 +278,8 @@ class SisoApi(recipe_api.RecipeApi):
                                                  report_id)
           gs_foldername = '%s/siso/%s' % (now.date().strftime('%Y/%m/%d'),
                                           report_foldername)
-          for file in [
+
+          files = [
               # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
               # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
               'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
@@ -279,7 +296,15 @@ class SisoApi(recipe_api.RecipeApi):
               '.siso_fs_state',
               '.siso_fs_state.0',
               '.ninja_log',
-          ]:
+          ]
+
+          if self._props.profile_mode == 'local':
+            files.extend([
+                'siso_cpu.prof', 'siso_mem.prof', 'siso_block.prof',
+                'siso_mutex.prof'
+            ])
+
+          for file in files:
             abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
             if not self.m.path.exists(abs_path):
               continue

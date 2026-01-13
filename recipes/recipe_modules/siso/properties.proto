@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 18
+// NEXT ID TO USE: 19
 message InputProperties {
   // Backend config
 
@@ -31,7 +31,13 @@ message InputProperties {
   repeated string experiments = 5;
 
   // monitoring/observability
+  // If 'cloud' is set, this enables cloud profiler and
+  // if 'local' is set, this enables local profilers.
+  string profile_mode = 18;
+
+  // TODO(http://b/464099050): Deprecated. Use profile_mode instead.
   bool enable_cloud_profiler = 6;
+
   bool enable_cloud_trace = 7;
   // Cloud monitoring feature is available only when using the builtin RBE
   // client. When Siso uses Reclient, Reclient sends metrics to Cloud monitoring

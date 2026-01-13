@@ -109,6 +109,14 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+      'local_profiler',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(profile_mode='local'),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-cpuprofile']),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'cloud_profiler',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(enable_cloud_profiler=True),
