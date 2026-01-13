@@ -29,7 +29,15 @@ MANIFEST_PKG_NAME = '%s/manifest' % BASE_PKG_NAME
 FILE_BLAME_JSONS_PKG_NAME = '%s/file_blame_jsons' % BASE_PKG_NAME
 COMMIT_HASH_JSONS_PKG_NAME = '%s/commit_hash_jsons' % BASE_PKG_NAME
 
-GCS_BUCKET = 'historyrag-chrome-internal-staging'
+GCS_BUCKET_STAGING = 'historyrag-chrome-internal-staging'
+GCS_BUCKET_PROD = 'historyrag-chrome-internal'
+
+
+def get_destination_bucket(api):
+  build = api.buildbucket.build
+  if build.builder.bucket == 'ci' and build.builder.builder == 'linux-history-rag':
+    return GCS_BUCKET_PROD
+  return GCS_BUCKET_STAGING
 
 # Configuration for Vertex AI
 GOOGLE_CLOUD_PROJECT = 'skia-infra-corp'
@@ -46,7 +54,6 @@ def RunSteps(api):
   update_pointers_to_latest_CIPDs(api, revision, file_blame_jsons_pkg_name,
                                   file_blame_jsons_pkg_id)
   generate_topics(api, commit_hash_jsons_dir, revision)
-
 
 def checkout_source_code(api):
   with api.step.nest('Checkout Chrome Source Code'):
@@ -195,7 +202,6 @@ def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
   _ = api.step('Collect Blame JSONs', cmd)
   return blame_hashes_file
 
-
 def generate_topics(api, commit_hash_jsons_dir, revision):
   with api.step.nest('Generate and Upload Topics'):
     with api.context(
@@ -247,14 +253,15 @@ def generate_topics(api, commit_hash_jsons_dir, revision):
       _ = api.step('Group and Package', cmd)
 
       topic_dest_path = _get_topics_dest_path(api, revision)
+      gcs_bucket = get_destination_bucket(api)
       api.gsutil.upload(
           source=topic_zip_file,
-          bucket=GCS_BUCKET,
+          bucket=gcs_bucket,
           dest=topic_dest_path,
           name=f'Upload topics for {revision}',
           link_name='GCS Topics File')
       api.step.active_result.presentation.links[
-          'GCS Topics File'] = f"https://storage.cloud.google.com/{GCS_BUCKET}/{topic_dest_path}"
+          'GCS Topics File'] = f"https://storage.cloud.google.com/{gcs_bucket}/{topic_dest_path}"
 
 
 def _get_topics_dest_path(api, current_revision):
@@ -453,6 +460,42 @@ def builder_config_test_data(api):
           },
       }))
 
+
+# Test config corresponding to prod builder
+def prod_builder_config_test_data(api):
+  return api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='linux-history-rag',
+      revision='newrevision',
+      builder_db=ctbc.BuilderDatabase.create({
+          'fake-group': {
+              'linux-history-rag':
+                  ctbc.BuilderSpec.create(
+                      chromium_config='chromium',
+                      chromium_apply_config=['mb'],
+                      gclient_config='chromium',
+                  ),
+          },
+      }))
+
+
+def StepCommandContainsSubstrings(check, step_odict, step, substrings):
+  """Assert that a step's command contained the given substring
+
+  Args:
+    step (str) - The name of the step to check the command of.
+    substring (str) - The expected substring of an argument. If any of
+      the commandline element contained this substring, the check is success.
+  """
+
+  def found_in_commandline(substring):
+    return any(substring in arg for arg in step_odict[step].cmd)
+
+  check(
+      'command line for step %s contained %s as substrings' %
+      (step, substrings), all(found_in_commandline(s) for s in substrings))
+
+
 def GenTests(api):
   # Basic test case: Baseline manifest exists and is valid.
   yield api.test(
@@ -530,6 +573,10 @@ def GenTests(api):
                        'Generate and Upload Topics.Summarize Topics'),
       api.post_process(post_process.MustRun,
                        'Generate and Upload Topics.Group and Package'),
+      api.post_process(
+          StepCommandContainsSubstrings,
+          'Generate and Upload Topics.gsutil Upload topics for newrevision',
+          ['gs://historyrag-chrome-internal-staging/']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -594,6 +641,45 @@ def GenTests(api):
                        'Generate and Upload Topics.Summarize Topics'),
       api.post_process(post_process.MustRun,
                        'Generate and Upload Topics.Group and Package'),
+      api.post_process(
+          StepCommandContainsSubstrings,
+          'Generate and Upload Topics.gsutil Upload topics for newrevision',
+          ['gs://historyrag-chrome-internal-staging/']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  # Test case: Prod builder uses prod gcs bucket to upload topics zip.
+  yield api.test(
+      'prod_builder_uses_prod_gcs_bucket',
+      prod_builder_config_test_data(api),
+      api.properties(**{
+          '$build/chromium_checkout': {
+              'gclient_config': 'chromium',
+          },
+      }),
+      # Mock cipd describe for manifest package - not found
+      api.step_data(
+          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          retcode=1),
+      # Mock cipd create for file blame json package
+      api.step_data(
+          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          stdout=api.raw_io.output_text(
+              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+          )),
+      # Mock cipd create for manifest package
+      api.step_data(
+          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          stdout=api.raw_io.output_text(
+              'Instance: infra/history_rag/chrome/manifest:new-manifest-instance-id'
+          )),
+      api.post_process(
+          post_process.MustRun,
+          'Generate and Upload Topics.gsutil Upload topics for newrevision'),
+      api.post_process(
+          StepCommandContainsSubstrings,
+          'Generate and Upload Topics.gsutil Upload topics for newrevision',
+          ['gs://historyrag-chrome-internal/']),
       api.post_process(post_process.DropExpectation),
   )
 
