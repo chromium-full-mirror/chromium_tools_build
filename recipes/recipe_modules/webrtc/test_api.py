@@ -9,9 +9,6 @@ from __future__ import annotations
 from recipe_engine import post_process
 from recipe_engine import recipe_test_api
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 \
-    import test_result as test_result_pb2
-
 _BUILDER_PREFIX = {
     'client.webrtc': 'luci_webrtc_ci',
     'client.webrtc.perf': 'luci_webrtc_perf',
@@ -92,23 +89,11 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
       test += self.post_process(post_process.DropExpectation)
 
     if failing_test:
-      step_name = '%s on Ubuntu-16.04' % test_target
       test += self.override_step_data(
-          step_name,
-          self.m.chromium_swarming.canned_summary_output(
-              self.m.test_utils.canned_gtest_output(False),
-              failure=True,
-              invocations=['invocations/0']))
-      test += self.m.resultdb.query(
-          {
-              'invocations/0':
-                  self.m.resultdb.Invocation(test_results=[
-                      test_result_pb2.TestResult(
-                          test_id='Test.One', status=test_result_pb2.FAIL)
-                  ]),
-          },
-          step_name='collect tasks.%s results' % test_target,
-      )
+          'collect tasks.%s results' % test_target,
+          stdout=self.m.raw_io.output_text(
+              self.m.test_utils.rdb_results(
+                  test_target, failing_tests=[test_target])))
 
     if fail_android_archive:
       step_test_data = recipe_test_api.StepTestData()

@@ -505,8 +505,11 @@ def GenTests(api):
                   'min_failed_suites_to_skip_retry': 1,
               },
           }),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', '', failures=['Test.One']),
+      api.override_step_data(
+          'collect tasks.base_unittests results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'base_unittests', failing_tests=['Test.One']))),
       api.post_check(post_process.MustRun, 'abort retry'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
@@ -529,8 +532,11 @@ def GenTests(api):
                   'min_failed_suites_to_skip_retry': 1,
               },
           }),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', '', failures=['Test.One']),
+      api.override_step_data(
+          'collect tasks.base_unittests results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'base_unittests', failing_tests=['Test.One']))),
       api.post_check(post_process.MustRun, 'abort retry'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),

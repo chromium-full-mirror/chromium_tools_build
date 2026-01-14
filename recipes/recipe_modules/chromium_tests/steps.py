@@ -2378,28 +2378,6 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     return suffix in self._tasks and not self._tasks[
         suffix].has_incomplete_shards
 
-  def has_valid_results(self, suffix: str) -> bool:
-    if not super().has_valid_results(suffix):
-      return False
-
-    rdb_results = self.get_rdb_results(suffix)
-    task = self.get_task(suffix)
-
-    if not rdb_results or not task:
-      return False
-
-    num_failed_shards = len(task.failed_shards)
-
-    rdb_invocations_with_fails = {
-        test.invocation_id for test in rdb_results.unexpected_failing_tests
-    }
-
-    # This check ensure that all shards from the task that marked as a failure
-    # have corresponding tests in RDB. This will ensure that when a shard fails
-    # and reports no results to RDB, the specific shard will be marked as invalid,
-    # labeling the whole step as invalid.
-    return num_failed_shards == len(rdb_invocations_with_fails)
-
   @abc.abstractmethod
   def _create_task(
       self,

@@ -2576,8 +2576,8 @@
     "name": "collect tasks (with patch).blink_web_tests results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"blink_web_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv\"}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}, \"variantHash\": \"blink_web_tests_hash\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"blink_web_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}, \"variantHash\": \"blink_web_tests_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
@@ -3461,8 +3461,8 @@
     "name": "collect tasks (retry shards with patch).blink_web_tests results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"blink_web_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv\"}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}, \"variantHash\": \"blink_web_tests_hash\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"blink_web_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}, \"variantHash\": \"blink_web_tests_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
@@ -6247,8 +6247,8 @@
     "name": "collect tasks (without patch).blink_web_tests results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"blink_web_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv\"}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}, \"variantHash\": \"blink_web_tests_hash\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"blink_web_tests_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"Test.One\"}], \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}, \"variantHash\": \"blink_web_tests_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
@@ -6471,7 +6471,7 @@
       }
     },
     "name": "exonerate unrelated test failures",
-    "stdin": "{\"invocation\": \"invocations/build:8945511751514863184\", \"requestId\": \"00000000-0000-0000-0000-000000001343\", \"requests\": [{\"testExoneration\": {\"explanationHtml\": \"The test failed in both (with patch) and (without patch) steps, so the CL is exonerated for the test failures.<br><a href=\\\"https://ci.chromium.org/ui/inv/inv/test-results\\\" target=\\\"_blank\\\">Test results without patch</a>\", \"reason\": \"OCCURS_ON_MAINLINE\", \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}}}]}",
+    "stdin": "{\"invocation\": \"invocations/build:8945511751514863184\", \"requestId\": \"00000000-0000-0000-0000-000000001343\", \"requests\": [{\"testExoneration\": {\"explanationHtml\": \"The test failed in both (with patch) and (without patch) steps, so the CL is exonerated for the test failures.<br><a href=\\\"https://ci.chromium.org/ui/inv/inv0/test-results\\\" target=\\\"_blank\\\">Test results without patch</a>\", \"reason\": \"OCCURS_ON_MAINLINE\", \"testId\": \"ninja://blink_web_tests/Test.One\", \"variant\": {\"def\": {\"test_suite\": \"blink_web_tests\"}}}}]}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -6481,7 +6481,7 @@
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
       "@@@STEP_LOG_LINE@json.input@      \"testExoneration\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"explanationHtml\": \"The test failed in both (with patch) and (without patch) steps, so the CL is exonerated for the test failures.<br><a href=\\\"https://ci.chromium.org/ui/inv/inv/test-results\\\" target=\\\"_blank\\\">Test results without patch</a>\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"explanationHtml\": \"The test failed in both (with patch) and (without patch) steps, so the CL is exonerated for the test failures.<br><a href=\\\"https://ci.chromium.org/ui/inv/inv0/test-results\\\" target=\\\"_blank\\\">Test results without patch</a>\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"reason\": \"OCCURS_ON_MAINLINE\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"testId\": \"ninja://blink_web_tests/Test.One\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"variant\": {@@@",

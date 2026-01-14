@@ -1689,7 +1689,8 @@
     "name": "collect tasks.dummy_test results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"invocations/0\", \"testResult\": {\"status\": \"FAIL\", \"testId\": \"Test.One\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocation\": {\"name\": \"dummy_test_results\", \"state\": \"FINALIZED\"}, \"invocationId\": \"inv0\"}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"inv0\", \"testResult\": {\"failureReason\": {\"primaryErrorMessage\": \"paint_op_writer.cc(106): Check failed:\"}, \"status\": \"FAIL\", \"tags\": [{\"key\": \"test_name\", \"value\": \"dummy_test\"}], \"testId\": \"ninja://dummy_test/dummy_test\", \"variant\": {\"def\": {\"test_suite\": \"dummy_test\"}}, \"variantHash\": \"dummy_test_hash\"}}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
@@ -1746,7 +1747,7 @@
       "resultdb.instruction.id": "tag_27061c33fbd705e8013fb6e4911a4cc36922eada"
     },
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>[Test.One](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One)<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/><br/>Test command to run from the build dir:<br/>```--test-launcher-summary-output=tmp/output.json```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>[dummy_test](https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=dummy_test)<br/>@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -1770,8 +1771,8 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 1,@@@",
-      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": true,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
@@ -1804,15 +1805,14 @@
       "@@@STEP_LOG_LINE@step_metadata@}@@@",
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
-      "@@@STEP_LINK@<span style=\"color: var(--failure-color, #d23a2d)\">shard #0 (failed) (1m 0s)</span>@https://example.swarmingserver.appspot.com/task?id=0@@@",
-      "@@@STEP_FAILURE@@@"
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
     "cmd": [],
     "name": "$debug - all results",
     "~followup_annotations": [
-      "@@@STEP_TEXT@1.99 KB@@@",
+      "@@@STEP_TEXT@2.07 KB@@@",
       "@@@STEP_LOG_LINE@serialized results@{@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
@@ -1821,11 +1821,11 @@
       "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 1,@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [@@@",
-      "@@@STEP_LOG_LINE@serialized results@        \"Test.One\"@@@",
+      "@@@STEP_LOG_LINE@serialized results@        \"dummy_test\"@@@",
       "@@@STEP_LOG_LINE@serialized results@      ],@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_passing_tests\": [],@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_skipped_tests\": [],@@@",
-      "@@@STEP_LOG_LINE@serialized results@      \"variant_hash\": \"\"@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"variant_hash\": \"dummy_test_hash\"@@@",
       "@@@STEP_LOG_LINE@serialized results@    }@@@",
       "@@@STEP_LOG_LINE@serialized results@  ],@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"unexpected_failing_suites\": [@@@",
@@ -1833,11 +1833,11 @@
       "@@@STEP_LOG_LINE@serialized results@  ]@@@",
       "@@@STEP_LOG_LINE@serialized results@}@@@",
       "@@@STEP_LOG_END@serialized results@@@",
-      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.99 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 2.07 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for dummy_test: 1.78 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for dummy_test: 1.87 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 1@@@",
-      "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 476.00 B@@@",
+      "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 537.00 B@@@",
       "@@@STEP_LOG_END@memory usage@@@"
     ]
   },
@@ -1858,7 +1858,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 Test Suite(s) failed.\n\n**dummy_test** failed because of:\n\n- Test.One"
+      "humanReason": "1 Test Suite(s) failed.\n\n**dummy_test** failed because of:\n\n- dummy_test"
     },
     "name": "$result"
   }
