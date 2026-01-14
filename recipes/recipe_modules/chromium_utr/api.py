@@ -169,10 +169,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         if t.runs_on_swarming:
           new_dimensions = dict(t.spec.dimensions)
 
-          new_dimensions.update({
-              str(d.split('=', 1)[0]): str(d.split('=', 1)[1]) or None
-              for d in properties.swarming_dimensions
-          })
+          for d in properties.swarming_dimensions:
+            k, v = d.split('=', 1)
+            if not v:
+              new_dimensions.pop(str(k), None)
+            else:
+              new_dimensions[str(k)] = str(v)
+
           t.spec = attr.evolve(t.spec, dimensions=new_dimensions)
 
     test_runner = self.m.chromium_tests.create_test_runner(

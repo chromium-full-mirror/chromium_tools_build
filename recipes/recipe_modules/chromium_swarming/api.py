@@ -669,9 +669,10 @@ class SwarmingApi(recipe_api.RecipeApi):
       kwargs: passed to recipe step constructor as-is.
     """
     assert isinstance(task, SwarmingTask)
+    assert 'os' in task.request[0].dimensions, (
+        'All tasks must have an os dimension: %s' % task.request[0].dimensions)
     assert task.task_name not in self._pending_tasks, (
         'Triggered same task twice: %s' % task.request.name)
-    assert 'os' in task.request[0].dimensions, task.request[0].dimensions
 
     # There is a single pending task, regardless of how many shards get
     # triggered.
