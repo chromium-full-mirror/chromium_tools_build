@@ -779,55 +779,6 @@
   {
     "cmd": [
       "python3",
-      "-u",
-      "[CACHE]/builder/src/tools/clang/scripts/update.py",
-      "--package=translation_unit",
-      "--output-dir=[CLEANUP]/tmp_tmp_1"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "download translation_unit clang tool"
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools/clang/scripts/run_tool.py",
-      "--tool",
-      "translation_unit",
-      "--tool-path",
-      "[CLEANUP]/tmp_tmp_1/bin",
-      "-p",
-      "[CACHE]/builder/src/out/linux-Debug",
-      "--all"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run translation_unit clang tool"
-  },
-  {
-    "cmd": [
-      "python3",
       "RECIPE_MODULE[infra::codesearch]/resources/add_kythe_metadata.py",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
@@ -956,7 +907,7 @@
       "--path_to_gn_targets",
       "[CACHE]/builder/src/out/linux-Debug/gn_targets.json",
       "--path_to_archive_output",
-      "[CLEANUP]/tmp_tmp_2",
+      "[CLEANUP]/tmp_tmp_1",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--project",
@@ -1036,7 +987,7 @@
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--output",
-      "[CLEANUP]/tmp_tmp_3",
+      "[CLEANUP]/tmp_tmp_2",
       "--vnames_json_path",
       "[{\"pattern\": \"../../(.*)\", \"vname\": {\"path\": \"@1@\"}}, {\"pattern\": \"([^.].*)\", \"vname\": {\"path\": \"linux-Debug/@1@\", \"root\": \"out\"}}]",
       "--root",
@@ -1070,9 +1021,9 @@
       "--encoding",
       "PROTO",
       "--output",
-      "[CLEANUP]/tmp_tmp_4",
-      "[CLEANUP]/tmp_tmp_2",
-      "[CLEANUP]/tmp_tmp_3"
+      "[CLEANUP]/tmp_tmp_3",
+      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]/tmp_tmp_2"
     ],
     "luci_context": {
       "realm": {
@@ -1097,7 +1048,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_4",
+      "[CLEANUP]/tmp_tmp_3",
       "gs://chrome-codesearch/prod/chromium_linux_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip"
     ],
     "infra_step": true,
