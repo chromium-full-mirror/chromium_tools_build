@@ -377,7 +377,7 @@ def RunSteps(api, properties):
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  use_siso = (platform not in ('mac', 'ios', 'win'))
+  use_siso = (platform == 'linux')
   # Download and run the clang tool.
   if not use_siso:
     api.codesearch.run_clang_tool(run_dirs=[api.context.cwd])
@@ -562,6 +562,7 @@ def GenTests(api):
       _sanitize_nonalpha('codesearch-gen-chromium-chromiumos'),
       props('chromiumos'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-chromiumos'),
+      api.step_data('run translation_unit clang tool', retcode=2),
       api.step_data('generate gn target list',
                     api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
   )
@@ -761,7 +762,7 @@ def GenTests(api):
           StepCommandContains,
           'gsutil upload kythe index pack',
           # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
+          ['[CLEANUP]/tmp_tmp_2']),
       api.post_process(StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

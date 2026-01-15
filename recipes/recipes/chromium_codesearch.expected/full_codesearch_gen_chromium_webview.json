@@ -755,6 +755,55 @@
   {
     "cmd": [
       "python3",
+      "-u",
+      "[CACHE]/builder/src/tools/clang/scripts/update.py",
+      "--package=translation_unit",
+      "--output-dir=[CLEANUP]/tmp_tmp_1"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download translation_unit clang tool"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools/clang/scripts/run_tool.py",
+      "--tool",
+      "translation_unit",
+      "--tool-path",
+      "[CLEANUP]/tmp_tmp_1/bin",
+      "-p",
+      "[CACHE]/builder/src/out/webview-Debug",
+      "--all"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run translation_unit clang tool"
+  },
+  {
+    "cmd": [
+      "python3",
       "RECIPE_MODULE[infra::codesearch]/resources/add_kythe_metadata.py",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
@@ -852,29 +901,6 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/third_party/siso/cipd/siso",
-      "query",
-      "deps",
-      "-format=json",
-      "-C",
-      "[CACHE]/builder/src/out/webview-Debug"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "get c++ dependencies from siso"
-  },
-  {
-    "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/package_index/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/package_index",
       "--checkout_dir",
       "[CACHE]/builder/src",
@@ -883,7 +909,7 @@
       "--path_to_gn_targets",
       "[CACHE]/builder/src/out/webview-Debug/gn_targets.json",
       "--path_to_archive_output",
-      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]/tmp_tmp_2",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--project",
@@ -893,9 +919,7 @@
       "--out_dir",
       "src/out/webview-Debug",
       "--build_config",
-      "webview",
-      "--use_siso",
-      "true"
+      "webview"
     ],
     "luci_context": {
       "realm": {
@@ -920,7 +944,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]/tmp_tmp_2",
       "gs://chrome-codesearch/prod/chromium_webview_170242_f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9+1337000001.kzip"
     ],
     "infra_step": true,
