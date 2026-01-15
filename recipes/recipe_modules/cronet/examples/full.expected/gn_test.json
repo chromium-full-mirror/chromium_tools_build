@@ -273,7 +273,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/third_party/siso/siso",
+      "[START_DIR]/src/third_party/siso/cipd/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -424,7 +424,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/src/third_party/siso/siso",
+      "[START_DIR]/src/third_party/siso/cipd/siso",
       "ninja",
       "--project",
       "test-rbe-project",

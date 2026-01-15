@@ -514,7 +514,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/angle/third_party/siso/siso",
+      "[CACHE]/builder/angle/third_party/siso/cipd/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -657,7 +657,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/angle/third_party/siso/siso",
+      "[CACHE]/builder/angle/third_party/siso/cipd/siso",
       "ninja",
       "--project",
       "test-rbe-project",

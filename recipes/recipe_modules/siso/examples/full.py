@@ -246,7 +246,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'compile', [
           '/usr/bin/time', f'--format={siso.RUSAGE_FORMAT}', '-o',
           '[CACHE]/resource_usage.json',
-          '[CACHE]/builder/src/third_party/siso/siso', 'ninja'
+          '[CACHE]/builder/src/third_party/siso/cipd/siso', 'ninja'
       ]),
       api.post_process(post_process.DropExpectation),
   )
