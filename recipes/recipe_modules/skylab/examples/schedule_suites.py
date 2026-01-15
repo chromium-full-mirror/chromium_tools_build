@@ -307,10 +307,10 @@ def RunSteps(api, requests):
 
   api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
   ctp_build_ids = []
-  step_results = []
+  builds = []
   with api.step.nest('schedule skylab test'):
     for r in requests:
-      step_results.append(
+      builds.append(
           api.skylab.schedule_suite(
               r,
               '',
@@ -322,8 +322,9 @@ def RunSteps(api, requests):
                   'runtime_excluded_tests')))
       if cpt_id := r.ctp_build_ids.get(''):
         ctp_build_ids.append(cpt_id)
-  for result in step_results:
-    api.step.raise_on_failure(result)
+  for build in builds:
+    if not build:
+      raise api.step.StepFailure("")
   api.buildbucket.collect_builds(ctp_build_ids, timeout=60)
   with api.step.nest('find test runner build'):
     for r in requests:

@@ -15,7 +15,10 @@ from recipe_engine import recipe_api
 from .test_runner import TestRunner
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.go.chromium.org.luci.buildbucket.proto import (
+    builds_service as builds_service_pb2,
+    common as common_pb2,
+)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (invocation as
                                                        invocation_pb)
@@ -198,7 +201,7 @@ class SkylabApi(recipe_api.RecipeApi):
 
     Returns the StepResult of the skylab.py resource script invocation.
     """
-    with self.m.step.nest(test.step_name(suffix)) as presentation:
+    with self.m.step.nest(test.step_name(suffix)):
       cmd = [
           'vpython3',
           self.resource('skylab.py'),
@@ -417,15 +420,27 @@ class SkylabApi(recipe_api.RecipeApi):
           'schedule',
           cmd,
           raise_on_failure=False,
-          step_test_data=lambda: self.m.json.test_api.output(
-              {'ctp_build_id': '889900'}))
+          step_test_data=lambda: self.m.json.test_api.output({
+              'builder': {
+                  'project': 'chromeos',
+                  'bucket': 'testplatform',
+                  'builder': 'cros_test_platform',
+              },
+              'properties': {
+                  'ctpv2_request': {
+                      'requests': [{
+                          'suiteRequest': {}
+                      }]
+                  }
+              }
+          }))
 
       if step_result.retcode == 0:
-        build_id = int(step_result.json.output['ctp_build_id'])
-        presentation.links[
-            test.name] = 'https://ci.chromium.org/b/%s' % build_id
-        test.ctp_build_ids[suffix] = build_id
-      return step_result
+        build = self.m.buildbucket.schedule([
+            builds_service_pb2.ScheduleBuildRequest(**step_result.json.output)
+        ])[0]
+        test.ctp_build_ids[suffix] = build.id
+        return build
 
   def fetch_test_runners(self, test, suffix):
     """Fetch the CrOS test runner builds for each shard.

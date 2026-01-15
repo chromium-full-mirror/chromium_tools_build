@@ -304,7 +304,6 @@ def schedule_skylab_tests(opts):
       arg.flag = test_arg[0][1:] if test_arg[0].startswith(' ') else test_arg[0]
       arg.value = test_arg[1]
 
-
   bb_request_data = {
       'builder': {
           'project': 'chromeos',
@@ -321,20 +320,24 @@ def schedule_skylab_tests(opts):
         "key": "parent_buildbucket_id",
         "value": opts.parent_build_id,
     }]
-
-    # TODO(b/383918630): Uncomment the below line. This causes the permission
-    # error for some reason. See the issue for the detail.
-    # bb_request_data['parentBuildId'] = opts.parent_build_id
-    bb_request_data['canOutliveParent'] = 0  # 0 is UNSET
+    # Use can_outlive_parent so it can be passed to Python-proto bindings.
+    bb_request_data['can_outlive_parent'] = 2  # 2 is NO
 
   bb_request_data_json = json.dumps(bb_request_data)
+  if opts.dry_run:
+    if opts.json_outfile:
+      with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
+        json_file.write(bb_request_data_json)
+    else:
+      logging.info('request to send: %s', bb_request_data_json)
+    return
   resp = _call_buildbucket(bb_request_data_json, opts.json_creds,
                            BUILDBUCKET_SCHEDULE_ENDPOINT)
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
       json.dump({'ctp_build_id': resp['id']}, json_file)
   else:
-    logging.info('ctp_build_id: %s\n', resp['id'])
+    logging.info('ctp_build_id: %s', resp['id'])
 
 
 def read_ctp_results(opts):
@@ -470,6 +473,12 @@ def main(args):
   # Subcommand: request
   subparser = subparsers.add_parser(
       'request', help=('Schedule Skylab test requests via Buildbucket API.'))
+  subparser.add_argument(
+      '--nodry-run',
+      dest='dry_run',
+      action='store_false',
+      default=True,
+      help='Disable dry run mode and send request. For local testing.')
   subparser.add_argument(
       '--builder-name', type=str, help='Buildbucket builder name.')
   subparser.add_argument('--board', type=str, help='ChromeOS board name.')

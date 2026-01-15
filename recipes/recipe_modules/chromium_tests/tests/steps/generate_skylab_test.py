@@ -293,11 +293,6 @@ def GenTests(api):
           runner_builds=[(901, common_pb2.SUCCESS), (902, common_pb2.SUCCESS),
                          (903, common_pb2.INFRA_FAILURE)]),
       api.override_step_data(
-          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
-          api.m.json.output({
-              'ctp_build_id': '889901',
-          })),
-      api.override_step_data(
           'basic_EVE_TOT (retry shards).read_ctp_response',
           api.m.json.output({
               'some test 2': {
@@ -345,11 +340,6 @@ def GenTests(api):
           3,
           runner_builds=[(901, common_pb2.SUCCESS), (902, common_pb2.SUCCESS),
                          (903, common_pb2.INFRA_FAILURE)]),
-      api.override_step_data(
-          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
-          api.m.json.output({
-              'ctp_build_id': '889901',
-          })),
       api.override_step_data(
           'basic_EVE_TOT (retry shards).read_ctp_response',
           api.m.json.output({
@@ -402,11 +392,6 @@ def GenTests(api):
           shards=1),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.INFRA_FAILURE)]),
-      api.override_step_data(
-          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
-          api.m.json.output({
-              'ctp_build_id': '889901',
-          })),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT (retry shards)',
           1,
@@ -630,11 +615,6 @@ def GenTests(api):
           'basic_EVE_TOT (retry shards with patch)',
           1,
           runner_builds=[(909, common_pb2.FAILURE)]),
-      api.override_step_data(
-          'test_pre_run (retry shards with patch).basic_EVE_TOT (retry shards with patch).schedule',
-          api.m.json.output({
-              'ctp_build_id': '889901',
-          })),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
