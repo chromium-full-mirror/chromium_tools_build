@@ -146,9 +146,6 @@ class SisoApi(recipe_api.RecipeApi):
     ])
 
     if self._props.profile_mode == 'local':
-      assert not self._props.enable_cloud_profiler, \
-        'siso is configured to use local profiler and cloud profiler at the same time'
-
       cmd.extend([
           '-cpuprofile',
           self.m.path.join(ninja_dir, 'siso_cpu.prof'),
@@ -188,7 +185,7 @@ class SisoApi(recipe_api.RecipeApi):
           self._props.reapi_instance,
       ])
     if not skip_log_upload:
-      if self._props.enable_cloud_profiler or self._props.profile_mode == 'cloud':
+      if self._props.profile_mode == 'cloud':
         cmd.append('--enable_cloud_profiler')
       if self._props.enable_cloud_trace:
         cmd.append('--enable_cloud_trace')

@@ -35,8 +35,8 @@ message InputProperties {
   // if 'local' is set, this enables local profilers.
   string profile_mode = 18;
 
-  // TODO(http://b/464099050): Deprecated. Use profile_mode instead.
-  bool enable_cloud_profiler = 6;
+  reserved 6;
+  reserved "enable_cloud_profiler";
 
   bool enable_cloud_trace = 7;
   // Cloud monitoring feature is available only when using the builtin RBE

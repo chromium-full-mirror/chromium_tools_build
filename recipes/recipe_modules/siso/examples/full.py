@@ -119,7 +119,7 @@ def GenTests(api):
   yield api.test(
       'cloud_profiler',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
-      api.siso.properties(enable_cloud_profiler=True),
+      api.siso.properties(profile_mode='cloud'),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['--enable_cloud_profiler']),
       api.post_process(post_process.DropExpectation),
