@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""
+This recipe executes typical trybot steps, but runs in CI with CI
+properties. It tests the integration of certain sub-projects in
+Chromium and gives a preview on test failures that'd happen if
+those sub-projects rolled to their current revision.
+"""
+
+
 from recipe_engine import post_process
 
 DEPS = [
@@ -26,7 +34,7 @@ def RunSteps(api):
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
-  def try_props(extra_swarmed_tests=None):
+  def ci_props(extra_swarmed_tests=None):
     swarm_hashes = {}
     if extra_swarmed_tests:
       for test in extra_swarmed_tests:
@@ -35,21 +43,19 @@ def GenTests(api):
     return sum([
         api.properties(swarm_hashes=swarm_hashes),
         api.platform('linux', 64),
-        api.chromium.try_build(
+        api.chromium.ci_build(
             project='project',
-            builder_group='fake-try-group',
-            builder='fake-try-builder',
+            builder_group='fake-group',
+            builder='fake-builder',
             git_repo='https://chromium.googlesource.com/v8/v8.git',
         ),
-        ctbc_api.properties(ctbc_api.properties_assembler_for_try_builder()
-                            .with_mirrored_builder(
-                                builder_group='fake-group',
-                                builder='fake-builder',
-                            ).assemble()),
+        ctbc_api.properties(
+            ctbc_api.properties_assembler_for_ci_builder(
+                builder_group='fake-group', builder='fake-builder').assemble()),
     ], api.empty_test_data())
 
   def blink_test_setup():
-    return (try_props(extra_swarmed_tests=['blink_web_tests']) +
+    return (ci_props(extra_swarmed_tests=['blink_web_tests']) +
             api.chromium_tests.read_targets_spec(
                 'fake-group', {
                     'fake-builder': {
@@ -68,10 +74,7 @@ def GenTests(api):
 
   def blink_test(
       succeeds_with_patch,
-      succeeds_retry_with_patch=None,
       succeeds_without_patch=None):
-    if succeeds_without_patch is not None:
-      assert succeeds_retry_with_patch is not None
 
     def test_result(suffix, is_successful):
       return api.chromium_tests.gen_swarming_and_rdb_results(
@@ -83,46 +86,35 @@ def GenTests(api):
 
     result += test_result('with patch', succeeds_with_patch)
 
-    if succeeds_retry_with_patch is not None:
-      result += test_result('retry shards with patch',
-                            succeeds_retry_with_patch)
-
-      if succeeds_without_patch is not None:
-        result += test_result('without patch', succeeds_without_patch)
+    if succeeds_without_patch is not None:
+      result += test_result('without patch', succeeds_without_patch)
 
     return result
+
+  yield api.test(
+      'passing',
+      blink_test(succeeds_with_patch=True),
+      api.post_process(post_process.MustRun, 'blink_web_tests (with patch)'),
+      api.post_process(post_process.DoesNotRun,
+                       'blink_web_tests (without patch)'),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'bug_introduced_by_commit',
       blink_test(
           succeeds_with_patch=False,
-          succeeds_retry_with_patch=False,
           succeeds_without_patch=True),
       api.post_process(post_process.MustRun, 'blink_web_tests (with patch)'),
-      api.post_process(post_process.MustRun,
-                       'blink_web_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'blink_web_tests (without patch)'),
       api.expect_status('FAILURE'),
   )
 
   yield api.test(
       'bug_introduced_by_chromium',
-      blink_test(
-          succeeds_with_patch=False,
-          succeeds_retry_with_patch=False,
-          succeeds_without_patch=False),
+      blink_test(succeeds_with_patch=False, succeeds_without_patch=False),
       api.post_process(post_process.MustRun, 'blink_web_tests (with patch)'),
-      api.post_process(post_process.MustRun,
-                       'blink_web_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'blink_web_tests (without patch)'),
-  )
-
-  yield api.test(
-      'flaky_test',
-      blink_test(succeeds_with_patch=False, succeeds_retry_with_patch=True),
-      api.post_process(post_process.MustRun, 'blink_web_tests (with patch)'),
-      api.post_process(post_process.MustRun,
-                       'blink_web_tests (retry shards with patch)'),
-      api.post_process(post_process.DoesNotRun,
-                       'blink_web_tests (without patch)'),
+      api.expect_status('SUCCESS'),
   )
