@@ -141,6 +141,10 @@ class SisoApi(recipe_api.RecipeApi):
 
     ninja_dir = self._ninja_dir(ninja_command)
 
+    cmd.extend([
+        self.siso_path(source_dir),
+    ])
+
     if self._props.profile_mode == 'local':
       assert not self._props.enable_cloud_profiler, \
         'siso is configured to use local profiler and cloud profiler at the same time'
@@ -157,7 +161,6 @@ class SisoApi(recipe_api.RecipeApi):
       ])
 
     cmd.extend([
-        self.siso_path(source_dir),
         'ninja',
         '--project',
         self._props.project,
