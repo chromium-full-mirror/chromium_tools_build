@@ -377,17 +377,12 @@ def RunSteps(api, properties):
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  use_siso = (platform != 'win')
-  # Download and run the clang tool.
-  if not use_siso:
-    api.codesearch.run_clang_tool(run_dirs=[api.context.cwd])
-
   # Process annotations and add kythe metadata.
   api.codesearch.add_kythe_metadata()
 
   # Create the initial kythe index pack.
   initial_index_pack_path = api.codesearch.create_kythe_index_pack(
-      use_siso=use_siso)
+      use_siso=True)
 
   # Create the Rust index pack on supported platforms.
   # The extractor is currently only built for Linux and Mac.
