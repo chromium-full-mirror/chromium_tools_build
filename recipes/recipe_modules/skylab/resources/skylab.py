@@ -167,23 +167,11 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
     sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
     sw_kv.key = 'ash_chrome_build_output_dir'
     sw_kv.value = opts.ash_chrome_build_output_dir
-  if opts.ash_chrome_gcs_path and cft_ash_chrome_provision and opts.pool == 'DUT_POOL_QUOTA':
-    try:
-      out = subprocess.check_output(
-          ['gsutil', 'ls', '-l', opts.ash_chrome_gcs_path]).decode('utf-8')
-      size_gb = int(out.split('\n', maxsplit=1)[0].split(
-          ' ', maxsplit=1)[0]) / 1024.0 / 1024.0 / 1024.0
-      # For tar.zstd greater than 3GB, we request a large bot (physical drone
-      # or larger cloudbots) to ensure the disk have enough space to extract
-      # the tarball.
-      # On average, build artifacts are compressed around 1:4-1:5, this means
-      # bots with around 15GB of remaining disk probably can hold the
-      # extraction.
-      if size_gb > 3:
-        schedule_targets.hw_target.legacy_hw.swarming_dimensions.append(
-            'label-bot_size:BOT_SIZE_LARGE')
-    except Exception as e:
-      logging.warning('gsutil error: %s', str(e))
+  if opts.pool == 'DUT_POOL_QUOTA':
+    if (_if_require_large_bot(opts.ash_chrome_gcs_path) or
+        _if_require_large_bot(opts.lacros_gcs_path)):
+      schedule_targets.hw_target.legacy_hw.swarming_dimensions.append(
+          'label-bot_size:BOT_SIZE_LARGE')
 
   if opts.cbx:
     assert False, "Not supported in CTPv2's hw_target"
@@ -254,6 +242,26 @@ def _tests_from_files(root, files, board, builder_name):
   for f in files:
     v.extend(_tests_from_file(os.path.join(root, f), board, builder_name))
   return list(set(v))
+
+
+def _if_require_large_bot(path):
+  if not path:
+    return False
+  try:
+    out = subprocess.check_output(['gsutil', 'ls', '-l', path]).decode('utf-8')
+    size_gb = int(out.split('\n', maxsplit=1)[0].split(
+        ' ', maxsplit=1)[0]) / 1024.0 / 1024.0 / 1024.0
+    # For tar.zstd greater than 3GB, we request a large bot (physical drone
+    # or larger cloudbots) to ensure the disk have enough space to extract
+    # the tarball.
+    # On average, build artifacts are compressed around 1:4-1:5, this means
+    # bots with around 15GB of remaining disk probably can hold the
+    # extraction.
+    if size_gb > 3:
+      return True
+  except Exception as e:
+    logging.warning('gsutil error: %s', str(e))
+  return False
 
 
 def schedule_skylab_tests(opts):
