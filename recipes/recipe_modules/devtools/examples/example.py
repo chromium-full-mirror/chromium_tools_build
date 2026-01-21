@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from PB.recipe_modules.build.devtools.examples.example import InputProperties
 from recipe_engine.recipe_api import StepFailure
 
 DEPS = [
@@ -20,33 +20,30 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-PROPERTIES = {
-    'builder_config': Property(kind=str, default='Release'),
-    'clobber': Property(kind=bool, default=False),
-    'parallel': Property(kind=bool, default=False),
-    'force_host_cpu': Property(kind=str, default=None),
-    'devtools_bundle': Property(kind=bool, default=True),
-}
+PROPERTIES = InputProperties
 
 
-def RunSteps(api, builder_config, clobber, parallel, force_host_cpu,
-             devtools_bundle):
+def RunSteps(api, properties):
+  builder_config = properties.builder_config or 'Release'
+  devtools_bundle = properties.devtools_bundle
+  if 'devtools_bundle' not in api.properties:
+    devtools_bundle = True
 
   api.devtools.configure(
       builder_config,
       is_official_build=True,
       devtools_skip_typecheck=True,
-      force_host_cpu=force_host_cpu,
+      force_host_cpu=properties.force_host_cpu or None,
       devtools_bundle=devtools_bundle)
   api.devtools.update()
 
   with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
+    api.devtools.clean_out_dir(builder_config, properties.clobber)
     build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
     api.chromium.run_gn(api.devtools.source_dir, build_dir)
     api.step.empty(
         '{os} {cpu}'.format(**api.devtools.get_dimensions_for_platform()))
-    if not parallel:
+    if not properties.parallel:
       api.devtools.run_e2e(builder_config)
     else:
       # No function; called for complete coverage.

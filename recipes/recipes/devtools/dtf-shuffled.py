@@ -5,7 +5,8 @@
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
                                         MustRun, SummaryMarkdown)
-from recipe_engine.recipe_api import Property
+from PB.recipes.build.devtools.dtf_shuffled import InputProperties
+
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, RepeatE2EShuffledTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase
@@ -25,16 +26,10 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-PROPERTIES = {
-    'clobber':
-        Property(
-            kind=bool,
-            help='Should the builder clean up the out/ folder before building',
-            default=False),
-}
+PROPERTIES = InputProperties
 
 
-def RunSteps(api, clobber):
+def RunSteps(api, properties):
   builder_config = 'Release'
   is_official_build = False
   devtools_skip_typecheck = False
@@ -44,7 +39,7 @@ def RunSteps(api, clobber):
 
   build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
   with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
+    api.devtools.clean_out_dir(builder_config, properties.clobber)
     with api.chromium.guard_compile(build_dir):
       api.chromium.run_gn(api.devtools.source_dir, build_dir)
 

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package recipes.build.devtools.dtf_e2e_stress;
+
+message InputProperties {
+  // Should the builder clean up the out/ folder before building
+  bool clobber = 1;
+  // Parameters to be passed down to the test runner for running stress e2e tests.
+  string runner_args = 2;
+}
