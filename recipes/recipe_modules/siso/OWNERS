@@ -1,5 +1,2 @@
-jwata@google.com
-philwo@google.com
-richardwa@google.com
-tikuta@chromium.org
-ukai@google.com
+# Chrome Build Team
+include build:/BUILD_OWNERS
