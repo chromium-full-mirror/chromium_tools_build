@@ -94,42 +94,30 @@ def RunSteps(api):
     api.path.mock_add_paths(
         api.profiles.profile_dir().joinpath('pgo_final_aggregate.profdata'))
 
-  test_specs = [
-      steps.SwarmingIsolatedScriptTestSpec.create('performance_test_suite'),
-      steps.SwarmingIsolatedScriptTestSpec.create('different_test_suite'),
-  ]
-
+  test_specs = []
+  for name in ['performance_test_suite', 'different_test_suite']:
+    spec = steps.MockTestSpec.create(
+        name=name,
+        per_suffix_valid={
+            '': api.properties.get('benchmark_result', True),
+        },
+        per_suffix_failures={
+            '': api.properties.get('benchmark_failures', []),
+        })
+    test_specs.append(spec)
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
 
   for test in tests:
-    step = test.name
-    unexpected_failing_tests = set([])
-    all_tests = []
-    for test_name in api.properties.get('benchmark_failures', []):
-      individual_test = RDBPerIndividualTestResults.create(
-          test_id=test_name,
-          test_results=[
-              test_result_pb2.TestResult(
-                  test_id='ninja://chromium/tests:browser_tests/t1',
-                  expected=False,
-                  status=test_result_pb2.FAIL,
-              )
-          ],
-          test_id_prefix='',
-          invocation_id=('task-chromium-swarm.appspot.com-5e052f4430ead411'),
-      )
-      unexpected_failing_tests.add(individual_test)
-      all_tests.append(individual_test)
-    # Preprocessing for test
+    # This is needed so that ensure_profdata_files iterates over suffixes.
     test.update_rdb_results(
         '',
-        RDBPerSuiteResults(test.name, common_pb2.Variant(), '', 0, set([]),
-                           unexpected_failing_tests, set([]),
-                           not api.properties.get('benchmark_result', True), {},
-                           all_tests, ''))
+        RDBPerSuiteResults(test.name, common_pb2.Variant(), '', 0, set(), set(),
+                           set(), False, {}, [], ''))
     # shard_merge already ensures the profile_subdir is generated w/ step_name
     api.code_coverage.shard_merge(
-        step, test.target_name, additional_merge=getattr(test, '_merge', None))
+        test.name,
+        test.target_name,
+        additional_merge=getattr(test, '_merge', None))
 
   api.pgo.process_pgo_data(source_dir, tests)
 

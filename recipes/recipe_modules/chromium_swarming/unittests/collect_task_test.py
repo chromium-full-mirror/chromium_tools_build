@@ -291,7 +291,7 @@ class CollectTaskTest(unittest.TestCase):
     exit_code = collect_task.collect_task(
         collect_cmd, 'merge.py', self.merge_script_log, build_props_json, None,
         task_output_dir, output_json, summary_json)
-    self.assertEqual(1, exit_code)
+    self.assertEqual(0, exit_code)
 
     # Should append correct --task-output-dir to args after '--'.
     self.assertEqual([

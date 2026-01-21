@@ -133,9 +133,8 @@ def collect_task(collect_cmd, merge_script, merge_script_stdout_file,
       f for f in extant_shard_json_files if os.path.getsize(f) == 0)
 
   if empty_shard_json_files:
-    collect_result = 1
-    logging.error('One or more empty output.json files exist: %r',
-                  empty_shard_json_files)
+    logging.warning('One or more empty output.json files exist: %r',
+                    empty_shard_json_files)
     extant_shard_json_files = [
         f for f in extant_shard_json_files if f not in empty_shard_json_files]
 

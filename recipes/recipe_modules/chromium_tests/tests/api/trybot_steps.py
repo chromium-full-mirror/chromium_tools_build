@@ -665,6 +665,112 @@ def GenTests(api: RecipeTestApi):
   )
 
   yield api.test(
+      'swarming_test_has_valid_results_mixed_shards',
+      custom_props(),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'retry-shards': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'shards': 2
+                      },
+                  }],
+              },
+          }),
+      api.override_step_data(
+          'base_unittests (with patch)',
+          api.chromium_swarming.summary(
+              api.test_utils.canned_gtest_output(False),
+              api.chromium_swarming.canned_summary_output_raw(
+                  shards=2,
+                  task_ids=['0', '1'],
+                  invocations=['invocations/0', 'invocations/1'],
+                  failure=True),
+              retcode=1)),
+      api.resultdb.query(
+          {
+              'invocations/0':
+                  api.resultdb.Invocation(test_results=[
+                      test_result_pb2.TestResult(
+                          test_id='Test.One', status=test_result_pb2.FAIL)
+                  ]),
+              'invocations/1':
+                  api.resultdb.Invocation(test_results=[]),
+          },
+          step_name=('collect tasks (with patch).'
+                     'base_unittests results'),
+      ),
+      api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
+      api.post_process(post_process.MustRun,
+                       'base_unittests (retry shards with patch)'),
+      api.post_process(
+          post_process.MustRun,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch)'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (2)'
+      ),
+      api.post_process(
+          post_process.DoesNotRun,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (3)'
+      ),
+      api.post_process(post_process.DoesNotRun,
+                       'base_unittests (without patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'swarming_test_has_invalid_shards',
+      custom_props(),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', { #  custom_props sets builder group to 'tryserver.chromium.test'
+              'retry-shards': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'shards': 2
+                      },
+                  }],
+              },
+          }),
+      api.override_step_data(
+          'base_unittests (with patch)',
+          api.chromium_swarming.summary(
+              api.test_utils.canned_gtest_output(False),
+              api.chromium_swarming.canned_summary_output_raw(
+                  shards=2,
+                  task_ids=['0', '1'],
+                  invocations=['invocations/0', 'invocations/1'],
+                  failure=True),
+              retcode=1)),
+      api.resultdb.query(
+          {
+              'invocations/0':
+                  api.resultdb.Invocation(test_results=[]),
+              'invocations/1':
+                  api.resultdb.Invocation(test_results=[]),
+          },
+          step_name=('collect tasks (with patch).'
+                     'base_unittests results'),
+      ),
+      api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
+      api.post_process(post_process.MustRun,
+                       'base_unittests (retry shards with patch)'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch)'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (2)'),
+      api.post_process(post_process.DoesNotRun,
+                       'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (3)'),
+      api.post_process(post_process.DoesNotRun,
+                       'base_unittests (without patch)'),
+
+       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'disable_retry_without_patch',
       api.chromium_tests_builder_config.try_build(
           builder_group='tryserver.chromium.test',

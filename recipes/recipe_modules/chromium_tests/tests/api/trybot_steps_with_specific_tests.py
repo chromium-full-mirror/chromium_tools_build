@@ -1072,8 +1072,8 @@ def GenTests(api):
           api.swarming.check_triggered_request, 'test_pre_run (without patch)' +
           '.[trigger] base_unittests (without patch)', lambda check, req: check(
               req[0].env_vars['GTEST_TOTAL_SHARDS'] == '3')),
-      api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
   )
 
   # Any failure in 'retry without patch' should cause the test to be considered
