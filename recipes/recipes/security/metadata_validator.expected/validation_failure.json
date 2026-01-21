@@ -692,9 +692,6 @@
     "name": "validate src/third_party/bar/README.chromium",
     "~followup_annotations": [
       "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.@@@",
-      "@@@STEP_LOG_LINE@debug_errors@ERROR - Required field 'Name' is missing.@@@",
-      "@@@STEP_LOG_END@debug_errors@@@",
-      "@@@STEP_LOG_END@debug_warnings@@@",
       "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Name' is missing.@@@",
       "@@@STEP_LOG_END@errors@@@",
       "@@@STEP_FAILURE@@@"
@@ -704,7 +701,10 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/metadata/scan.py",
-      "[CACHE]/builder/src/src/third_party/bar"
+      "[CACHE]/builder/src/src/third_party/bar",
+      "--json-summary",
+      "/path/to/tmp/json",
+      "--is-open-source-project"
     ],
     "cwd": "[CACHE]/builder",
     "env_suffixes": {
@@ -730,23 +730,34 @@
     "name": "validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@Found 1 metadata files.@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@ERROR - Required field 'Name' is missing.@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@Done.@@@",
-      "@@@STEP_LOG_END@raw_io.output_text@@@"
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"files\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"README.chromium\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"fatal\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"reason\": \"Required field 'Name' is missing.\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"severity\": \"ERROR\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"summary\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"invalid_files\": 1@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
     "cmd": [],
     "name": "Validation Issues",
     "~followup_annotations": [
-      "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.<br/><br/>To `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description.@@@"
+      "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.<br/><br/>To bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description.@@@"
     ]
   },
   {
     "failure": {
       "failure": {},
-      "humanReason": "ERROR - Required field 'Name' is missing.\n\nTo `bypass this check, add 'Metadata-Validate-Bypass: \\<REASON\\>' to your CL description."
+      "humanReason": "ERROR - Required field 'Name' is missing.\n\nTo bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description."
     },
     "name": "$result"
   }

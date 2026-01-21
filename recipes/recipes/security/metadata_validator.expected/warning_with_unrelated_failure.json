@@ -689,7 +689,13 @@
   },
   {
     "cmd": [],
-    "name": "validate src/third_party/foo/README.chromium"
+    "name": "validate src/third_party/foo/README.chromium",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>WARNING - License file not found.@@@",
+      "@@@STEP_LOG_LINE@warnings@WARNING - License file not found.@@@",
+      "@@@STEP_LOG_END@warnings@@@",
+      "@@@STEP_WARNINGS@@@"
+    ]
   },
   {
     "cmd": [
@@ -725,15 +731,38 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"files\": {},@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"files\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"README.chromium\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"fatal\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"reason\": \"License file not found.\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"severity\": \"WARNING\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"README.chromium.old_and_should_be_ignored\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"fatal\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"reason\": \"Required field 'Name' is missing.\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"severity\": \"ERROR\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"summary\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"invalid_files\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"invalid_files\": 1@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
-    "name": "$result"
+    "cmd": [],
+    "name": "Validation Issues",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@WARNING - License file not found.<br/><br/>To bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description.@@@"
+    ]
+  },
+  {
+    "name": "$result",
+    "summaryMarkdown": "WARNING - License file not found.\n\nTo bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description."
   }
 ]

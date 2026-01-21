@@ -6,8 +6,8 @@ from PB.recipe_engine import result as result_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 SKIP_FOOTER = 'Metadata-Validate-Bypass'
-BYPASS_TEXT = ('\n\nTo `bypass this check, add '
-               f'\'{SKIP_FOOTER}: \\<REASON\\>\' '
+BYPASS_TEXT = ('\n\nTo bypass this check, add '
+               f'\'{SKIP_FOOTER}: &lt;REASON&gt;\' '
                'to your CL description.')
 
 BYPASSED_TEXT = '\n\n<b>Validation bypassed by footer.</b>'
@@ -26,6 +26,7 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/raw_io',
     'recipe_engine/file',
+    'recipe_engine/json',
 ]
 
 
@@ -75,7 +76,7 @@ def RunSteps(api):
   with api.depot_tools.on_path():
 
     # Check for bypass footer
-    bypass_validation = SKIP_FOOTER in api.tryserver.get_footers()
+    bypass_validation = bool(api.tryserver.get_footer(SKIP_FOOTER))
     if bypass_validation:
       api.step('Validation bypassed', cmd=None)
 
@@ -104,40 +105,42 @@ def RunSteps(api):
         # scan.py expects a directory to scan.
         readme_dir = api.path.dirname(
             api.path.join(source_dir, readme_rel_path))
+
+        json_out = api.json.output()
+
         with api.step.nest(f'validate {readme_rel_path}') as step:
           cmd = [
               'vpython3',
               api.depot_tools.root.joinpath('metadata', 'scan.py'),
               readme_dir,
+              '--json-summary',
+              json_out,
+              '--is-open-source-project',
           ]
-          step_result = api.step(
+          step_res = api.step(
               f'run validator on {readme_rel_path}',
               cmd,
-              stdout=api.raw_io.output_text(add_output_log=True),
               raise_on_failure=False)
 
-          # Check stdout/stderr for errors and warnings.
+          # Check JSON for errors and warnings.
           errors = []
           warnings = []
-          if step_result.stdout:
-            # metadata/scan.py prints a summary after "Done.".
-            # We only care about the detailed errors before that.
-            output_body = step_result.stdout.split('Done.', 1)[0]
-            for line in output_body.splitlines():
-              line = line.strip()
-              if 'ERROR -' in line:
-                errors.append(line)
-              elif 'WARNING -' in line:
-                warnings.append(line)
+          for filepath, issues in step_res.json.output.get('files', {}).items():
+            # Only process the requested file.
+            if filepath != api.path.basename(str(readme_rel_path)):
+              continue
+            for issue in issues:
+              msg = f"{issue['severity']} - {issue['reason']}"
+              if issue.get('fatal', False):
+                errors.append(msg)
+              else:
+                warnings.append(msg)
 
           if errors or warnings:
             all_results[readme_rel_path] = {
                 'errors': errors,
                 'warnings': warnings
             }
-
-          step.logs['debug_errors'] = errors
-          step.logs['debug_warnings'] = warnings
 
           if errors:
             any_errors_found = True
@@ -178,7 +181,39 @@ def GenTests(api):
           ['src/third_party/foo/README.chromium']) +
       api.step_data(
           'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
-          stdout=api.raw_io.output_text('Found 1 metadata files.\nDone.')),
+          api.json.output({
+              'files': {},
+              'summary': {
+                  'invalid_files': 0
+              }
+          })),
+      api.post_process(StatusSuccess),
+  )
+
+  yield api.test(
+      'warning_with_unrelated_failure',
+      api.chromium.try_build(builder='linux-metadata-validator'),
+      api.tryserver.get_files_affected_by_patch(
+          ['src/third_party/foo/README.chromium']) +
+      api.step_data(
+          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'WARNING',
+                      'reason': "License file not found.",
+                      'fatal': False
+                  }],
+                  'README.chromium.old_and_should_be_ignored': [{
+                      'severity': 'ERROR',
+                      'reason': "Required field 'Name' is missing.",
+                      'fatal': True
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })),
       api.post_process(StatusSuccess),
   )
 
@@ -189,10 +224,18 @@ def GenTests(api):
           ['src/third_party/bar/README.chromium']) +
       api.step_data(
           'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
-          stdout=api.raw_io.output_text(
-              'Found 1 metadata files.\n'
-              'ERROR - Required field \'Name\' is missing.\n'
-              'Done.')),
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'ERROR',
+                      'reason': "Required field 'Name' is missing.",
+                      'fatal': True
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })),
       api.expect_status('FAILURE'),
       api.post_process(StatusFailure),
   )
@@ -202,13 +245,20 @@ def GenTests(api):
       api.chromium.try_build(builder='linux-metadata-validator'),
       api.tryserver.get_files_affected_by_patch(
           ['src/third_party/bar/README.chromium']) +
-      api.tryserver.get_footers({SKIP_FOOTER: ['reason for bypass']}) +
-      api.step_data(
+      api.tryserver.get_footers({SKIP_FOOTER: 'test'}) + api.step_data(
           'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
-          stdout=api.raw_io.output_text(
-              'Found 1 metadata files.\n'
-              'ERROR - Required field \'Name\' is missing.\n'
-              'Done.')),
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'ERROR',
+                      'reason': "Required field 'Name' is missing.",
+                      'fatal': True
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })),
       api.post_process(StatusSuccess),
   )
 
@@ -226,9 +276,40 @@ def GenTests(api):
           ['src/third_party/baz/README.chromium']) +
       api.step_data(
           'validate src/third_party/baz/README.chromium.run validator on src/third_party/baz/README.chromium',
-          stdout=api.raw_io.output_text('Found 1 metadata files.\n'
-                                        'WARNING - License file not found.\n'
-                                        'Done.')),
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'WARNING',
+                      'reason': "License file not found.",
+                      'fatal': False
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 0
+              }
+          })),
+      api.post_process(StatusSuccess),
+  )
+
+  yield api.test(
+      'ignore_unrelated_files',
+      api.chromium.try_build(builder='linux-metadata-validator'),
+      api.tryserver.get_files_affected_by_patch(
+          ['src/third_party/foo/README.chromium']) +
+      api.step_data(
+          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+          api.json.output({
+              'files': {
+                  'README.chromium.old': [{
+                      'severity': 'ERROR',
+                      'reason': "Old file error",
+                      'fatal': True
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })),
       api.post_process(StatusSuccess),
   )
 
@@ -239,10 +320,22 @@ def GenTests(api):
           ['src/third_party/mixed/README.chromium']) +
       api.step_data(
           'validate src/third_party/mixed/README.chromium.run validator on src/third_party/mixed/README.chromium',
-          stdout=api.raw_io.output_text('Found 1 metadata files.\n'
-                                        'ERROR - Critical issue.\n'
-                                        'WARNING - Minor issue.\n'
-                                        'Done.')),
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'ERROR',
+                      'reason': "Critical issue.",
+                      'fatal': True
+                  }, {
+                      'severity': 'WARNING',
+                      'reason': "Minor issue.",
+                      'fatal': False
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })),
       api.expect_status('FAILURE'),
       api.post_process(StatusFailure),
   )
@@ -253,18 +346,37 @@ def GenTests(api):
           'src/third_party/foo/README.chromium',
           'src/third_party/bar/README.chromium',
       ]) + api.step_data(
-          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
-          stdout=api.raw_io.output_text(
-              'Found 1 metadata files.\n'
-              'ERROR - Required field \'Name\' is missing.\n'
-              'WARNING - License file not found.\n'
-              'Done.')) +
-      api.step_data(
           'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
-          stdout=api.raw_io.output_text(
-              'Found 1 metadata files.\n'
-              'ERROR - Required field \'Description\' is missing.\n'
-              'Done.')),
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'ERROR',
+                      'reason': "Required field 'Name' is missing.",
+                      'fatal': True
+                  }, {
+                      'severity': 'WARNING',
+                      'reason': "License file not found.",
+                      'fatal': False
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })) +
+      api.step_data(
+          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+          api.json.output({
+              'files': {
+                  'README.chromium': [{
+                      'severity': 'ERROR',
+                      'reason': "Required field 'Description' is missing.",
+                      'fatal': True
+                  }]
+              },
+              'summary': {
+                  'invalid_files': 1
+              }
+          })),
       api.expect_status('FAILURE'),
       api.post_process(StatusFailure),
   )
