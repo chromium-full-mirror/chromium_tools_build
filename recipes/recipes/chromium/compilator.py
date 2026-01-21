@@ -4,6 +4,7 @@
 """Compiles with patch and isolates tests"""
 
 from recipe_engine import post_process
+from recipe_engine import turboci
 from recipe_engine.config_types import Path
 
 from RECIPE_MODULES.build import chromium_types
@@ -432,14 +433,15 @@ def GenTests(api):
         ).assemble())
 
   def basic_assert_graph(assert_, graph: GraphView):
-    check_ids = set(graph.checks.keys())
+    check_ids = set(c.check.identifier.id for c in graph.checks.values())
     if not assert_(check_ids == {chromium_tests.SOURCE_CHECK_ID}):
       return  # pragma: no cover
 
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
-    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    source_check = turboci.get_check_view(graph,
+                                          chromium_tests.SOURCE_CHECK_ID).check
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
 

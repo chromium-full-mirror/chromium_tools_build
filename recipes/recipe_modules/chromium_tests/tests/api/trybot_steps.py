@@ -7,6 +7,7 @@ from __future__ import annotations
 import base64
 
 from recipe_engine import post_process
+from recipe_engine import turboci
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -149,14 +150,15 @@ def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
   def basic_assert_graph(assert_, graph: GraphView):
-    check_ids = set(graph.checks.keys())
+    check_ids = set(c.check.identifier.id for c in graph.checks.values())
     if not assert_(check_ids == {chromium_tests.SOURCE_CHECK_ID}):
       return  # pragma: no cover
 
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
-    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    source_check = turboci.get_check_view(graph,
+                                          chromium_tests.SOURCE_CHECK_ID).check
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
 
@@ -437,7 +439,7 @@ def GenTests(api: RecipeTestApi):
   )
 
   def retry_shards_without_patch_assert_graph(assert_, graph: GraphView):
-    check_ids = set(graph.checks.keys())
+    check_ids = set(c.check.identifier.id for c in graph.checks.values())
     if not assert_(
         check_ids == {
             chromium_tests.SOURCE_CHECK_ID,
@@ -448,12 +450,13 @@ def GenTests(api: RecipeTestApi):
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
-    source_check = graph.checks[chromium_tests.SOURCE_CHECK_ID].check
+    source_check = turboci.get_check_view(graph,
+                                          chromium_tests.SOURCE_CHECK_ID).check
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
 
-    without_patch_source_check = graph.checks[
-        chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID].check
+    without_patch_source_check = turboci.get_check_view(
+        graph, chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID).check
     assert_(without_patch_source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(without_patch_source_check.state == CheckState.CHECK_STATE_FINAL)
 
