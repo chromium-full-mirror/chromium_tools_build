@@ -161,6 +161,24 @@ SPEC = {
             simulation_platform='win',
             serialize_tests=True,
         ),
+    'Mac V8 FYI Release (Apple M2)':
+        _client_v8_fyi_spec(
+            chromium_config='chromium',
+            chromium_apply_config=[
+                'mb',
+            ],
+            gclient_config='chromium',
+            gclient_apply_config=[
+                'show_v8_revision',
+            ],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
+                'TARGET_ARCH': 'arm',
+            },
+            simulation_platform='mac',
+            serialize_tests=True,
+        ),
     'Mac V8 FYI Release (Intel)':
         _client_v8_fyi_spec(
             chromium_config='chromium',
