@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package recipes.build.devtools.devtools_frontend;
+
+message InputProperties {
+  // Configuration name for the builder (Debug/Release)
+  string builder_config = 1;
+  // Turn the is_official_build gn flag on (default off)
+  bool is_official_build = 2;
+  // Turn the devtools_skip_typecheck gn flag on (default off)
+  bool devtools_skip_typecheck = 3;
+  // Should the builder clean up the out/ folder before building
+  bool clobber = 4;
+  // Should the runner have coverage
+  bool coverage = 5;
+  // Run DevTools performance benchmarks
+  bool perf_benchmarks = 6;
+}

@@ -6,6 +6,7 @@ from contextlib import contextmanager
 import re
 
 from recipe_engine.recipe_api import Property
+from PB.recipes.build.devtools.backend import InputProperties
 
 DEPS = [
     'builder_group',
@@ -38,41 +39,24 @@ GS_BUCKET = 'devtools-internal-dwarf-extension'
 DWARF_BRANCH_PATTERN = re.compile(r'refs/heads/chrome-extensions/'
                                   r'dwarf/releases/\d+\.\d+\.(\d+)')
 
-PROPERTIES = {
-    'e2e_builder':
-        Property(
-            kind=bool,
-            default=False,
-            help='Whether the builder needs to build and run E2E tests'),
-    'builder_config':
-        Property(
-            kind=str, default='Debug', help='The build configuration name'),
-    'clobber':
-        Property(
-            kind=bool,
-            help='Should the builder clean up the extensions/cxx_debugging/build/'
-            ' folder before building',
-            default=False),
-    'upload_dwarf_binary':
-        Property(
-            kind=bool,
-            default=False,
-            help='Indicate if the builder uploads the binary to gc storage.'),
-}
+PROPERTIES = InputProperties
 
 
-def RunSteps(api, e2e_builder, builder_config, clobber, upload_dwarf_binary):
+def RunSteps(api, properties):
+  builder_config = properties.builder_config or 'Debug'
+  upload_dwarf_binary = properties.upload_dwarf_binary
+
   _configure(api)
   cwd = get_checkout_path(api, 'builder')
   with api.context(cwd=cwd):
     api.bot_update.ensure_checkout()
     api.gclient.runhooks()
 
-  if clobber:
+  if properties.clobber:
     path_to_clean = _repo_path(api).joinpath('build')
     api.file.rmtree('clean outdir', path_to_clean)
 
-  if e2e_builder:
+  if properties.e2e_builder:
     with dwarf_ext_context(api, 'builder'):
       compile_n_test_e2e(api, builder_config, upload_dwarf_binary)
   else:

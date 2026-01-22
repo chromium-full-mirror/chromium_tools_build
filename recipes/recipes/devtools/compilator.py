@@ -19,7 +19,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_p
 from PB.recipe_engine import result as result_pb2
 
 from recipe_engine.post_process import DropExpectation, SummaryMarkdown, MustRun, DoesNotRun
-from recipe_engine.recipe_api import Property
+from PB.recipes.build.devtools.compilator import InputProperties
 
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
@@ -36,57 +36,29 @@ DEPS = [
     'chromium_checkout',
 ]
 
-PROPERTIES = {
-    'builder_config':
-        Property(
-            kind=str,
-            help='Configuration name for the builder (Debug/Release)',
-            default='Release'),
-    'is_official_build':
-        Property(
-            kind=bool,
-            help='Turn the is_official_build gn flag on (default off)',
-            default=False),
-    'devtools_skip_typecheck':
-        Property(
-            kind=bool,
-            help='Turn the devtools_skip_typecheck gn flag on (default off)',
-            default=False),
-    'clobber':
-        Property(
-            kind=bool,
-            help='Should the builder clean up the out/ folder before building',
-            default=False),
-    'force_host_cpu':
-        Property(
-            kind=str,
-            help='Force host_cpu variable in DEPS to a specific value. '
-            '(Forces Node and CfT binaries to be downloaded for the specific CPU)',
-            default=None),
-    'devtools_bundle':
-        Property(
-            kind=bool,
-            help='Turn the devtools_bundle gn flag off (default on)',
-            default=True),
-}
+PROPERTIES = InputProperties
 
 CANCELLATION_MESSAGE = (
     'Parent orchestrating build ended, causing this build to be canceled.')
 
 
-def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber, force_host_cpu, devtools_bundle):
+def RunSteps(api, properties):
+  builder_config = properties.builder_config or 'Release'
+  devtools_bundle = properties.devtools_bundle
+  if 'devtools_bundle' not in api.properties:
+    devtools_bundle = True
+
   try:
-    api.devtools.configure(builder_config, is_official_build,
-                           devtools_skip_typecheck, force_host_cpu,
-                           devtools_bundle)
+    api.devtools.configure(builder_config, properties.is_official_build,
+                           properties.devtools_skip_typecheck,
+                           properties.force_host_cpu or None, devtools_bundle)
     update_result = api.devtools.update()
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(
         gitiles_commit=update_result.out_commit)
     build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
     with api.devtools.depot_on_path():
-      api.devtools.clean_out_dir(builder_config, clobber)
+      api.devtools.clean_out_dir(builder_config, properties.clobber)
       with api.chromium.guard_compile(build_dir):
         api.chromium.run_gn(api.devtools.source_dir, build_dir)
         targets = None if devtools_bundle else ['assert_grd']

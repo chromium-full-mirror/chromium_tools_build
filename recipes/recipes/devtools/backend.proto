@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package recipes.build.devtools.backend;
+
+message InputProperties {
+  // Whether the builder needs to build and run E2E tests
+  bool e2e_builder = 1;
+  // The build configuration name
+  string builder_config = 2;
+  // Should the builder clean up the extensions/cxx_debugging/build/ folder before building
+  bool clobber = 3;
+  // Indicate if the builder uploads the binary to gc storage.
+  bool upload_dwarf_binary = 4;
+}
