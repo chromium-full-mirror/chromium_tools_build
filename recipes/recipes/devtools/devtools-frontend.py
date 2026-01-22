@@ -13,8 +13,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (
 )
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
                                         MustRun, SummaryMarkdown)
-from PB.recipes.build.devtools.devtools_frontend import InputProperties
-
+from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
@@ -49,22 +48,46 @@ DEPS = [
     'depot_tools/gsutil',
 ]
 
-PROPERTIES = InputProperties
+PROPERTIES = {
+    'builder_config':
+        Property(
+            kind=str,
+            help='Configuration name for the builder (Debug/Release)',
+            default='Release'),
+    'is_official_build':
+        Property(
+            kind=bool,
+            help='Turn the is_official_build gn flag on (default off)',
+            default=False),
+    'devtools_skip_typecheck':
+        Property(
+            kind=bool,
+            help='Turn the devtools_skip_typecheck gn flag on (default off)',
+            default=False),
+    'clobber':
+        Property(
+            kind=bool,
+            help='Should the builder clean up the out/ folder before building',
+            default=False),
+    'coverage':
+        Property(
+            kind=bool, help='Should the runner have coverage', default=True),
+    'perf_benchmarks':
+        Property(
+            kind=bool,
+            help='Run DevTools performance benchmarks',
+            default=False),
+}
 
-
-def RunSteps(api, properties):
-  builder_config = properties.builder_config or 'Release'
-  coverage = properties.coverage
-  if 'coverage' not in api.properties:
-    coverage = True
-
-  api.devtools.configure(builder_config, properties.is_official_build,
-                         properties.devtools_skip_typecheck)
+def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
+             clobber, coverage, perf_benchmarks):
+  api.devtools.configure(builder_config, is_official_build,
+                         devtools_skip_typecheck)
   api.devtools.update()
 
   build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
   with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, properties.clobber)
+    api.devtools.clean_out_dir(builder_config, clobber)
     with api.chromium.guard_compile(build_dir):
       api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
@@ -95,7 +118,7 @@ def RunSteps(api, properties):
     results = ExonerationPhase(api).run_all(tests)
 
     publish_coverage_points(api, skip=not coverage)
-    publish_performance_benchmarks(api, skip=not properties.perf_benchmarks)
+    publish_performance_benchmarks(api, skip=not perf_benchmarks)
 
     return results.raw_result()
 

@@ -4,7 +4,7 @@
 from shlex import split
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
-from PB.recipes.build.devtools.dtf_e2e_stress import InputProperties
+from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
@@ -33,10 +33,22 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-PROPERTIES = InputProperties
+PROPERTIES = {
+    'clobber':
+        Property(
+            kind=bool,
+            help='Should the builder clean up the out/ folder before building',
+            default=False),
+    'runner_args':
+        Property(
+            kind=str,
+            help='Parameters to be passed down to the test runner for running'
+            ' stress e2e tests.',
+            default=None),
+}
 
 
-def RunSteps(api, properties):
+def RunSteps(api, clobber, runner_args):
   builder_config = 'Debug'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
@@ -44,7 +56,7 @@ def RunSteps(api, properties):
 
   build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
   with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, properties.clobber)
+    api.devtools.clean_out_dir(builder_config, clobber)
     with api.chromium.guard_compile(build_dir):
       api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
@@ -56,7 +68,7 @@ def RunSteps(api, properties):
 
     trigger = SwarmingTrigger(api, cas_digest)
     e2e_stressor = E2EStressTests(api, trigger, builder_config, 'E2E Tests',
-                                  properties.runner_args)
+                                  runner_args)
 
     results = FirstRunPhase(api).run_all([e2e_stressor])
 

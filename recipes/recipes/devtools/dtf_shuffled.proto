@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package recipes.build.devtools.dtf_shuffled;
-
-message InputProperties {
-  // Should the builder clean up the out/ folder before building
-  bool clobber = 1;
-}

@@ -9,7 +9,7 @@ from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
 
-from PB.recipes.build.devtools.trybot_tester import InputProperties
+from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
@@ -39,20 +39,40 @@ DEPS = [
     'v8',
 ]
 
-PROPERTIES = InputProperties
+PROPERTIES = {
+    'builder_config':
+        Property(
+            kind=str,
+            help='Configuration name for the builder (Debug/Release)',
+            default='Release'),
+    'is_official_build':
+        Property(
+            kind=bool,
+            help='Turn the is_official_build gn flag on (default off)',
+            default=False),
+    'devtools_skip_typecheck':
+        Property(
+            kind=bool,
+            help='Turn the devtools_skip_typecheck gn flag on (default off)',
+            default=False),
+    'compilator_name':
+        Property(kind=str, help='Compilator name'),
+    'target_os':
+        Property(kind=str, help='Target OS for swarming test tasks'),
+    'target_cpu':
+        Property(
+            kind=str, help='Target cpu architecture for swarming test tasks'),
+}
 
 
-def RunSteps(api, properties):
-  builder_config = properties.builder_config or 'Release'
-  target_os = properties.target_os
-  target_cpu = properties.target_cpu
-
-  api.devtools.configure(builder_config, properties.is_official_build,
-                         properties.devtools_skip_typecheck)
+def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
+             compilator_name, target_os, target_cpu):
+  api.devtools.configure(builder_config, is_official_build,
+                         devtools_skip_typecheck)
   api.devtools.update()
 
   comp_props, maybe_raw_result = api.v8_orchestrator.orchestrated_compilation(
-      properties.compilator_name)
+      compilator_name)
   if maybe_raw_result:
     return maybe_raw_result
 
