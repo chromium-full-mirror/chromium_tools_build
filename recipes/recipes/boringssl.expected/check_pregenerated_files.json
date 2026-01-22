@@ -146,9 +146,7 @@
       "go",
       "run",
       "./util/pregenerate",
-      "-check",
-      "-clang",
-      "[CACHE]/builder/boringssl/util/bot/llvm-build/bin/clang"
+      "-check"
     ],
     "cwd": "[CACHE]/builder/boringssl",
     "env": {
