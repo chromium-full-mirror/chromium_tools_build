@@ -124,10 +124,15 @@
   },
   {
     "cmd": [
+      "python3",
+      "[CACHE]\\builder\\boringssl\\util\\bot\\vs_env.py",
+      "x64",
       "go",
       "run",
       "./util/pregenerate",
       "-check",
+      "-clang",
+      "[CACHE]\\builder\\boringssl\\util\\bot\\llvm-build\\bin\\clang-cl.exe",
       "-perl",
       "[CACHE]\\builder\\boringssl\\util\\bot\\perl-win32\\perl\\bin\\perl.exe"
     ],
