@@ -19,6 +19,9 @@ _GS_BUCKET = 'chrome-build-logs'
 
 _TIME_CMD = '/usr/bin/time'
 
+# Name of git footer for setting value of -k
+_MAX_COMPILE_FAILURES = 'Max-Compile-Failures'
+
 # Resource usage format for time command.
 # See also the documents of time and getrusage:
 # https://www.man7.org/linux/man-pages/man1/time.1.html#:~:text=U%0A%20%20%20%20%20%20%20%20%20%20%20sys%20%25S-,The%20format%20string,-The%20format%20is
@@ -166,7 +169,21 @@ class SisoApi(recipe_api.RecipeApi):
         '--remote_jobs',
         self.remote_jobs,
     ])
-    if self._props.HasField('keep_going'):
+
+    if (self.m.tryserver.is_gerrit_issue and
+        (footers := self.m.tryserver.get_footers()) and
+        _MAX_COMPILE_FAILURES in footers):
+      try:
+        footer = footers[_MAX_COMPILE_FAILURES]
+        value = int(footer[0])
+      except (IndexError, ValueError, TypeError) as e:
+        res = self.m.step.empty(f"Invalid {_MAX_COMPILE_FAILURES} footer")
+        res.presentation.status = self.m.step.FAILURE
+        res.presentation.step_text = f"Invalid value: {footer}\n{e}"
+        raise self.m.step.StepFailure(f"Invalid {_MAX_COMPILE_FAILURES} footer",
+                                      res)
+      cmd.extend(['-k', value])
+    elif self._props.HasField('keep_going'):
       cmd.extend(['-k', self._props.keep_going])
 
     if self._props.disable_batch_mode:

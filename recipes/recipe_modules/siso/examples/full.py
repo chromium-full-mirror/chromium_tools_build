@@ -12,6 +12,7 @@ from RECIPE_MODULES.build import siso
 DEPS = [
     'chromium',
     'depot_tools/gclient',
+    'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -201,6 +202,33 @@ def GenTests(api):
       api.siso.properties(keep_going=3),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['-k', '3']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'keep_going_git_footer',
+      api.buildbucket.try_build(project='chromium'),
+      api.properties(build_command=['ninja', '-C', 'out/Release']),
+      api.siso.properties(keep_going=3),
+      api.tryserver.get_footers({
+          'Max-Compile-Failures': ['42'],
+      }),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-k', '42']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'keep_going_git_footer_invalid',
+      api.buildbucket.try_build(project='chromium'),
+      api.properties(build_command=['ninja', '-C', 'out/Release']),
+      api.siso.properties(keep_going=3),
+      api.tryserver.get_footers({
+          'Max-Compile-Failures': ['abc'],
+      }),
+      api.post_process(post_process.StepFailure,
+                       'Invalid Max-Compile-Failures footer'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
