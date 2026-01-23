@@ -150,8 +150,6 @@ class _Config:
 
   def get_gclient_vars(self, platform):
     ret = {}
-    if self.clang:
-      ret['checkout_clang'] = True
     if self.rust:
       ret['checkout_rust'] = True
     if self.sde:
@@ -274,6 +272,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   # instead.
   env['GOFLAGS'] = '-mod=readonly'
   # Set up the environment for the Rust toolchain.
+  clang_path = _GetClangPath(api.platform, bot_utils, cxx=False)
   if config.rust:
     # Point to packaged copy of Rust toolchain, containing bindgen and cargo.
     env_prefixes['PATH'].append(bot_utils / 'rust-toolchain' / 'bin')
@@ -281,11 +280,16 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     env['BORINGSSL_BUILD_DIR'] = build_dir
     # Ask clang for its resource directory, and pass it to bindgen so it can
     # find the right system header files.
-    clang_path = _GetClangPath(api.platform, bot_utils, cxx=False)
     resource_dir = api.step(
         'get clang resource dir', [clang_path, '-print-resource-dir'],
         stdout=api.raw_io.output_text()).stdout.strip()
     env['BINDGEN_EXTRA_CLANG_ARGS'] = '-resource-dir=' + resource_dir
+
+  # If building with MSVC, all commands must run with an environment wrapper.
+  # This is necessary both to find the toolchain and the runtime dlls. Rather
+  # than copy the runtime to every directory where a binary is installed, just
+  # run the tests with the toolchain prefix as well.
+  msvc_prefix = config.get_target_msvc_prefix(bot_utils)
 
   with api.context(
       env=env,
@@ -294,24 +298,20 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     if check_pregenerated_files and api.path.exists(
         src.joinpath('util', 'pregenerate')):
       cmd = ['go', 'run', './util/pregenerate', '-check']
+      if not api.platform.is_mac:
+        cmd += ['-clang', clang_path]
       if api.platform.is_win:
         cmd += [
             '-perl',
             bot_utils.joinpath('perl-win32', 'perl', 'bin', 'perl.exe')
         ]
       with api.context(cwd=src):
-        api.step('check pregenerated files', cmd)
+        api.step('check pregenerated files', msvc_prefix + cmd)
 
     # CMake is stateful, so do a clean build. BoringSSL builds quickly enough
     # that this isn't a concern.
     api.file.rmtree('clean', build_dir)
     api.file.ensure_directory('mkdir', build_dir)
-
-    # If building with MSVC, all commands must run with an environment wrapper.
-    # This is necessary both to find the toolchain and the runtime dlls. Rather
-    # than copy the runtime to every directory where a binary is installed, just
-    # run the tests with the toolchain prefix as well.
-    msvc_prefix = config.get_target_msvc_prefix(bot_utils)
 
     # Build BoringSSL itself.
     cmake_dir = bot_utils.joinpath('cmake')
@@ -506,6 +506,16 @@ def GenTests(api):
   )
 
   yield api.test(
+      'check_pregenerated_files_mac',
+      api.platform('mac', 64),
+      _CIBuild(api, 'mac'),
+      api.path.exists(
+          api.path.cache_dir.joinpath('builder', 'boringssl', 'util',
+                                      'pregenerate')),
+      mock_go_tests,
+  )
+
+  yield api.test(
       'check_pregenerated_files_win',
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
@@ -520,6 +530,17 @@ def GenTests(api):
       'check_pregenerated_files_failed',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      api.path.exists(
+          api.path.cache_dir.joinpath('builder', 'boringssl', 'util',
+                                      'pregenerate')),
+      api.override_step_data('check pregenerated files', retcode=1),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'check_pregenerated_files_failed_mac',
+      api.platform('mac', 64),
+      _CIBuild(api, 'mac'),
       api.path.exists(
           api.path.cache_dir.joinpath('builder', 'boringssl', 'util',
                                       'pregenerate')),
