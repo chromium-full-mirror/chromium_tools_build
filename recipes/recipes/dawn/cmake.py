@@ -416,7 +416,7 @@ def RunSteps(api, properties):
         tint_unittests_cmd.append('--gtest_filter=-*DeathTest.*')
       api.step('Run tint_unittests', tint_unittests_cmd)
 
-      if build_fuzzers and not asan:
+      if build_fuzzers:
         with api.context(cwd=source_dir):
           api.step(
               'Check WGSL fuzzer',
