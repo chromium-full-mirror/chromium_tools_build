@@ -31,9 +31,11 @@ SUPPORTED_SCRIPTS = {
     'browser-protocol':
         SupportedScript(
             'Browser Protocol', 'scripts/deps/roll_deps.py', [
-                '--ref', 'working-tree', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
-                '--update-node'
-            ], 'In case of failures or errors, reach out to someone from '
+                '--ref', 'CfT', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
+                '--update-node', '--output', '{{OUTPUT_JSON}}'
+            ], 'Rolling protocol files: '
+            'https://chromium.googlesource.com/chromium/src/+log/{old_revision}..{new_revision}\n'
+            'In case of failures or errors, reach out to someone from '
             'config/owner/COMMON_OWNERS.', True),
     # Add more scripts here
 }
@@ -59,6 +61,7 @@ class ScriptedRollHandler(RollHandler):
     self.script = script
     self.key = key
     self.updated = False
+    self.output_file = None
 
   def upload_flags(self):
     flags = ['--dry-run']
@@ -81,15 +84,22 @@ class ScriptedRollHandler(RollHandler):
       return self.api.path.cache_dir.joinpath('builder', 'src')
     if arg == '{{DEVTOOLS_DIR}}':
       return self.source_dir
+    if arg == '{{OUTPUT_JSON}}':
+      self.output_file = self.api.path.cleanup_dir.joinpath('roll_output.json')
+      return self.output_file
     return arg
 
   def get_subject(self):
     return f'Roll {self.key}'
 
   def commit_msg_lines(self, _):
+    message = self.script.message
+    if self.output_file:
+      output_properties = self.api.file.read_json('Read roll output',
+                                                  self.output_file)
+      message = message.format(**output_properties)
     return commons.commit_msg_lines_w_reviewes(
-        [self.script.message,
-         commons.roll_origin_line(self.api)],
+        [message, commons.roll_origin_line(self.api)],
         self.config.get('manual_roll_reviewers'))
 
   def summary(self):

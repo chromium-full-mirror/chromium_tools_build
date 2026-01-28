@@ -11,6 +11,7 @@ import json
 
 DEPS = [
     'recipe_engine/file',
+    'recipe_engine/path',
     'v8_auto_roller',
 ]
 
@@ -42,7 +43,6 @@ def RunSteps(api):
   clm = api.v8_auto_roller.build_cl_manager(source_dir, bugs="none")
 
   api.v8_auto_roller.regular_roll(CONFIG, clm, source_dir)
-  api.v8_auto_roller.cft_pin_roll(CONFIG, clm, source_dir)
   api.v8_auto_roller.scripted_rolls(CONFIG, clm, source_dir, [
       "puppeteer-core",
       "puppeteer-replay",
@@ -63,10 +63,15 @@ def GenTests(api):
   yield (api.test('default') + api.override_step_data(
       'Find updated deps.Read devtools-frontend/DEPS',
       api.file.read_text(dummy_deps(*CONFIG["excludes"])),
-  ) + api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
+  ) + api.path.exists(api.path.cleanup_dir.joinpath('roll_output.json')) +
+         api.override_step_data(
+             'Scripted rolls.Update Browser Protocol deps.Read roll output',
+             api.file.read_json({
+                 "old_revision": "123",
+                 "new_revision": "456"
+             })) +
+         api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
          api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
-         api.post_process(MustRun, 'Update chromium pin deps.gclient get '
-                          'chrome deps') +
          api.post_process(
              MustRun, 'Scripted rolls.Update Puppeteer Core deps.'
              'Run Puppeteer Core script') + api.post_process(

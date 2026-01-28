@@ -1903,10 +1903,12 @@
       "-u",
       "[CACHE]/builder/dummy/scripts/deps/roll_deps.py",
       "--ref",
-      "working-tree",
+      "CfT",
       "[CACHE]/builder/src",
       "[CACHE]/builder/dummy",
-      "--update-node"
+      "--update-node",
+      "--output",
+      "[CLEANUP]/roll_output.json"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -1924,8 +1926,39 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/roll_output.json",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Browser Protocol deps.Read roll output",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@roll_output.json@{@@@",
+      "@@@STEP_LOG_LINE@roll_output.json@  \"new_revision\": \"456\",@@@",
+      "@@@STEP_LOG_LINE@roll_output.json@  \"old_revision\": \"123\"@@@",
+      "@@@STEP_LOG_LINE@roll_output.json@}@@@",
+      "@@@STEP_LOG_END@roll_output.json@@@"
+    ]
+  },
+  {
+    "cmd": [
       "()",
-      "{'subject': 'Roll browser-protocol', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
+      "{'subject': 'Roll browser-protocol', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling protocol files: https://chromium.googlesource.com/chromium/src/+log/123..456\\nIn case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {

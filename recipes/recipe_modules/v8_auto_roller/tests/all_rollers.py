@@ -175,6 +175,15 @@ def GenTests(api):
       ('5', 'tools_clang-reviewed (main)'),
   ]
 
+  def browser_protocol_roll_output():
+    return api.path.exists(api.path.cleanup_dir.joinpath(
+        'roll_output.json')) + api.override_step_data(
+            'Scripted rolls.Update Browser Protocol deps.Read roll output',
+            api.file.read_json({
+                "old_revision": "123",
+                "new_revision": "456"
+            }))
+
   yield api.test('default') + api.override_step_data(
       'Update test262 import deps.Update Test262 status file.',
       api.raw_io.stream_output_text('range 1..3'),
@@ -209,7 +218,7 @@ def GenTests(api):
               api.raw_io.stream_output_text(
                   f'{rev}\trefs/heads/main', stream='stdout'),
           ) for rev, repo in MOCK_DEP_REFS_MAIN
-      ], api.empty_test_data())
+      ], api.empty_test_data()) + browser_protocol_roll_output()
 
   yield api.test('not pin update') + api.override_step_data(
       'Update test262 import deps.Update Test262 status file.',
@@ -217,13 +226,14 @@ def GenTests(api):
   ) + api.override_step_data(
       'Update chromium pin deps.gclient get chrome deps',
       api.raw_io.stream_output_text('123', stream='stdout'),
-  ) + api.post_process(DoesNotRunRE, r'^Update \w* deps\.gclient setdep .*'
-                      ) + api.post_process(DropExpectation)
+  ) + browser_protocol_roll_output() + api.post_process(
+      DoesNotRunRE, r'^Update \w* deps\.gclient setdep .*') + api.post_process(
+          DropExpectation)
 
   yield api.test('chrome version is None') + api.override_step_data(
       'Update test262 import deps.Update Test262 status file.',
       api.raw_io.stream_output_text('range 1..3'),
-  ) + api.post_process(
+  ) + browser_protocol_roll_output() + api.post_process(
       # `Update chromium pin deps.gclient get chrome deps` having no output
       # will result in no pic updates.
       DoesNotRunRE,
