@@ -438,7 +438,7 @@ def main():
   parser.add_argument(
       "--llm-model",
       type=str,
-      default="gemini-2.5-flash-lite",
+      default="gemini-2.5-flash-lite-preview-09-2025",
       help="Name of the Gemini model for summarization.")
   parser.add_argument(
       "--embedding-model",
