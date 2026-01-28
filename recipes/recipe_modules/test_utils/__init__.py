@@ -11,6 +11,7 @@ DEPS = [
     'chromium',
     'chromium_swarming',
     'flakiness',
+    'depot_tools/depot_tools',
     'depot_tools/tryserver',
     'presentation_utils',
     'recipe_engine/buildbucket',

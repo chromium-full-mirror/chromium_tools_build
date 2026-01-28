@@ -2003,7 +2003,7 @@ def _archive_layout_test_results(api,
   cmd += ['--step-name', step_name]
   archive_step_name = 'archive results for ' + step_name
 
-  cmd += api.build.bot_utils_args
+  cmd += ['--bot-utils-gsutil-py-path', api.depot_tools.gsutil_py_path]
   archive_result = api.step(archive_step_name, cmd)
 
   # TODO(tansell): Move this to render_results function

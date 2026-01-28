@@ -1162,7 +1162,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         '--dest-filename',
         dest_filename,
     ]
-    cmd += self.m.build.bot_utils_args
+    cmd += ['--bot-utils-gsutil-py-path', self.m.depot_tools.gsutil_py_path]
     self.m.step('archive_test_results_summary', cmd)
 
   @recipe_util.returns_placeholder
