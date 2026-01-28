@@ -94,7 +94,7 @@ class ScriptedRollHandler(RollHandler):
 
   def commit_msg_lines(self, _):
     message = self.script.message
-    if self.output_file:
+    if self.output_file and self.api.path.exists(self.output_file):
       output_properties = self.api.file.read_json('Read roll output',
                                                   self.output_file)
       message = message.format(**output_properties)
