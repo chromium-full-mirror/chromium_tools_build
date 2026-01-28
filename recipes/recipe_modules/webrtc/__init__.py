@@ -7,7 +7,6 @@ from __future__ import annotations
 
 DEPS = [
     'archive',
-    'build',
     'builder_group',
     'chromium',
     'chromium_android',

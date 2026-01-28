@@ -15,7 +15,6 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
-    'build',
     'builder_group',
     'gn',
     'ninjalog',

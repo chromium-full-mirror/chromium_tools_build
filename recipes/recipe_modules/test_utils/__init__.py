@@ -7,7 +7,6 @@ from __future__ import annotations
 from PB.recipe_modules.build.test_utils import properties
 
 DEPS = [
-    'build',
     'chromium',
     'chromium_swarming',
     'flakiness',

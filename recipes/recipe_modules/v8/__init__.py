@@ -10,7 +10,6 @@ from recipe_engine.config import ConfigGroup, List, Single
 
 DEPS = [
     'archive',
-    'build',
     'builder_group',
     'chromium',
     'depot_tools/bot_update',

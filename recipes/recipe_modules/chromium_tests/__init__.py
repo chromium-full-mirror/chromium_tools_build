@@ -8,7 +8,6 @@ from PB.recipe_modules.build.chromium_tests import properties
 
 DEPS = [
     'archive',
-    'build',
     'builder_group',
     'chromium',
     'chromium_android',

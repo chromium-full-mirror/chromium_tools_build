@@ -7,7 +7,6 @@ from __future__ import annotations
 from PB.recipe_modules.build.angle import properties
 
 DEPS = [
-    'build',
     'builder_group',
     'chromium',
     'chromium_android',
