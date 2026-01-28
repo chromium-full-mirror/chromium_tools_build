@@ -1,0 +1,459 @@
+[
+  {
+    "cmd": [
+      "uname",
+      "-a"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "uname"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]",
+      "--revision_mapping_file",
+      "{\"got_revision\": \"boringssl\"}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "boringssl@2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--refs",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/linux_prefixed/8945511751514863184",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bot_update",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"boringssl\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"boringssl\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/boringssl.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": null,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#72263}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"boringssl\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"boringssl\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/boringssl.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#72263}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "runhooks"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/linux_prefixed/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gclient runhooks"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CACHE]/builder/boringssl/build"
+    ],
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "clean"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/boringssl/build"
+    ],
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "mkdir"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/cmake/bin/cmake",
+      "-GNinja",
+      "-DBORINGSSL_PREFIX=the_boringssl_prefix",
+      "-DCMAKE_MAKE_PROGRAM=[CACHE]/builder/boringssl/util/bot/ninja/ninja",
+      "[CACHE]/builder/boringssl"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/build",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "cmake"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/boringssl/util/bot/ninja/ninja",
+      "-C",
+      "[CACHE]/builder/boringssl/build"
+    ],
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ninja"
+  },
+  {
+    "cmd": [
+      "go",
+      "run",
+      "[CACHE]/builder/boringssl/util/check_filenames.go"
+    ],
+    "cwd": "[CACHE]/builder/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check filenames"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/boringssl/util/go_tests.txt",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read go tests",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@go_tests.txt@./util/ar@@@",
+      "@@@STEP_LOG_LINE@go_tests.txt@./util/fipstools/delocate@@@",
+      "@@@STEP_LOG_END@go_tests.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "-v",
+      "./util/ar",
+      "./util/fipstools/delocate"
+    ],
+    "cwd": "[CACHE]/builder/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "go tests"
+  },
+  {
+    "cmd": [
+      "go",
+      "run",
+      "util/all_tests.go"
+    ],
+    "cwd": "[CACHE]/builder/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "unit tests"
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "-pipe"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/ssl/test/runner",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ssl tests"
+  },
+  {
+    "name": "$result"
+  }
+]

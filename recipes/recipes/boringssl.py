@@ -64,6 +64,11 @@ PROPERTIES = {
             default=None,
             kind=str,
             help='the target architecture to configure MSVC with'),
+    'prefixed_symbols':
+        Property(
+            default=False,
+            kind=bool,
+            help='whether to build with a BORINGSSL_PREFIX'),
     'runner_args':
         Property(
             default=[],
@@ -84,6 +89,9 @@ PROPERTIES = {
     'sde':
         Property(default=False, kind=bool, help='whether to run tests on SDE'),
 }
+
+# The value of BORINGSSL_PREFIX to use if the prefixed_symbols property is set.
+BORINGSSL_PREFIX = "the_boringssl_prefix"
 
 
 def _GetHostToolSuffix(platform):
@@ -128,14 +136,15 @@ def _GetClangPath(platform, bot_utils, cxx):
 class _Config:
 
   def __init__(self, android, buildername, clang, cmake_args, gclient_vars,
-               msvc_target, runner_args, run_ssl_tests, run_unit_tests, rust,
-               sde):
+               msvc_target, prefixed_symbols, runner_args, run_ssl_tests,
+               run_unit_tests, rust, sde):
     self.android = android
     self.buildername = buildername
     self.clang = clang
     self.cmake_args = cmake_args
     self.gclient_vars = gclient_vars
     self.msvc_target = msvc_target
+    self.prefixed_symbols = prefixed_symbols
     self.runner_args = runner_args
     self.run_ssl_tests = run_ssl_tests
     self.run_unit_tests = run_unit_tests
@@ -171,6 +180,8 @@ class _Config:
     if self.android:
       args['CMAKE_TOOLCHAIN_FILE'] = bot_utils.joinpath(
           'android_ndk', 'build', 'cmake', 'android.toolchain.cmake')
+    if self.prefixed_symbols:
+      args['BORINGSSL_PREFIX'] = BORINGSSL_PREFIX
     args.update(self.cmake_args)
     return args
 
@@ -208,7 +219,8 @@ def _CleanupMSVC(api):
 
 def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
              check_stack, clang, cmake_args, gclient_vars, msvc_target,
-             runner_args, run_ssl_tests, run_unit_tests, rust, sde):
+             prefixed_symbols, runner_args, run_ssl_tests, run_unit_tests, rust,
+             sde):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
       android=android,
@@ -217,6 +229,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
       cmake_args=cmake_args,
       gclient_vars=gclient_vars,
       msvc_target=msvc_target,
+      prefixed_symbols=prefixed_symbols,
       runner_args=runner_args,
       run_ssl_tests=run_ssl_tests,
       run_unit_tests=run_unit_tests,
@@ -284,6 +297,8 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
         'get clang resource dir', [clang_path, '-print-resource-dir'],
         stdout=api.raw_io.output_text()).stdout.strip()
     env['BINDGEN_EXTRA_CLANG_ARGS'] = '-resource-dir=' + resource_dir
+    if config.prefixed_symbols:
+      env['BORINGSSL_PREFIX'] = BORINGSSL_PREFIX
 
   # If building with MSVC, all commands must run with an environment wrapper.
   # This is necessary both to find the toolchain and the runtime dlls. Rather
@@ -485,6 +500,9 @@ def GenTests(api):
           },
           "check_imported_libraries": True,
       }),
+      ('linux_prefixed', api.platform('linux', 64), {
+          "prefixed_symbols": True,
+      }),
   ]
   for (buildername, host_platform, props) in tests:
     yield api.test(
@@ -573,6 +591,10 @@ def GenTests(api):
 
   rust_tests = [
       ('linux', api.platform('linux', 64), "x86_64-unknown-linux-gnu", {}),
+      ('linux_prefixed', api.platform('linux',
+                                      64), "x86_64-unknown-linux-gnu", {
+                                          "prefixed_symbols": True
+                                      }),
       ('win64', api.platform('win', 64), "x86_64-pc-windows-msvc", {
           "msvc_target": "x64"
       }),
