@@ -119,7 +119,7 @@ class TestGroupAndPackage(unittest.TestCase):
     topics = [{"topic_id": 1, "title": "T1"}, {"topic_id": 2, "title": "T2"}]
 
     groups = group_and_package.generate_group_categories(
-        topics, "model", MagicMock(), Path("./"), num_groups=3)
+        topics, "model", MagicMock(), Path("./"), num_groups=3, temperature=0.1)
 
     self.assertEqual(groups, ["Category A", "Category B", "Category C"])
 
@@ -132,7 +132,12 @@ class TestGroupAndPackage(unittest.TestCase):
 
     with patch("group_and_package.time.sleep"):  # Mock sleep
       groups = group_and_package.generate_group_categories(
-          topics, "model", MagicMock(), Path("./"), num_groups=3)
+          topics,
+          "model",
+          MagicMock(),
+          Path("./"),
+          num_groups=3,
+          temperature=0.1)
 
     self.assertEqual(len(groups), 3)
     self.assertEqual(mock_call_llm.call_count, 2)
@@ -151,7 +156,13 @@ class TestGroupAndPackage(unittest.TestCase):
     fixed_cats = ["Performance", "Documentation", "Security"]
 
     group_and_package.group_topics_with_fixed_categories(
-        topics, "model", MagicMock(), Path("./"), 1, fixed_cats)
+        topics,
+        "model",
+        MagicMock(),
+        Path("./"),
+        1,
+        fixed_cats,
+        temperature=0.1)
 
     self.assertEqual(topics[0]["group"], "Performance")
     self.assertEqual(topics[1]["group"], "Documentation")
@@ -166,7 +177,13 @@ class TestGroupAndPackage(unittest.TestCase):
     fixed_cats = ["Performance", "Documentation"]
 
     group_and_package.group_topics_with_fixed_categories(
-        topics, "model", MagicMock(), Path("./"), 1, fixed_cats)
+        topics,
+        "model",
+        MagicMock(),
+        Path("./"),
+        1,
+        fixed_cats,
+        temperature=0.1)
 
     self.assertEqual(topics[0]["group"], "Performance")
 

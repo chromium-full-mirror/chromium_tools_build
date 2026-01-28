@@ -74,7 +74,8 @@ def call_llm_with_cache(prompt: str,
                         client: genai.Client,
                         cache_dir: Path,
                         ignore_cache: bool = False,
-                        max_retries: int = 10) -> str | None:
+                        max_retries: int = 10,
+                        temperature: float = 0.1) -> str | None:
   """
     Calls the Gemini API with caching.
     Args:
@@ -84,10 +85,11 @@ def call_llm_with_cache(prompt: str,
         cache_dir: Directory for caching responses
         ignore_cache: If True, bypass cache and force new API call
         max_retries: Maximum number of retry attempts
+        temperature: The generation temperature.
     Returns:
         Generated text or None if all retries fail
     """
-  cache_key_input = prompt + model_name
+  cache_key_input = prompt + model_name + str(temperature)
   cache_hash = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
   cache_file = cache_dir / f"{cache_hash}.txt"
 
@@ -100,8 +102,11 @@ def call_llm_with_cache(prompt: str,
 
   for retry in range(max_retries):
     try:
+      generation_config = types.GenerationConfig(temperature=temperature)
       response = client.models.generate_content(
-          model=model_name, contents=[prompt])
+          model=model_name,
+          contents=[prompt],
+          generation_config=generation_config)
       result = response.candidates[0].content.parts[0].text.strip()
 
       # Cache the result
@@ -128,8 +133,8 @@ def call_llm_with_cache(prompt: str,
 
 
 def get_topic_summary_and_title(messages: list[str], model_name: str,
-                                client: genai.Client,
-                                cache_dir: Path) -> tuple[str, str]:
+                                client: genai.Client, cache_dir: Path,
+                                temperature: float) -> tuple[str, str]:
   """
     Uses a generative LLM to generate a title and summary for a topic.
     Args:
@@ -137,11 +142,13 @@ def get_topic_summary_and_title(messages: list[str], model_name: str,
         model_name: Name of the Gemini model
         client: Initialized Gemini client
         cache_dir: Directory for caching
+        temperature: The generation temperature.
     Returns:
         Tuple of (title, summary)
     """
   prompt = llm_prompts.get_summary_and_title_prompt(messages)
-  result_str = call_llm_with_cache(prompt, model_name, client, cache_dir)
+  result_str = call_llm_with_cache(
+      prompt, model_name, client, cache_dir, temperature=temperature)
 
   if not result_str:
     return "Untitled Topic", "Summary could not be generated."
@@ -345,8 +352,8 @@ def format_code_context(commits: list[dict]) -> str:
 
 def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
                   client: genai.Client, llm_cache_dir: Path,
-                  embedding_cache_dir: Path,
-                  output_dimensionality: int) -> dict:
+                  embedding_cache_dir: Path, output_dimensionality: int,
+                  temperature: float) -> dict:
   """
     Processes a single topic: generates title, summary, chunks, and embeddings.
     Args:
@@ -357,6 +364,7 @@ def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
         llm_cache_dir: Cache directory for LLM responses
         embedding_cache_dir: Cache directory for embeddings
         output_dimensionality: The target dimension size for embeddings
+        temperature: The generation temperature.
     Returns:
         Enriched topic dictionary with title, summary, chunks, embeddings
     """
@@ -374,7 +382,8 @@ def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
 
   # Generate title and summary
   title, summary = get_topic_summary_and_title(topic_messages, model_name,
-                                               client, llm_cache_dir)
+                                               client, llm_cache_dir,
+                                               temperature)
 
   # Format code context
   code_context = format_code_context(topic_commits)
@@ -465,6 +474,12 @@ def main():
       "--skip-keywords",
       action="store_true",
       help="Skip keyword extraction (faster, but no keywords in output).")
+  parser.add_argument(
+      '--temperature',
+      type=float,
+      default=0.1,
+      help='Temperature for LLM generation (0.0-1.0). Lower is more deterministic.'
+  )
 
   args = parser.parse_args()
 
@@ -513,7 +528,7 @@ def main():
   def process_with_args(topic):
     return process_topic(topic, args.llm_model, args.embedding_model, client,
                          llm_cache_dir, embedding_cache_dir,
-                         args.output_dimensionality)
+                         args.output_dimensionality, args.temperature)
 
   with concurrent.futures.ThreadPoolExecutor(
       max_workers=args.workers) as executor:

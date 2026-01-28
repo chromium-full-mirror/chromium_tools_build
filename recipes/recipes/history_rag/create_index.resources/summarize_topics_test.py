@@ -153,7 +153,7 @@ class TestSummarizeTopics(unittest.TestCase):
     mock_call_llm.return_value = ' "My Title" \n This is the summary. '
 
     title, summary = summarize_topics.get_topic_summary_and_title(
-        ["msg"], "model", self.mock_client, self.cache_dir)
+        ["msg"], "model", self.mock_client, self.cache_dir, temperature=0.1)
 
     self.assertEqual(title, "My Title")
     self.assertEqual(summary, "This is the summary.")
@@ -218,7 +218,8 @@ class TestSummarizeTopics(unittest.TestCase):
         self.mock_client,
         self.cache_dir,
         self.cache_dir,
-        output_dimensionality=768)
+        output_dimensionality=768,
+        temperature=0.1)
 
     # Assertions
     self.assertEqual(result['topic_id'], 123)
