@@ -897,6 +897,7 @@
       "-C",
       "[CACHE]/builder/src/out/lacros-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/lacros-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

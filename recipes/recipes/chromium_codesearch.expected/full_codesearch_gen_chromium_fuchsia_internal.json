@@ -897,6 +897,7 @@
       "-C",
       "[CACHE]/builder/src/out/fuchsia-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/fuchsia-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

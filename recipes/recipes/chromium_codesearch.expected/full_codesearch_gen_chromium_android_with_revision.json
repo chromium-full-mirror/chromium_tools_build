@@ -883,6 +883,7 @@
       "-C",
       "[CACHE]/builder/src/out/android-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/android-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

@@ -886,6 +886,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\win-Debug"
     ],
+    "cwd": "[CACHE]\\builder\\src\\out\\win-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

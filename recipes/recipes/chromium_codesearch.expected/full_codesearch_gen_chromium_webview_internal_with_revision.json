@@ -873,6 +873,7 @@
       "-C",
       "[CACHE]/builder/src/out/webview-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/webview-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

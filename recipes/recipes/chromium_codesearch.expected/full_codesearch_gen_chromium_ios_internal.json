@@ -1093,6 +1093,7 @@
       "-C",
       "[CACHE]/builder/src/out/ios-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/ios-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

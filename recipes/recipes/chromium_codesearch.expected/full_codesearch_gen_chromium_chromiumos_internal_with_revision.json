@@ -897,6 +897,7 @@
       "-C",
       "[CACHE]/builder/src/out/chromiumos-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/chromiumos-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"

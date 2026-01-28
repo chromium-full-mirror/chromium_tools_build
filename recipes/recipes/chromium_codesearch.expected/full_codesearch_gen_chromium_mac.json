@@ -939,6 +939,7 @@
       "-C",
       "[CACHE]/builder/src/out/mac-Debug"
     ],
+    "cwd": "[CACHE]/builder/src/out/mac-Debug",
     "luci_context": {
       "realm": {
         "name": "chromium:ci"
