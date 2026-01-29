@@ -1268,9 +1268,13 @@
       "maintenance",
       "run",
       "--task",
-      "gc",
+      "incremental-repack",
       "--task",
-      "commit-graph"
+      "commit-graph",
+      "--task",
+      "loose-objects",
+      "--task",
+      "pack-refs"
     ],
     "cwd": "[CACHE]/generated",
     "env": {
