@@ -60,21 +60,22 @@ def GenTests(api):
         dep_name: 'https://googlesource.org/deps/s.git@123' for dep_name in keys
     })
 
-  yield (api.test('default') + api.override_step_data(
-      'Find updated deps.Read devtools-frontend/DEPS',
-      api.file.read_text(dummy_deps(*CONFIG["excludes"])),
-  ) + api.path.exists(api.path.cleanup_dir.joinpath('roll_output.json')) +
-         api.override_step_data(
-             'Scripted rolls.Update Browser Protocol deps.Read roll output',
-             api.file.read_json({
-                 "old_revision": "123",
-                 "new_revision": "456"
-             })) +
-         api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
-         api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
-         api.post_process(
-             MustRun, 'Scripted rolls.Update Puppeteer Core deps.'
-             'Run Puppeteer Core script') + api.post_process(
-                 MustRun, 'Scripted rolls.Update Puppeteer Replay deps.'
-                 'Run Puppeteer Replay script') +
-         api.post_process(DropExpectation))
+  yield (
+      api.test('default') + api.override_step_data(
+          'Find updated deps.Read devtools-frontend/DEPS',
+          api.file.read_text(dummy_deps(*CONFIG["excludes"])),
+      ) + api.path.exists(api.path.cleanup_dir.joinpath('roll_output.json')) +
+      api.override_step_data(
+          'Scripted rolls.Update Browser Protocol & CfT deps.Read roll output',
+          api.file.read_json({
+              "old_revision": "123",
+              "new_revision": "456"
+          })) +
+      api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
+      api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
+      api.post_process(
+          MustRun, 'Scripted rolls.Update Puppeteer Core deps.'
+          'Run Puppeteer Core script') + api.post_process(
+              MustRun, 'Scripted rolls.Update Puppeteer Replay deps.'
+              'Run Puppeteer Replay script') +
+      api.post_process(DropExpectation))

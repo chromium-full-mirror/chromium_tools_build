@@ -176,13 +176,14 @@ def GenTests(api):
   ]
 
   def browser_protocol_roll_output():
-    return api.path.exists(api.path.cleanup_dir.joinpath(
-        'roll_output.json')) + api.override_step_data(
-            'Scripted rolls.Update Browser Protocol deps.Read roll output',
-            api.file.read_json({
-                "old_revision": "123",
-                "new_revision": "456"
-            }))
+    return api.path.exists(
+        api.path.cleanup_dir.joinpath('roll_output.json')
+    ) + api.override_step_data(
+        'Scripted rolls.Update Browser Protocol & CfT deps.Read roll output',
+        api.file.read_json({
+            "old_revision": "123",
+            "new_revision": "456"
+        }))
 
   yield api.test('default') + api.override_step_data(
       'Update test262 import deps.Update Test262 status file.',

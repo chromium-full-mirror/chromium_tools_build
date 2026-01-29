@@ -1765,10 +1765,10 @@
   },
   {
     "cmd": [],
-    "name": "Scripted rolls.Update Browser Protocol deps",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@Browser Protocol@@@",
+      "@@@STEP_TEXT@Browser Protocol & CfT@@@",
       "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
     ]
   },
@@ -1786,7 +1786,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
-    "name": "Scripted rolls.Update Browser Protocol deps.Abandon CLs",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.Abandon CLs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1813,7 +1813,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Scripted rolls.Update Browser Protocol deps.git checkout",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1840,7 +1840,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Scripted rolls.Update Browser Protocol deps.git branch",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.git branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1866,7 +1866,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Scripted rolls.Update Browser Protocol deps.git clean",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.git clean",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1892,7 +1892,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Scripted rolls.Update Browser Protocol deps.git new-branch",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.git new-branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1919,7 +1919,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
-    "name": "Scripted rolls.Update Browser Protocol deps.Run Browser Protocol script",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.Run Browser Protocol & CfT script",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1945,7 +1945,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Scripted rolls.Update Browser Protocol deps.Read roll output",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.Read roll output",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@roll_output.json@{@@@",
@@ -1958,7 +1958,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'Roll browser-protocol', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling protocol files: https://chromium.googlesource.com/chromium/src/+log/123..456\\nIn case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
+      "{'subject': 'Roll browser-protocol', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling CfT pin toghether with browser-protocol files: https://chromium.googlesource.com/chromium/src/+log/123..456\\nIn case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -1969,7 +1969,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
-    "name": "Scripted rolls.Update Browser Protocol deps.Upload CL",
+    "name": "Scripted rolls.Update Browser Protocol & CfT deps.Upload CL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2323,6 +2323,6 @@
   },
   {
     "name": "$result",
-    "summaryMarkdown": "Updated 3 trusted dep(s), 6 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol, test262 import."
+    "summaryMarkdown": "Updated 3 trusted dep(s), 6 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol & CfT, test262 import."
   }
 ]
