@@ -816,6 +816,13 @@ class SwarmingApi(recipe_api.RecipeApi):
               ('test_suite', test_suite),
           ] if v
       }
+      # Adding the var to tryjobs will reset flake-endorser tracking, making
+      # it think *all* tests on the CQ are new. So keep it off on try for now.
+      # TODO(crbug.com/40285137): Roll this out for try too after devising a
+      # safe method to do so.
+      bucket = self.m.buildbucket.build.builder.bucket
+      if bucket != 'try':
+        var['bucket'] = bucket
       req = req.with_slice(
           i,
           task_slice.with_command(
