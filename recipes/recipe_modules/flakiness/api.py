@@ -499,6 +499,63 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests_identified
 
+  def _get_legacy_filter_from_test_id(self, test_id):
+    """
+    Translates a ResultDB v2 test_id to a legacy test filter string
+    compatible with --isolated-script-test-filter.
+    Ref: go/chrome-test-id-v2
+    """
+    if not test_id:
+      return None
+
+    if not test_id.startswith('://'):
+      return None
+
+    # New v2 format
+    test_id_pattern = re.compile(r"://(?P<module_name>[^!]+)!"
+                                 r"(?P<scheme>[^:]+):"
+                                 r"(?P<coarse>[^:]*):"
+                                 r"(?P<fine>[^#]+)#"
+                                 r"(?P<case>.+)")
+    match = test_id_pattern.match(test_id)
+    if not match:
+      # Pattern didn't match, might be a different v2 structure or malformed.
+      return
+
+    components = match.groupdict()
+    scheme = components['scheme']
+    coarse = components['coarse']
+    fine = components['fine']
+    case = components['case']
+
+    # Decode case name per go/chrome-test-id-v2 "Note about encoding"
+    # Unescape ':' and '\' in the case name.
+    case = case.replace('\\:', ':').replace('\\\\', '\\')
+
+    if scheme == 'pyunit':
+      # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted
+      # Expected filter: ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
+      return f"{fine}.{case}"
+    if scheme == 'gtest':
+      # GoogleTest: Fine=Suite, Case=Test
+      # Legacy filter: SuiteName.TestName (parameters in Case are usually fine)
+      return f"{fine}.{case}"
+    if scheme == 'xctest':
+      # XCTest: Fine=Class, Case=Method
+      # Common XCTest filter format: ClassName/MethodName
+      return f"{fine}/{case}"
+    if scheme == 'junit':
+      # JUnit: Coarse=Package, Fine=Class, Case=Method
+      # Legacy filter: Package.ClassName#MethodName
+      return f"{coarse}.{fine}#{case}"
+    if scheme == 'flat':
+      return f"{case}"
+    # Add other schemes from go/chrome-test-id-v2 as needed.
+
+    # Fallback for unhandled schemes:
+    # Let the caller use test.test_name
+    return None
+
   def _map_test_object(
       self,
       test_objects: collections.abc.Iterable[steps.Test],
@@ -521,6 +578,7 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     new_tests = {}
     not_found = []
+    translation_failures = []
     with self.m.step.nest('mapping new tests to test objects') as p:
       p.logs['new_test_tuples'] = '\n'.join(map(join_tuple, new_test_tuples))
       for test_obj in test_objects:
@@ -538,7 +596,18 @@ class FlakinessApi(recipe_api.RecipeApi):
             # Otherwise create a new one.
             test_filter, duration_milliseconds = new_tests.setdefault(
                 test_obj, ([], 0))
-            test_filter.append(test.test_name)
+
+            legacy_filter = self._get_legacy_filter_from_test_id(test.test_id)
+            if legacy_filter:
+              test_filter.append(legacy_filter)
+            else:
+              # Fallback to test.test_name if translation fails, but log it.
+              translation_failures.append(
+                  (f"Could not translate test_id '{test.test_id}' "
+                   "into legacy test filter format. "
+                   f"Falling back to test_name '{test.test_name}'."))
+              test_filter.append(test.test_name)
+
             # duration_milliseconds can default to 0 for our calculations because
             # it's only calculated if duration values are reported to ResultDB.
             test_duration_ms = test.duration_milliseconds or 0
@@ -546,6 +615,8 @@ class FlakinessApi(recipe_api.RecipeApi):
             new_tests[test_obj] = (test_filter, duration_milliseconds)
           else:
             not_found.append((test.test_id, vh))
+      if translation_failures:
+        p.logs['translation_failures'] = '\n'.join(translation_failures)
       if not_found:
         p.logs['not_found'] = '\n'.join(map(join_tuple, not_found))
 
