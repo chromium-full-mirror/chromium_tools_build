@@ -130,6 +130,7 @@ class DummyCLManager:
 
   def abandon_active_cls(self, *args, **kwargs):
     self.api.step('Abandon CLs', [str(args), str(kwargs)])
+    return True
 
 
 def RunSteps(api):

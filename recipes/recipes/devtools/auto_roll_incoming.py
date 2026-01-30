@@ -40,7 +40,8 @@ def RunSteps(api):
   )
   source_dir = update_result.source_root.path
 
-  clm = api.v8_auto_roller.build_cl_manager(source_dir, bugs="none")
+  clm = api.v8_auto_roller.build_cl_manager(
+      source_dir, bugs="none", patched_cl_has_priority=True)
 
   api.v8_auto_roller.regular_roll(CONFIG, clm, source_dir)
   api.v8_auto_roller.scripted_rolls(CONFIG, clm, source_dir, [

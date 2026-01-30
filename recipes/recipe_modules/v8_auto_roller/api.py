@@ -11,7 +11,7 @@ from recipe_engine import recipe_api
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipe_engine import result as result_pb2
 
-from .cl_manager import CLManager
+from .cl_manager import CLManager, PatchPriorityCLManager
 from .commons import discard_local_changes
 from .deps_handlers import (TrustedRollHandler, UntrustedRollHandler,
                             get_dep_updates)
@@ -94,8 +94,12 @@ class V8AutoRoller(recipe_api.RecipeApi):
     chromium_deps_file = chromium_path / 'DEPS'
     self.m.file.write_text('Store src/DEPS', chromium_deps_file, deps)
 
-  def build_cl_manager(self, source_dir, bugs=None):
-    return CLManager(self.m, source_dir, bugs)
+  def build_cl_manager(self,
+                       source_dir,
+                       bugs=None,
+                       patched_cl_has_priority=False):
+    cls = PatchPriorityCLManager if patched_cl_has_priority else CLManager
+    return cls(self.m, source_dir, bugs)
 
   def report_result(self):
     result = result_pb2.RawResult()

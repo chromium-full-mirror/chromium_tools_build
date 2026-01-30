@@ -30,7 +30,10 @@ class RollHandler(ABC):
       try:
         with self.roll_contex(self.source_dir):
           step.step_text = self.summary()
-          cl_manager.abandon_active_cls(self.get_subject())
+          create_new_cl = cl_manager.abandon_active_cls(self.get_subject())
+          if not create_new_cl:
+            self.api.step.empty('Found existing roll CL. Skipping.')
+            return
           commons.discard_local_changes(self.api, self.source_dir)
           changes = self.apply_changes()
           commit_msg_lines = (self.commit_msg_lines(changes) +

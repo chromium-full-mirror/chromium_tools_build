@@ -1,11 +1,11 @@
-# Copyright 2023 The Chromium Authors
+# Copyright 2026 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from __future__ import annotations
 
-from recipe_engine.post_process import (
-    DoesNotRunRE, DropExpectation, SummaryMarkdown)
+from recipe_engine.post_process import (DoesNotRunRE, DropExpectation,
+                                        SummaryMarkdown)
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -71,11 +71,11 @@ def GenTests(api):
 
   def runs_only(api, *step_names):
     """Only include steps from the expectations."""
-    return api.post_process(
-        DoesNotRunRE, api.v8.exclude_by_names_re(*step_names))
+    return api.post_process(DoesNotRunRE,
+                            api.v8.exclude_by_names_re(*step_names))
 
-
-  yield api.test('no-diff') + runs_only(api,
+  yield api.test('no-diff') + runs_only(
+      api,
       "Setup",
       "Setup.ensure builder cache dir",
       "Setup.bot_update",

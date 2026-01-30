@@ -77,9 +77,8 @@ class CLManager:
 
       return cl_link
 
-  def abandon_active_cls(self, subject):
-    """Ensure no other active roll exists. If it does, abandon the old one."""
-    commits = self.api.gerrit.get_changes(
+  def _find_cls(self, subject):
+    cls = self.api.gerrit.get_changes(
         self.gerrit_base_url,
         query_params=[
             ('project', commons.get_project_name(self.api)),
@@ -90,17 +89,47 @@ class CLManager:
         limit=20,
         step_test_data=self.api.gerrit.test_api.get_empty_changes_response_data,
     )
-
     # Querying gerrit with a subject is not exact, so filter the results for
     # precise match.
-    commits = [c for c in commits if c['subject'] == subject]
+    cls = [c for c in cls if c['subject'] == subject]
+    return cls
 
-    for commit in commits:
-      self.api.gerrit.abandon_change(
-          self.gerrit_base_url,
-          commit['_number'],
-          'stale roll',
-      )
-      step_result = self.api.step('Previous roll failed', cmd=None)
-      step_result.presentation.step_text = 'Notify sheriffs!'
-      step_result.presentation.status = 'FAILURE'
+  def _abandon_cl(self, cl):
+    self.api.gerrit.abandon_change(
+        self.gerrit_base_url,
+        cl['_number'],
+        'stale roll',
+    )
+    step_result = self.api.step('Previous roll failed', cmd=None)
+    step_result.presentation.step_text = 'Notify sheriffs!'
+    step_result.presentation.status = 'FAILURE'
+
+  def abandon_active_cls(self, subject):
+    """Ensure no other active roll exists. If it does, abandon the old one.
+    Return True if a new CL should be created."""
+    for cl in self._find_cls(subject):
+      self._abandon_cl(cl)
+    return True
+
+
+class PatchPriorityCLManager(CLManager):
+
+  def __init__(self, api, source_dir, bugs):
+    super().__init__(api, source_dir, bugs)
+
+  def abandon_active_cls(self, subject):
+    create_new_cl = True
+    cls = self._find_cls(subject)
+
+    for cl in cls:
+      if cl['current_revision_number'] != 1:
+        create_new_cl = False
+        self.api.step.empty(f'CL {cl["_number"]} was modified.')
+        self.api.gerrit.add_message(
+            host=self.gerrit_base_url,
+            change=cl['_number'],
+            message='The auto-roller is blocked by this manually patched CL. '
+            'To continue, land or abandon this CL. If a fresh roll is '
+            'needed, abandon this one and restart the roller.',
+            automatic_attention_set_update=True)
+    return create_new_cl
