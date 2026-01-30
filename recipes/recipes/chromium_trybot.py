@@ -9,7 +9,6 @@ from recipe_engine.post_process import (Filter, DoesNotRun, DropExpectation,
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
-    'build',
     'chromium',
     'chromium_android',
     'chromium_checkout',

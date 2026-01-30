@@ -9,7 +9,6 @@ from recipe_engine.post_process import (DropExpectation, StepCommandContains,
 
 DEPS = [
     'recipe_engine/path',
-    'build',
     'chromium',
     'chromium_android',
 ]

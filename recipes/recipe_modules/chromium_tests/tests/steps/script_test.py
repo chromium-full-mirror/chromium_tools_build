@@ -10,7 +10,6 @@ from recipe_engine.post_process import (DropExpectation, LogContains, MustRun,
 from RECIPE_MODULES.build.chromium_tests import steps
 
 DEPS = [
-    'build',
     'chromium',
     'chromium_tests',
     'presentation_utils',

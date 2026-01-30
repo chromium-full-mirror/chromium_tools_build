@@ -6,7 +6,6 @@ from __future__ import annotations
 
 
 DEPS = [
-    'build',
     'chromium',
     'chromium_android',
     'chromium_tests',

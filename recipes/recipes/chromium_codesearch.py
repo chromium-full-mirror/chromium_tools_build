@@ -18,7 +18,6 @@ from PB.recipes.build.chromium_codesearch import (InputProperties,
 PROPERTIES = InputProperties
 
 DEPS = [
-    'build',
     'chromium',
     'gn',
     'infra/codesearch',

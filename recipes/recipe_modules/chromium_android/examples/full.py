@@ -10,7 +10,6 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 DEPS = [
     'adb',
-    'build',
     'chromium',
     'chromium_android',
     'depot_tools/bot_update',
