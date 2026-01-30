@@ -584,6 +584,12 @@ def publish_tarball(api):
         '--header',
         source_dir.joinpath('gpu', 'webgpu', 'dawn_commit_hash.h'),
     ])
+  with api.context(
+      cwd=source_dir.joinpath('third_party', 'devtools-frontend', 'src')):
+    api.step('Sync Rollup native libraries to node_modules', [
+        'python3',
+        api.path.join('scripts', 'deps', 'sync_rollup_libs.py'),
+    ])
 
   api.file.copy('copy clang-format', api.chromium.resource('clang-format'),
                 source_dir.joinpath('buildtools', 'linux64', 'clang-format'))

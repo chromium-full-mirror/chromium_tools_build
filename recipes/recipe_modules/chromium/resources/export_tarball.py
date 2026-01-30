@@ -30,6 +30,7 @@ import tarfile
 nonessential_dirs = (
     'third_party/blink/tools',
     'third_party/blink/web_tests',
+    'third_party/devtools-frontend/src/third_party/rollup_libs',
     'third_party/hunspell_dictionaries',
     'third_party/hunspell/tests',
     'third_party/jdk/current',
