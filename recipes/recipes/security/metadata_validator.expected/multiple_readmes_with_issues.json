@@ -683,14 +683,14 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/src/third_party/bar/README.chromium@@@",
-      "@@@STEP_LOG_LINE@files@src/src/third_party/foo/README.chromium@@@",
+      "@@@STEP_LOG_LINE@files@src/third_party/bar/README.chromium@@@",
+      "@@@STEP_LOG_LINE@files@src/third_party/foo/README.chromium@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "validate src/third_party/bar/README.chromium",
+    "name": "validate third_party/bar/README.chromium",
     "~followup_annotations": [
       "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.<br/>WARNING - License file not found.@@@",
       "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Name' is missing.@@@",
@@ -704,7 +704,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/metadata/scan.py",
-      "[CACHE]/builder/src/src/third_party/bar",
+      "[CACHE]/builder/src/third_party/bar",
       "--json-summary",
       "/path/to/tmp/json",
       "--is-open-source-project"
@@ -730,7 +730,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium",
+    "name": "validate third_party/bar/README.chromium.run validator on third_party/bar/README.chromium",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -757,7 +757,7 @@
   },
   {
     "cmd": [],
-    "name": "validate src/third_party/foo/README.chromium",
+    "name": "validate third_party/foo/README.chromium",
     "~followup_annotations": [
       "@@@STEP_TEXT@ERROR - Required field 'Description' is missing.@@@",
       "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Description' is missing.@@@",
@@ -769,7 +769,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/metadata/scan.py",
-      "[CACHE]/builder/src/src/third_party/foo",
+      "[CACHE]/builder/src/third_party/foo",
       "--json-summary",
       "/path/to/tmp/json",
       "--is-open-source-project"
@@ -795,7 +795,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium",
+    "name": "validate third_party/foo/README.chromium.run validator on third_party/foo/README.chromium",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -819,13 +819,13 @@
     "cmd": [],
     "name": "Validation Issues",
     "~followup_annotations": [
-      "@@@STEP_TEXT@src/third_party/bar/README.chromium:<br/>* ERROR - Required field 'Name' is missing.<br/>* WARNING - License file not found.<br/><br/>src/third_party/foo/README.chromium:<br/>* ERROR - Required field 'Description' is missing.<br/><br/><br/>To bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description.@@@"
+      "@@@STEP_TEXT@third_party/bar/README.chromium:<br/>* ERROR - Required field 'Name' is missing.<br/>* WARNING - License file not found.<br/><br/>third_party/foo/README.chromium:<br/>* ERROR - Required field 'Description' is missing.<br/><br/><br/>To bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description.@@@"
     ]
   },
   {
     "failure": {
       "failure": {},
-      "humanReason": "src/third_party/bar/README.chromium:\n* ERROR - Required field 'Name' is missing.\n* WARNING - License file not found.\n\nsrc/third_party/foo/README.chromium:\n* ERROR - Required field 'Description' is missing.\n\n\nTo bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description."
+      "humanReason": "third_party/bar/README.chromium:\n* ERROR - Required field 'Name' is missing.\n* WARNING - License file not found.\n\nthird_party/foo/README.chromium:\n* ERROR - Required field 'Description' is missing.\n\n\nTo bypass this check, add 'Metadata-Validate-Bypass: &lt;REASON&gt;' to your CL description."
     },
     "name": "$result"
   }

@@ -162,15 +162,9 @@
     "name": "parse description",
     "stdin": "Change commit message",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"Metadata-Validate-Bypass\": \"test\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@"
     ]
-  },
-  {
-    "cmd": [],
-    "name": "Validation bypassed"
   },
   {
     "cmd": [
@@ -689,25 +683,20 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/third_party/bar/README.chromium@@@",
+      "@@@STEP_LOG_LINE@files@src/third_party/exists/README.chromium@@@",
+      "@@@STEP_LOG_LINE@files@src/third_party/not_exists/README.chromium@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "validate third_party/bar/README.chromium",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.@@@",
-      "@@@STEP_LOG_LINE@errors@ERROR - Required field 'Name' is missing.@@@",
-      "@@@STEP_LOG_END@errors@@@",
-      "@@@STEP_WARNINGS@@@"
-    ]
+    "name": "validate third_party/exists/README.chromium"
   },
   {
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/metadata/scan.py",
-      "[CACHE]/builder/src/third_party/bar",
+      "[CACHE]/builder/src/third_party/exists",
       "--json-summary",
       "/path/to/tmp/json",
       "--is-open-source-project"
@@ -733,35 +722,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "validate third_party/bar/README.chromium.run validator on third_party/bar/README.chromium",
+    "name": "validate third_party/exists/README.chromium.run validator on third_party/exists/README.chromium",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"files\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"README.chromium\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"fatal\": true,@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"reason\": \"Required field 'Name' is missing.\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"severity\": \"ERROR\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"files\": {},@@@",
       "@@@STEP_LOG_LINE@json.output@  \"summary\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"invalid_files\": 1@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"invalid_files\": 0@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
-    "cmd": [],
-    "name": "Validation Issues",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@ERROR - Required field 'Name' is missing.<br/><br/><b>Validation bypassed by footer.</b>@@@"
-    ]
-  },
-  {
-    "name": "$result",
-    "summaryMarkdown": "ERROR - Required field 'Name' is missing.\n\n<b>Validation bypassed by footer.</b>"
+    "name": "$result"
   }
 ]

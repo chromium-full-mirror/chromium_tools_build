@@ -93,7 +93,10 @@ def RunSteps(api):
       api.chromium_checkout.ensure_checkout()
 
       files = api.chromium_checkout.get_files_affected_by_patch()
-      readme_files = [f for f in files if str(f).endswith('README.chromium')]
+      readme_files = [
+          f for f in files if (str(f).endswith('README.chromium') and
+                               api.path.exists(source_dir / f))
+      ]
       if not readme_files:
         api.step('no readme changes', cmd=None)
         return
@@ -174,13 +177,37 @@ def RunSteps(api):
 
 
 def GenTests(api):
+
+  def ensure_files_exist(filenames):
+    """Apply common file prep for each test"""
+    return api.path.exists(
+        *[api.path.cache_dir / 'builder' / 'src' / x for x in filenames
+         ]) + api.tryserver.get_files_affected_by_patch(filenames)
+
   yield api.test(
       'basic_success',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/foo/README.chromium']) +
-      api.step_data(
-          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+      ensure_files_exist(['third_party/foo/README.chromium']) + api.step_data(
+          'validate third_party/foo/README.chromium.run validator on third_party/foo/README.chromium',
+          api.json.output({
+              'files': {},
+              'summary': {
+                  'invalid_files': 0
+              }
+          })),
+      api.post_process(StatusSuccess),
+  )
+
+  yield api.test(
+      'readme_deleted',
+      api.chromium.try_build(builder='linux-metadata-validator'),
+      api.path.exists(api.path.cache_dir / 'builder' / 'src' /
+                      'third_party/exists/README.chromium') +
+      api.tryserver.get_files_affected_by_patch([
+          'third_party/exists/README.chromium',
+          'third_party/not_exists/README.chromium'
+      ]) + api.step_data(
+          'validate third_party/exists/README.chromium.run validator on third_party/exists/README.chromium',
           api.json.output({
               'files': {},
               'summary': {
@@ -193,10 +220,8 @@ def GenTests(api):
   yield api.test(
       'warning_with_unrelated_failure',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/foo/README.chromium']) +
-      api.step_data(
-          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+      ensure_files_exist(['third_party/foo/README.chromium']) + api.step_data(
+          'validate third_party/foo/README.chromium.run validator on third_party/foo/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{
@@ -220,10 +245,8 @@ def GenTests(api):
   yield api.test(
       'validation_failure',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/bar/README.chromium']) +
-      api.step_data(
-          'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
+      ensure_files_exist(['third_party/bar/README.chromium']) + api.step_data(
+          'validate third_party/bar/README.chromium.run validator on third_party/bar/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{
@@ -243,10 +266,9 @@ def GenTests(api):
   yield api.test(
       'bypass_validation',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/bar/README.chromium']) +
+      ensure_files_exist(['third_party/bar/README.chromium']) +
       api.tryserver.get_footers({SKIP_FOOTER: 'test'}) + api.step_data(
-          'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
+          'validate third_party/bar/README.chromium.run validator on third_party/bar/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{
@@ -265,17 +287,15 @@ def GenTests(api):
   yield api.test(
       'no_readme',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(['src/foo/bar.txt']),
+      ensure_files_exist(['foo/bar.txt']),
       api.post_process(StatusSuccess),
   )
 
   yield api.test(
       'warnings_only',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/baz/README.chromium']) +
-      api.step_data(
-          'validate src/third_party/baz/README.chromium.run validator on src/third_party/baz/README.chromium',
+      ensure_files_exist(['third_party/baz/README.chromium']) + api.step_data(
+          'validate third_party/baz/README.chromium.run validator on third_party/baz/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{
@@ -294,10 +314,8 @@ def GenTests(api):
   yield api.test(
       'ignore_unrelated_files',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/foo/README.chromium']) +
-      api.step_data(
-          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+      ensure_files_exist(['third_party/foo/README.chromium']) + api.step_data(
+          'validate third_party/foo/README.chromium.run validator on third_party/foo/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium.old': [{
@@ -316,10 +334,8 @@ def GenTests(api):
   yield api.test(
       'errors_and_warnings',
       api.chromium.try_build(builder='linux-readme-validator'),
-      api.tryserver.get_files_affected_by_patch(
-          ['src/third_party/mixed/README.chromium']) +
-      api.step_data(
-          'validate src/third_party/mixed/README.chromium.run validator on src/third_party/mixed/README.chromium',
+      ensure_files_exist(['third_party/mixed/README.chromium']) + api.step_data(
+          'validate third_party/mixed/README.chromium.run validator on third_party/mixed/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{
@@ -342,11 +358,11 @@ def GenTests(api):
   yield api.test(
       'multiple_readmes_with_issues',
       api.chromium.try_build(builder='linux-metadata-validator'),
-      api.tryserver.get_files_affected_by_patch([
-          'src/third_party/foo/README.chromium',
-          'src/third_party/bar/README.chromium',
+      ensure_files_exist([
+          'third_party/foo/README.chromium',
+          'third_party/bar/README.chromium',
       ]) + api.step_data(
-          'validate src/third_party/bar/README.chromium.run validator on src/third_party/bar/README.chromium',
+          'validate third_party/bar/README.chromium.run validator on third_party/bar/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{
@@ -364,7 +380,7 @@ def GenTests(api):
               }
           })) +
       api.step_data(
-          'validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium',
+          'validate third_party/foo/README.chromium.run validator on third_party/foo/README.chromium',
           api.json.output({
               'files': {
                   'README.chromium': [{

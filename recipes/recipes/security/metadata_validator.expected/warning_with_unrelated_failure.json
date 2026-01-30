@@ -683,13 +683,13 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/src/third_party/foo/README.chromium@@@",
+      "@@@STEP_LOG_LINE@files@src/third_party/foo/README.chromium@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "validate src/third_party/foo/README.chromium",
+    "name": "validate third_party/foo/README.chromium",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>WARNING - License file not found.@@@",
       "@@@STEP_LOG_LINE@warnings@WARNING - License file not found.@@@",
@@ -701,7 +701,7 @@
     "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/metadata/scan.py",
-      "[CACHE]/builder/src/src/third_party/foo",
+      "[CACHE]/builder/src/third_party/foo",
       "--json-summary",
       "/path/to/tmp/json",
       "--is-open-source-project"
@@ -727,7 +727,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "validate src/third_party/foo/README.chromium.run validator on src/third_party/foo/README.chromium",
+    "name": "validate third_party/foo/README.chromium.run validator on third_party/foo/README.chromium",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",

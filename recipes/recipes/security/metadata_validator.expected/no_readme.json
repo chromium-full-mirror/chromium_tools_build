@@ -683,7 +683,7 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/src/foo/bar.txt@@@",
+      "@@@STEP_LOG_LINE@files@src/foo/bar.txt@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
