@@ -534,8 +534,8 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     if scheme == 'pyunit':
       # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted
-      # Expected filter: ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
-      return f"{fine}.{case}"
+      # Expected filter: __main__.ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
+      return f"{coarse}.{fine}.{case}"
     if scheme == 'gtest':
       # GoogleTest: Fine=Suite, Case=Test
       # Legacy filter: SuiteName.TestName (parameters in Case are usually fine)
