@@ -114,3 +114,35 @@ def GenTests(api):
       api.post_check(lambda check, steps: check(steps['analyze'].cmd == [])),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'ci_builder',
+      api.platform('linux', 64),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(affected_files=['test.cc']),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.chromium_tests.read_targets_spec('fake-group', {
+          'fake-builder': {
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
+          },
+      }),
+      api.post_check(post_process.DoesNotRun, 'analyze'),
+      api.post_process(post_process.DropExpectation),
+  )
