@@ -274,6 +274,22 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'compile', [
           '/usr/bin/time', f'--format={siso.RUSAGE_FORMAT}', '-o',
           '[CACHE]/resource_usage.json',
+          '[CACHE]/builder/src/third_party/siso/siso', 'ninja'
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tools_with_alternative_siso_location',
+      api.path.exists(api.path.cache_dir / 'builder/src/third_party/siso/cipd'),
+      api.properties(
+          build_command=['ninja', '-C', 'out/Release'],
+          resource_usage_output_file=api.path.cache_dir /
+          'resource_usage.json'),
+      api.siso.properties(),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '/usr/bin/time', f'--format={siso.RUSAGE_FORMAT}', '-o',
+          '[CACHE]/resource_usage.json',
           '[CACHE]/builder/src/third_party/siso/cipd/siso', 'ninja'
       ]),
       api.post_process(post_process.DropExpectation),

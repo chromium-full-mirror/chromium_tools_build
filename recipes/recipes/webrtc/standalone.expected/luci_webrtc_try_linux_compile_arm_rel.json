@@ -943,7 +943,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/third_party/siso/cipd/siso",
+      "[CACHE]/builder/src/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -1086,7 +1086,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/third_party/siso/cipd/siso",
+      "[CACHE]/builder/src/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",

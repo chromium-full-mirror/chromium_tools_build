@@ -522,7 +522,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -676,7 +676,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -1456,7 +1456,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -1610,7 +1610,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -2247,7 +2247,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -2401,7 +2401,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -3065,7 +3065,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -3219,7 +3219,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/third_party/siso/cipd/siso",
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
