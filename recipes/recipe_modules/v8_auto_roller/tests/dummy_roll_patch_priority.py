@@ -4,8 +4,7 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import (DoesNotRunRE, DropExpectation,
-                                        SummaryMarkdown)
+from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
 
 DEPS = [
     'recipe_engine/file',
@@ -58,3 +57,11 @@ def GenTests(api):
               "Update dummy deps.Found existing roll CL. Skipping.",
               "$result",
           )) + api.post_process(DropExpectation)
+  yield api.test('abandon') + api.override_step_data(
+      'Update dummy deps.gerrit changes',
+      api.json.output([{
+          '_number': '123',
+          'subject': 'dummy',
+          'current_revision_number': 1,
+      }])) + api.post_process(MustRun, 'Update dummy deps.gerrit abandon'
+                             ) + api.post_process(DropExpectation)

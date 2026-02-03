@@ -122,7 +122,9 @@ class PatchPriorityCLManager(CLManager):
     cls = self._find_cls(subject)
 
     for cl in cls:
-      if cl['current_revision_number'] != 1:
+      if cl['current_revision_number'] == 1:
+        self._abandon_cl(cl)
+      else:
         create_new_cl = False
         self.api.step.empty(f'CL {cl["_number"]} was modified.')
         self.api.gerrit.add_message(
