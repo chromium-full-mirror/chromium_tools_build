@@ -163,8 +163,6 @@ _SPEC = {
     'linux-perf':
         _create_builder_config(
             'linux', 'Release', 64, perf_isolate_upload=True),
-    'linux-swiftshader':
-        _create_tester_config('linux', 64, 'linux-test'),
     'linux-swiftshader-asan':
         _create_tester_config('linux', 64, 'linux-asan-test'),
     'linux-swiftshader-tsan':
