@@ -60,8 +60,7 @@ def call_llm_with_cache(prompt: str,
                         model_name: str,
                         client: genai.Client,
                         cache_dir: Path,
-                        ignore_cache: bool = False,
-                        temperature: float = 0.1) -> str | None:
+                        ignore_cache: bool = False) -> str | None:
   """
     Calls the Gemini API with caching.
     Args:
@@ -70,11 +69,10 @@ def call_llm_with_cache(prompt: str,
         client: Initialized Gemini client
         cache_dir: Directory for caching responses
         ignore_cache: If True, bypass cache and force new API call
-        temperature: The generation temperature.
     Returns:
         Generated text or None if all retries fail
     """
-  cache_key_input = prompt + model_name + str(temperature)
+  cache_key_input = prompt + model_name
   cache_hash = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
   cache_file = cache_dir / f"{cache_hash}.txt"
 
@@ -88,10 +86,7 @@ def call_llm_with_cache(prompt: str,
   for retry in range(10):
     try:
       response = client.models.generate_content(
-          model=model_name,
-          contents=[prompt],
-          generation_config=genai.types.GenerationConfig(
-              temperature=temperature))
+          model=model_name, contents=[prompt])
       result = response.candidates[0].content.parts[0].text.strip()
 
       # Cache the result
@@ -115,8 +110,7 @@ def call_llm_with_cache(prompt: str,
 
 def generate_group_categories(topics: list[dict], model_name: str,
                               client: genai.Client, cache_dir: Path,
-                              num_groups: int,
-                              temperature: float) -> list[str] | None:
+                              num_groups: int) -> list[str] | None:
   """
     Automatically generates a specified number of topic groups using an LLM.
     Args:
@@ -125,7 +119,6 @@ def generate_group_categories(topics: list[dict], model_name: str,
         client: Initialized Gemini client
         cache_dir: Directory for caching
         num_groups: Number of groups to generate
-        temperature: The generation temperature.
     Returns:
         List of group names, or None if failed
     """
@@ -159,12 +152,7 @@ def generate_group_categories(topics: list[dict], model_name: str,
   for attempt in range(10):
     ignore_cache = (attempt > 0)
     response_str = call_llm_with_cache(
-        prompt,
-        model_name,
-        client,
-        cache_dir,
-        ignore_cache=ignore_cache,
-        temperature=temperature)
+        prompt, model_name, client, cache_dir, ignore_cache=ignore_cache)
 
     if not response_str:
       time.sleep(2)
@@ -203,8 +191,7 @@ def generate_group_categories(topics: list[dict], model_name: str,
 def group_topics_with_fixed_categories(topics: list[dict], model_name: str,
                                        client: genai.Client, cache_dir: Path,
                                        workers: int,
-                                       fixed_categories: list[str],
-                                       temperature: float) -> None:
+                                       fixed_categories: list[str]) -> None:
   """
     Uses a generative LLM to group topics into a fixed set of major categories.
 
@@ -217,7 +204,6 @@ def group_topics_with_fixed_categories(topics: list[dict], model_name: str,
         cache_dir: Directory for caching
         workers: Number of parallel workers
         fixed_categories: List of category names to use
-        temperature: The generation temperature.
     """
   print(
       f"\nGrouping topics into {len(fixed_categories)} categories using an LLM..."
@@ -258,12 +244,7 @@ def group_topics_with_fixed_categories(topics: list[dict], model_name: str,
     for attempt in range(3):
       ignore_cache = (attempt > 0) or ignore_cache_for_run
       response_str = call_llm_with_cache(
-          prompt,
-          model_name,
-          client,
-          cache_dir,
-          ignore_cache=ignore_cache,
-          temperature=temperature)
+          prompt, model_name, client, cache_dir, ignore_cache=ignore_cache)
 
       if not response_str:
         time.sleep(2)
@@ -488,12 +469,6 @@ def main():
       "--no-grouping",
       action="store_true",
       help="Skip grouping entirely (all topics assigned to 'Uncategorized').")
-  parser.add_argument(
-      '--temperature',
-      type=float,
-      default=0.1,
-      help='Temperature for LLM generation (0.0-1.0). Lower is more deterministic.'
-  )
 
   args = parser.parse_args()
 
@@ -541,18 +516,17 @@ def main():
 
       group_topics_with_fixed_categories(topics, args.grouping_model, client,
                                          cache_dir, args.workers,
-                                         args.custom_groups, args.temperature)
+                                         args.custom_groups)
     elif args.gen_groups:
       # Generate categories automatically
       generated_groups = generate_group_categories(topics, args.grouping_model,
                                                    client, cache_dir,
-                                                   args.gen_groups,
-                                                   args.temperature)
+                                                   args.gen_groups)
 
       if generated_groups:
         group_topics_with_fixed_categories(topics, args.grouping_model, client,
                                            cache_dir, args.workers,
-                                           generated_groups, args.temperature)
+                                           generated_groups)
       else:
         print(
             "Warning: Could not generate group categories. Assigning all to 'Uncategorized'.",
