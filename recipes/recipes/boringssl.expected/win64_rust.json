@@ -276,7 +276,8 @@
       "x64",
       "[CACHE]\\builder\\boringssl\\util\\bot\\ninja\\ninja",
       "-C",
-      "[CACHE]\\builder\\boringssl\\build"
+      "[CACHE]\\builder\\boringssl\\build",
+      "-v"
     ],
     "env": {
       "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",

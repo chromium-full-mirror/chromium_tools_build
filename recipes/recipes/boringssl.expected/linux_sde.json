@@ -253,7 +253,8 @@
     "cmd": [
       "[CACHE]/builder/boringssl/util/bot/ninja/ninja",
       "-C",
-      "[CACHE]/builder/boringssl/build"
+      "[CACHE]/builder/boringssl/build",
+      "-v"
     ],
     "env": {
       "GOCACHE": "[CACHE]/gocache",

@@ -338,7 +338,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
       api.step(
           'cmake', msvc_prefix + [cmake, '-GNinja'] +
           ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] + [src])
-    api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir])
+    api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir, '-v'])
 
     # Build the Rust crates.
     cargo = 'cargo' + _GetHostExeSuffix(api.platform)
