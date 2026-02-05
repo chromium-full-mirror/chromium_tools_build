@@ -13,11 +13,17 @@ GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
 
 class CLManager:
 
-  def __init__(self, api, source_dir, bugs, gerrit_base_url=GERRIT_BASE_URL):
+  def __init__(self,
+               api,
+               source_dir,
+               bugs,
+               gerrit_base_url=GERRIT_BASE_URL,
+               cc=None):
     self.api = api
     self.source_dir = source_dir
     self.bugs = bugs
     self.gerrit_base_url = gerrit_base_url
+    self.cc = cc
 
   def upload_cl(self, subject, upload_flags, commit_msg_lines, add=False):
     """
@@ -67,6 +73,8 @@ class CLManager:
 
       if self.bugs is not None:
         upload_args += ['-b', self.bugs]
+      if self.cc is not None:
+        upload_args += ['-cc', self.cc]
 
       upload_args.extend(upload_flags)
       step_result = self.api.git(
@@ -114,8 +122,8 @@ class CLManager:
 
 class PatchPriorityCLManager(CLManager):
 
-  def __init__(self, api, source_dir, bugs):
-    super().__init__(api, source_dir, bugs)
+  def __init__(self, api, source_dir, bugs, cc):
+    super().__init__(api, source_dir, bugs, cc=cc)
 
   def abandon_active_cls(self, subject):
     create_new_cl = True

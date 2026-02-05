@@ -33,7 +33,8 @@ def RunSteps(api):
   )
   source_dir = update_result.source_root.path
 
-  clm = api.v8_auto_roller.build_cl_manager(source_dir, bugs='dummy:123')
+  clm = api.v8_auto_roller.build_cl_manager(
+      source_dir, bugs='dummy:123', cc="nobody")
 
   api.v8_auto_roller.dummy_roll(clm, source_dir)
   if api.properties.get('try_again', False):

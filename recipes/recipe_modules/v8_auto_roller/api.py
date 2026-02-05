@@ -97,9 +97,10 @@ class V8AutoRoller(recipe_api.RecipeApi):
   def build_cl_manager(self,
                        source_dir,
                        bugs=None,
-                       patched_cl_has_priority=False):
+                       patched_cl_has_priority=False,
+                       cc=None):
     cls = PatchPriorityCLManager if patched_cl_has_priority else CLManager
-    return cls(self.m, source_dir, bugs)
+    return cls(self.m, source_dir, bugs, cc=cc)
 
   def report_result(self):
     result = result_pb2.RawResult()

@@ -542,6 +542,8 @@
       "--send-mail",
       "-b",
       "dummy:123",
+      "-cc",
+      "nobody",
       "--dry-run"
     ],
     "cwd": "[CACHE]/builder/dummy",
