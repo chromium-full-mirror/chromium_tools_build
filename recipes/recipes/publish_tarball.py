@@ -584,12 +584,13 @@ def publish_tarball(api):
         '--header',
         source_dir.joinpath('gpu', 'webgpu', 'dawn_commit_hash.h'),
     ])
-  with api.context(
-      cwd=source_dir.joinpath('third_party', 'devtools-frontend', 'src')):
-    api.step('Sync Rollup native libraries to node_modules', [
-        'python3',
-        api.path.join('scripts', 'deps', 'sync_rollup_libs.py'),
-    ])
+  if int(version.split('.')[0]) >= 145:
+    with api.context(
+        cwd=source_dir.joinpath('third_party', 'devtools-frontend', 'src')):
+      api.step('Sync Rollup native libraries to node_modules', [
+          'python3',
+          api.path.join('scripts', 'deps', 'sync_rollup_libs.py'),
+      ])
 
   api.file.copy('copy clang-format', api.chromium.resource('clang-format'),
                 source_dir.joinpath('buildtools', 'linux64', 'clang-format'))
@@ -792,6 +793,16 @@ def GenTests(api):
       api.path.exists(
           api.path.start_dir.joinpath('src', 'third_party', 'node',
                                       'node_modules.tar.gz.sha1')))
+
+  yield (
+      api.test('basic-with-native-rollup') + api.buildbucket.generic_build() +
+      api.properties(version='145.0.7632.38') + api.platform('linux', 64) +
+      api.step_data(
+          'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
+      api.path.exists(
+          api.path.start_dir.joinpath(
+              'src', 'third_party', 'devtools-frontend', 'src', 'node_modules',
+              '@rollup', 'rollup-linux-x64-gnu', 'rollup-linux-x64-gnu.node')))
 
   yield (api.test('dupe') + api.buildbucket.generic_build() + api.properties(
       version='103.0.5060.114'
