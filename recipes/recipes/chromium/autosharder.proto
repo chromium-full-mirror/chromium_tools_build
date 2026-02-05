@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.autosharder;
 
-// Next ID: 5
+// Next ID: 6
 message InputProperties {
 
   // Required, the target time to make tests run
@@ -28,4 +28,7 @@ message InputProperties {
   // Maps try builder to set of test suite
   // Example: {'linux-rel': {'suites': ['browser_tests']}}
   map<string, SuiteList> exclude_builder_test_suites = 4;
+
+  // The percentile that must meet the target runtime
+  int32 percentile = 5;
 }

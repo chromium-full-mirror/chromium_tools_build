@@ -53,7 +53,7 @@ _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 # resharded
 MIN_SAMPLE_SIZE = 1500
 # The percentile that must meet the target runtime
-PERCENTILE = 80
+DEFAULT_PERCENTILE = 80
 
 # TODO(crbug.com/40281184): Replace with queried, per-suite overheads, once
 # infra is set up to support automated overhead measurements.
@@ -190,9 +190,11 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
   _setup_git(api)
 
+  percentile = properties.percentile or DEFAULT_PERCENTILE
   _calculate_optimal_shards(
       api,
       properties.target_runtime,
+      percentile,
       properties.exclude_test_suites,
       properties.exclude_builders,
       properties.exclude_builder_test_suites,
@@ -247,6 +249,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 def _calculate_optimal_shards(
     api: RecipeApi,
     target_runtime: float,
+    percentile: int,
     exclude_suites: list[str],
     exclude_builders: list[str],
     exclude_builder_suites: dict[str, list[str]],
@@ -261,6 +264,7 @@ def _calculate_optimal_shards(
   shardings = _query_durations(
       api,
       target_runtime,
+      percentile,
       lookback_start_date,
       lookback_end_date,
       exclude_suites,
@@ -438,6 +442,7 @@ def _query_overheads(
 def _query_durations(
     api: RecipeApi,
     target_runtime: float,
+    percentile: int,
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
     exclude_suites: list[str],
@@ -458,7 +463,7 @@ def _query_durations(
         tasks_dataset='swarming',
         lookback_start_date=lookback_start_date,
         lookback_end_date=lookback_end_date,
-        percentile=PERCENTILE,
+        percentile=percentile,
         min_sample_size=MIN_SAMPLE_SIZE,
         target_runtime=target_runtime,
         # TODO(crbug.com/1275620): Replace with
@@ -1572,5 +1577,82 @@ def GenTests(api: RecipeApi):
       api.post_process(post_process.MustRun, 'query durations'),
       api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.MustRun, 'git cl upload'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_percentile_property',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+      ),
+      api.properties(
+          target_runtime=15.0,
+          percentile=95,
+      ),
+      api.override_step_data(
+          'query durations.read_query',
+          api.file.read_text('{percentile}'),
+      ),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.StepCommandContains,
+                       'query durations.query', ['95']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_percentile_default',
+      boilerplate(
+          durations=[
+              create_durations_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          overheads=[
+              create_overhead_entry(
+                  waterfall_builder_group='chromium.linux',
+                  waterfall_builder_name='Linux Tests',
+                  try_builder='linux-rel',
+                  test_suite='browser_tests',
+              )
+          ],
+          avg_builds_per_hour=[
+              create_average_builds_per_hour(try_builder='linux-rel'),
+          ],
+          cq_builders=[
+              create_cq_builder(try_builder='linux-rel'),
+          ],
+      ),
+      api.properties(target_runtime=15.0,),
+      api.override_step_data(
+          'query durations.read_query',
+          api.file.read_text('{percentile}'),
+      ),
+      api.post_process(post_process.MustRun, 'query durations'),
+      api.post_process(post_process.StepCommandContains,
+                       'query durations.query', ['80']),
       api.post_process(post_process.DropExpectation),
   )
