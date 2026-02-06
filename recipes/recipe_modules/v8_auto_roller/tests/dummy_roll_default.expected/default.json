@@ -542,7 +542,7 @@
       "--send-mail",
       "-b",
       "dummy:123",
-      "-cc",
+      "--cc",
       "nobody",
       "--dry-run"
     ],

@@ -74,7 +74,7 @@ class CLManager:
       if self.bugs is not None:
         upload_args += ['-b', self.bugs]
       if self.cc is not None:
-        upload_args += ['-cc', self.cc]
+        upload_args += ['--cc', self.cc]
 
       upload_args.extend(upload_flags)
       step_result = self.api.git(
