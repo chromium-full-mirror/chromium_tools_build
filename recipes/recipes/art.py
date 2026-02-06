@@ -116,7 +116,8 @@ def checkout_git(api, branch, repo_root):
     api.git("status", "--ignore-submodules=none")
 
     for cl in api.buildbucket.build.input.gerrit_changes:
-      with api.context(cwd=api.context.cwd.joinpath("art")):
+      git_dir = cl.project.replace("platform/", "")
+      with api.context(cwd=api.context.cwd.joinpath(git_dir)):
         with api.step.nest(f'cherry-pick cl/{cl.change}/{cl.patchset}'):
           ref = f"refs/changes/{str(cl.change)[-2:]}/{cl.change}/{cl.patchset}"
           api.git("fetch", f"https://{cl.host}/{cl.project}", ref)

@@ -204,7 +204,7 @@
       "https://chromium-review.googlesource.com/project",
       "refs/changes/56/123456/7"
     ],
-    "cwd": "[CACHE]/art/art",
+    "cwd": "[CACHE]/art/project",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -229,7 +229,7 @@
       "cherry-pick",
       "FETCH_HEAD"
     ],
-    "cwd": "[CACHE]/art/art",
+    "cwd": "[CACHE]/art/project",
     "infra_step": true,
     "luci_context": {
       "realm": {
