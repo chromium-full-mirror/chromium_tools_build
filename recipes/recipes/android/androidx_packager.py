@@ -15,6 +15,7 @@ DEPS = [
     'chromium_checkout',
     'depot_tools/gclient',
     'recipe_engine/buildbucket',
+    'recipe_engine/bcid_reporter',
     'recipe_engine/cipd',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -73,7 +74,7 @@ def RollSubproject(api, subproject_name, subproject_path, roll_cmd):
 
   if not cipd_search_results or not 'instance_id' in cipd_search_results[0]:
     try:
-      api.cipd.create_from_yaml(
+      api.bcid_reporter.create_from_yaml(
           yaml_path,
           tags={
               'version': version,
@@ -90,6 +91,12 @@ def RollSubproject(api, subproject_name, subproject_path, roll_cmd):
 
 
 def RunSteps(api, properties):
+  if not api.led.led_build:
+    try:
+      api.bcid_reporter.report_stage("start")
+    except Exception:  # pragma: no cover
+      api.step.active_result.presentation.status = api.step.FAILURE
+
   api.gclient.set_config('chromium')
   api.gclient.apply_config('android')
   update_result = api.chromium_checkout.ensure_checkout()
@@ -107,6 +114,12 @@ def RunSteps(api, properties):
   autorolled_roll_cmd = [autorolled_deps_dir / 'fetch_all_autorolled.py', '-v']
   with api.step.nest('Roll //third_party/android_deps/autorolled'):
     RollSubproject(api, 'autorolled', autorolled_cipd_dir, autorolled_roll_cmd)
+
+  if not api.led.led_build:
+    try:
+      api.bcid_reporter.report_stage("upload-complete")
+    except Exception:  # pragma: no cover
+      api.step.active_result.presentation.status = api.step.FAILURE
 
 
 def GenTests(api):
@@ -131,7 +144,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        f'{androidx_step_prefix}Run fetch_all script'),
       api.post_process(post_process.MustRun,
-                       f'{androidx_step_prefix}create cipd.yaml'),
+                       f'{androidx_step_prefix}register cipd.yaml'),
       api.override_step_data(
           f'{autorolled_step_prefix}Read cipd.yaml',
           api.file.read_text('# version: cr-1\npackage: package2')),
@@ -141,7 +154,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        f'{autorolled_step_prefix}Run fetch_all script'),
       api.post_process(post_process.MustRun,
-                       f'{autorolled_step_prefix}create cipd.yaml'),
+                       f'{autorolled_step_prefix}register cipd.yaml'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -176,7 +189,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        f'{androidx_step_prefix}Run fetch_all script'),
       api.post_process(post_process.DoesNotRun,
-                       f'{androidx_step_prefix}create cipd.yaml'),
+                       f'{androidx_step_prefix}register cipd.yaml'),
       api.override_step_data(
           f'{autorolled_step_prefix}Read cipd.yaml',
           api.file.read_text('# version: cr-1\npackage: package2')),
@@ -186,7 +199,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        f'{autorolled_step_prefix}Run fetch_all script'),
       api.post_process(post_process.DoesNotRun,
-                       f'{autorolled_step_prefix}create cipd.yaml'),
+                       f'{autorolled_step_prefix}register cipd.yaml'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -206,7 +219,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        f'{androidx_step_prefix}Run fetch_all script'),
       api.post_process(post_process.MustRun,
-                       f'{androidx_step_prefix}create cipd.yaml'),
+                       f'{androidx_step_prefix}register cipd.yaml'),
       api.override_step_data(f'{autorolled_step_prefix}Read cipd.yaml',
                              api.file.read_text('package: package1')),
       api.override_step_data(
@@ -215,7 +228,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        f'{autorolled_step_prefix}Run fetch_all script'),
       api.post_process(post_process.MustRun,
-                       f'{autorolled_step_prefix}create cipd.yaml'),
+                       f'{autorolled_step_prefix}register cipd.yaml'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -235,7 +248,7 @@ def GenTests(api):
                              api.cipd.example_error('error')),
       api.post_process(post_process.MustRun,
                        f'{androidx_step_prefix}Run fetch_all script'),
-      api.step_data(f'{androidx_step_prefix}create cipd.yaml', retcode=1),
+      api.step_data(f'{androidx_step_prefix}register cipd.yaml', retcode=1),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -261,17 +274,17 @@ def GenTests(api):
                              api.cipd.example_error('error')),
       api.post_process(post_process.MustRun,
                        f'{androidx_step_prefix}Run fetch_all script'),
-      api.step_data(f'{androidx_step_prefix}create cipd.yaml', retcode=1),
+      api.step_data(f'{androidx_step_prefix}register cipd.yaml', retcode=1),
       api.override_step_data(
           f'{autorolled_step_prefix}Read cipd.yaml',
           api.file.read_text('# version: cr-1\npackage: package2')),
       api.override_step_data(
           f'{autorolled_step_prefix}cipd search package2 cr-1',
           api.cipd.example_error('error')),
-      api.step_data(f'{autorolled_step_prefix}create cipd.yaml', retcode=1),
+      api.step_data(f'{autorolled_step_prefix}register cipd.yaml', retcode=1),
       api.post_process(post_process.MustRun,
                        f'{autorolled_step_prefix}Run fetch_all script'),
       api.post_process(post_process.MustRun,
-                       f'{autorolled_step_prefix}create cipd.yaml'),
+                       f'{autorolled_step_prefix}register cipd.yaml'),
       api.post_process(post_process.DropExpectation),
   )
