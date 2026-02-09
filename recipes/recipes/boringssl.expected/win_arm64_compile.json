@@ -140,7 +140,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "infra_step": true,
@@ -178,7 +179,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "infra_step": true,
@@ -223,7 +225,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {
@@ -258,7 +261,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {
@@ -290,7 +294,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {
@@ -327,7 +332,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "infra_step": true,
@@ -367,7 +373,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {
@@ -400,7 +407,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {

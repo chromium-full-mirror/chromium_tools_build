@@ -145,7 +145,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {
@@ -181,7 +182,8 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin"
+        "[CACHE]\\builder\\boringssl\\util\\bot\\golang\\bin",
+        "[CACHE]\\builder\\boringssl\\build"
       ]
     },
     "luci_context": {

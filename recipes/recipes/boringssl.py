@@ -299,6 +299,11 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     env['BINDGEN_EXTRA_CLANG_ARGS'] = '-resource-dir=' + resource_dir
     if config.prefixed_symbols:
       env['BORINGSSL_PREFIX'] = BORINGSSL_PREFIX
+  if api.platform.is_win:
+    # On Windows, set %PATH% to include the build_dir, which is where DLLs will
+    # be placed. Without this, in a shared library build, bssl_shim won't find
+    # libcrypto's DLL.
+    env_prefixes['PATH'].append(build_dir)
 
   # If building with MSVC, all commands must run with an environment wrapper.
   # This is necessary both to find the toolchain and the runtime dlls. Rather
