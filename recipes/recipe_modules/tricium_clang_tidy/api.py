@@ -75,9 +75,12 @@ class _SourceFileComments:
     if not self._source_comments and not self._macro_comments:
       return
 
+
     if self._build_failed:
       message = ('warning: building this file or its dependencies failed; '
-                 'no diagnostics will be issued.')
+                 'no diagnostics will be issued. When diagnosing, it\'s '
+                 'normal that the clang-tidy step is green. You need to '
+                 'click through the step output to find the actual error.')
       yield '', message, 0, ()
       return
 

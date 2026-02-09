@@ -420,7 +420,9 @@ def GenTests(api):
                   gerrit_change_ref=gerrit_change_ref,
                   file_path='path/to/some/cc/file.cpp'),
               message='warning: building this file or its dependencies failed; '
-              'no diagnostics will be issued.',
+              'no diagnostics will be issued. When diagnosing, it\'s normal '
+              'that the clang-tidy step is green. You need to click through '
+              'the step output to find the actual error.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
               url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
@@ -455,7 +457,9 @@ def GenTests(api):
                   gerrit_change_ref=gerrit_change_ref,
                   file_path='path/to/some/cc/file.cpp'),
               message='warning: building this file or its dependencies failed; '
-              'no diagnostics will be issued.',
+              'no diagnostics will be issued. When diagnosing, it\'s normal '
+              'that the clang-tidy step is green. You need to click through '
+              'the step output to find the actual error.',
               severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
               url="https://cr-buildbucket.appspot.com/build/8945511751514863184",
           )),
