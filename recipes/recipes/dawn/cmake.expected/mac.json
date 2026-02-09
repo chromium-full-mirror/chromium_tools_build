@@ -9,7 +9,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/uncached"
+      "[CACHE]/builder"
     ],
     "infra_step": true,
     "luci_context": {
@@ -46,7 +46,7 @@
       "--refs",
       "refs/heads/main"
     ],
-    "cwd": "[CACHE]/uncached",
+    "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
@@ -127,7 +127,7 @@
       "RECIPE_REPO[depot_tools]/gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/uncached",
+    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
       "FORCE_MAC_TOOLCHAIN": "1"
@@ -166,9 +166,9 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "infra_step": true,
@@ -206,9 +206,9 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "infra_step": true,
@@ -242,9 +242,9 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "infra_step": true,
@@ -271,9 +271,9 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "infra_step": true,
@@ -297,11 +297,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/uncached/dawn",
+      "[CACHE]/builder/dawn",
       "-B",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-b52236f14130bb92",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=0",
@@ -321,13 +321,13 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
-    "cwd": "[CACHE]/uncached/dawn",
+    "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/third_party/ninja",
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -349,18 +349,18 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-b52236f14130bb92",
       "--parallel",
       "--target",
       "all"
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -386,11 +386,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/uncached/dawn",
+      "[CACHE]/builder/dawn",
       "-B",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-0cd33386a13b73e5",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=0",
@@ -410,13 +410,13 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
-    "cwd": "[CACHE]/uncached/dawn",
+    "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/third_party/ninja",
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -438,18 +438,18 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-0cd33386a13b73e5",
       "--parallel",
       "--target",
       "dawn.node"
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -471,13 +471,13 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/cmake-build/tint_unittests"
+      "[CACHE]/builder/dawn/cmake-build-b52236f14130bb92/tint_unittests"
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -499,15 +499,15 @@
       "python3",
       "./src/tint/cmd/bench/generate_benchmark_inputs.py",
       "wgsl",
-      "cmake-build/tint",
+      "cmake-build-b52236f14130bb92/tint",
       "--check-stale"
     ],
-    "cwd": "[CACHE]/uncached/dawn",
+    "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -529,17 +529,17 @@
       "./tools/run",
       "tests",
       "--tint",
-      "cmake-build/tint",
+      "cmake-build-b52236f14130bb92/tint",
       "--verbose",
       "--format",
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
-    "cwd": "[CACHE]/uncached/dawn",
+    "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -562,11 +562,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/uncached/dawn",
+      "[CACHE]/builder/dawn",
       "-B",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-deaf809cbc0b63c2",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=0",
@@ -586,13 +586,13 @@
       "-DTINT_BUILD_AS_OTHER_OS=1",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
-    "cwd": "[CACHE]/uncached/dawn",
+    "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/third_party/ninja",
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -614,18 +614,18 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-deaf809cbc0b63c2",
       "--parallel",
       "--target",
       "tint_cmd_tint_cmd"
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -651,11 +651,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/uncached/dawn",
+      "[CACHE]/builder/dawn",
       "-B",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-387b138dbb276ccd",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=0",
@@ -675,13 +675,13 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
-    "cwd": "[CACHE]/uncached/dawn",
+    "cwd": "[CACHE]/builder/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/third_party/ninja",
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -703,18 +703,18 @@
   },
   {
     "cmd": [
-      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/uncached/dawn/cmake-build",
+      "[CACHE]/builder/dawn/cmake-build-387b138dbb276ccd",
       "--parallel",
       "--target",
       "tint_cmd_tint_cmd"
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "luci_context": {
@@ -742,9 +742,9 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/uncached/dawn/tools/golang/mac-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/builder/dawn/tools/golang/mac-amd64/bin",
+        "[CACHE]/builder/dawn/tools/golang/bin",
+        "[CACHE]/builder/dawn/third_party/depot_tools"
       ]
     },
     "infra_step": true,
