@@ -26,6 +26,7 @@ DEPS = [
 
 from contextlib import contextmanager
 from dataclasses import dataclass
+import hashlib
 
 from recipe_engine.recipe_api import Property
 
@@ -38,9 +39,10 @@ DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 def _checkout_steps(api):
   '''Checks out Dawn. After this, api.path.checkout_dir returns the dawn root.'''
-  # Check out dawn into an un-cached directory in 'cache'. This seems weird,
-  # but it allows us to use api.path.cache_dir as a common root for RBE.
-  solution_path = api.path.cache_dir / 'uncached'
+  # The 'builder' directory acts as an automatic cache for builders, so using
+  # it for the checkout + CMake output directories allows for faster syncing
+  # and compiling as long as the cache is warm.
+  solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   env = {}
@@ -115,8 +117,11 @@ def _install_android_deps(api):
 
 
 def _install_clang(api):
-  # 'builder' directory is implicitly cached, so cache clang there
-  install_path = api.path.cache_dir / 'builder'
+  # 'builder' directory is implicitly cached, so cache clang there. A 'clang'
+  # subdirectory is necessary to prevent the use of api.cipd.EnsureFile() from
+  # clobbering CIPD packages from the Dawn checkout, which are under
+  # 'builder/dawn/'.
+  install_path = api.path.cache_dir / 'builder' / 'clang'
 
   env_paths = []
   # Install binaries to named cache directory mentioned in luci builder
@@ -142,7 +147,7 @@ def _install_clang(api):
   ensure_file.add_package(f'fuchsia/third_party/clang/{package_name}',
                           package_hash, 'clang')
   api.cipd.ensure(install_path, ensure_file, "Install Clang")
-  env_paths.append(install_path / 'clang/bin')
+  env_paths.append(install_path / 'clang' / 'bin')
   return env_paths
 
 
@@ -299,9 +304,12 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
         '-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake',
     ])
 
-  # Always use the same build directory so that incremental builds are faster.
-  # Note that this directory is not cached.
-  outdir_name = 'cmake-build'
+  # Use a unique output directory for each set of CMake arguments so that
+  # incremental builds work better across multiple builds.
+  arg_hasher = hashlib.sha256(usedforsecurity=False)
+  for arg in cmake_args:
+    arg_hasher.update(arg.encode('utf-8'))
+  outdir_name = 'cmake-build-%s' % arg_hasher.hexdigest()[:16]
 
   build_path = source_dir.joinpath(outdir_name)
   ninja_path = source_dir.joinpath('third_party', 'ninja')
