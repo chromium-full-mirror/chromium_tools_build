@@ -501,6 +501,12 @@
       "[START_DIR]\\logs\\summary.json",
       "/path/to/tmp/"
     ],
+    "cwd": "[START_DIR]\\go\\src\\chromium.googlesource.com\\enterprise\\cel\\test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]\\packages_tests\\bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {

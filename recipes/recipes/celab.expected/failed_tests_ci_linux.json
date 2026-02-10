@@ -567,47 +567,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "find failed tests"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[START_DIR]/logs/summary.json",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
-    "env_suffixes": {
-      "PATH": [
-        "[START_DIR]/packages_tests/bin"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "find failed tests.parse summary",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@summary.json@\"\"@@@",
-      "@@@STEP_LOG_END@summary.json@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[infra::zip]/resources/zip.py"
@@ -690,6 +649,12 @@
       "[START_DIR]/logs/summary.json",
       "/path/to/tmp/"
     ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -747,6 +712,12 @@
       "/some/file",
       "/path/to/tmp/"
     ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -774,6 +745,12 @@
       "python3",
       "RECIPE_MODULE[infra::zip]/resources/zip.py"
     ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "celab:ci"
@@ -804,6 +781,12 @@
       "[START_DIR]/1st test.zip",
       "gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/1st test.zip"
     ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -850,6 +833,12 @@
       "/missing",
       "/path/to/tmp/"
     ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {

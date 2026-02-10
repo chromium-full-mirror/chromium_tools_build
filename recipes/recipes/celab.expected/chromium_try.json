@@ -1350,6 +1350,12 @@
       "[START_DIR]\\logs\\summary.json",
       "/path/to/tmp/"
     ],
+    "cwd": "[CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]\\packages_tests\\bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {

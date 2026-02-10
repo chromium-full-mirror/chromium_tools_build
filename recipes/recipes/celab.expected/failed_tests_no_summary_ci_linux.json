@@ -561,11 +561,80 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "run all tests"
+    "name": "run all tests",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[infra::zip]/resources/zip.py"
+    ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "celab:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "zip logs archive",
+    "stdin": "{\"comment\": \"\", \"entries\": [{\"path\": \"[START_DIR]/logs\", \"type\": \"dir\"}], \"mode\": \"w\", \"output\": \"[START_DIR]/all_logs.zip\", \"root\": \"[START_DIR]/logs\"}"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[START_DIR]/all_logs.zip",
+      "gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip"
+    ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "celab:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload CELab Test Logs",
+    "~followup_annotations": [
+      "@@@STEP_LINK@CELab Test Logs@https://storage.cloud.google.com/celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload CELab Test Logs\": \"gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip\", \"gsutil upload CELab binaries\": \"gs://celab/builder/2012/05/14/8945511751514863184/cel.zip\"}@@@"
+    ]
   },
   {
     "cmd": [],
-    "name": "test summary"
+    "name": "test summary",
+    "~followup_annotations": [
+      "@@@STEP_EXCEPTION@@@"
+    ]
   },
   {
     "cmd": [
@@ -578,6 +647,12 @@
       "[START_DIR]/logs/summary.json",
       "/path/to/tmp/"
     ],
+    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
+    "env_suffixes": {
+      "PATH": [
+        "[START_DIR]/packages_tests/bin"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -594,45 +669,13 @@
     "name": "test summary.parse summary",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@summary.json@{@@@",
-      "@@@STEP_LOG_LINE@summary.json@  \"1st test\": {@@@",
-      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/some/file\",@@@",
-      "@@@STEP_LOG_LINE@summary.json@    \"success\": true@@@",
-      "@@@STEP_LOG_LINE@summary.json@  },@@@",
-      "@@@STEP_LOG_LINE@summary.json@  \"2nd test\": {@@@",
-      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/other/file\",@@@",
-      "@@@STEP_LOG_LINE@summary.json@    \"success\": true@@@",
-      "@@@STEP_LOG_LINE@summary.json@  },@@@",
-      "@@@STEP_LOG_LINE@summary.json@  \"3rd test\": {@@@",
-      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/missing\",@@@",
-      "@@@STEP_LOG_LINE@summary.json@    \"success\": true@@@",
-      "@@@STEP_LOG_LINE@summary.json@  }@@@",
-      "@@@STEP_LOG_LINE@summary.json@}@@@",
-      "@@@STEP_LOG_END@summary.json@@@"
+      "@@@STEP_EXCEPTION@@@"
     ]
   },
   {
-    "cmd": [],
-    "name": "test summary.1st test",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "test summary.2nd test",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "test summary.3rd test",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
+    "failure": {
+      "humanReason": "Infra Failure: Step('test summary.parse summary') (retcode: 1)"
+    },
     "name": "$result"
   }
 ]

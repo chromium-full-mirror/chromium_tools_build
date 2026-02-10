@@ -19,7 +19,7 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 73, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 70, in RunSteps",
       "    raise ValueError(",
       "ValueError: Invalid `project`. Accepted values: celab, chromium, chrome."
     ]

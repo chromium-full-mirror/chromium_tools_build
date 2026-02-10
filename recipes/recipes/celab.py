@@ -4,11 +4,8 @@
 
 import re
 
+from recipe_engine import post_process
 from recipe_engine.config_types import Path
-from recipe_engine.post_process import DoesNotRun
-from recipe_engine.post_process import DropExpectation
-from recipe_engine.post_process import MustRun
-from recipe_engine.post_process import StepCommandRE
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
@@ -312,65 +309,49 @@ def _RunTests(api,
 
   # Run our tests and catch test failures.
   storage_logs = '%s-logs' % pool_name
-  RETRY_ATTEMPT_COUNT = 1
-  current_iteration = 0
-  step_name = 'run all tests'
-  test_py_args += ' --no_external_access=True'
-  all_test_passed = False
-  result = None
-  try:
-    while current_iteration <= RETRY_ATTEMPT_COUNT and not all_test_passed:
-      if not tests:
-        break
-      with api.context(cwd=test_root, env_suffixes={'PATH': add_paths}):
-        extra_args = []
+  with api.context(cwd=test_root, env_suffixes={'PATH': add_paths}):
+    extra_args = []
 
-        extra_args += ['--test_py_args=%s' % test_py_args.strip()]
+    test_py_args += ' --no_external_access=True'
+    extra_args += ['--test_py_args=%s' % test_py_args.strip()]
 
-        include_tests = api.properties.get('include')
-        if include_tests:
-          extra_args += ['--include', include_tests]
+    include_tests = api.properties.get('include')
+    if include_tests:
+      extra_args += ['--include', include_tests]
 
-        exclude_tests = api.properties.get('exclude')
-        if exclude_tests:
-          extra_args += ['--exclude', exclude_tests]
+    exclude_tests = api.properties.get('exclude')
+    if exclude_tests:
+      extra_args += ['--exclude', exclude_tests]
 
-        variant = {
-            'builder': api.buildbucket.builder_name,
-        }
-        result = api.step(
-            step_name,
-            api.resultdb.wrap(
-                [
-                    'vpython3', '-u', 'run_tests.py', '--tests', tests,
-                    '--hosts', host_dir, '--test_py', 'test.py',
-                    '--shared_provider_storage',
-                    '%s-assets' % pool_name, '--error_logs_dir', logs_dir,
-                    '--noprogress', '-v', '1'
-                ] + extra_args,
-                base_variant=variant),
-            raise_on_failure=False,
-        )
-        if not result.retcode:
-          all_test_passed = True
-        else:
-          tests = ';'.join(_GetFailedTests(api, logs_dir))
-          step_name = 'retry failed tests'
+    try:
+      variant = {
+          'builder': api.buildbucket.builder_name,
+      }
+      api.step(
+          'run all tests',
+          api.resultdb.wrap(
+              [
+                  'vpython3', '-u', 'run_tests.py', '--tests', tests, '--hosts',
+                  host_dir, '--test_py', 'test.py', '--shared_provider_storage',
+                  '%s-assets' % pool_name, '--error_logs_dir', logs_dir,
+                  '--noprogress', '-v', '1'
+              ] + extra_args,
+              base_variant=variant),
+      )
+    except:
+      # We upload *all* logs, including those we reupload in _ParseTestSummary.
+      # It's better to upload (small) logs twice than to not upload them at
+      # all. They are automatically deleted after 30 days (bucket policy).
+      _ZipAndUploadDirectory(api, storage_logs, logs_dir, 'all_logs.zip',
+                             'CELab Test Logs')
 
-          # We upload *all* logs, including those we reupload in _ParseTestSummary.
-          # It's better to upload (small) logs twice than to not upload them at
-          # all. They are automatically deleted after 30 days (bucket policy).
-          _ZipAndUploadDirectory(api, storage_logs, logs_dir, 'all_logs.zip',
-                                 'CELab Test Logs')
+      raise
+    finally:
+      # TODO: Clean up storage prefix when the test run ends.
+      #       It's already automatically deleted after 1 day.
 
-        # TODO: Clean up storage prefix when the test run ends.
-        #       It's already automatically deleted after 1 day.
-        current_iteration += 1
-
-  finally:
-    # Parse the test summary file and organize results in a readable way.
-    _ParseTestSummary(api, storage_logs, logs_dir)
-    api.step.raise_on_failure(result)
+      # Parse the test summary file and organize results in a readable way.
+      _ParseTestSummary(api, storage_logs, logs_dir)
 
 
 # Zips the content of a directory and uploads the zip file to a given bucket.
@@ -392,33 +373,6 @@ def _ZipAndUploadDirectory(api, bucket, directory, zip_filename, display_name):
     dest=gs_dest,
     name='upload %s' % display_name,
     link_name=display_name)
-
-
-# Parses the summary.json file created by run_tests.py, organizes the steps
-# presentation of tests and creates separate zips for each test logs.
-def _GetFailedTests(api, logs_dir):
-  summary_path = logs_dir / 'summary.json'
-  failed_tests = []
-
-  with api.step.nest('find failed tests'):
-    tests_summary = api.file.read_json('parse summary', summary_path)
-
-    if not tests_summary:
-      return []
-
-    for test in tests_summary:
-      with api.step.nest(test) as test_step:
-        result = tests_summary[test]
-
-        if not result['success']:
-          test_step.status = api.step.FAILURE
-          failed_tests.append(test)
-
-        if 'output' in result:
-          logs = api.file.read_text('read logs', result['output'])
-          test_step.logs['test.py output'] = logs.splitlines()
-
-    return failed_tests
 
 
 # Parses the summary.json file created by run_tests.py, organizes the steps
@@ -486,92 +440,12 @@ def GenTests(api):
           project='celab', bucket='ci', git_repo=CELAB_REPO),
   )
   yield api.test(
-      'empty_tests_ci_linux', api.platform('linux', 64),
-      api.properties(tests='', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('run all tests'),
-      api.step_data('test summary.parse summary'))
-  yield api.test(
-      'run_all_tests_command_line',
-      api.properties(tests='*', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('setup tests.generate host files'),
-      api.post_process(StepCommandRE, 'run all tests', [
-          'rdb', 'stream', '-var', 'builder:builder', '--', 'vpython3', '-u',
-          'run_tests.py', '--tests',
-          re.escape('*'), '--hosts',
-          re.escape('[START_DIR]/hosts'), '--test_py', 'test.py',
-          '--shared_provider_storage', 'celab-ci-assets', '--error_logs_dir',
-          re.escape('[START_DIR]/logs'), '--noprogress', '-v', '1',
-          '--test_py_args=--no_external_access=True'
-      ]), api.post_process(DropExpectation),
-      api.step_data('test summary.parse summary'))
-  yield api.test(
-      'retry_failed_tests_command_line',
-      api.properties(tests='*', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('setup tests.generate host files'),
-      api.step_data('run all tests', retcode=1),
-      api.step_data(
-          'find failed tests.parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': False,
-                  'output': '/some/file'
-              },
-              '2nd test': {
-                  'success': True,
-                  'output': '/other/file'
-              },
-              '3rd test': {
-                  'success': False,
-                  'output': '/missing'
-              }
-          })),
-      api.post_process(StepCommandRE, 'retry failed tests', [
-          'rdb', 'stream', '-var', 'builder:builder', '--', 'vpython3', '-u',
-          'run_tests.py', '--tests', '1st test;3rd test', '--hosts',
-          re.escape('[START_DIR]/hosts'), '--test_py', 'test.py',
-          '--shared_provider_storage', 'celab-ci-assets', '--error_logs_dir',
-          re.escape('[START_DIR]/logs'), '--noprogress', '-v', '1',
-          '--test_py_args=--no_external_access=True'
-      ]), api.post_process(DropExpectation),
-      api.step_data('test summary.parse summary'))
-  yield api.test(
-      'success_test_to_test_summary',
-      api.platform('linux', 64),
-      api.properties(tests='*', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('run all tests', retcode=0),
-      api.step_data(
-          'test summary.parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': True,
-                  'output': '/some/file'
-              },
-              '2nd test': {
-                  'success': True,
-                  'output': '/other/file'
-              },
-              '3rd test': {
-                  'success': True,
-                  'output': '/missing'
-              }
-          })),
-  )
-  yield api.test(
       'failed_tests_ci_linux',
       api.platform('linux', 64),
       api.properties(tests='*', pool_name='celab-ci', pool_size=5),
       api.buildbucket.ci_build(
           project='celab', bucket='ci', git_repo=CELAB_REPO),
       api.step_data('run all tests', retcode=1),
-      api.step_data('find failed tests.parse summary'),
       api.step_data(
           'test summary.parse summary',
           api.file.read_json({
@@ -596,138 +470,13 @@ def GenTests(api):
       api.expect_status('FAILURE'),
   )
   yield api.test(
-      'failed_tests_ci_linux_with_retry',
-      api.platform('linux', 64),
-      api.properties(tests='*', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('run all tests', retcode=1),
-      api.step_data(
-          'find failed tests.parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': False,
-                  'output': '/some/file'
-              },
-              '2nd test': {
-                  'success': True,
-                  'output': '/other/file'
-              },
-              '3rd test': {
-                  'success': False,
-                  'output': '/missing'
-              }
-          })),
-      api.step_data('retry failed tests', retcode=1),
-      api.step_data(
-          'find failed tests (2).parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': False,
-                  'output': '/some/file'
-              },
-          })),
-      api.step_data(
-          'test summary.parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': False,
-                  'output': '/some/file'
-              },
-              '2nd test': {
-                  'success': True,
-                  'output': '/other/file'
-              },
-              '3rd test': {
-                  'success': True,
-                  'output': '/missing'
-              }
-          })),
-      api.post_process(MustRun, 'retry failed tests'),
-      api.post_process(DoesNotRun, 'retry failed tests (2)'),
-      api.step_data('test summary.1st test.read logs',
-                    api.file.read_text('first\ntest\nlogs')),
-      api.expect_status('FAILURE'),
-      api.path.exists(api.path.start_dir.joinpath('logs', '1st test')),
-      api.post_process(DropExpectation),
-  )
-  yield api.test(
-      'success_tests_ci_linux_with_no_retry',
-      api.platform('linux', 64),
-      api.properties(tests='*', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('run all tests'),
-      api.step_data(
-          'test summary.parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': True,
-                  'output': '/some/file'
-              },
-              '2nd test': {
-                  'success': True,
-                  'output': '/other/file'
-              },
-              '3rd test': {
-                  'success': True,
-                  'output': '/missing'
-              }
-          })),
-      api.post_process(DoesNotRun, 'find failed tests'),
-      api.post_process(DropExpectation),
-  )
-  yield api.test(
-      'flaky_tests_ci_linux_with_retry',
-      api.platform('linux', 64),
-      api.properties(tests='*', pool_name='celab-ci', pool_size=5),
-      api.buildbucket.ci_build(
-          project='celab', bucket='ci', git_repo=CELAB_REPO),
-      api.step_data('run all tests', retcode=1),
-      api.step_data(
-          'find failed tests.parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': False,
-                  'output': '/some/file'
-              },
-              '2nd test': {
-                  'success': True,
-                  'output': '/other/file'
-              },
-              '3rd test': {
-                  'success': False,
-                  'output': '/missing'
-              }
-          })),
-      api.post_process(MustRun, 'retry failed tests'),
-      api.step_data('retry failed tests', retcode=1),
-      api.step_data(
-          'find failed tests (2).parse summary',
-          api.file.read_json({
-              '1st test': {
-                  'success': True,
-                  'output': '/some/file'
-              },
-              '3rd test': {
-                  'success': True,
-                  'output': '/missing'
-              }
-          })),
-      api.step_data('test summary.parse summary'),
-      api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
-  )
-  yield api.test(
       'failed_tests_no_summary_ci_linux',
       api.platform('linux', 64),
       api.properties(tests='*', pool_name='celab-ci', pool_size=5),
       api.buildbucket.ci_build(
           project='celab', bucket='ci', git_repo=CELAB_REPO),
       api.step_data('run all tests', retcode=1),
-      api.step_data('find failed tests.parse summary', retcode=1),
       api.step_data('test summary.parse summary', retcode=1),
-      api.post_process(DropExpectation),
       api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
@@ -835,7 +584,7 @@ def GenTests(api):
           git_repo=CHROMIUM_REPO),
       api.step_data('compile (with patch)', retcode=1),
       api.expect_status('FAILURE'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
   yield api.test(
       'chrome_try',
