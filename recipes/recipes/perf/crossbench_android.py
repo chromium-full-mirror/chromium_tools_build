@@ -183,7 +183,6 @@ def RunSteps(api, properties):
             f'--adb-path={android_emulator.adb_path}',
             f'--cas-archive={cas_archive}',
             f'--log-file={cas_archive}/pytest.tests.android.out.txt',
-            '--ignore-tests=desktop',
         ])
       finally:
         api.cas.archive('Copy End2End test logs to CAS', cas_archive,
