@@ -9,7 +9,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder"
+      "[CACHE]/uncached"
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
@@ -51,7 +51,7 @@
       "--refs",
       "refs/heads/main"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]/uncached",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -134,7 +134,7 @@
       "RECIPE_REPO[depot_tools]/gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]/uncached",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -339,7 +339,7 @@
     "cmd": [
       "./tools/check-no-crlf"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -347,9 +347,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -372,7 +372,7 @@
     "cmd": [
       "./tools/lint"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -380,9 +380,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -407,7 +407,7 @@
       "test",
       "./..."
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -415,9 +415,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -441,7 +441,7 @@
       "gradle",
       ":webgpu:testDebugUnitTest"
     ],
-    "cwd": "[CACHE]/builder/dawn/tools/android",
+    "cwd": "[CACHE]/uncached/dawn/tools/android",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -449,9 +449,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -476,11 +476,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/builder/dawn",
+      "[CACHE]/uncached/dawn",
       "-B",
-      "[CACHE]/builder/dawn/cmake-build-5310e651454ac274",
+      "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -499,7 +499,7 @@
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -507,10 +507,10 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/third_party/ninja",
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -534,9 +534,9 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/builder/dawn/cmake-build-5310e651454ac274",
+      "[CACHE]/uncached/dawn/cmake-build",
       "--parallel",
       "--target",
       "all"
@@ -548,9 +548,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -578,11 +578,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/builder/dawn",
+      "[CACHE]/uncached/dawn",
       "-B",
-      "[CACHE]/builder/dawn/cmake-build-feb10cac4765ca7c",
+      "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -601,7 +601,7 @@
       "-DDAWN_BUILD_NODE_BINDINGS=1",
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -609,10 +609,10 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/third_party/ninja",
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -636,9 +636,9 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/builder/dawn/cmake-build-feb10cac4765ca7c",
+      "[CACHE]/uncached/dawn/cmake-build",
       "--parallel",
       "--target",
       "dawn.node"
@@ -650,9 +650,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -676,7 +676,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/cmake-build-5310e651454ac274/tint_unittests"
+      "[CACHE]/uncached/dawn/cmake-build/tint_unittests"
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
@@ -685,9 +685,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -712,9 +712,9 @@
       "fuzz",
       "--check",
       "--build",
-      "cmake-build-5310e651454ac274"
+      "cmake-build"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -722,9 +722,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -750,9 +750,9 @@
       "--check",
       "--ir",
       "--build",
-      "cmake-build-5310e651454ac274"
+      "cmake-build"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -760,9 +760,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -786,10 +786,10 @@
       "python3",
       "./src/tint/cmd/bench/generate_benchmark_inputs.py",
       "wgsl",
-      "cmake-build-5310e651454ac274/tint",
+      "cmake-build/tint",
       "--check-stale"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -797,9 +797,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -823,12 +823,12 @@
       "./tools/run",
       "tests",
       "--tint",
-      "cmake-build-5310e651454ac274/tint",
+      "cmake-build/tint",
       "--verbose",
       "--format",
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -836,9 +836,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -863,11 +863,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/builder/dawn",
+      "[CACHE]/uncached/dawn",
       "-B",
-      "[CACHE]/builder/dawn/cmake-build-b51d61ea2447fbcd",
+      "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -886,7 +886,7 @@
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=1"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -894,10 +894,10 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/third_party/ninja",
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -921,9 +921,9 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/builder/dawn/cmake-build-b51d61ea2447fbcd",
+      "[CACHE]/uncached/dawn/cmake-build",
       "--parallel",
       "--target",
       "tint_cmd_tint_cmd"
@@ -935,9 +935,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -965,11 +965,11 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "-S",
-      "[CACHE]/builder/dawn",
+      "[CACHE]/uncached/dawn",
       "-B",
-      "[CACHE]/builder/dawn/cmake-build-a9340cdce339cc35",
+      "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -988,7 +988,7 @@
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
-    "cwd": "[CACHE]/builder/dawn",
+    "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "ASAN_OPTIONS": "detect_container_overflow=0",
@@ -996,10 +996,10 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/third_party/ninja",
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]
@@ -1023,9 +1023,9 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/tools/cmake/bin/cmake",
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
       "--build",
-      "[CACHE]/builder/dawn/cmake-build-a9340cdce339cc35",
+      "[CACHE]/uncached/dawn/cmake-build",
       "--parallel",
       "--target",
       "tint_cmd_tint_cmd"
@@ -1037,9 +1037,9 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/builder/dawn/tools/golang/bin",
-        "[CACHE]/builder/dawn/third_party/depot_tools",
+        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
         "[CACHE]/java/bin",
         "[CACHE]/gradle/bin"
       ]

@@ -9,7 +9,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]\\builder"
+      "[CACHE]\\uncached"
     ],
     "infra_step": true,
     "luci_context": {
@@ -46,7 +46,7 @@
       "--refs",
       "refs/heads/main"
     ],
-    "cwd": "[CACHE]\\builder",
+    "cwd": "[CACHE]\\uncached",
     "env": {
       "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
@@ -126,7 +126,7 @@
       "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]\\builder",
+    "cwd": "[CACHE]\\uncached",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184"
     },
@@ -154,7 +154,7 @@
       "cipd.bat",
       "ensure",
       "-root",
-      "[CACHE]\\builder\\clang",
+      "[CACHE]\\builder",
       "-ensure-file",
       "@Subdir clang\nfuchsia/third_party/clang/windows-amd64 yrliUGUdB_0T81Mf6FV-Oz-nF1lgdcEuaJF2MfNhI5EC",
       "-max-threads",
@@ -202,15 +202,15 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\dawn\\build\\win_toolchain.json",
+      "[CACHE]\\uncached\\dawn\\build\\win_toolchain.json",
       "/path/to/tmp/"
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "infra_step": true,
@@ -255,10 +255,10 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "infra_step": true,
@@ -313,11 +313,11 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
-      "[CACHE]\\builder\\dawn",
+      "[CACHE]\\uncached\\dawn",
       "-B",
-      "[CACHE]\\builder\\dawn\\cmake-build-066b4467e3b0b419",
+      "[CACHE]\\uncached\\dawn\\cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -337,23 +337,23 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DTINT_BUILD_FUZZERS=0"
     ],
-    "cwd": "[CACHE]\\builder\\dawn",
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\dawn\\third_party\\ninja",
+        "[CACHE]\\uncached\\dawn\\third_party\\ninja",
         "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
         "win_toolchain\\vs_files\\version_hash\\sys64",
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -375,9 +375,9 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
-      "[CACHE]\\builder\\dawn\\cmake-build-066b4467e3b0b419",
+      "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
       "--target",
       "all"
@@ -393,10 +393,10 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -422,11 +422,11 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
-      "[CACHE]\\builder\\dawn",
+      "[CACHE]\\uncached\\dawn",
       "-B",
-      "[CACHE]\\builder\\dawn\\cmake-build-b45de45385440fd2",
+      "[CACHE]\\uncached\\dawn\\cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -446,23 +446,23 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DTINT_BUILD_FUZZERS=0"
     ],
-    "cwd": "[CACHE]\\builder\\dawn",
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\dawn\\third_party\\ninja",
+        "[CACHE]\\uncached\\dawn\\third_party\\ninja",
         "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
         "win_toolchain\\vs_files\\version_hash\\sys64",
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -484,9 +484,9 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
-      "[CACHE]\\builder\\dawn\\cmake-build-b45de45385440fd2",
+      "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
       "--target",
       "dawn.node"
@@ -502,10 +502,10 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -527,7 +527,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\cmake-build-066b4467e3b0b419\\tint_unittests"
+      "[CACHE]\\uncached\\dawn\\cmake-build\\tint_unittests"
     ],
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
@@ -540,10 +540,10 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -565,10 +565,10 @@
       "python3",
       "./src/tint/cmd/bench/generate_benchmark_inputs.py",
       "wgsl",
-      "cmake-build-066b4467e3b0b419/tint.exe",
+      "cmake-build/tint.exe",
       "--check-stale"
     ],
-    "cwd": "[CACHE]\\builder\\dawn",
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
@@ -580,10 +580,10 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -607,12 +607,12 @@
       "./tools/run",
       "tests",
       "--tint",
-      "cmake-build-066b4467e3b0b419/tint.exe",
+      "cmake-build/tint.exe",
       "--verbose",
       "--format",
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
-    "cwd": "[CACHE]\\builder\\dawn",
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
@@ -624,10 +624,10 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -650,11 +650,11 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "-S",
-      "[CACHE]\\builder\\dawn",
+      "[CACHE]\\uncached\\dawn",
       "-B",
-      "[CACHE]\\builder\\dawn\\cmake-build-100427fc3c193ae2",
+      "[CACHE]\\uncached\\dawn\\cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
       "-DTINT_BUILD_BENCHMARKS=1",
@@ -674,23 +674,23 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DTINT_BUILD_FUZZERS=0"
     ],
-    "cwd": "[CACHE]\\builder\\dawn",
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
       "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\dawn\\third_party\\ninja",
+        "[CACHE]\\uncached\\dawn\\third_party\\ninja",
         "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
         "win_toolchain\\vs_files\\version_hash\\sys64",
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -712,9 +712,9 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
-      "[CACHE]\\builder\\dawn\\cmake-build-100427fc3c193ae2",
+      "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
       "--target",
       "tint_cmd_tint_cmd"
@@ -730,10 +730,10 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
@@ -763,10 +763,10 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang\\clang\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\windows-amd64\\bin",
-        "[CACHE]\\builder\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\builder\\dawn\\third_party\\depot_tools"
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\windows-amd64\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
     },
     "luci_context": {
