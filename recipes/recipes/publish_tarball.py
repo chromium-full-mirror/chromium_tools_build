@@ -532,65 +532,13 @@ def publish_tarball(api):
 
   api.git('clean', '-dffx')
   with api.context(cwd=source_dir):
-    api.gclient(
-        'sync',
-        ['sync', '-D', '--nohooks', '--with_branch_heads', '--with_tags'])
+    api.gclient('sync', ['sync', '-D', '--no-history'])
 
   api.step('touch chrome/test/data/webui/i18n_process_css_test.html', [
       'touch',
       source_dir.joinpath('chrome', 'test', 'data', 'webui',
                           'i18n_process_css_test.html')
   ])
-
-  # These files are generated in the order specified in Chromium's DEPS file.
-  lastchange_path = source_dir.joinpath('build', 'util', 'lastchange.py')
-  api.step('Generate LASTCHANGE', [
-      'python3',
-      lastchange_path,
-      '-o',
-      source_dir.joinpath('build', 'util', 'LASTCHANGE'),
-  ])
-  api.step('Generate gpu/config/gpu_lists_version.h', [
-      'python3',
-      lastchange_path,
-      '-m',
-      'GPU_LISTS_VERSION',
-      '--revision-id-only',
-      '--header',
-      source_dir.joinpath('gpu', 'config', 'gpu_lists_version.h'),
-  ])
-  api.step('Generate skia/ext/skia_commit_hash.h', [
-      'python3',
-      lastchange_path,
-      '-s',
-      source_dir.joinpath('third_party', 'skia'),
-      '-m',
-      'SKIA_COMMIT_HASH',
-      '--header',
-      source_dir.joinpath('skia', 'ext', 'skia_commit_hash.h'),
-  ])
-  # The --revision option was introduced in 105.0.5148.2, so we need to skip
-  # this call when building earlier versions.
-  if [int(x) for x in version.split('.')] >= [105, 0, 5148, 2]:
-    api.step('Generate gpu/webgpu/DAWN_VERSION and dawn_commit_hash.h', [
-        'python3',
-        lastchange_path,
-        '-s',
-        source_dir.joinpath('third_party', 'dawn'),
-        '-m',
-        'DAWN_COMMIT_HASH',
-        '--revision',
-        source_dir.joinpath('gpu', 'webgpu', 'DAWN_VERSION'),
-        '--header',
-        source_dir.joinpath('gpu', 'webgpu', 'dawn_commit_hash.h'),
-    ])
-  if int(version.split('.')[0]) >= 145:
-    with api.context(
-        cwd=source_dir.joinpath('third_party', 'devtools-frontend', 'src')):
-      api.step('Sync Rollup native libraries to node_modules', [
-          'python3',
-          api.path.join('scripts', 'deps', 'sync_rollup_libs.py'),
-      ])
 
   api.file.copy('copy clang-format', api.chromium.resource('clang-format'),
                 source_dir.joinpath('buildtools', 'linux64', 'clang-format'))

@@ -28,6 +28,7 @@ import tarfile
 
 
 nonessential_dirs = (
+    'buildtools/reclient_cfgs/reproxy.cfg',  # file
     'third_party/blink/tools',
     'third_party/blink/web_tests',
     'third_party/devtools-frontend/src/third_party/rollup_libs',
@@ -136,6 +137,11 @@ class MyTarFile(tarfile.TarFile):
       return
 
     if file_name == '__pycache__' or file_name.endswith('.pyc'):
+      self.__report_skipped(name)
+      return
+
+    if file_name in ('.cipd_bin', '.cipd_client', '.cipd_client_cache',
+                     '.disable_auto_update'):
       self.__report_skipped(name)
       return
 

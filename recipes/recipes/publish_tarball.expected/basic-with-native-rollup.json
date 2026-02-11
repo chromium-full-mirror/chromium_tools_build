@@ -249,9 +249,7 @@
       "RECIPE_REPO[depot_tools]/gclient.py",
       "sync",
       "-D",
-      "--nohooks",
-      "--with_branch_heads",
-      "--with_tags"
+      "--no-history"
     ],
     "cwd": "[START_DIR]/src",
     "env": {
@@ -295,123 +293,6 @@
       }
     },
     "name": "touch chrome/test/data/webui/i18n_process_css_test.html"
-  },
-  {
-    "cmd": [
-      "python3",
-      "[START_DIR]/src/build/util/lastchange.py",
-      "-o",
-      "[START_DIR]/src/build/util/LASTCHANGE"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Generate LASTCHANGE"
-  },
-  {
-    "cmd": [
-      "python3",
-      "[START_DIR]/src/build/util/lastchange.py",
-      "-m",
-      "GPU_LISTS_VERSION",
-      "--revision-id-only",
-      "--header",
-      "[START_DIR]/src/gpu/config/gpu_lists_version.h"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Generate gpu/config/gpu_lists_version.h"
-  },
-  {
-    "cmd": [
-      "python3",
-      "[START_DIR]/src/build/util/lastchange.py",
-      "-s",
-      "[START_DIR]/src/third_party/skia",
-      "-m",
-      "SKIA_COMMIT_HASH",
-      "--header",
-      "[START_DIR]/src/skia/ext/skia_commit_hash.h"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Generate skia/ext/skia_commit_hash.h"
-  },
-  {
-    "cmd": [
-      "python3",
-      "[START_DIR]/src/build/util/lastchange.py",
-      "-s",
-      "[START_DIR]/src/third_party/dawn",
-      "-m",
-      "DAWN_COMMIT_HASH",
-      "--revision",
-      "[START_DIR]/src/gpu/webgpu/DAWN_VERSION",
-      "--header",
-      "[START_DIR]/src/gpu/webgpu/dawn_commit_hash.h"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Generate gpu/webgpu/DAWN_VERSION and dawn_commit_hash.h"
-  },
-  {
-    "cmd": [
-      "python3",
-      "scripts/deps/sync_rollup_libs.py"
-    ],
-    "cwd": "[START_DIR]/src/third_party/devtools-frontend/src",
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Sync Rollup native libraries to node_modules"
   },
   {
     "cmd": [
