@@ -21,6 +21,7 @@ CONFIG = {
         "chrome-devtools-waterfall-gardener-emea-oncall@google.com",
     ],
     "excludes": [
+        "build",
         "extensions/cxx_debugging/third_party/lldb-eval/src",
         "extensions/cxx_debugging/third_party/llvm/src",
         "third_party/chrome/chrome-win",
