@@ -12,6 +12,10 @@ from . import constants
 
 class GnApi(recipe_api.RecipeApi):
 
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self._desc_cache = {}
+
   _DEFAULT_STEP_NAME = 'read GN args'
   _NON_LOCAL_ARGS = frozenset(['target_sysroot'])
   _DEFAULT_MAX_TEXT_LINES = 20
@@ -181,6 +185,7 @@ class GnApi(recipe_api.RecipeApi):
            what_to_show,
            *flags,
            step_name='Run gn desc',
+           use_cache=False,
            **kwargs):
     """Displays information about a given target or config.
 
@@ -193,15 +198,27 @@ class GnApi(recipe_api.RecipeApi):
       what_to_show: type of information we're looking for.
       flags: `what_to_show`-dependent flags to append to the command.
       step_name: Optional recipe step name to give to the "gn desc" command.
+      use_cache: Boolean indicating whether or not to use cached results.
+        Currently only supports caching for 'deps' with '--all' flag.
       kwargs: Other arguments passed to the underlying python step.
     Returns:
       The list of dependencies found.
     """
+    is_cacheable = (what_to_show == 'deps' and '--all' in flags)
+    cache_key = (str(build_dir), label_or_pattern, what_to_show, flags)
+
+    if use_cache and is_cacheable and cache_key in self._desc_cache:
+      return self._desc_cache[cache_key]
+
     cmd = ['desc', build_dir, label_or_pattern, what_to_show, *flags]
 
     step_result = self._gn_cmd(step_name, cmd, log_name='desc', **kwargs)
-    output = step_result.stdout
-    return list(output.splitlines())
+    output = list(step_result.stdout.splitlines())
+
+    if use_cache and is_cacheable:
+      self._desc_cache[cache_key] = output
+
+    return output
 
   def ls(self, build_dir, inputs, output_type=None, output_format='label',
          step_name='list gn targets'):
