@@ -32,7 +32,7 @@ from PB.turboci.data.chrome.build.v1.compile_targets_options import (
     CompileTargetsOptions)
 from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
 from PB.turboci.graph.orchestrator.v1.check_state import CheckState
-from PB.turboci.graph.orchestrator.v1.graph_view import GraphView
+from PB.turboci.graph.orchestrator.v1.workplan import WorkPlan
 
 
 DEPS = [
@@ -464,9 +464,9 @@ def GenTests(api):
             builder='fake-tester',
         ).assemble())
 
-  def basic_assert_graph(assert_, graph: GraphView):
+  def basic_assert_workplan(assert_, workplan: WorkPlan):
     analyze_check_id = f'{chromium_tests.BUILD_CHECK_ID} analyze'
-    check_ids = set(c.check.identifier.id for c in graph.checks.values())
+    check_ids = set(c.identifier.id for c in workplan.checks)
     if not assert_(
         check_ids == {
             chromium_tests.SOURCE_CHECK_ID,
@@ -479,14 +479,14 @@ def GenTests(api):
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
-    source_check = turboci.get_check_view(graph,
-                                          chromium_tests.SOURCE_CHECK_ID).check
+    source_check = turboci.get_check_by_short_id(workplan,
+                                                 chromium_tests.SOURCE_CHECK_ID)
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
 
     # build check verifications ################################################
-    build_check = turboci.get_check_view(graph,
-                                         chromium_tests.BUILD_CHECK_ID).check
+    build_check = turboci.get_check_by_short_id(workplan,
+                                                chromium_tests.BUILD_CHECK_ID)
     assert_(build_check.kind == CheckKind.CHECK_KIND_BUILD)
     assert_(build_check.state == CheckState.CHECK_STATE_FINAL)
 
@@ -522,7 +522,7 @@ def GenTests(api):
     assert_(build_check_results == expected_build_check_results)
 
     # analyze check verifications ##############################################
-    analyze_check = turboci.get_check_view(graph, analyze_check_id).check
+    analyze_check = turboci.get_check_by_short_id(workplan, analyze_check_id)
     assert_(analyze_check.kind == CheckKind.CHECK_KIND_ANALYSIS)
     assert_(analyze_check.state == CheckState.CHECK_STATE_FINAL)
 
@@ -594,7 +594,7 @@ def GenTests(api):
                        'angle_unittests_no_swarm (with patch)'),
       api.post_process(post_process.DoesNotRun, 'angle_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
-      api.assert_turboci_graph(basic_assert_graph),
+      api.assert_workplan(basic_assert_workplan),
   )
 
   yield api.test(
@@ -1154,8 +1154,8 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  def without_patch_assert_graph(assert_, graph: GraphView):
-    check_ids = set(c.check.identifier.id for c in graph.checks.values())
+  def without_patch_assert_workplan(assert_, workplan: WorkPlan):
+    check_ids = set(c.identifier.id for c in workplan.checks)
     if not assert_(
         check_ids == {
             chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
@@ -1167,14 +1167,14 @@ def GenTests(api):
     # The source check is created by bot_update, just verify it's of appropriate
     # kind and is final, none of the other details since the check isn't being
     # read by the recipe code
-    source_check = turboci.get_check_view(
-        graph, chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID).check
+    source_check = turboci.get_check_by_short_id(
+        workplan, chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID)
     assert_(source_check.kind == CheckKind.CHECK_KIND_SOURCE)
     assert_(source_check.state == CheckState.CHECK_STATE_FINAL)
 
     # without patch build check verifications ##################################
-    build_check = turboci.get_check_view(
-        graph, chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID).check
+    build_check = turboci.get_check_by_short_id(
+        workplan, chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID)
     assert_(build_check.kind == CheckKind.CHECK_KIND_BUILD)
     assert_(build_check.state == CheckState.CHECK_STATE_FINAL)
 
@@ -1240,7 +1240,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'check_static_initializers (with patch)'),
       api.post_process(post_process.DropExpectation),
-      api.assert_turboci_graph(without_patch_assert_graph),
+      api.assert_workplan(without_patch_assert_workplan),
   )
 
   yield api.test(
