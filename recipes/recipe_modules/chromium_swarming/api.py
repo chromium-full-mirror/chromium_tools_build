@@ -821,7 +821,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       # TODO(crbug.com/40285137): Roll this out for try too after devising a
       # safe method to do so.
       bucket = self.m.buildbucket.build.builder.bucket
-      if bucket != 'try':
+      if bucket not in ('try', 'try.shadow'):
         var['bucket'] = bucket
       req = req.with_slice(
           i,
