@@ -1255,7 +1255,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                                  build_dir,
                                  llvm_raw_data,
                                  targets: set[str],
-                                 overall: bool = True):
+                                 overall: bool = True,
+                                 use_cache: bool = False):
     """Generate fuzz coverage information.
 
     Arguments:
@@ -1264,6 +1265,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             fuzzers must have exactly one member when computing per-target
             coverage with `overall=False`.
         overall: Whether we're computing overall merged coverage.
+        use_cache: Whether to use cached GN results.
     """
     llvm_cov = (
         source_dir / 'third_party/llvm-build/Release+Asserts/bin/llvm-cov')
@@ -1277,7 +1279,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     with self.m.step.nest(f'process fuzz coverage ({test_type})'):
       self.m.file.chmod('chmod llvm file', llvm_cov, '777')
       output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
-      binaries = self._resolve_binaries_for_fuzzing(build_dir, targets)
+      binaries = self._resolve_binaries_for_fuzzing(
+          build_dir, targets, use_cache=use_cache)
       cmd = [
           'vpython3',
           self.resource('generate_coverage_metadata.py'),
@@ -1304,6 +1307,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       self,
       build_dir: config_types.Path,
       targets: set[str],
+      use_cache: bool = False,
   ) -> set[config_types.Path]:
     """Get a list of relevant ELF files to extract coverage data for.
 
@@ -1332,7 +1336,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--all',
           '--as=output',
           '--type=executable',
-          step_name='gn desc (deps --type=executable)')
+          step_name='gn desc (deps --type=executable)',
+          use_cache=use_cache)
       elf_paths += self.m.gn.desc(
           build_dir,
           fuzzer_label,
@@ -1340,7 +1345,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--all',
           '--as=output',
           '--type=shared_library',
-          step_name='gn desc (deps --type=shared_library)')
+          step_name='gn desc (deps --type=shared_library)',
+          use_cache=use_cache)
       # `runtime_paths` contains all runtime dependencies of `fuzzer_label`,
       # including non-binary files (e.g., resource files, scripts).
       runtime_paths = self.m.gn.desc(
