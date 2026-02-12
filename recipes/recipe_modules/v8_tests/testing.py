@@ -147,10 +147,6 @@ TEST_CONFIGS = freeze({
         'tool': 'jsfunfuzz',
         'isolated_target': 'jsfunfuzz',
     },
-    'gcmole': {
-        'tool': 'run-gcmole',
-        'isolated_target': 'run-gcmole',
-    },
     'gcmole_v2': {
         'tool': 'run-gcmole-v2',
         'isolated_target': 'run-gcmole',
@@ -894,20 +890,6 @@ class V8Fuzzer(V8GenericSwarmingTest):
     return TestResults.not_empty()
 
 
-# TODO(https://crbug.com/v8/9287): Remove after M112.
-class V8GCMole(V8CompositeSwarmingTest):
-  @property
-  def composite_tests(self):
-    return [
-      V8GenericSwarmingTest(
-          self.test_step_config, self.api,
-          title='GCMole %s' % arch,
-          command=['tools/gcmole/run-gcmole.py', arch],
-      ) for arch in ['ia32', 'x64', 'arm', 'arm64']
-    ]
-
-
-# TODO(https://crbug.com/v8/9287): Remove after M112/M113.
 class V8GCMoleV2(V8GenericSwarmingTest):
   @property
   def title(self):
@@ -1015,7 +997,6 @@ TOOL_TO_TEST_SWARMING = freeze({
   'check-bytecode-baseline': V8CheckBytecodeBaseline,
   'check-static-initializers': V8CheckInitializers,
   'jsfunfuzz': V8Fuzzer,
-  'run-gcmole': V8GCMole,
   'run-gcmole-v2': V8GCMoleV2,
   'run-gcmole-v3': V8GCMoleV3,
   'run-num-fuzzer': V8SwarmingTest,

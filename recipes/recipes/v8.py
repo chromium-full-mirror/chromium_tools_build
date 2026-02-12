@@ -455,9 +455,6 @@ def GenTests(api):
           {
               'tests': [
                   {
-                      'name': 'gcmole'
-                  },
-                  {
                       'name': 'gcmole_v2',
                       'variant': 'arm64'
                   },
