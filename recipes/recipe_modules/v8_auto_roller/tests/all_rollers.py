@@ -160,7 +160,7 @@ def RunSteps(api):
   api.v8_auto_roller.cft_pin_roll(autoroller_config, clm, source_dir)
   api.v8_auto_roller.scripted_rolls(autoroller_config, clm, source_dir, [
       'puppeteer-core',
-      'browser-protocol',
+      'browser-protocol & CfT',
   ])
   api.v8_auto_roller.test262_roll(autoroller_config, clm, source_dir)
 
