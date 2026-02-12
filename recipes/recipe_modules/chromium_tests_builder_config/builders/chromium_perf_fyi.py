@@ -56,15 +56,6 @@ _AddBuildSpec(
         'fuchsia_sd_images',
     ])
 
-_AddBuildSpec(
-    'fuchsia-builder-perf-arm64-pgo',
-    'fuchsia',
-    target_arch='arm',
-    extra_gclient_apply_config=[
-        'fuchsia_arm64',
-        'fuchsia_sd_images',
-    ])
-
 _AddBuildSpec('win-arm64-builder-perf', 'win', target_arch='arm')
 
 _AddBuildSpec(
@@ -92,20 +83,6 @@ _AddIsolatedTestSpec(
     'fuchsia',
     target_arch='arm',
     parent_buildername='fuchsia-builder-perf-arm64',
-    parent_builder_group='chromium.perf.fyi')
-
-_AddIsolatedTestSpec(
-    'fuchsia-perf-nsn-pgo',
-    'fuchsia',
-    target_arch='arm',
-    parent_buildername='fuchsia-builder-perf-arm64-pgo',
-    parent_builder_group='chromium.perf.fyi')
-
-_AddIsolatedTestSpec(
-    'fuchsia-perf-shk-pgo',
-    'fuchsia',
-    target_arch='arm',
-    parent_buildername='fuchsia-builder-perf-arm64-pgo',
     parent_builder_group='chromium.perf.fyi')
 
 _AddIsolatedTestSpec(
