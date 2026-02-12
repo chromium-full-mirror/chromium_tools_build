@@ -1,0 +1,13 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.angle_v2;
+
+message InputProperties {
+  // Whether to run the ANGLE trace tests as additional steps at the end of the
+  // build.
+  optional bool run_trace_tests = 1;
+}

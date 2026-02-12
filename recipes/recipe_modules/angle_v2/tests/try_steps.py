@@ -16,12 +16,15 @@ DEPS = [
     'chromium_tests',
     'angle_v2',
     'recipe_engine/platform',
+    'recipe_engine/properties',
     'recipe_engine/step',
 ]
 
 
 def RunSteps(api):
-  api.angle_v2.try_steps()
+  res = api.angle_v2.try_steps()
+  if res:
+    return res
   api.step('Success', ['echo', 'Success!'])
 
 
@@ -112,6 +115,35 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'angle_unittests (with patch) on Ubuntu'),
       api.post_process(post_process.StepSuccess, 'Success'),
+      api.post_process(post_process.DoesNotRunRE, r'.*trace tests.*'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'try_linux_compile_and_test_with_trace_tests_fails',
+      api.platform('linux', 64),
+      api.properties(run_trace_tests=True),
+      api.angle_v2.try_build(builder='try-linux-compile-and-test'),
+      api.angle_v2.builders(_TEST_BUILDERS),
+      api.angle_v2.trybots(_TEST_TRYBOTS),
+      api.chromium_tests.read_targets_spec('angle', _TEST_SPECS),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Regular tests and trace tests are mutually exclusive.'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'try_linux_compile_and_test_trace_tests_not_run_on_build_failure',
+      api.platform('linux', 64),
+      api.properties(run_trace_tests=True),
+      api.angle_v2.try_build(builder='try-linux-compile-and-test'),
+      api.angle_v2.builders(_TEST_BUILDERS),
+      api.angle_v2.trybots(_TEST_TRYBOTS),
+      api.chromium_tests.read_targets_spec('angle', _TEST_SPECS),
+      api.step_data('compile (with patch)', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DoesNotRunRE, r'.*trace tests.*'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -126,5 +158,35 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'angle_end2end_tests (with patch) on Ubuntu'),
       api.post_process(post_process.StepSuccess, 'Success'),
+      api.post_process(post_process.DoesNotRunRE, r'.*trace tests.*'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'try_linux_parent_child_with_trace_tests_fails',
+      api.platform('linux', 64),
+      api.properties(run_trace_tests=True),
+      api.angle_v2.try_build(builder='try-linux-parent-child'),
+      api.angle_v2.builders(_TEST_BUILDERS),
+      api.angle_v2.trybots(_TEST_TRYBOTS),
+      api.chromium_tests.read_targets_spec('angle', _TEST_SPECS),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Regular tests and trace tests are mutually exclusive.'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'try_linux_compile_and_test_only_trace_tests',
+      api.platform('linux', 64),
+      api.properties(run_trace_tests=True),
+      api.angle_v2.try_build(builder='try-linux-compile-and-test'),
+      api.angle_v2.builders(_TEST_BUILDERS),
+      api.angle_v2.trybots(_TEST_TRYBOTS),
+      api.chromium_tests.read_targets_spec('angle', {}),
+      api.post_process(post_process.StepSuccess, 'Success'),
+      api.post_process(post_process.StepSuccess, 'GLES 1.0 trace tests'),
+      api.post_process(post_process.StepCommandContains, 'GLES 1.0 trace tests',
+                       '--out-dir=[CACHE]/builder/angle/out_CaptureReplayTest'),
       api.post_process(post_process.DropExpectation),
   )
