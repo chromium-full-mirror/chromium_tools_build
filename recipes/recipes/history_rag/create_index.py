@@ -41,7 +41,7 @@ def get_destination_bucket(api):
 
 # Configuration for Vertex AI
 GOOGLE_CLOUD_PROJECT = 'skia-infra-corp'
-GOOGLE_CLOUD_LOCATION = 'us-central1'
+GOOGLE_CLOUD_LOCATION = 'global'
 
 def RunSteps(api):
   source_dir, revision = checkout_source_code(api)
