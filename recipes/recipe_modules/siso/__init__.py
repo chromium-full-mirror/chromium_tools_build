@@ -16,6 +16,7 @@ DEPS = [
     'recipe_engine/cas',
     'recipe_engine/cipd',
     'recipe_engine/context',
+    'recipe_engine/futures',
     'recipe_engine/json',
     'recipe_engine/led',
     'recipe_engine/path',

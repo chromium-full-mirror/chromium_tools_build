@@ -321,12 +321,14 @@ class SisoApi(recipe_api.RecipeApi):
                 'siso_mutex.prof'
             ])
 
+          futures = []
           for file in files:
             abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
             if not self.m.path.exists(abs_path):
               continue
             gs_filename = '%s/%s' % (gs_foldername, file)
-            self.m.gsutil.upload(
+            self.m.futures.spawn(
+                self.m.gsutil.upload,
                 abs_path,
                 _GS_BUCKET,
                 gs_filename,
@@ -338,6 +340,8 @@ class SisoApi(recipe_api.RecipeApi):
                 infra_step=True,
                 # Do not stop build due to a report upload failure.
                 raise_on_failure=False)
+
+          self.m.futures.wait(futures)
 
       if self._props.fail_if_reapi_used:
         self.m.step(
