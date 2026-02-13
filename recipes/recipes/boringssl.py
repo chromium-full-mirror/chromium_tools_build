@@ -84,8 +84,8 @@ PROPERTIES = {
         Property(
             default=False,
             kind=bool,
-            help='whether to build the Rust crates, and test them (if run_unit_tests is also True)'
-        ),
+            help='whether to build the Rust crates, '
+            'and test them (if run_unit_tests is also True)'),
     'sde':
         Property(default=False, kind=bool, help='whether to run tests on SDE'),
 }
@@ -352,6 +352,9 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
         api.step(
             'cargo build',
             msvc_prefix + [cargo, 'build', '--all-targets', '--keep-going'])
+        api.step(
+            'cargo build (all features)', msvc_prefix +
+            [cargo, 'build', '--all-targets', '--all-features', '--keep-going'])
 
     with api.defer.context() as defer:
       if check_imported_libraries:
@@ -449,6 +452,11 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
           defer(
               api.step, 'rust tests',
               msvc_prefix + [cargo, 'test', '--all-targets', '--no-fail-fast'])
+          defer(
+              api.step, 'rust tests (all features)', msvc_prefix + [
+                  cargo, 'test', '--all-targets', '--all-features',
+                  '--no-fail-fast'
+              ])
 
 
 def _CIBuild(api, builder):
