@@ -277,7 +277,6 @@ class RDBPerSuiteResults:
   # as input.
   test_id_prefix = attrib(str, default='')
   # This is a field used in |with_failure_on_exit| method.
-  # TODO(crbug.com/1245085): Remove this when |with_failure_on_exit| is removed.
   exists_unexpected_failing_result = attrib(bool, default=False)
 
   @classmethod
