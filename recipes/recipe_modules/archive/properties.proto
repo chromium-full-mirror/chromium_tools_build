@@ -214,11 +214,6 @@ message ArchiveData {
   //   }
   RevisionsFile revisions_file = 14;
 
-  // DEPRECATED. Use requires_provenance instead.
-  // TODO(morawand): Mark this field as reserved once all archive configs are
-  // using requires_provenance.
-  string verifiable_key_path = 8;
-
   // If set to true, generate chain-of-custody provenance for the artifacts
   // listed in this ArchiveData definition and upload them to the GCS path in
   // this config.
@@ -258,6 +253,8 @@ message ArchiveData {
   // If set to true, the '-n' flag will be used for gsutil uploads. This
   // prevents overwriting file content and will skip over existing files.
   bool prevent_overwrites = 19;
+
+  reserved 8;
 }
 
 message Compression {
