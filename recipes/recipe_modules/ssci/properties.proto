@@ -10,7 +10,10 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
+// Next ID: 15.
 message InputProperties {
+  reserved 8, 9, 13;
+
   // bq_artifact_table is the BQ table where artifact rows will be written
   // to it has the form project.dataset.table.
   string bq_artifact_table = 1;
@@ -31,19 +34,6 @@ message InputProperties {
   // bq table for third party dependencies collected during the run
   string bq_thirdparty_table = 7;
 
-  // DEPRECATED. This tool has been replaced by the SSCI SBOM Generator; use
-  // ssci_sbom_version (see below) to specify the new tool's version.
-  //
-  // version of the SSCI CIPD module to use
-  string ssci_version = 8;
-
-  // DEPRECATED.
-  // Whether to generate a minimal version of the SPDX file.
-  // This currently won't do anything, as minimal support has been removed
-  // from the SSCI tool because the likelihood of us needing to use it is
-  // very low, now we're out of scope for the EO.
-  bool minimal_spdx = 9;
-
   // version of the SSCI uploader CIPD binary to use.
   string ssci_uploader_version = 10;
 
@@ -53,9 +43,8 @@ message InputProperties {
   // Version of the SSCI SBOM Generator to use.
   string ssci_sbom_version = 12;
 
-  // DEPRECATED.
-  // Version of the sbomdiff to use.
-  string sbomdiff_version = 13;
+  // Whether licenses should be included when generating SBOMs.
+  bool include_licenses = 14;
 }
 
 message GeneratedSBOM {

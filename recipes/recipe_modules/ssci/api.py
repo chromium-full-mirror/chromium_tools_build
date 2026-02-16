@@ -44,6 +44,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.execution_id = ""
     self.build_platform = None
     self.enable_upload_collected_data = props.enable_upload_collected_data
+    self.include_licenses = props.include_licenses
 
     # Used to store CIPD package information for each of the tools used
     self.bqupload = CIPDPkg(
@@ -290,32 +291,36 @@ class SsciAPI(recipe_api.RecipeApi):
 
       # Generate the SBOM using the SSCI SBOM Generator.
       spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
+      command = [
+          self.ssci_sbom.tool_path,
+          "-output-file",
+          spdx_file,
+          "-sbom-generator-version",
+          self.ssci_sbom.resolved_version,
+          "-product",
+          product,
+          "-product-version",
+          p_version,
+          "-platform",
+          self.build_platform,
+          "-partybot-version",
+          self.partybot.resolved_version,
+          "-third-party-file",
+          third_party_out,
+          "-chromium-path",
+          parent_dir,
+          "-depbot-version",
+          self.depbot.resolved_version,
+          "-artifacts-file",
+          artifact_file,
+          "-libraries-file",
+          library_file,
+      ]
+      if self.include_licenses:
+        command.append("-add-licenses")
       self.m.step(
-          f'run SSCI SBOM Generator for {display_name} SBOM', [
-              self.ssci_sbom.tool_path,
-              "-output-file",
-              spdx_file,
-              "-sbom-generator-version",
-              self.ssci_sbom.resolved_version,
-              "-product",
-              product,
-              "-product-version",
-              p_version,
-              "-platform",
-              self.build_platform,
-              "-partybot-version",
-              self.partybot.resolved_version,
-              "-third-party-file",
-              third_party_out,
-              "-chromium-path",
-              parent_dir,
-              "-depbot-version",
-              self.depbot.resolved_version,
-              "-artifacts-file",
-              artifact_file,
-              "-libraries-file",
-              library_file,
-          ],
+          f'run SSCI SBOM Generator for {display_name} SBOM',
+          command,
           infra_step=True,
           step_test_data=(lambda: self.m.json.test_api.output(
               data=[{

@@ -107,7 +107,13 @@ def GenTests(api):
           post_process.MustRunRE,
           r'.+\.using existing Partybot results',
           at_least=1,
-      ))
+      ),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'SSCI collection.target specific steps for Example.apk.run SSCI SBOM Generator for Example.apk SBOM',
+          ['-add-licenses'],
+      ),
+  )
 
   yield api.test(
       'minimal-sdpx',
@@ -175,3 +181,44 @@ def GenTests(api):
           post_process.DoesNotRun,
           "SSCI collection.upload third party dependencies to BigQuery"),
       api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'with-licenses',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.override_step_data(
+          'SSCI collection.run depbot',
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "Example.apk",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+              })),
+      api.properties(
+          **{
+              '$build/ssci': {
+                  "bq_artifact_table": "project.dataset.table",
+                  "bq_library_table": "project.dataset.table",
+                  "depbot_version": "latest",
+                  "targets": ["//example:example"],
+                  "partybot_version": "AABBCC",
+                  "bq_thirdparty_table": "project.dataset.table",
+                  "ssci_version": "latest",
+                  "include_licenses": True,
+              }
+          }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'SSCI collection.target specific steps for Example.apk.run SSCI SBOM Generator for Example.apk SBOM',
+          ['-add-licenses'],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'SSCI collection (2).target specific steps for Example.apk.run SSCI SBOM Generator for Example.apk SBOM',
+          ['-add-licenses'],
+      ),
+  )
