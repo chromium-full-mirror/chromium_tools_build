@@ -176,14 +176,19 @@ def RunSteps(api, properties):
     with api.context(env=env):
       cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
       try:
-        api.step('Run Android End2End Tests', [
-            'vpython3',
-            test_driver,
-            f'--adb-device-id={android_emulator.adb_device_id}',
-            f'--adb-path={android_emulator.adb_path}',
-            f'--cas-archive={cas_archive}',
-            f'--log-file={cas_archive}/pytest.tests.android.out.txt',
-        ])
+        api.step(
+            'Run Android End2End Tests',
+            [
+                'vpython3',
+                test_driver,
+                f'--adb-device-id={android_emulator.adb_device_id}',
+                f'--adb-path={android_emulator.adb_path}',
+                f'--cas-archive={cas_archive}',
+                f'--log-file={cas_archive}/pytest.tests.android.out.txt',
+                '-m',
+                'not legacy_android_sdk',
+            ],
+        )
       finally:
         api.cas.archive('Copy End2End test logs to CAS', cas_archive,
                         cas_archive)

@@ -231,7 +231,9 @@
       "--adb-device-id=014E1F310401C009",
       "--adb-path=[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb",
       "--cas-archive=[CLEANUP]/cq_archive__tmp_1",
-      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.android.out.txt"
+      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.android.out.txt",
+      "-m",
+      "not legacy_android_sdk"
     ],
     "name": "Run Android End2End Tests"
   },
