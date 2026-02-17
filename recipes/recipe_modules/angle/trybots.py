@@ -244,11 +244,6 @@ _SPEC = {
                     buildername='linux-test',
                     tester='linux-intel',
                 ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-test',
-                    tester='linux-nvidia',
-                ),
             ],
             analyze_names=['angle'],
             retry_failed_shards=False,

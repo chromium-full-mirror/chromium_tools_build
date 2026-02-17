@@ -156,8 +156,6 @@ _SPEC = {
         _create_tester_config('linux', 64, 'linux-ir-test'),
     'linux-ir-test':
         _create_builder_config('linux', 'Release', 64),
-    'linux-nvidia':
-        _create_tester_config('linux', 64, 'linux-test'),
     'linux-nvidia-perf':
         _create_tester_config('linux', 64, 'linux-perf'),
     'linux-perf':
