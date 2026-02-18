@@ -469,9 +469,9 @@ class MetadataValidatorApi(RecipeApi):
         warnings = []
         for issue in issues:
           msg = issue['message']
+          if ".md" in msg:
+            continue
           if issue.get('fatal', False):
-            if ".md" in msg:
-              continue
             errors.append(msg)
             step.status = self.m.step.FAILURE
           else:
