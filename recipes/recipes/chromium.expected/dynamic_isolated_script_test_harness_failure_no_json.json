@@ -1055,7 +1055,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 Test Suite(s) failed.\n\n**telemetry_gpu_unittests** failed."
+      "humanReason": "1 Test Suite(s) failed.\n\n**telemetry_gpu_unittests** failed with invalid results. Did a shard fail early?"
     },
     "name": "$result"
   }

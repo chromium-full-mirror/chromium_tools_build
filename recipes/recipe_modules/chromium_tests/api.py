@@ -2715,6 +2715,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             '**%s** did not complete, likely due to an infra bug.' % suite.name)
       elif deterministic_failures:
         test_suite_header = '**%s** failed because of:' % suite.name
+      elif not is_valid:
+        test_suite_header = ('**%s** failed with invalid results. '
+                             'Did a shard fail early?' % suite.name)
 
       current_size += len(test_suite_header)
       if current_size >= size_limit:

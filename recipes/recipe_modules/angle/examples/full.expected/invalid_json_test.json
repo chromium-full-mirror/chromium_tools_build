@@ -1191,7 +1191,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 Test Suite(s) failed.\n\n**basic_isolate_tests** failed."
+      "humanReason": "1 Test Suite(s) failed.\n\n**basic_isolate_tests** failed with invalid results. Did a shard fail early?"
     },
     "name": "$result"
   }

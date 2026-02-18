@@ -74,8 +74,10 @@ def GenTests(api):
           'base_unittests (with patch)',
           api.chromium_swarming.canned_summary_output(
               api.test_utils.canned_gtest_output(False), failure=True)),
-      api.post_process(post_process.SummaryMarkdown,
-                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          '1 Test Suite(s) failed.\n\n**base_unittests** failed with invalid results. Did a shard fail early?'
+      ),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -1272,8 +1274,10 @@ def GenTests(api):
               api.test_utils.gtest_results(
                   api.json.dumps({'per_iteration_data': []}), retcode=1),
               failure=True)),
-      api.post_process(post_process.SummaryMarkdown,
-                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          '1 Test Suite(s) failed.\n\n**base_unittests** failed with invalid '
+          'results. Did a shard fail early?'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

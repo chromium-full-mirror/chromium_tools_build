@@ -66,8 +66,10 @@ def GenTests(api):
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
       api.post_process(DoesNotRun, 'test_pre_run (2)'),
-      api.post_process(SummaryMarkdown,
-                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(
+          SummaryMarkdown,
+          '1 Test Suite(s) failed.\n\n**base_unittests** failed with invalid '
+          'results. Did a shard fail early?'),
       api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
@@ -80,7 +82,8 @@ def GenTests(api):
       ),
       api.builder_group.for_current('test_group'),
       api.properties(
-          buildername='test_buildername', bot_id='test_bot_id',
+          buildername='test_buildername',
+          bot_id='test_bot_id',
           buildnumber=123,
           surface_invalid_results_as_infra_failure=True),
       api.override_step_data(
@@ -89,8 +92,10 @@ def GenTests(api):
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
       api.post_process(DoesNotRun, 'test_pre_run (2)'),
-      api.post_process(SummaryMarkdown,
-                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(
+          SummaryMarkdown,
+          '1 Test Suite(s) failed.\n\n**base_unittests** failed with invalid '
+          'results. Did a shard fail early?'),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
@@ -113,8 +118,10 @@ def GenTests(api):
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
       api.post_process(MustRun, 'test_pre_run (2)'),
-      api.post_process(SummaryMarkdown,
-                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(
+          SummaryMarkdown,
+          '1 Test Suite(s) failed.\n\n**base_unittests** failed with invalid '
+          'results. Did a shard fail early?'),
       api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
