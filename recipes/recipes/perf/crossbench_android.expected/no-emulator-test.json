@@ -463,6 +463,226 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "Download avd package (2)"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/avd",
+      "-ensure-file",
+      "chromium/tools/android/avd/linux-amd64 latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Download avd package (2).ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/tools/android/avd/linux-amd64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Install android_32_google_apis_x64_foldable.textpb"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "install",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_32_google_apis_x64_foldable.textpb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_32_google_apis_x64_foldable.textpb.Install Android emulator",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "xvfb-run",
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "start",
+      "--debug-tags",
+      "all",
+      "--gpu-mode",
+      "off",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_32_google_apis_x64_foldable.textpb",
+      "--enable-network"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_32_google_apis_x64_foldable.textpb.Start Android emulator: 0",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::adb]/resources/list_devices.py",
+      "['[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb', 'devices']",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Install android_32_google_apis_x64_foldable.textpb.List adb devices",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"014E1F310401C009\"@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Install android_32_google_apis_x64_foldable.textpb.Set up the emulator",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "chmod",
+      "755",
+      "RECIPE[build::perf/crossbench_android].resources/avd_setup.sh"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_32_google_apis_x64_foldable.textpb.Set up the emulator.Set execute permission",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "RECIPE[build::perf/crossbench_android].resources/avd_setup.sh",
+      "[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "infra_step": true,
+    "name": "Install android_32_google_apis_x64_foldable.textpb.Set up the emulator.avd_setup.sh",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "crossbench/tests/end2end/android/runner.py",
+      "--adb-device-id=014E1F310401C009",
+      "--adb-path=[CACHE]/avd/src/third_party/android_sdk/public/platform-tools/adb",
+      "--cas-archive=[CLEANUP]/cq_archive__tmp_2",
+      "--log-file=[CLEANUP]/cq_archive__tmp_2/pytest.tests.android.out.txt",
+      "-m",
+      "legacy_android_sdk"
+    ],
+    "name": "Run Android End2End Tests (2)"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee/cas",
+      "archive",
+      "-log-level",
+      "info",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-dump-digest",
+      "/path/to/tmp/",
+      "-paths-json",
+      "[[\"[CLEANUP]/cq_archive__tmp_2\", \".\"]]"
+    ],
+    "infra_step": true,
+    "name": "Copy End2End test logs to CAS (2)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Kill and cleanup avd (2)"
+  },
+  {
+    "cmd": [
+      "ps",
+      "aux"
+    ],
+    "name": "Kill and cleanup avd (2).List processes before cleaning up",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "pkill",
+      "-9",
+      "-e",
+      "-f",
+      "emulator"
+    ],
+    "name": "Kill and cleanup avd (2).Kill emulator cleanup",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "ps",
+      "aux"
+    ],
+    "name": "Kill and cleanup avd (2).List processes after cleaning up",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_32_google_apis_x64_foldable.textpb"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[CACHE]/avd/src/tools/android/avd/avd.py",
+      "uninstall",
+      "--avd-config",
+      "[CACHE]/avd/src/tools/android/avd/proto/android_32_google_apis_x64_foldable.textpb"
+    ],
+    "cwd": "[CACHE]/avd",
+    "name": "Uninstall [CACHE]/avd/src/tools/android/avd/proto/android_32_google_apis_x64_foldable.textpb.Uninstall Android emulator",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

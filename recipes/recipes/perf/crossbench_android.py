@@ -30,16 +30,17 @@ DEPS = [
 PROPERTIES = InputProperties
 _AVD_CIPD_VERSION = 'latest'
 # A list of available AVDs: docs/android_emulator.md
-_AVD_CONFIG_VERSION = 'android_%s_google_apis_x64.textpb'
+_AVD_CONFIG_VERSION = 'android_%s_google_apis_x64%s.textpb'
 # The prefix is used in the tests to identify whether they are running in CQ.
 _CAS_DIR_PREFIX = 'cq_archive_'
 
 
 class AndroidEmulator:
 
-  def __init__(self, api, android_sdk):
+  def __init__(self, api, android_sdk, avd_suffix=''):
     self.api = api
     self.android_sdk = android_sdk
+    self.avd_suffix = avd_suffix
     self.avd_root = None
     self.avd_script = None
     self.avd_config_version = None
@@ -64,7 +65,8 @@ class AndroidEmulator:
     self.avd_root = self.api.path.cache_dir / 'avd'
     avd_path = self.avd_root / 'src/tools/android/avd'
     self.avd_script = avd_path / 'avd.py'
-    self.avd_config_version = _AVD_CONFIG_VERSION % self.android_sdk
+    self.avd_config_version = _AVD_CONFIG_VERSION % (self.android_sdk,
+                                                     self.avd_suffix)
     self.avd_config = avd_path / 'proto' / self.avd_config_version
     self._download()
     self._initialized = True
@@ -164,34 +166,50 @@ class AndroidEmulator:
             stdout=self.api.raw_io.output_text(add_output_log=True))
 
 
+class _TestRunConfig:
+
+  def __init__(self, sdk_version, avd_suffix, *extra_flags):
+    self.sdk_version = sdk_version
+    self.avd_suffix = avd_suffix
+    self.extra_flags = extra_flags
+
+
 def RunSteps(api, properties):
   api.gclient.set_config('crossbench')
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
   test_driver = 'crossbench/tests/end2end/android/runner.py'
-  android_emulator = AndroidEmulator(api, properties.android_sdk)
-  with android_emulator.start():
-    env = {}
-    with api.context(env=env):
-      cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
-      try:
-        api.step(
-            'Run Android End2End Tests',
-            [
-                'vpython3',
-                test_driver,
-                f'--adb-device-id={android_emulator.adb_device_id}',
-                f'--adb-path={android_emulator.adb_path}',
-                f'--cas-archive={cas_archive}',
-                f'--log-file={cas_archive}/pytest.tests.android.out.txt',
-                '-m',
-                'not legacy_android_sdk',
-            ],
-        )
-      finally:
-        api.cas.archive('Copy End2End test logs to CAS', cas_archive,
-                        cas_archive)
+
+  configs = [
+      _TestRunConfig(properties.android_sdk, '', '-m',
+                     'not legacy_android_sdk'),
+      _TestRunConfig(32, '_foldable', '-m', 'legacy_android_sdk'),
+  ]
+
+  for config in configs:
+    android_emulator = AndroidEmulator(
+        api, config.sdk_version, avd_suffix=config.avd_suffix)
+    with android_emulator.start():
+      env = {}
+      with api.context(env=env):
+        cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
+        try:
+          api.step(
+              'Run Android End2End Tests',
+              [
+                  'vpython3',
+                  test_driver,
+                  f'--adb-device-id={android_emulator.adb_device_id}',
+                  f'--adb-path={android_emulator.adb_path}',
+                  f'--cas-archive={cas_archive}',
+                  f'--log-file={cas_archive}/pytest.tests.android.out.txt',
+                  *config.extra_flags,
+              ],
+          )
+        finally:
+          api.cas.archive('Copy End2End test logs to CAS', cas_archive,
+                          cas_archive)
 
 
 def GenTests(api):
