@@ -2034,19 +2034,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         step_test_data=lambda: self.m.json.test_api.output({}))
     return result.json.output
 
-  @contextlib.contextmanager
-  def _suppress_exception(self, step_name):
-    """Suppresses exception and creates a step with the exception log."""
-    try:
-      yield
-    except Exception:
-      self.m.step.empty(
-          step_name,
-          status=self.m.step.EXCEPTION,
-          log_name='exception',
-          log_text=traceback.format_exc(),
-          raise_on_failure=False)
-
   def main_waterfall_steps(
       self,
       builder_id,
@@ -2072,18 +2059,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         recipe to correctly access the checkout after
         main_waterfall_steps has completed.
     """
-    # Don't fail the build if snoopy service in unavailable.
     if self._enable_snoopy:
-      with self._suppress_exception('snoopy failure'):
-        self.m.bcid_reporter.report_stage('start')
+      self.m.bcid_reporter.report_stage('start')
 
     self.report_builders(builder_config, report_mirroring_builders=True)
     self.print_link_to_results()
     self.configure_build(builder_config)
 
     if self._enable_snoopy:
-      with self._suppress_exception('snoopy failure'):
-        self.m.bcid_reporter.report_stage('fetch')
+      self.m.bcid_reporter.report_stage('fetch')
     update_result, build_dir, targets_config = self.prepare_checkout(
         builder_config,
         timeout=3600,
@@ -2108,8 +2092,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.orderfile.configure_custom_pgo_profile(source_dir)
 
     if self._enable_snoopy:
-      with self._suppress_exception('snoopy failure'):
-        self.m.bcid_reporter.report_stage('compile')
+      self.m.bcid_reporter.report_stage('compile')
     compile_result, swarming_execution_info = self.compile_specific_targets(
         build_dir,
         builder_id,
@@ -2138,8 +2121,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         additional_properties=additional_trigger_properties)
 
     if self._enable_snoopy:
-      with self._suppress_exception('snoopy failure'):
-        self.m.bcid_reporter.report_stage('upload')
+      self.m.bcid_reporter.report_stage('upload')
 
     self.archive_clusterfuzz(builder_id, update_result, builder_config,
                              build_dir)
@@ -2147,8 +2129,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_dir, update_result, enable_snoopy=self._enable_snoopy)
 
     if self._enable_snoopy:
-      with self._suppress_exception('snoopy failure'):
-        self.m.bcid_reporter.report_stage('upload-complete')
+      self.m.bcid_reporter.report_stage('upload-complete')
 
     tests = targets_config.tests_on(builder_id)
     tests_result = self.run_tests(
