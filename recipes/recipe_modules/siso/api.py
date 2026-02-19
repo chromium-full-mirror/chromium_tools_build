@@ -302,6 +302,7 @@ class SisoApi(recipe_api.RecipeApi):
               'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
               'siso_build.pprof',
               'siso_explain',
+              'siso_localexec',
               'siso_metadata.json',
               'siso_metrics.json',
               'siso_output',
