@@ -334,15 +334,6 @@ _CLIENT_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Release',
                 'TARGET_BITS': 64,
             }),
-    'Mac64 Builder':
-        WebRTCBuilderSpec.create(
-            chromium_config='webrtc_default',
-            gclient_config='webrtc',
-            simulation_platform='mac',
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_BITS': 64,
-            }),
     'Mac64 Debug':
         WebRTCBuilderSpec.create(
             chromium_config='webrtc_default',
@@ -530,19 +521,6 @@ _CLIENT_WEBRTC_PERF_SPECS = {
             execution_mode=builder_spec.TEST,
             parent_builder_group='client.webrtc',
             parent_buildername='Linux64 Builder',
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_BITS': 64,
-            }),
-    'Perf Mac 11':
-        WebRTCBuilderSpec.create(
-            perf_id='webrtc-mac-large-tests',
-            chromium_config='webrtc_default',
-            gclient_config='webrtc',
-            execution_mode=builder_spec.TEST,
-            parent_builder_group='client.webrtc',
-            parent_buildername='Mac64 Builder',
-            simulation_platform='mac',
             chromium_config_kwargs={
                 'BUILD_CONFIG': 'Release',
                 'TARGET_BITS': 64,
