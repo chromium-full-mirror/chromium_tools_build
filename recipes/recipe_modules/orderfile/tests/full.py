@@ -94,7 +94,7 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.platform('linux', 32),
       api.post_process(
           post_process.MustRun,
-          'processing generated orderfile.create '
+          'processing generated orderfile.register '
           'chromium/chrome/android/orderfiles/arm',
       ),
       api.post_process(post_process.DropExpectation),
@@ -113,7 +113,7 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.platform('linux', 64),
       api.post_process(
           post_process.MustRun,
-          'processing generated orderfile.create'
+          'processing generated orderfile.register'
           ' chromium/chrome/android/orderfiles/arm64',
       ),
       api.post_process(post_process.DropExpectation),
@@ -132,7 +132,7 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.platform('linux', 32),
       api.post_process(
           post_process.MustRun,
-          'processing generated orderfile.create '
+          'processing generated orderfile.register '
           'chromium/android_webview/tools/orderfiles/arm',
       ),
       api.post_process(post_process.DropExpectation),
@@ -152,7 +152,7 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.platform('linux', 64),
       api.post_process(
           post_process.MustRun,
-          'processing generated orderfile.create'
+          'processing generated orderfile.register'
           ' chromium/android_webview/tools/orderfiles/arm64',
       ),
       api.post_process(post_process.DropExpectation),

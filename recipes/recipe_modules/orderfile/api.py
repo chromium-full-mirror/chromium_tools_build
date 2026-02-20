@@ -140,6 +140,9 @@ class OrderfileApi(recipe_api.RecipeApi):
           package_root=self.m.profiles.profile_dir(),
       )
 
+      if not self.m.led.led_build:
+        self.m.bcid_reporter.report_stage("start")
+
       new_orderfile_name = f'orderfile.{arch}.out'
       new_orderfile_path = self.m.profiles.profile_dir() / new_orderfile_name
       self.m.file.move('rename orderfile', orderfile_path, new_orderfile_path)
@@ -171,7 +174,10 @@ class OrderfileApi(recipe_api.RecipeApi):
           'branch': self._branch,
           'original_pgo_profile': self.last_uploaded_pgo_filename,
       }
-      # TODO(crbug.com/372693140): Only add the latest ref if running on CI and
-      #                            not ci.shadow or try.
-      self.m.cipd.create_from_pkg(
-          pkg_def, tags=tags, refs=[f'latest-{self._branch}'])
+      if not self.m.led.led_build:
+        # TODO(crbug.com/372693140): Only add the latest ref if running on CI
+        # not try.
+        self.m.bcid_reporter.create_from_pkg(
+            pkg_def, tags=tags, refs=[f'latest-{self._branch}'])
+
+        self.m.bcid_reporter.report_stage("upload-complete")

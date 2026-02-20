@@ -92,10 +92,7 @@ def RollSubproject(api, subproject_name, subproject_path, roll_cmd):
 
 def RunSteps(api, properties):
   if not api.led.led_build:
-    try:
-      api.bcid_reporter.report_stage("start")
-    except Exception:  # pragma: no cover
-      api.step.active_result.presentation.status = api.step.FAILURE
+    api.bcid_reporter.report_stage("start")
 
   api.gclient.set_config('chromium')
   api.gclient.apply_config('android')
@@ -116,10 +113,7 @@ def RunSteps(api, properties):
     RollSubproject(api, 'autorolled', autorolled_cipd_dir, autorolled_roll_cmd)
 
   if not api.led.led_build:
-    try:
-      api.bcid_reporter.report_stage("upload-complete")
-    except Exception:  # pragma: no cover
-      api.step.active_result.presentation.status = api.step.FAILURE
+    api.bcid_reporter.report_stage("upload-complete")
 
 
 def GenTests(api):

@@ -714,7 +714,7 @@ def GenTests(api):
           }),
       api.post_process(post_process.MustRun, 'processing generated orderfile'),
       api.post_process(
-          post_process.MustRun, 'processing generated orderfile.create '
+          post_process.MustRun, 'processing generated orderfile.register '
           'chromium/chrome/android/orderfiles/arm64'),
       api.post_process(post_process.DropExpectation),
   )

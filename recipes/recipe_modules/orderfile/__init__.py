@@ -9,9 +9,11 @@ from PB.recipe_modules.build.orderfile import properties
 DEPS = [
     'chromium',
     'profiles',
+    'recipe_engine/bcid_reporter',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/file',
+    'recipe_engine/led',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
