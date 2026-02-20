@@ -255,8 +255,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'linux-trace':
-        _create_compile_spec('linux-trace'),
     'mac-dbg-compile':
         _create_compile_spec('mac-dbg-compile'),
     'mac-arm64-test':
