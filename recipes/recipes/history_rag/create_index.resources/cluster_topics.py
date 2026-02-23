@@ -428,7 +428,7 @@ def main():
   parser.add_argument(
       "--min-cluster-size",
       type=int,
-      default=4,
+      default=None,
       help="Minimum number of documents for a cluster (default: 4).")
   parser.add_argument(
       "--min-samples",
@@ -498,6 +498,20 @@ def main():
       n_components=args.n_components)
 
   # Step 2: HDBSCAN clustering
+  num_docs = len(documents)
+  if args.min_cluster_size is None:
+    # Use sqrt logic, capped at 100
+    args.min_cluster_size = max(3, min(int(np.sqrt(num_docs)), 100))
+
+    # It is usually best practice to also scale min_samples
+    # to be smaller than or equal to min_cluster_size
+    args.min_samples = max(2, min(args.min_samples, args.min_cluster_size))
+
+    print(
+        f"Automatically set min_cluster_size to {args.min_cluster_size} based on {num_docs} documents."
+    )
+  else:
+    print(f"Using user-provided min_cluster_size: {args.min_cluster_size}")
   labels = perform_hdbscan_clustering(
       reduced_embeddings,
       min_cluster_size=args.min_cluster_size,

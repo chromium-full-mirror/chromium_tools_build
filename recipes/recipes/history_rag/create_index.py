@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Creates index for history-rag."""
 
+import re
 from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -25,12 +26,11 @@ DEPS = [
 ]
 
 BASE_PKG_NAME = 'infra/history_rag/chrome'
-MANIFEST_PKG_NAME = '%s/manifest' % BASE_PKG_NAME
-FILE_BLAME_JSONS_PKG_NAME = '%s/file_blame_jsons' % BASE_PKG_NAME
-COMMIT_HASH_JSONS_PKG_NAME = '%s/commit_hash_jsons' % BASE_PKG_NAME
 
 GCS_BUCKET_STAGING = 'historyrag-chrome-internal-staging'
 GCS_BUCKET_PROD = 'historyrag-chrome-internal'
+MIN_FILE_THRESHOLD = 100
+MIN_COMMITS_THRESHOLD = 500
 
 
 def get_destination_bucket(api):
@@ -43,17 +43,46 @@ def get_destination_bucket(api):
 GOOGLE_CLOUD_PROJECT = 'skia-infra-corp'
 GOOGLE_CLOUD_LOCATION = 'global'
 
+
+def _get_manifest_pkg_name(submodule_name):
+  return f'{BASE_PKG_NAME}/{submodule_name}/manifest'
+
+
+def _get_file_blame_jsons_pkg_name(submodule_name):
+  return f'{BASE_PKG_NAME}/{submodule_name}/file_blame_jsons'
+
 def RunSteps(api):
-  source_dir, revision = checkout_source_code(api)
-  file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
-      generate_file_blame_jsons(api, source_dir, revision))
-  commit_hash_jsons_dir = (
-      generate_commit_hash_jsons(api, source_dir, revision,
-                                 file_blame_jsons_dir))
-  # update manifest package to point to new CIPDs
-  update_pointers_to_latest_CIPDs(api, revision, file_blame_jsons_pkg_name,
-                                  file_blame_jsons_pkg_id)
-  generate_topics(api, commit_hash_jsons_dir, revision)
+  source_dir, _ = checkout_source_code(api)
+  submodules = find_submodules(api, source_dir)
+  failed_submodules = {}
+  for submodule_name, submodule_info in submodules.items():
+    submodule_dir = submodule_info['path']
+    submodule_revision = submodule_info['revision']
+    with api.step.nest(f'Processing {submodule_name}') as presentation:
+      # process_submodule(api, submodule_name, submodule_dir, submodule_revision)
+      try:
+        process_submodule(api, submodule_name, submodule_dir,
+                          submodule_revision)
+      except api.step.StepFailure as e:
+        failed_submodules[submodule_name] = f"StepFailure: {e}"
+        presentation.status = api.step.FAILURE
+        presentation.step_text = 'Finished with StepFailure'
+        # Add error log to the current step's presentation
+        presentation.logs['error'] = str(e).splitlines()
+
+  if failed_submodules:
+    summary = ["Processing completed with the following failures:"]
+    for name, reason in failed_submodules.items():
+      summary.append(f"  - {name}: {reason}")
+
+    # Create a summary step for failures
+    failure_summary_step = api.step('Submodule Failures Summary', cmd=None)
+    failure_summary_step.presentation.logs['summary'] = summary
+    failure_summary_step.presentation.status = api.step.FAILURE
+
+    # Raise a StepFailure to make the build result non-successful
+    raise api.step.StepFailure("One or more submodules failed to process.")
+
 
 def checkout_source_code(api):
   with api.step.nest('Checkout Chrome Source Code'):
@@ -71,7 +100,101 @@ def checkout_source_code(api):
     return source_dir, revision
 
 
-def generate_file_blame_jsons(api, source_dir, current_revision):
+def find_submodules(api, source_dir):
+  """
+  Finds all configured submodules, their paths, and their current HEAD commits.
+
+  Args:
+    api: The recipe API object.
+    source_dir: The root directory of the main git repository (e.g., chromium/src).
+
+  Returns:
+    A dictionary where keys are project names ('root' for the main repo,
+    sanitized paths for submodules) and values are dictionaries:
+    {'path': absolute_path, 'revision': head_commit_hash}.
+  """
+  with api.step.nest('Find all submodules'):
+    submodules = {}
+
+    # 1. Process the main repository
+    step_result = api.step(
+        'Get HEAD for root', ['git', '-C', source_dir, 'rev-parse', 'HEAD'],
+        stdout=api.raw_io.output_text(),
+        stderr=api.raw_io.output_text())
+    root_head = step_result.stdout.strip()
+    submodules['root'] = {'path': source_dir, 'revision': root_head}
+
+    # 2. Process submodules from .gitmodules
+    gitmodules_path = source_dir / '.gitmodules'
+    content = api.file.read_text("Read .gitmodules", gitmodules_path)
+    path_regex = re.compile(r'^\s*path\s*=\s*(.*)$', re.MULTILINE)
+    submodule_entries = content.split('[submodule ')
+
+    for entry in submodule_entries[1:]:
+      match = path_regex.search(entry)
+      if not match:
+        continue
+      submodule_path = match.group(1).strip()
+      submodule_abs_path = source_dir / submodule_path
+      submodule_name = re.sub(r'[^a-zA-Z0-9_-]+', '_', submodule_path)
+
+      if not api.path.exists(submodule_abs_path):
+        continue
+
+      full_command = f"find {submodule_abs_path} -not -path '*/.*' -type f 2>/dev/null | wc -l"
+      cmd = ['bash', '-c', full_command]
+      step_result = api.step(
+          f'Check if {submodule_name} has minimum number of files',
+          cmd,
+          stdout=api.raw_io.output_text(),
+      )
+
+      if int(step_result.stdout.strip()) < MIN_FILE_THRESHOLD:
+        continue
+
+      cmd = ['git', '-C', submodule_abs_path, 'rev-list', '--count', 'HEAD']
+      step_result = api.step(
+          f'Check if {submodule_name} has minimum number of commits',
+          cmd,
+          stdout=api.raw_io.output_text(),
+      )
+      if int(step_result.stdout.strip()) < MIN_COMMITS_THRESHOLD:
+        continue
+
+      step_result = api.step(
+          f'Get HEAD for {submodule_name}',
+          ['git', '-C', submodule_abs_path, 'rev-parse', 'HEAD'],
+          stdout=api.raw_io.output_text(),
+          stderr=api.raw_io.output_text())
+      submodule_head = step_result.stdout.strip()
+
+      submodules[submodule_name] = {
+          'path': submodule_abs_path,
+          'revision': submodule_head
+      }
+    return submodules
+
+
+def process_submodule(api, submodule_name, submodule_dir, submodule_revision):
+  """Runs the indexing pipeline for a single source directory (repo or submodule)."""
+  file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
+      generate_file_blame_jsons(api, submodule_name, submodule_dir,
+                                submodule_revision))
+  commit_hash_jsons_dir = (
+      generate_commit_hash_jsons(api, submodule_name, submodule_dir,
+                                 file_blame_jsons_dir))
+  # update manifest package to point to new CIPDs
+  update_pointers_to_latest_CIPDs(api, submodule_name, submodule_revision,
+                                  file_blame_jsons_pkg_name,
+                                  file_blame_jsons_pkg_id)
+  generate_topics(api, submodule_name, submodule_revision,
+                  commit_hash_jsons_dir)
+  # cleanup all generated files to avoid out of disk errors
+  api.file.rmcontents('clean up work', api.path.cleanup_dir)
+
+
+def generate_file_blame_jsons(api, submodule_name, submodule_dir,
+                              current_revision):
   """Generates a set of blame jsons for the source code.
 
   The output of this phase is a set of directories mimicking the file
@@ -95,31 +218,33 @@ def generate_file_blame_jsons(api, source_dir, current_revision):
     instance_id: The instance ID of the CIPD package containing the blame jsons.
   """
   with api.step.nest('Generate File Blame JSONs'):
-    baseline_pkg = _get_baseline_package_info(api)
+    baseline_pkg = _get_baseline_package_info(api, submodule_name)
     if baseline_pkg:
       baseline_blame_jsons_dir = _download_baseline_file_blame_jsons(
-          api, baseline_pkg)
+          api, submodule_name, baseline_pkg)
       fresh_blame_jsons_dir = _generate_fresh_file_blame_jsons(
-          api, source_dir, baseline_pkg)
+          api, submodule_name, submodule_dir, baseline_pkg)
       merged_dir = _merge_blame_jsons(api, baseline_blame_jsons_dir,
                                       fresh_blame_jsons_dir)
     else:
       # No baseline, so the "merged" directory is just the fresh ones
-      merged_dir = _generate_fresh_file_blame_jsons(api, source_dir, None)
+      merged_dir = _generate_fresh_file_blame_jsons(api, submodule_name,
+                                                    submodule_dir, None)
 
     # Upload the prepared directory
+    pkg_name_base = _get_file_blame_jsons_pkg_name(submodule_name)
     pkg_name, instance_id = _update_cipd_package(
         api,
         step_name='Upload File Blame JSONs to CIPD',
-        package_name=f"{FILE_BLAME_JSONS_PKG_NAME}/{current_revision}",
+        package_name=f"{pkg_name_base}/{current_revision}",
         package_content_dir=merged_dir,
-        package_description=f"File blame jsons for chrome at commit: {current_revision}"
+        package_description=f"File blame jsons for {submodule_name} at commit: {current_revision}"
     )
 
     return merged_dir, pkg_name, instance_id
 
 
-def generate_commit_hash_jsons(api, source_dir, current_revision,
+def generate_commit_hash_jsons(api, submodule_name, submodule_dir,
                                file_blame_jsons_dir):
   """Generate commit_hash jsons from file_blame jsons.
 
@@ -131,24 +256,25 @@ def generate_commit_hash_jsons(api, source_dir, current_revision,
   """
   with api.step.nest('Generate Commit Hash JSONs'):
     commit_hash_monolith_json_file = _collect_file_blame_jsons(
-        api, source_dir, file_blame_jsons_dir)
-
+        api, submodule_name, submodule_dir, file_blame_jsons_dir)
     # The command appends commit level info with blame_hashes.json file
     # generated in the previous step and creates one JSON file per commit hash
     # in the output directory. Each file is named {commit_hash}.json
     # (e.g., a1b2c3d4e5f6.json).
-    output_dir = api.path.cleanup_dir / 'commit_hash_jsons'
+    output_dir = api.path.cleanup_dir / f'{submodule_name}_commit_hash_jsons'
     cmd = [
         'vpython3',
         api.resource('git_data_processor.py'), 'fetch', '--source-dir',
-        source_dir, '--output-dir', output_dir, commit_hash_monolith_json_file
+        submodule_dir, '--output-dir', output_dir,
+        commit_hash_monolith_json_file
     ]
     _ = api.step('Generate JSON per commit hash', cmd)
 
     return output_dir
 
 
-def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
+def _collect_file_blame_jsons(api, submodule_name, submodule_dir,
+                              blame_json_dir):
   """Collects all blame hash jsons and converts to a monolith inverse map.
 
   This phase's main purpose is to "invert" the data from the blame_index.
@@ -193,16 +319,18 @@ def _collect_file_blame_jsons(api, source_dir, blame_json_dir):
   blamed on the commit but also `context` lines around it (`context` lines
   before and `context` lines after).
   """
-  blame_hashes_file = api.path.cleanup_dir / 'blame_hashes.json'
+  blame_hashes_file = api.path.cleanup_dir / f'{submodule_name}_blame_hashes.json'
   cmd = [
       'vpython3',
       api.resource('git_data_processor.py'), 'collect', '--source-dir',
-      source_dir, '--output-file', blame_hashes_file, blame_json_dir
+      submodule_dir, '--output-file', blame_hashes_file, blame_json_dir
   ]
   _ = api.step('Collect Blame JSONs', cmd)
   return blame_hashes_file
 
-def generate_topics(api, commit_hash_jsons_dir, revision):
+
+def generate_topics(api, submodule_name, submodule_revision,
+                    commit_hash_jsons_dir):
   with api.step.nest('Generate and Upload Topics'):
     with api.context(
         env={
@@ -210,7 +338,7 @@ def generate_topics(api, commit_hash_jsons_dir, revision):
             'GOOGLE_CLOUD_PROJECT': GOOGLE_CLOUD_PROJECT,
             'GOOGLE_CLOUD_LOCATION': GOOGLE_CLOUD_LOCATION,
         }):
-      prepared_commit_file = api.path.cleanup_dir / 'prepared_commits.pkl'
+      prepared_commit_file = api.path.cleanup_dir / f'{submodule_name}_prepared_commits.pkl'
       cmd = [
           'vpython3',
           api.resource('prepare_commits.py'), commit_hash_jsons_dir,
@@ -218,7 +346,7 @@ def generate_topics(api, commit_hash_jsons_dir, revision):
       ]
       _ = api.step('Prepare Commits', cmd)
 
-      embeddings_file = api.path.cleanup_dir / 'embeddings.npz'
+      embeddings_file = api.path.cleanup_dir / f'{submodule_name}_embeddings.npz'
       cmd = [
           'vpython3',
           api.resource('generate_embeddings.py'), prepared_commit_file,
@@ -226,16 +354,15 @@ def generate_topics(api, commit_hash_jsons_dir, revision):
       ]
       _ = api.step('Generate Embeddings', cmd)
 
-      cluster_json_file = api.path.cleanup_dir / 'clusters.json'
+      cluster_json_file = api.path.cleanup_dir / f'{submodule_name}_clusters.json'
       cmd = [
           'vpython3',
           api.resource('cluster_topics.py'), embeddings_file,
-          prepared_commit_file, '--output-file', cluster_json_file,
-          '--min-cluster-size', 100
+          prepared_commit_file, '--output-file', cluster_json_file
       ]
       _ = api.step('Cluster Topics', cmd)
 
-      summarized_topics_file = api.path.cleanup_dir / 'summarized_topics.json'
+      summarized_topics_file = api.path.cleanup_dir / f'{submodule_name}_summarized_topics.json'
       cmd = [
           'vpython3',
           api.resource('summarize_topics.py'), cluster_json_file,
@@ -244,7 +371,7 @@ def generate_topics(api, commit_hash_jsons_dir, revision):
       ]
       _ = api.step('Summarize Topics', cmd)
 
-      topic_zip_file = api.path.cleanup_dir / 'topics.zip'
+      topic_zip_file = api.path.cleanup_dir / f'{submodule_name}_topics.zip'
       cmd = [
           'vpython3',
           api.resource('group_and_package.py'), summarized_topics_file,
@@ -252,27 +379,27 @@ def generate_topics(api, commit_hash_jsons_dir, revision):
       ]
       _ = api.step('Group and Package', cmd)
 
-      topic_dest_path = _get_topics_dest_path(api, revision)
+      topic_dest_path = _get_topics_dest_path(api, submodule_name,
+                                              submodule_revision)
       gcs_bucket = get_destination_bucket(api)
       api.gsutil.upload(
           source=topic_zip_file,
           bucket=gcs_bucket,
           dest=topic_dest_path,
-          name=f'Upload topics for {revision}',
+          name=f'Upload topics for {submodule_revision}',
           link_name='GCS Topics File')
       api.step.active_result.presentation.links[
           'GCS Topics File'] = f"https://storage.cloud.google.com/{gcs_bucket}/{topic_dest_path}"
 
 
-def _get_topics_dest_path(api, current_revision):
+def _get_topics_dest_path(api, submodule_name, current_revision):
   """Generates the GCS destination path for the embeddings file."""
   now = api.time.utcnow()
   date_path = now.strftime('%Y/%m/%d')
-  return f"embeddings/{date_path}/{current_revision}/topics.zip"
+  return f"embeddings/{date_path}/{current_revision}/{submodule_name}/topics.zip"
 
 
-
-def _get_baseline_package_info(api):
+def _get_baseline_package_info(api, submodule_name):
   """
   Fetches a pointer package, reads a manifest file, and returns the content.
 
@@ -288,31 +415,28 @@ def _get_baseline_package_info(api):
     api.step.StepFailure: If manifest.json is missing, malformed, or
                           lacks required keys ('package', 'version').
   """
-  dest_path = api.path.cleanup_dir / 'manifest'
-  # Step 1: Check if the manifest package exists at 'latest'
+  manifest_pkg_name = _get_manifest_pkg_name(submodule_name)
+  dest_path = api.path.cleanup_dir / f'{submodule_name}_manifest'
   with api.step.nest('Check for manifest package') as presentation:
     try:
-      api.cipd.describe(MANIFEST_PKG_NAME, 'latest')
+      api.cipd.describe(manifest_pkg_name, 'latest')
     except api.step.StepFailure:
       presentation.logs['info'] = [
-          f"Manifest package {MANIFEST_PKG_NAME}:latest not found. Returning None."
+          f"Manifest package {manifest_pkg_name}:latest not found. Returning None."
       ]
       presentation.status = api.step.WARNING
       return None
 
-  # Step 2: Download the pointer package
   with api.step.nest('Fetch manifest package from CIPD'):
     pkgs = api.cipd.EnsureFile()
-    pkgs.add_package(MANIFEST_PKG_NAME, 'latest')
+    pkgs.add_package(manifest_pkg_name, 'latest')
     api.cipd.ensure(dest_path, pkgs)
 
   manifest_file_path = dest_path / 'manifest.json'
-  # Step 3: Check if manifest.json exists
   if not api.path.exists(manifest_file_path):
     raise api.step.StepFailure(
-        f"Manifest file not found in CIPD package {MANIFEST_PKG_NAME}")
+        f"Manifest file not found in CIPD package {manifest_pkg_name}")
 
-  # Step 4: Read and parse the JSON file
   manifest_data = api.file.read_json(
       'Read manifest.json',
       manifest_file_path,
@@ -335,8 +459,8 @@ def _get_baseline_package_info(api):
   return manifest_data
 
 
-def _download_baseline_file_blame_jsons(api, baseline_package):
-  dest_path = api.path.cleanup_dir / 'baseline_blame_jsons'
+def _download_baseline_file_blame_jsons(api, submodule_name, baseline_package):
+  dest_path = api.path.cleanup_dir / f'{submodule_name}_baseline_blame_jsons'
   with api.step.nest('Fetch baseline blame jsons'):
     pkgs = api.cipd.EnsureFile()
     pkgs.add_package(baseline_package['file_blame_jsons_package'],
@@ -345,13 +469,14 @@ def _download_baseline_file_blame_jsons(api, baseline_package):
   return dest_path
 
 
-def _generate_fresh_file_blame_jsons(api, source_dir, baseline_pkg):
-  output_dir = api.path.cleanup_dir / 'fresh_blame_jsons'
+def _generate_fresh_file_blame_jsons(api, submodule_name, submodule_dir,
+                                     baseline_pkg):
+  output_dir = api.path.cleanup_dir / f'{submodule_name}_fresh_blame_jsons'
   cmd = ['vpython3', api.resource('git_data_processor.py'), 'blame']
   if baseline_pkg:
     baseline_commit = baseline_pkg['file_blame_jsons_package'].split('/')[-1]
     cmd += ['--baseline-commit', baseline_commit]
-  cmd += ['--source-dir', source_dir, '--output-dir', output_dir, '.']
+  cmd += ['--source-dir', submodule_dir, '--output-dir', output_dir, '.']
   _ = api.step('Generate fresh blame index', cmd)
   return output_dir
 
@@ -420,7 +545,7 @@ def _update_cipd_package(api,
       f"CIPD instance ID not found in output for {package_name}")
 
 
-def update_pointers_to_latest_CIPDs(api, current_revision,
+def update_pointers_to_latest_CIPDs(api, submodule_name, current_revision,
                                     file_blame_jsons_package,
                                     file_blame_jsons_version):
   with api.step.nest('Update Pointers to all JSON CIPD packages'):
@@ -428,19 +553,20 @@ def update_pointers_to_latest_CIPDs(api, current_revision,
         "file_blame_jsons_package": file_blame_jsons_package,
         "file_blame_jsons_version": file_blame_jsons_version,
     }
-    temp_dir = api.path.mkdtemp(prefix='manifest_')
+    temp_dir = api.path.mkdtemp(prefix=f'{submodule_name}_manifest_')
     manifest_file_path = temp_dir / 'manifest.json'
     api.file.write_json(
         name='Create manifest.json',
         dest=manifest_file_path,
         data=manifest_content,
     )
+    manifest_pkg_name = _get_manifest_pkg_name(submodule_name)
     _update_cipd_package(
         api,
         step_name='Upload new manifest to cipd',
-        package_name=MANIFEST_PKG_NAME,
+        package_name=manifest_pkg_name,
         package_content_dir=temp_dir,
-        package_description=f"Commit hash jsons for chrome at commit: {current_revision}"
+        package_description=f"Manifest for {submodule_name} at commit: {current_revision}"
     )
 
 # Default builder config for tests
@@ -495,7 +621,6 @@ def StepCommandContainsSubstrings(check, step_odict, step, substrings):
       'command line for step %s contained %s as substrings' %
       (step, substrings), all(found_in_commandline(s) for s in substrings))
 
-
 def GenTests(api):
   # Basic test case: Baseline manifest exists and is valid.
   yield api.test(
@@ -506,76 +631,99 @@ def GenTests(api):
               'gclient_config': 'chromium',
           },
       }),
+      # Mock find HEAD for root
+      api.step_data(
+          'Find all submodules.Get HEAD for root',
+          stdout=api.raw_io.output_text('newrevision')),
       # Mock cipd describe for manifest package - found
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=0),
-      api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',
-                      api.path.cleanup_dir / 'blame_jsons' / '.cipd'),
+      api.path.exists(api.path.cleanup_dir / 'root_manifest' / 'manifest.json'),
       # Mock manifest.json content
       api.step_data(
-          'Generate File Blame JSONs.Read manifest.json',
+          'Processing root.Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({
-              'file_blame_jsons_package': 'infra/history_rag/oldrevision',
-              'file_blame_jsons_version': 'baseline-version-id'
+              'file_blame_jsons_package':
+                  'infra/history_rag/chrome/root/file_blame_jsons/oldrevision',
+              'file_blame_jsons_version':
+                  'baseline-version-id'
           })),
       # Mock cipd create for file blame json package
       api.step_data(
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+              'Instance: infra/history_rag/chrome/root/file_blame_jsons/newrevision:new-blame-instance-id'
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/chrome/manifest:new-manifest-instance-id'
+              'Instance: infra/history_rag/chrome/root/manifest:new-manifest-instance-id'
           )),
       api.post_process(post_process.MustRun,
                        'Checkout Chrome Source Code.gclient runhooks'),
-      api.post_process(post_process.MustRun,
-                       'Generate File Blame JSONs.Check for manifest package'),
       api.post_process(
           post_process.MustRun,
-          'Generate File Blame JSONs.Fetch manifest package from CIPD'),
-      api.post_process(post_process.MustRun,
-                       'Generate File Blame JSONs.Read manifest.json'),
-      api.post_process(post_process.MustRun,
-                       'Generate File Blame JSONs.Fetch baseline blame jsons'),
-      api.post_process(post_process.MustRun,
-                       'Generate File Blame JSONs.Generate fresh blame index'),
-      api.post_process(
-          post_process.MustRun,
-          'Generate File Blame JSONs.Merge Fresh and Baseline Blame JSONs'),
-      api.post_process(
-          post_process.MustRun,
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD'),
-      api.post_process(
-          post_process.MustRun,
-          'Generate Commit Hash JSONs.Generate JSON per commit hash'),
-      api.post_process(
-          post_process.MustRun,
-          'Update Pointers to all JSON CIPD packages.Create manifest.json'),
-      api.post_process(
-          post_process.MustRun,
-          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd'
+          'Processing root.Generate File Blame JSONs.Check for manifest package'
       ),
       api.post_process(
           post_process.MustRun,
-          'Update Pointers to all JSON CIPD packages.Set CIPD ref latest'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Prepare Commits'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Generate Embeddings'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Cluster Topics'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Summarize Topics'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Group and Package'),
+          'Processing root.Generate File Blame JSONs.Fetch manifest package from CIPD'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate File Blame JSONs.Read manifest.json'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate File Blame JSONs.Fetch baseline blame jsons'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate File Blame JSONs.Generate fresh blame index'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate File Blame JSONs.Merge Fresh and Baseline Blame JSONs'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate Commit Hash JSONs.Generate JSON per commit hash'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Update Pointers to all JSON CIPD packages.Create manifest.json'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Update Pointers to all JSON CIPD packages.Set CIPD ref latest'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Prepare Commits'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Generate Embeddings'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Cluster Topics'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Summarize Topics'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Group and Package'),
       api.post_process(
           StepCommandContainsSubstrings,
-          'Generate and Upload Topics.gsutil Upload topics for newrevision',
+          'Processing root.Generate and Upload Topics.gsutil Upload topics for newrevision',
           ['gs://historyrag-chrome-internal-staging/']),
       api.post_process(post_process.DropExpectation),
   )
@@ -589,61 +737,80 @@ def GenTests(api):
               'gclient_config': 'chromium',
           },
       }),
+      # Mock find HEAD for root
+      api.step_data(
+          'Find all submodules.Get HEAD for root',
+          stdout=api.raw_io.output_text('newrevision')),
       # Mock cipd describe for manifest package - not found
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=1),
       # Mock cipd create for file blame json package
       api.step_data(
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+              'Instance: infra/history_rag/chrome/root/file_blame_jsons/newrevision:new-blame-instance-id'
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/chrome/manifest:new-manifest-instance-id'
+              'Instance: infra/history_rag/chrome/root/manifest:new-manifest-instance-id'
           )),
       api.post_process(
           post_process.DoesNotRun,
-          'Generate File Blame JSONs.Fetch manifest package from CIPD'),
-      api.post_process(post_process.DoesNotRun,
-                       'Generate File Blame JSONs.Fetch baseline blame jsons'),
+          'Processing root.Generate File Blame JSONs.Fetch manifest package from CIPD'
+      ),
       api.post_process(
           post_process.DoesNotRun,
-          'Generate File Blame JSONs.Merge Fresh and Baseline Blame JSONs'),
-      api.post_process(post_process.MustRun,
-                       'Generate File Blame JSONs.Generate fresh blame index'),
+          'Processing root.Generate File Blame JSONs.Fetch baseline blame jsons'
+      ),
       api.post_process(
-          post_process.MustRun,
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD'),
-      api.post_process(
-          post_process.MustRun,
-          'Generate Commit Hash JSONs.Generate JSON per commit hash'),
-      api.post_process(
-          post_process.MustRun,
-          'Update Pointers to all JSON CIPD packages.Create manifest.json'),
-      api.post_process(
-          post_process.MustRun,
-          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd'
+          post_process.DoesNotRun,
+          'Processing root.Generate File Blame JSONs.Merge Fresh and Baseline Blame JSONs'
       ),
       api.post_process(
           post_process.MustRun,
-          'Update Pointers to all JSON CIPD packages.Set CIPD ref latest'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Prepare Commits'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Generate Embeddings'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Cluster Topics'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Summarize Topics'),
-      api.post_process(post_process.MustRun,
-                       'Generate and Upload Topics.Group and Package'),
+          'Processing root.Generate File Blame JSONs.Generate fresh blame index'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate Commit Hash JSONs.Generate JSON per commit hash'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Update Pointers to all JSON CIPD packages.Create manifest.json'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Update Pointers to all JSON CIPD packages.Set CIPD ref latest'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Prepare Commits'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Generate Embeddings'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Cluster Topics'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Summarize Topics'),
+      api.post_process(
+          post_process.MustRun,
+          'Processing root.Generate and Upload Topics.Group and Package'),
       api.post_process(
           StepCommandContainsSubstrings,
-          'Generate and Upload Topics.gsutil Upload topics for newrevision',
+          'Processing root.Generate and Upload Topics.gsutil Upload topics for newrevision',
           ['gs://historyrag-chrome-internal-staging/']),
       api.post_process(post_process.DropExpectation),
   )
@@ -657,28 +824,33 @@ def GenTests(api):
               'gclient_config': 'chromium',
           },
       }),
+      # Mock find HEAD for root
+      api.step_data(
+          'Find all submodules.Get HEAD for root',
+          stdout=api.raw_io.output_text('newrevision')),
       # Mock cipd describe for manifest package - not found
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=1),
       # Mock cipd create for file blame json package
       api.step_data(
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+              'Instance: infra/history_rag/chrome/root/file_blame_jsons/newrevision:new-blame-instance-id'
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/chrome/manifest:new-manifest-instance-id'
+              'Instance: infra/history_rag/chrome/root/manifest:new-manifest-instance-id'
           )),
       api.post_process(
           post_process.MustRun,
-          'Generate and Upload Topics.gsutil Upload topics for newrevision'),
+          'Processing root.Generate and Upload Topics.gsutil Upload topics for newrevision'
+      ),
       api.post_process(
           StepCommandContainsSubstrings,
-          'Generate and Upload Topics.gsutil Upload topics for newrevision',
+          'Processing root.Generate and Upload Topics.gsutil Upload topics for newrevision',
           ['gs://historyrag-chrome-internal/']),
       api.post_process(post_process.DropExpectation),
   )
@@ -693,9 +865,10 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=0),
-      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
+      api.post_process(post_process.StepFailure,
+                       'Processing root.Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
@@ -709,17 +882,19 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=0),
-      api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
+      api.path.exists(api.path.cleanup_dir / 'root_manifest' /
+                      'manifest.json',),
       api.step_data(
-          'Generate File Blame JSONs.Read manifest.json',
+          'Processing root.Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({}),
           retcode=1  # Simulate JSON parse failure
       ),
-      api.post_process(post_process.StepException, 'Generate File Blame JSONs'),
+      api.post_process(post_process.StepException,
+                       'Processing root.Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
-      status='INFRA_FAILURE')
+      status='FAILURE')
 
   # Test case: Manifest.json is missing the 'file_blame_jsons_package' key.
   yield api.test(
@@ -731,13 +906,15 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=0),
-      api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
+      api.path.exists(api.path.cleanup_dir / 'root_manifest' /
+                      'manifest.json',),
       api.step_data(
-          'Generate File Blame JSONs.Read manifest.json',
+          'Processing root.Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({'file_blame_jsons_version': 'some-version'})),
-      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
+      api.post_process(post_process.StepFailure,
+                       'Processing root.Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
@@ -751,15 +928,17 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=0),
-      api.path.exists(api.path.cleanup_dir / 'manifest/manifest.json',),
+      api.path.exists(api.path.cleanup_dir / 'root_manifest' /
+                      'manifest.json',),
       api.step_data(
-          'Generate File Blame JSONs.Read manifest.json',
+          'Processing root.Generate File Blame JSONs.Read manifest.json',
           api.file.read_json({
               'file_blame_jsons_package': f'{BASE_PKG_NAME}/oldrevision',
           })),
-      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
+      api.post_process(post_process.StepFailure,
+                       'Processing root.Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
@@ -773,12 +952,13 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=1),  # No baseline
       api.step_data(
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text('Something went wrong')),
-      api.post_process(post_process.StepFailure, 'Generate File Blame JSONs'),
+      api.post_process(post_process.StepFailure,
+                       'Processing root.Generate File Blame JSONs'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
 
@@ -792,20 +972,113 @@ def GenTests(api):
           },
       }),
       api.step_data(
-          'Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/manifest',
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
           retcode=1),  # No baseline
 
       # Mock cipd create for file blame json package
       api.step_data(
-          'Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
           stdout=api.raw_io.output_text(
-              'Instance: infra/history_rag/file_blame_jsons/newrevision:new-blame-instance-id'
+              'Instance: infra/history_rag/chrome/root/file_blame_jsons/newrevision:new-blame-instance-id'
           )),
       # Mock cipd create for manifest package
       api.step_data(
-          'Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
           stdout=api.raw_io.output_text('Oh no, no instance ID here')),
-      api.post_process(post_process.StepFailure,
-                       'Update Pointers to all JSON CIPD packages'),
+      api.post_process(
+          post_process.StepFailure,
+          'Processing root.Update Pointers to all JSON CIPD packages'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE')
+
+  def src_dir():
+    # Get the base checkout directory from the test API and append 'src'
+    return api.chromium_checkout.default_checkout_dir / 'src'
+
+  gitmodules_content = """
+    [submodule "good_sub"]
+        path = good_sub
+        url = https://example.com/good_sub.git
+    [submodule "too_few_files"]
+        path = too_few_files
+        url = https://example.com/too_few_files.git
+    [submodule "too_few_commits"]
+        path = too_few_commits
+        url = https://example.com/too_few_commits.git
+    [submodule "nonexistent"]
+        path = nonexistent
+        url = https://example.com/nonexistent.git
+    [submodule "no_path]
+        url = ...
+    """
+
+  yield api.test(
+      'submodule_discovery',
+      builder_config_test_data(api),
+      api.properties(**{
+          '$build/chromium_checkout': {
+              'gclient_config': 'chromium',
+          },
+      }),
+      # Mock find HEAD for root
+      api.step_data(
+          'Find all submodules.Get HEAD for root',
+          stdout=api.raw_io.output_text('newrevision')),
+      # Mock .gitmodules existence and content
+      api.path.exists(src_dir() / '.gitmodules'),
+      api.step_data('Find all submodules.Read .gitmodules',
+                    api.file.read_text(gitmodules_content)),
+      # Mock existence of submodule directories on disk
+      api.path.exists(src_dir() / 'good_sub',
+                      src_dir() / 'too_few_files',
+                      src_dir() / 'too_few_commits'),
+      # Mock steps for min files check
+      api.step_data(
+          'Find all submodules.Check if good_sub has minimum number of files',
+          stdout=api.raw_io.output_text(str(MIN_FILE_THRESHOLD))),
+      api.step_data(
+          'Find all submodules.Check if too_few_files has minimum number of files',
+          stdout=api.raw_io.output_text(str(MIN_FILE_THRESHOLD - 1))),
+      api.step_data(
+          'Find all submodules.Check if too_few_commits has minimum number of files',
+          stdout=api.raw_io.output_text(str(MIN_FILE_THRESHOLD))),
+      # Mock steps for min commits check
+      api.step_data(
+          'Find all submodules.Check if good_sub has minimum number of commits',
+          stdout=api.raw_io.output_text(str(MIN_COMMITS_THRESHOLD))),
+      api.step_data(
+          'Find all submodules.Check if too_few_commits has minimum number of commits',
+          stdout=api.raw_io.output_text(str(MIN_COMMITS_THRESHOLD - 1))),
+      # Mock find HEAD for good_sub
+      api.step_data(
+          'Find all submodules.Get HEAD for good_sub',
+          stdout=api.raw_io.output_text('newrevision_good_sub')),
+      # --- Mock for root processing ---
+      api.step_data(
+          'Processing root.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/root/manifest',
+          retcode=1),
+      api.step_data(
+          'Processing root.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          stdout=api.raw_io.output_text('Instance: ...')),
+      api.step_data(
+          'Processing root.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          stdout=api.raw_io.output_text('Instance: ...')),
+
+      # --- Mock steps for "good_sub" ---
+      api.step_data(
+          'Processing good_sub.Generate File Blame JSONs.Check for manifest package.cipd describe infra/history_rag/chrome/good_sub/manifest',
+          retcode=1),
+      api.step_data(
+          'Processing good_sub.Generate File Blame JSONs.Upload File Blame JSONs to CIPD',
+          stdout=api.raw_io.output_text('Instance: ...')),
+      api.step_data(
+          'Processing good_sub.Update Pointers to all JSON CIPD packages.Upload new manifest to cipd',
+          stdout=api.raw_io.output_text('Instance: ...')),
+      api.post_process(post_process.MustRun, 'Processing root'),
+      api.post_process(post_process.MustRun, 'Processing good_sub'),
+      api.post_process(post_process.DoesNotRun,
+                       'Processing path_to_too_few_files'),
+      api.post_process(post_process.DoesNotRun, 'Processing too_few_commits'),
+      api.post_process(post_process.DoesNotRun, 'Processing nonexistent'),
+      api.post_process(post_process.DropExpectation),
+  )
