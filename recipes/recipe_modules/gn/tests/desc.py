@@ -102,7 +102,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'not_cacheable_type',
+      'cache_hit_runtime_deps',
       api.properties(
           label_or_pattern='target1',
           what_to_show='runtime_deps',
@@ -111,10 +111,9 @@ def GenTests(api):
       ),
       api.override_step_data(
           'desc 1', stdout=api.raw_io.output_text('file1\nfile2')),
-      api.override_step_data(
-          'desc 2', stdout=api.raw_io.output_text('file1\nfile2')),
+      # desc 2 should NOT be called because it's a cache hit
       api.post_process(post_process.StepSuccess, 'desc 1'),
-      api.post_process(post_process.StepSuccess, 'desc 2'),
+      api.post_process(post_process.DoesNotRun, 'desc 2'),
       api.post_process(post_process.DropExpectation),
   )
 

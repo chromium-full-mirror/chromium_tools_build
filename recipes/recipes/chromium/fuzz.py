@@ -385,7 +385,8 @@ def RunSteps(api, properties):
             build_dir,
             "*",
             'runtime_deps',
-            step_name='get runtime dependencies with pattern *')
+            step_name='get runtime dependencies with pattern *',
+            use_cache=True)
         paths_to_copy = extract_paths_to_copy(list_of_runtime_deps,
                                               set_of_gn_targets)
         paths_to_copy = sorted(paths_to_copy)

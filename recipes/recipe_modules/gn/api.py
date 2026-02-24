@@ -204,7 +204,8 @@ class GnApi(recipe_api.RecipeApi):
     Returns:
       The list of dependencies found.
     """
-    is_cacheable = (what_to_show == 'deps' and '--all' in flags)
+    is_cacheable = ((what_to_show == 'deps' and '--all' in flags) or
+                    (what_to_show == 'runtime_deps'))
     cache_key = (str(build_dir), label_or_pattern, what_to_show, flags)
 
     if use_cache and is_cacheable and cache_key in self._desc_cache:

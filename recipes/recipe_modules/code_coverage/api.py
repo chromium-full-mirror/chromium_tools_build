@@ -1353,7 +1353,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           build_dir,
           fuzzer_label,
           'runtime_deps',
-          step_name='gn desc (runtime_deps)')
+          step_name='gn desc (runtime_deps)',
+          use_cache=use_cache)
       # Normalize as structured absolute paths.
       elf_paths = {build_dir / path for path in elf_paths}
       runtime_paths = {build_dir / path for path in runtime_paths}
