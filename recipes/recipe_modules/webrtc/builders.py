@@ -554,46 +554,6 @@ _CLIENT_WEBRTC_PERF_SPECS = {
             }),
 }
 
-_INTERNAL_CLIENT_WEBRTC_SPECS = {
-    'iOS64 Debug':
-        WebRTCBuilderSpec.create(
-            chromium_config='webrtc_default',
-            gclient_config='webrtc_ios',
-            chromium_apply_config=['mac_toolchain'],
-            simulation_platform='mac',
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Debug',
-                'TARGET_PLATFORM': 'ios',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 64,
-            }),
-    'iOS64 Perf':
-        WebRTCBuilderSpec.create(
-            perf_id='webrtc-ios-tests',
-            chromium_config='webrtc_default',
-            gclient_config='webrtc_ios',
-            chromium_apply_config=['mac_toolchain'],
-            simulation_platform='mac',
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_PLATFORM': 'ios',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 64,
-            }),
-    'iOS64 Release':
-        WebRTCBuilderSpec.create(
-            chromium_config='webrtc_default',
-            gclient_config='webrtc_ios',
-            chromium_apply_config=['mac_toolchain'],
-            simulation_platform='mac',
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_PLATFORM': 'ios',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 64,
-            }),
-}
-
 _TRYSERVER_WEBRTC_SPEC = {
     'android_compile_arm_dbg':
         WebRTCBuilderSpec.create(
@@ -1158,6 +1118,5 @@ _TRYSERVER_WEBRTC_SPEC = {
 BUILDERS_DB = builder_db.BuilderDatabase.create({
     'client.webrtc': _CLIENT_WEBRTC_SPEC,
     'client.webrtc.perf': _CLIENT_WEBRTC_PERF_SPECS,
-    'internal.client.webrtc': _INTERNAL_CLIENT_WEBRTC_SPECS,
     'tryserver.webrtc': _TRYSERVER_WEBRTC_SPEC,
 })
