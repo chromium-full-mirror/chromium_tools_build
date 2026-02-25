@@ -27,7 +27,7 @@ DEPS = [
 ]
 
 GOOGLE_CLOUD_PROJECT = 'chrome-ci-vertex-provider'
-GOOGLE_CLOUD_LOCATION = 'us-central1'
+GOOGLE_CLOUD_LOCATION = 'global'
 
 NODEJS_CIPD_TAG = 'version:2@20.10.0'
 
