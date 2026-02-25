@@ -161,9 +161,6 @@ _SPEC = {
         _create_tester_config('linux', 64, 'linux-asan-test'),
     'linux-swiftshader-tsan':
         _create_tester_config('linux', 64, 'linux-tsan-test'),
-    'linux-trace':
-        _create_builder_config(
-            'linux', 'Release', 64, gclient_config='angle_nointernal'),
     'linux-tsan-test':
         _create_builder_config('linux', 'Release', 64),
     'mac-amd':
