@@ -1774,7 +1774,7 @@
   },
   {
     "cmd": [
-      "('Roll browser-protocol',)",
+      "('Roll browser-protocol and CfT',)",
       "{}"
     ],
     "cwd": "[CACHE]/builder/dummy",
@@ -1958,7 +1958,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'Roll browser-protocol', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling CfT pin toghether with browser-protocol files: https://chromium.googlesource.com/chromium/src/+log/123..456\\nIn case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
+      "{'subject': 'Roll browser-protocol and CfT', 'upload_flags': ['--dry-run', '--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling CfT pin toghether with browser-protocol files: https://chromium.googlesource.com/chromium/src/+log/123..456\\nIn case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': True}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {

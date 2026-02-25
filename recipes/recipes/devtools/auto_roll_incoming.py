@@ -54,7 +54,7 @@ def RunSteps(api):
   api.v8_auto_roller.scripted_rolls(CONFIG, clm, source_dir, [
       "puppeteer-core",
       "puppeteer-replay",
-      "browser-protocol",
+      "browser-protocol and CfT",
   ])
 
 

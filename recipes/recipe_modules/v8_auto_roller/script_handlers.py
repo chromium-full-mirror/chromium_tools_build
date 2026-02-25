@@ -28,7 +28,7 @@ SUPPORTED_SCRIPTS = {
             ['@puppeteer/replay', 'puppeteer-replay', 'lib'],
             'In case of failures or errors, reach out to someone from '
             'config/owner/RECORDER_OWNERS.'),
-    'browser-protocol':
+    'browser-protocol and CfT':
         SupportedScript(
             'Browser Protocol & CfT', 'scripts/deps/roll_deps.py', [
                 '--ref', 'CfT', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
