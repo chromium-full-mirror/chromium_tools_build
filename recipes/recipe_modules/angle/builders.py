@@ -126,18 +126,10 @@ _SPEC = {
         _create_builder_config('linux', 'Debug', 64),
     'linux-exp-asan-test':
         _create_builder_config('linux', 'Release', 64),
-    'linux-exp-intel':
-        _create_tester_config('linux', 64, 'linux-exp-test'),
-    'linux-exp-nvidia':
-        _create_tester_config('linux', 64, 'linux-exp-test'),
-    'linux-exp-swiftshader':
-        _create_tester_config('linux', 64, 'linux-exp-test'),
     'linux-exp-swiftshader-asan':
         _create_tester_config('linux', 64, 'linux-exp-asan-test'),
     'linux-exp-swiftshader-tsan':
         _create_tester_config('linux', 64, 'linux-exp-tsan-test'),
-    'linux-exp-test':
-        _create_builder_config('linux', 'Release', 64),
     'linux-exp-tsan-test':
         _create_builder_config('linux', 'Release', 64),
     'linux-intel-perf':

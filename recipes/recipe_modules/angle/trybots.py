@@ -146,28 +146,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'linux-exp-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-exp-test',
-                    tester='linux-exp-intel',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-exp-test',
-                    tester='linux-exp-nvidia',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-exp-test',
-                    tester='linux-exp-swiftshader',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'linux-exp-tsan-test':
         try_spec.TrySpec.create(
             mirrors=[
