@@ -228,9 +228,6 @@ class BaseProfileBuilder(ABC):
                 platform.profile_only_path,
                 '--d8-path',
                 platform.d8_out_path,
-                # Needs to match the location from merge_isolate_with_benchmark
-                # above, relative to the root workdir.
-                '--benchmark_path=./JetStream2/cli.js',
                 '--output-dir',
                 '${ISOLATED_OUTDIR}',
             ],
