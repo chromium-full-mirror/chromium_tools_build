@@ -223,18 +223,6 @@ _SPEC = {
         ),
     'mac-dbg-compile':
         _create_compile_spec('mac-dbg-compile'),
-    'mac-arm64-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='mac-arm64-test',
-                    tester='mac-arm64-apple',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'mac-ir-test':
         try_spec.TrySpec.create(
             mirrors=[

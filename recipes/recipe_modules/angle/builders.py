@@ -157,10 +157,6 @@ _SPEC = {
         _create_builder_config('linux', 'Release', 64),
     'mac-amd':
         _create_tester_config('mac', 64, 'mac-test'),
-    'mac-arm64-apple':
-        _create_tester_config('mac', 64, 'mac-arm64-test'),
-    'mac-arm64-test':
-        _create_builder_config('mac', 'Release', 64),
     'mac-dbg-compile':
         _create_builder_config('mac', 'Debug', 64),
     'mac-exp-amd':
