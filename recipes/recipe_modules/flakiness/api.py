@@ -524,6 +524,8 @@ class FlakinessApi(recipe_api.RecipeApi):
     with self.m.step.nest('mapping new tests to test objects') as p:
       p.logs['new_test_tuples'] = '\n'.join(map(join_tuple, new_test_tuples))
       for test_obj in test_objects:
+        if not test_obj.check_flakiness_for_new_tests:
+          continue
         # There are two types of suffixes: with patch, retry with patch.
         # We're not determining new tests anymore - the new ones are already
         # defined for us by ResultDB. Whether it's retried or not, we just need

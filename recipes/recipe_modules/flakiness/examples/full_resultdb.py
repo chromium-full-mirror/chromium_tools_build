@@ -619,3 +619,64 @@ def GenTests(api):
           at_most=1),
       api.post_process(post_process.DropExpectation),
   )
+
+  ios_test_spec_skip = {
+      'fake-builder': {
+          'isolated_scripts': [{
+              'test': 'ios_chrome_bookmarks_eg2tests_module',
+              'name': ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4'),
+              'swarming': {
+                  'dimensions': {
+                      'os': 'Mac-11'
+                  },
+                  'shards': 2,
+              },
+              'test_id_prefix': (
+                  'ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/'
+              ),
+              'check_flakiness_for_new_tests': False,
+          },],
+      },
+  }
+
+  yield api.test(
+      'check_flakiness_for_new_tests_false',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          builder_db=builder_db,
+          try_db=ctbc.TryDatabase.create({
+              'fake-try-group': {
+                  'fake-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          builder_group='fake-group',
+                          buildername='fake-builder',
+                      ),
+              },
+          }),
+      ),
+      api.chromium_tests.read_targets_spec('fake-group', ios_test_spec_skip),
+      api.flakiness(check_for_flakiness_with_resultdb=True),
+      api.step_data(
+          'git diff to analyze patch (2)',
+          api.raw_io.stream_output('chrome/test.cc\ncomponents/file2.cc'),
+      ),
+      api.resultdb.query_new_test_variants(
+          rdb_pb2.QueryNewTestVariantsResponse(
+              is_baseline_ready=True,
+              new_test_variants=[
+                  rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+                      test_id=ios_test1,
+                      variant_hash=ios_vh,
+                  ),
+              ],
+          ),
+          step_name=(
+              'searching_for_new_tests with ResultDB.query_new_test_variants'),
+      ),
+      api.post_process(
+          post_process.DoesNotRun,
+          'test new tests for flakiness',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
