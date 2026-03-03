@@ -240,28 +240,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'mac-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='mac-test',
-                    tester='mac-amd',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='mac-test',
-                    tester='mac-intel',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='mac-test',
-                    tester='mac-x64-amd-555x-test',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'mac-exp-test':
         try_spec.TrySpec.create(
             mirrors=[

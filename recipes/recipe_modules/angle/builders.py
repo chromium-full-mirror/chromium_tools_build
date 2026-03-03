@@ -155,8 +155,6 @@ _SPEC = {
         _create_tester_config('linux', 64, 'linux-tsan-test'),
     'linux-tsan-test':
         _create_builder_config('linux', 'Release', 64),
-    'mac-amd':
-        _create_tester_config('mac', 64, 'mac-test'),
     'mac-dbg-compile':
         _create_builder_config('mac', 'Debug', 64),
     'mac-exp-amd':
@@ -165,18 +163,12 @@ _SPEC = {
         _create_tester_config('mac', 64, 'mac-exp-test'),
     'mac-exp-test':
         _create_builder_config('mac', 'Release', 64),
-    'mac-intel':
-        _create_tester_config('mac', 64, 'mac-test'),
     'mac-ir-amd':
         _create_tester_config('mac', 64, 'mac-ir-test'),
     'mac-ir-intel':
         _create_tester_config('mac', 64, 'mac-ir-test'),
     'mac-ir-test':
         _create_builder_config('mac', 'Release', 64),
-    'mac-test':
-        _create_builder_config('mac', 'Release', 64),
-    'mac-x64-amd-555x-test':
-        _create_tester_config('mac', 64, 'mac-test'),
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
     'win-dbg-compile':
