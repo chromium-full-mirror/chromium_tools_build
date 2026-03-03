@@ -1873,8 +1873,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_18/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.2.0 x86.check jetstream version for 1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_18/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -1973,8 +2003,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_19/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.2.0 x64.check jetstream version for 1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_19/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2073,8 +2133,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_20/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.2.0 x86-rl.check jetstream version for 1.1.2.0 x86-rl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_20/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2173,8 +2263,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_21/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.2.0 x64-rl.check jetstream version for 1.1.2.0 x64-rl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_21/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2273,8 +2393,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_22/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.1.4 x86.check jetstream version for 1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_22/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2373,8 +2523,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_23/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.1.4 x64.check jetstream version for 1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_23/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2473,8 +2653,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_24/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.1.4 x86-rl.check jetstream version for 1.1.1.4 x86-rl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_24/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -2573,8 +2783,38 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_25/tools/builtins-pgo/profile_only.py",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci-hp"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "merge isolate with benchmark.1.1.1.4 x64-rl.check jetstream version for 1.1.1.4 x64-rl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream/v2.2-custom",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
       "[CLEANUP]/tmp_tmp_25/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",

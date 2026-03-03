@@ -24,12 +24,14 @@ from .profile_track import (
 )
 
 JET_STREAM_BASE_PATH = 'benchmarks/JetStream'
-JET_STREAM_PATH = 'benchmarks/JetStream/v2.2-custom'
 BUCKET_NAME = 'chromium-v8-builtins-pgo'
 GERRIT_HOST = 'https://chromium-review.googlesource.com'
 GERRIT_PROJECT = 'v8/v8'
 V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
+
+JET_STREAM_VERSION_PATTERN = r'default=Path\(\'\./(\w+)/cli.js\'\)'
+JET_STREAM_VERSION_TEST_DATA = '  default=Path(\'./JetStream2/cli.js\'),'
 
 # Define the hours passed for each retry after the initial run, e.g. [0, 6, 24]
 # retries profile building after 0 hours, 6 hours, and 24 hours. If they all
@@ -195,6 +197,25 @@ class BaseProfileBuilder(ABC):
         comp_props = sub_build.output.properties['compilator_properties']
         tracker.find_original_cas_digest(comp_props)
 
+  def get_jetstream_version(self, tracker, cas_work_dir):
+    """Establish the JetStream version and subfolder from the V8 PGO script."""
+
+    # TODO(https://crbug.com/487336000): Make this more robust by using a
+    # well-defined property for the JetStream version. E.g. by executing this
+    # script, letting it return that value. However, this needs to be first
+    # implemented on the V8 side and reach all relevant channels.
+    content = self.api.file.read_text(
+        name=f'check jetstream version for {tracker.name}',
+        source=cas_work_dir / 'tools/builtins-pgo/profile_only.py',
+        test_data=JET_STREAM_VERSION_TEST_DATA,
+        include_log=False)
+
+    match = re.search(JET_STREAM_VERSION_PATTERN, content)
+    assert match, 'Could not establish JetStream version'
+
+    version = match.group(1)
+    return version
+
   @with_wrapper_step
   def merge_isolate_with_benchmark(self):
     for tracker in self.healthy_profile_trackers:
@@ -205,8 +226,10 @@ class BaseProfileBuilder(ABC):
           self.api.cas.download('download', tracker.original_cas_digest,
                                 cas_work_dir)
 
-        self.api.file.copytree('copy benchmark code', self.perf_code_path,
-                               cas_work_dir / 'JetStream2')
+        version = self.get_jetstream_version(tracker, cas_work_dir)
+        self.api.file.copytree('copy benchmark code',
+                               self.perf_code_path / version,
+                               cas_work_dir / version)
         tracker.augmented_cas_digest = self.api.cas.archive(
             'archive', cas_work_dir)
 
@@ -302,7 +325,7 @@ class BaseProfileBuilder(ABC):
       )
 
       self.api.gclient.sync(cfg=config)
-      self.perf_code_path = checkout_path / JET_STREAM_PATH
+      self.perf_code_path = checkout_path / 'benchmarks'
 
   @contextlib.contextmanager
   def exception_capture(self, tracker):
@@ -401,7 +424,7 @@ class V8PerfTryBuilder(BaseProfileBuilder):
     with self.api.context(cwd=self.work_dir):
       self.api.bot_update.ensure_checkout(gclient_config=config)
 
-    self.perf_code_path = self.work_dir / 'v8-perf' / JET_STREAM_PATH
+    self.perf_code_path = self.work_dir / 'v8-perf' / 'benchmarks'
 
 
 class V8VersionTagBuilder(BaseProfileBuilder):
