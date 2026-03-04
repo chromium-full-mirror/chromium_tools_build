@@ -133,10 +133,7 @@ def _run_tests(api, update_result, source_dir, stable):
       '-f',
       '-v',
       '--parallel-workers',
-      # TODO(b/485634720): Either revert this to -1 or update this comment
-      # depending on whether limiting parallel tests helps with flaky quota
-      # issues.
-      2,
+      -1,
   ]
   if not api.tryserver.is_tryserver:
     cmd.extend([
