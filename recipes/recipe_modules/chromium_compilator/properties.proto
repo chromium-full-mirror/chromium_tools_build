@@ -1,10 +1,10 @@
-// Copyright 2021 The Chromium Authors
+// Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 syntax = "proto3";
 
-package recipes.build.chromium.compilator;
+package recipe_modules.build.chromium_compilator;
 
 // Next ID: 10
 message InputProperties {
@@ -20,20 +20,12 @@ message InputProperties {
   // reasons in the placeholder step that is emitted instead.
   repeated string skip_analysis_reasons = 8;
 
-  // Targets to compile without patch
-
-  reserved "swarming_targets";
-  reserved 2;
-
   // When this field is absent, the Compilator will compile (with patch) all
   // targets affected by the patch.
   // When this field is populated, the Compilator will compile these targets
   // without a patch.
   // This could be both or either swarming or skylab tests
   repeated string test_targets = 6;
-
-  reserved "skip_tests";
-  reserved 7;
 
   // Sets which revision to check out for the dependency
   // Maps dependency repo's path name (like 'src/v8') to revision
@@ -46,10 +38,10 @@ message InputProperties {
   // orchestrators and compilators
   string root_solution_revision = 4;
 
-  reserved "rts_setting";
-  reserved 5;
-
   // Sets the rts model to be used
   // This will control which RTS model to be used for test selection, if any
   string rts_model = 9;
+
+  reserved 2, 5, 7;
+  reserved "swarming_targets", "rts_setting", "skip_tests";
 }

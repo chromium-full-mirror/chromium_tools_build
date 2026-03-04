@@ -15,7 +15,7 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
 ]
-from PB.recipes.build.chromium.compilator import InputProperties
+from PB.recipe_modules.build.chromium_compilator.properties import InputProperties
 from PB.recipe_modules.recipe_engine.led.properties import InputProperties as InputPropertiesLed
 from recipe_engine import post_process
 

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from recipe_engine import post_process
-from PB.recipes.build.chromium.compilator import InputProperties
+from PB.recipe_modules.build.chromium_compilator.properties import InputProperties
 
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_tests.api import (
