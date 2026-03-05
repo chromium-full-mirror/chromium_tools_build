@@ -93,7 +93,6 @@ SKYLAB_TEST_SPEC_TEMPLATE = dict(
     cros_model='',
     test_args=None,
     cros_img='eve-release/R88-13545.0.0',
-    retries=0,
     shards=1,
     use_lkgm=False,
 )
@@ -117,7 +116,6 @@ def gen_skylab_test(name, **kwargs):
 REQUESTS = [
     gen_skylab_test(
         'm88_ctp_with_retry',
-        retries=3,
         shard_level_retries_on_ctp=1,
         cros_model='baks',
         bucket='a_different_chromium_bucket',
@@ -164,7 +162,6 @@ REQUESTS = [
 TFC_REQUESTS = [
     gen_skylab_test(
         'tfc_chrome_all_tests',
-        retries=3,
         shard_level_retries_on_ctp=1,
         cros_board='brya',
         cros_model='kano',
@@ -178,7 +175,6 @@ TFC_REQUESTS = [
     ),
     gen_skylab_test(
         'tfc_explicit_test_list',
-        retries=3,
         shard_level_retries_on_ctp=1,
         cros_board='brya',
         cros_model='kano',
@@ -240,7 +236,6 @@ LKGM_REQUESTS = [
         'm88_ctp_with_retry_lkgm',
         use_lkgm=True,
         cros_img='',
-        retries=3,
         bucket='chromeos-image-archive',
         public_builder='ctp-public-builder',
         public_builder_bucket='public-bucket'),
@@ -251,7 +246,6 @@ PUBLIC_LKGM_REQUESTS = [
         'm88_ctp_with_retry_lkgm',
         use_lkgm=True,
         cros_img='',
-        retries=3,
         bucket='chromiumos-image-archive')
 ]
 

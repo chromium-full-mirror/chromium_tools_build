@@ -3264,10 +3264,6 @@ class SkylabTestSpec(TestSpec):
   dut_pool = attrib(str, default='')
   # The number of shards used to run the test.
   shards = attrib(int, default=1)
-  # Deprecated. Skylab tests retries once for infra failure
-  # same with swarming tests. For test failure retry, consider
-  # shard_level_retries_on_ctp.
-  retries = attrib(int, default=1)
   # Maximum number to retry a failed shard.
   # When set to zero, retries continue infinitely until timeout.
   shard_level_retries_on_ctp = attrib(int, default=-1)

@@ -81,7 +81,6 @@ def GenTests(api):
                   ci_only_tests=False,
                   tester='',
                   shards=1,
-                  retries=0,
                   cros_test_tags=None,
                   cros_test_max_in_shards=None,
                   has_retry_without_patch=False):
@@ -139,7 +138,6 @@ def GenTests(api):
         },
         'timeout_sec': 7200,
         'shards': shards,
-        'retries': retries,
     }
 
     if cros_test_tags:
@@ -199,7 +197,7 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.properties(orchestrator={'builder_name': 'orchestrator'}),
-      boilerplate('chrome-test-builds', retries=1),
+      boilerplate('chrome-test-builds'),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.FAILURE)]),
       api.post_process(post_process.StepCommandContains, 'compile',
@@ -283,10 +281,7 @@ def GenTests(api):
 
   yield api.test(
       'some shards infra failure and retry succeeded',
-      boilerplate(
-          'chrome-test-builds',
-          shards=3,
-          retries=1),
+      boilerplate('chrome-test-builds', shards=3),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT',
           3,
@@ -333,8 +328,7 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds',
           cros_test_tags=['group:mainline', 'dep:lacros'],
-          cros_test_max_in_shards=20,
-          retries=1),
+          cros_test_max_in_shards=20),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT',
           3,
@@ -604,7 +598,6 @@ def GenTests(api):
           is_ci_build=False,
           cros_test_tags=['group:mainline', 'dep:lacros'],
           cros_test_max_in_shards=20,
-          retries=1,
           has_retry_without_patch=True),
       api.skylab.mock_wait_on_suites(
           'basic_EVE_TOT (with patch)',
