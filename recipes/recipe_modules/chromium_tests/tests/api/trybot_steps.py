@@ -12,6 +12,7 @@ from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
+from RECIPE_MODULES.build.chromium_tests.steps import get_turboci_test_check_id
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
@@ -30,6 +31,10 @@ from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
 from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
 from PB.turboci.data.chrome.build.v1.compile_targets_options import (
     CompileTargetsOptions)
+from PB.turboci.data.test.v1.test_check_description_option import (
+    TestCheckDescriptionOption)
+from PB.turboci.data.test.v1.test_check_summary_result import (
+    TestCheckSummaryResult)
 from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
 from PB.turboci.graph.orchestrator.v1.check_state import CheckState
 from PB.turboci.graph.orchestrator.v1.workplan import WorkPlan
@@ -515,6 +520,11 @@ def GenTests(api: RecipeTestApi):
 
   def retry_shards_without_patch_assert_workplan(assert_, workplan: WorkPlan):
     analyze_check_id = f'{chromium_tests.BUILD_CHECK_ID} analyze'
+    test_check_ids = (
+        get_turboci_test_check_id('base_unittests (with patch)'),
+        get_turboci_test_check_id('base_unittests (retry shards with patch)'),
+        get_turboci_test_check_id('base_unittests (without patch)'),
+    )
     check_ids = set(c.identifier.id for c in workplan.checks)
     if not assert_(
         check_ids == {
@@ -523,7 +533,7 @@ def GenTests(api: RecipeTestApi):
             analyze_check_id,
             chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
             chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID,
-        }):
+        } ^ set(test_check_ids)):
       return  # pragma: no cover
 
     # The basic test case already verifies the source, build and analyze checks
@@ -570,6 +580,15 @@ def GenTests(api: RecipeTestApi):
     build_check_results = turboci.get_results(BuildCheckResult, build_check)
     expected_build_check_results = [BuildCheckResult(success=True)]
     assert_(build_check_results == expected_build_check_results)
+
+    # Verify the results on the test check
+    for test_check_id in test_check_ids:
+      test_check = turboci.get_check_by_short_id(workplan, test_check_id)
+      test_check_result = turboci.get_results(TestCheckSummaryResult,
+                                              test_check)[0]
+      # 'Test.One' keeps failing in base_unittests in all phases
+      assert_(not test_check_result.success)
+      assert_('Test.One' in test_check_result.display_message.message)
 
   yield api.test(
       'retry_shards_without_patch',
