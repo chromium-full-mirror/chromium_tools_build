@@ -3351,14 +3351,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       tests_by_target = collections.defaultdict(list)
       for t in tests:
         tests_by_target[t.target_name].append(t)
-      runtime_dict_futures = {
-          t:
-              self.m.futures.spawn(self._gen_runtime_dict_for_skylab,
-                                   source_dir, build_dir, t)
-          for t in sorted(tests_by_target)
-      }
       runtime_dict_by_target = {
-          t: f.result() for t, f in runtime_dict_futures.items()
+          t: self._gen_runtime_dict_for_skylab(source_dir, build_dir, t)
+          for t in sorted(tests_by_target)
       }
       runtime_deps = list(
           reduce(lambda a, b: a | b,

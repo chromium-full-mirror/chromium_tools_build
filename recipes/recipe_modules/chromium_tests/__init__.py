@@ -39,7 +39,6 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/cv',
     'recipe_engine/file',
-    'recipe_engine/futures',
     'recipe_engine/led',
     'recipe_engine/json',
     'recipe_engine/path',
