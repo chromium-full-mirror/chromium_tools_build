@@ -181,8 +181,6 @@ _SPEC = {
         _create_builder_config('win', 'Debug', 32, is_clang=False),
     'win-perf':
         _create_builder_config('win', 'Release', 64, perf_isolate_upload=True),
-    'win-test':
-        _create_builder_config('win', 'Release', 64),
     'win-trace':
         _create_builder_config(
             'win', 'Release', 64, gclient_config='angle_nointernal'),
@@ -198,16 +196,12 @@ _SPEC = {
         _create_tester_config('win', 64, 'win-exp-test'),
     'win10-x64-exp-nvidia':
         _create_tester_config('win', 64, 'win-exp-test'),
-    'win10-x64-intel':
-        _create_tester_config('win', 64, 'win-test'),
     'win10-x64-intel-perf':
         _create_tester_config('win', 64, 'win-perf'),
     'win10-x64-ir-intel':
         _create_tester_config('win', 64, 'win-ir-test'),
     'win10-x64-ir-nvidia':
         _create_tester_config('win', 64, 'win-ir-test'),
-    'win10-x64-nvidia':
-        _create_tester_config('win', 64, 'win-test'),
     'win10-x64-nvidia-perf':
         _create_tester_config('win', 64, 'win-perf'),
     'win10-x64-swiftshader-asan':

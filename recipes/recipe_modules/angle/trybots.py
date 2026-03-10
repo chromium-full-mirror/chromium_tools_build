@@ -296,23 +296,6 @@ _SPEC = {
         _create_compile_spec('win-msvc-x86-compile'),
     'win-msvc-x86-dbg-compile':
         _create_compile_spec('win-msvc-x86-dbg-compile'),
-    'win-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='win-test',
-                    tester='win10-x64-intel',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='win-test',
-                    tester='win10-x64-nvidia',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'win-x86-dbg-compile':
         _create_compile_spec('win-x86-dbg-compile'),
     'win-x86-test':
