@@ -530,10 +530,23 @@ class ChromiumApi(recipe_api.RecipeApi):
                               self.m.buildbucket.builder_name)
           if self.m.buildbucket.build.number:
             source += '-%s' % self.m.buildbucket.build.number
-          self.m.step(
+
+          crash_step = self.m.step(
               'process clang crashes',
               ['python3', clang_crashreports_script, '--source', source],
+              stdout=self.m.raw_io.output_text(),
+              step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+                  '    gs://chrome-clang-crash-reports/v1/2023/01/01/user-base.tgz\n'
+              ),
               **kwargs)
+
+          if crash_step and crash_step.stdout:
+            for line in crash_step.stdout.splitlines():
+              line = line.strip()
+              if line.startswith('gs://'):
+                url = line.replace('gs://', 'https://storage.cloud.google.com/')
+                filename = line.split('/')[-1]
+                crash_step.presentation.links[filename] = url
 
         self.m.ninjalog.upload(name, ninja_command, ninja_step_result.retcode,
                                ninja_invocation_id)
