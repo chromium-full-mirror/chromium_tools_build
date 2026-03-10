@@ -3254,17 +3254,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         rel_to_out_dir = self.m.path.relpath(abs_file_path, source_dir)
         runtime_dict[f] = str(rel_to_out_dir)
 
-      # When Siso build enables `without bytes` option, the RBE outputs
-      # aren't fetched to the host machine by default.
-      # It needs to download them explicitly by running `siso fs flush`.
-      if self.m.siso.without_bytes:
-        with self.m.context(cwd=build_dir):
-          self.m.siso.fs_flush(
-              'fetch RBE artifacts from CAS',
-              source_dir,
-              isolate_dict['variables']['files'],
-          )
-
       return runtime_dict
 
   def _upload_runtime_deps_for_skylab(
@@ -3358,6 +3347,18 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       runtime_deps = list(
           reduce(lambda a, b: a | b,
                  [set(v.values()) for v in runtime_dict_by_target.values()]))
+
+      # When Siso build enables `without bytes` option, the RBE outputs
+      # aren't fetched to the host machine by default.
+      # It needs to download them explicitly by running `siso fs flush`.
+      if self.m.siso.without_bytes:
+        with self.m.context(cwd=build_dir):
+          self.m.siso.fs_flush('fetch RBE artifacts from CAS', source_dir, [
+              self.m.path.relpath(
+                  self.m.path.abspath(self.m.path.join(source_dir, f)),
+                  self.m.path.abspath(build_dir)) for f in runtime_deps
+          ])
+
       runtime_deps_gcs_path = self._upload_runtime_deps_for_skylab(
           checkout_dir, source_dir, build_dir, builder_config.skylab_gs_bucket,
           gcs_path, UNIFIED_RUNTIME_DEPS_NAME, runtime_deps)

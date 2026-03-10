@@ -775,10 +775,8 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'basic_EVE_TOT', passing_tests=['Test.One']))),
-      api.post_process(
-          post_process.MustRun,
-          f'prepare skylab tests.collect runtime deps for {GTEST_TARGET}.fetch RBE artifacts from CAS'
-      ),
+      api.post_process(post_process.MustRun,
+                       'prepare skylab tests.fetch RBE artifacts from CAS'),
       api.post_process(post_process.DropExpectation),
   )
 
