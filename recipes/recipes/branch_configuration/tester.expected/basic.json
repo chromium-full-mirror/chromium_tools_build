@@ -61,11 +61,11 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'project', 'url': 'https://chromium.googlesource.com/project'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]",
       "--patch_root",
-      "project",
+      "src",
       "--revision_mapping_file",
-      "{\"got_revision\": \"project\"}",
+      "{\"got_angle_revision\": \"src/third_party/angle\", \"got_buildtools_revision\": \"src/buildtools\", \"got_dawn_revision\": \"src/third_party/dawn\", \"got_nacl_revision\": \"src/native_client\", \"got_revision\": \"src\", \"got_swiftshader_revision\": \"src/third_party/swiftshader\", \"got_v8_revision\": \"src/v8\", \"got_webrtc_revision\": \"src/third_party/webrtc\"}",
       "--git-cache-dir",
       "[CACHE]/git",
       "--cleanup-dir",
@@ -75,7 +75,7 @@
       "--patch_ref",
       "https://chromium.googlesource.com/project@refs/heads/main:refs/changes/56/123456/7",
       "--revision",
-      "project@refs/heads/main",
+      "src@refs/heads/main",
       "--refs",
       "refs/heads/main"
     ],
@@ -120,26 +120,110 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/project.git\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"dcc0778a2d9313fbf56c6519017350298ceaff90\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/buildtools\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/buildtools.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/native_client\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/native_client.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/angle\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/angle.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/swiftshader\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/swiftshader.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/webrtc\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/webrtc.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/v8\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/v8.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"src\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"dcc0778a2d9313fbf56c6519017350298ceaff90\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#9859}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#170242}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\"@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"root\": \"project\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"src\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"project\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/project.git\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"dcc0778a2d9313fbf56c6519017350298ceaff90\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/buildtools\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/buildtools.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/native_client\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/native_client.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/angle\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/angle.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/swiftshader\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/swiftshader.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/webrtc\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/webrtc.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/v8\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/v8.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    },@@@",
@@ -148,8 +232,22 @@
       "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@SET_BUILD_PROPERTY@got_revision@\"dcc0778a2d9313fbf56c6519017350298ceaff90\"@@@",
-      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#9859}\"@@@"
+      "@@@SET_BUILD_PROPERTY@got_angle_revision@\"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_angle_revision_cp@\"refs/heads/main@{#297276}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_buildtools_revision@\"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_buildtools_revision_cp@\"refs/heads/main@{#182578}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_dawn_revision@\"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_dawn_revision_cp@\"refs/heads/main@{#51819}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_nacl_revision@\"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_nacl_revision_cp@\"refs/heads/main@{#274981}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"acd0dbe7aa79f567dca274c02470e1319f739b36\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#170242}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_swiftshader_revision@\"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_swiftshader_revision_cp@\"refs/heads/main@{#202157}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_v8_revision@\"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_v8_revision_cp@\"refs/heads/main@{#43426}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_webrtc_revision@\"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_webrtc_revision_cp@\"refs/heads/main@{#120644}\"@@@"
     ]
   },
   {
@@ -158,7 +256,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/project/branch-script",
+      "[CACHE]/builder/src/branch-script",
       "initialize",
       "--milestone",
       "1000000",
@@ -166,7 +264,7 @@
       "BBBB",
       "--test-config"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -197,7 +295,7 @@
       "generate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -221,7 +319,7 @@
       "validate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -245,7 +343,7 @@
       "generate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -269,7 +367,7 @@
       "validate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -300,7 +398,7 @@
       "restore",
       "."
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -325,7 +423,7 @@
       "clean",
       "-f"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -350,13 +448,13 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/project/branch-script",
+      "[CACHE]/builder/src/branch-script",
       "enable-platform",
       "platform1",
       "--description",
       "testing"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -387,7 +485,7 @@
       "generate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -411,7 +509,7 @@
       "validate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -435,7 +533,7 @@
       "generate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -459,7 +557,7 @@
       "validate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -490,7 +588,7 @@
       "restore",
       "."
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -515,7 +613,7 @@
       "clean",
       "-f"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -540,13 +638,13 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/project/branch-script",
+      "[CACHE]/builder/src/branch-script",
       "enable-platform",
       "platform2",
       "--description",
       "testing"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -577,7 +675,7 @@
       "generate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -601,7 +699,7 @@
       "validate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -625,7 +723,7 @@
       "generate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -649,7 +747,7 @@
       "validate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -680,7 +778,7 @@
       "restore",
       "."
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -705,7 +803,7 @@
       "clean",
       "-f"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -730,7 +828,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/project/branch-script",
+      "[CACHE]/builder/src/branch-script",
       "enable-platform",
       "platform1",
       "--description",
@@ -738,7 +836,7 @@
       "--gardener-rotation",
       "gardener-rotation"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -758,7 +856,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/project/branch-script",
+      "[CACHE]/builder/src/branch-script",
       "enable-platform",
       "platform2",
       "--description",
@@ -766,7 +864,7 @@
       "--gardener-rotation",
       "gardener-rotation"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -797,7 +895,7 @@
       "generate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -821,7 +919,7 @@
       "validate",
       "entry-point1.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -845,7 +943,7 @@
       "generate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -869,7 +967,7 @@
       "validate",
       "entry-point2.star"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -900,7 +998,7 @@
       "restore",
       "."
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -925,7 +1023,7 @@
       "clean",
       "-f"
     ],
-    "cwd": "[CACHE]/builder/project",
+    "cwd": "[CACHE]/builder/src",
     "infra_step": true,
     "luci_context": {
       "realm": {

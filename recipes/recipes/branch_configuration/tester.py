@@ -36,6 +36,7 @@ PROPERTIES = tester_pb.InputProperties
 
 DEPS = [
     'chromium_bootstrap',
+    'chromium_tests',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/git',
@@ -117,12 +118,9 @@ def RunSteps(api, properties):
         elements=errors,
         header='The following errors were found with the input properties:')
 
-  gclient_config = api.gclient.make_config()
-  s = gclient_config.solutions.add()
-  s.url = api.tryserver.gerrit_change_repo_url
-  s.name = s.url.rsplit('/', 1)[-1]
-  gclient_config.got_revision_mapping[s.name] = 'got_revision'
-  gclient_config.repo_path_map[s.url] = (s.name, 'HEAD')
+  gclient_config = api.gclient.make_config('chromium')
+  if api.buildbucket.build.builder.project.startswith('chrome'):
+    api.gclient.apply_config('chrome_internal', gclient_config)
 
   with api.chromium_bootstrap.update_gclient_config(gclient_config) as callback:
     with api.context(cwd=api.path.cache_dir / 'builder'):
@@ -130,7 +128,7 @@ def RunSteps(api, properties):
           patch=True, gclient_config=gclient_config)
     callback(update_result.manifest)
 
-  repo_path = update_result.source_root.path
+  repo_path = update_result.patch_root.path
 
   bad_branch_configs = []
   with api.context(cwd=repo_path):
@@ -280,6 +278,25 @@ def GenTests(api):
               'gardener-rotation',
           ],
       ),
+  )
+
+  yield api.test(
+      'basic_chrome',
+      api.buildbucket.try_build(project='chrome'),
+      api.properties(
+          tester_pb.InputProperties(
+              branch_script='branch-script',
+              branch_configs=[
+                  tester_pb.BranchConfig(
+                      name='branch-config0',
+                      initialize=tester_pb.BranchConfig.InitializeConfig(),
+                  ),
+              ],
+              starlark_entry_points=[
+                  'entry-point.star',
+              ],
+          )),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
