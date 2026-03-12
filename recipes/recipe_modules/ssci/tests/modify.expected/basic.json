@@ -1,0 +1,211 @@
+[
+  {
+    "cmd": [],
+    "name": "install infra_internal/tools/security/ssci_sbom"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install infra_internal/tools/security/ssci_sbom.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77",
+      "-ensure-file",
+      "infra_internal/tools/security/ssci_sbom/${platform} prod",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install infra_internal/tools/security/ssci_sbom.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-prod------------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/tools/security/ssci_sbom/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "describe",
+      "infra_internal/tools/security/ssci_sbom/${platform}",
+      "-version",
+      "prod",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "cipd describe infra_internal/tools/security/ssci_sbom/${platform}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"instance_id\": \"resolved-instance_id-of-prod------------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra_internal/tools/security/ssci_sbom/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"refs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"buildbot_build:some.waterfall/builder/1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_repository:https://chromium.googlesource.com/some/repo\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_revision:397a2597cdc237f3026e6143b683be4b9ab60540\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_sbom/6754af9632a2745e85c293e5aac0863370d9bd3330b9938c00cadfd215227d77/ssci_sbom",
+      "-output-file",
+      "[CLEANUP]/tmp_tmp_1/spdx-out.json",
+      "-sbom-generator-version",
+      "vresolved-instance_id-of-prod------------",
+      "-product",
+      "modify..modified",
+      "-product-version",
+      "2d7251",
+      "-platform",
+      "linux_intel64",
+      "-document-path",
+      "path1/path.spdx.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run SSCI SBOM Generator to modify the provided SBOM"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "file_hash",
+      "[CLEANUP]/tmp_tmp_1/spdx-out.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Compute file hash",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Hash calculated: testhash@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SBOM's generated",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@modified@{\"digest\": \"testhash\", \"filename\": \"modified\", \"sbom_name\": \"modified.spdx.json\", \"sbom_path\": \"[CLEANUP]/tmp_tmp_1/spdx-out.json\"}@@@",
+      "@@@STEP_LOG_END@modified@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]

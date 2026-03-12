@@ -94,7 +94,7 @@ class SsciAPI(recipe_api.RecipeApi):
           tool.ensure_version = tool.previous_ensure_version
           tool.previous_ensure_version = None
 
-  def _get_product_version(self, chrome_version):
+  def _get_product_version(self, chrome_version=None):
     """
     Extracts the product version from configuration. Since we're still in testing, this
     always returns something so we can ensure the build will continue.
@@ -632,3 +632,55 @@ class SsciAPI(recipe_api.RecipeApi):
           )
 
       return sboms
+
+  def modify_sbom(self, sbom_path, name):
+    """Modifies an existing SBOM.
+
+    Uses the SSCI SBOM Generator to modify the provided SBOM.
+
+    Args:
+      sbom_path: Path to the existing SBOM file.
+      name: The name to use for the product identifier.
+
+    Returns:
+      A dictionary representation of the GeneratedSBOM protobuf message.
+    """
+
+    self._setup_ssci_tools(tools=[self.ssci_sbom])
+
+    platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+
+    recipe_name = self.m.properties["recipe"].split("/")[-1]
+    product = f'{recipe_name}.{self.execution_id}.{name}'
+    p_version = self._get_product_version()
+
+    spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
+
+    self.m.step(
+        'run SSCI SBOM Generator to modify the provided SBOM', [
+            self.ssci_sbom.tool_path, "-output-file", spdx_file,
+            "-sbom-generator-version", self.ssci_sbom.resolved_version,
+            "-product", product, "-product-version", p_version, "-platform",
+            platform, "-document-path", sbom_path
+        ],
+        infra_step=True,
+        step_test_data=(lambda: self.m.json.test_api.output(
+            data=[{
+                "spdx": "yes"
+            }], name="ssci_sbom_spdx")))
+
+    spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
+
+    generated_sbom_json = jsonpb.MessageToDict(
+        GeneratedSBOM(
+            digest=spdx_digest,
+            filename=name,
+            sbom_name=f"{name}{SBOM_EXTENSION}",
+            sbom_path=f'{spdx_file}',
+        ),
+        preserving_proto_field_name=True)
+
+    info_step = self.m.step.empty("SBOM's generated")
+    info_step.presentation.logs[name] = self.m.json.dumps(generated_sbom_json)
+
+    return generated_sbom_json
