@@ -41,9 +41,11 @@ def RunSteps(api):
     result = api.bot_update.ensure_checkout()
     kzip_name = '%s.kzip' % result.properties['got_revision']
 
+  build_dir = api.path.cache_dir / 'build'
+  kzip_loc = api.path.cache_dir / kzip_name
   go_mod_files = api.file.glob_paths(
       'find go.mod files',
-      api.path.cache_dir / 'build',
+      build_dir,
       '*/go.mod',
   )
   if not go_mod_files:
@@ -57,14 +59,15 @@ def RunSteps(api):
       raise api.step.StepFailure('Did not detect Modules for %s' % mod_file)
     targets.append(match.group(1))
 
-  api.step('generate go kzip', [
-      kythe_bin, '--corpus', "'chromium.googlesource.com/build//main'",
-      '--goroot', '$(go env GOROOT)', '--output', api.path.cache_dir / kzip_name
-  ] + targets)
+  with api.context(cwd=build_dir):
+    api.step('generate go kzip', [
+        kythe_bin, '--corpus', "'chromium.googlesource.com/build//main'",
+        '--goroot', '$(go env GOROOT)', '--output', kzip_loc
+    ] + targets)
 
   api.gsutil.upload(
       name='upload kythe index pack',
-      source=api.path.cache_dir / kzip_name,
+      source=kzip_loc,
       bucket='chrome-codesearch',
       dest='build/%s' % kzip_name)
 
