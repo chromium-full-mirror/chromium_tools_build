@@ -274,3 +274,23 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.post_process(post_process.MustRun, 'override PGO profile'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'webview_pgo_orderfile',
+      api.properties(bitness=64),
+      api.chromium.ci_build(
+          builder_group='chromium.perf',
+          builder='android-go-wembley_webview-perf'),
+      api.orderfile(
+          use_orderfile=True,
+          upload_orderfile=True,
+          last_uploaded_pgo_filename='webview-profile.pgo',
+      ),
+      api.platform('linux', 64),
+      api.post_process(
+          post_process.MustRun,
+          'processing generated orderfile.register'
+          ' chromium/android_webview/tools/orderfiles/arm64_webview_pgo',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

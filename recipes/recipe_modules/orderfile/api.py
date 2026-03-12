@@ -103,6 +103,11 @@ class OrderfileApi(recipe_api.RecipeApi):
     # orderfile builders are triggered by their own PGO builder. Currently, they
     # are triggered by Clank's PGO builder
     if 'webview' in builder_name:
+      # TODO(crbug.com/445143381): This package name is temporarily set for A/B
+      # testing of WebView orderfiles built from WebView PGO profiles vs from
+      # Clank PGO profiles.
+      if 'webview' in self.last_uploaded_pgo_filename:
+        return f'chromium/android_webview/tools/orderfiles/{arch}_webview_pgo'
       return f'chromium/android_webview/tools/orderfiles/{arch}'
     return f'chromium/chrome/android/orderfiles/{arch}'
 
