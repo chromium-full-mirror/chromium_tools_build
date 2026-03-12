@@ -50,7 +50,7 @@ PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
 PROFILE_PATTERN = (r'(block_hint,\w+(,\d+){3}\n)+'
                    r'(builtin_count,\w+,\d+\n)*'
                    r'(block_count,\w+(,\d+){2}\n)*'
-                   r'(builtin_hash,\w+,\-?\d+\n)+')
+                   r'((block,\w+(,\d+){2}\n)*(builtin_hash,\w+,\-?\d+\n)+)+')
 
 COMPILATOR_CAS_INSTANCE = 'projects/chromium-swarm/instances/default_instance'
 
