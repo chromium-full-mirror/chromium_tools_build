@@ -140,6 +140,20 @@ def GenTests(api):
           'name': 'fake-test',
           'ci_only': True,
       }),
+      api.chromium_tests.read_targets_spec(
+          'fake-group',
+          {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'name': 'fake-test',
+                      'ci_only': True,
+                      'swarming': {
+                          'can_use_on_swarming_builders': True
+                      },
+                  },],
+              },
+          },
+      ),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
       api.post_process(post_process.MustRun, 'fake-test (with patch)'),

@@ -540,7 +540,10 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
     """Steps to execute before running the test."""
     raise NotImplementedError()  # pragma: no cover
 
@@ -1216,6 +1219,26 @@ class AbstractSwarmingTest(AbstractTest):
   def get_task(self, suffix: str) -> chromium_swarming.SwarmingTask:
     raise NotImplementedError()  # pragma: no cover
 
+  @abc.abstractmethod
+  def _create_task(
+      self,
+      suffix: str,
+      cas_input_root: str,
+      include_utr_instruction: bool,
+      is_ci_only: bool,
+  ) -> chromium_swarming.SwarmingTask:
+    """Creates a swarming task. Must be overridden in subclasses.
+
+    Args:
+      suffix: Suffix added to the test name.
+      cas_input_root: Hash or digest of the isolated test to be run.
+      is_ci_only: Whether the test is marked as ci_only.
+
+    Returns:
+      A SwarmingTask object.
+    """
+    raise NotImplementedError()  # pragma: no cover
+
 
 class AbstractSkylabTest(AbstractTest):
   """Interface for tests that run on skylab."""
@@ -1404,9 +1427,12 @@ class TestWrapper(
   def is_enabled(self):
     return not self._disabled_message and self._test.is_enabled
 
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
     if not self._disabled_message:
-      return self._test.pre_run(suffix, include_utr_instruction)
+      return self._test.pre_run(suffix, include_utr_instruction, is_ci_only)
 
   def run(
       self,
@@ -1445,6 +1471,13 @@ class CiOnlyTest(TestWrapper):
   def __init__(self, spec, test, chromium_tests_api):
     super().__init__(spec, test, chromium_tests_api)
     self._disabled = self._compute_disabled()
+
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
+    if not self._disabled_message:
+      self._test.pre_run(suffix, include_utr_instruction, is_ci_only=True)
 
   @property
   def is_ci_only(self) -> bool:
@@ -1631,10 +1664,15 @@ class ExperimentalTest(TestWrapper):
     return self._test.step_name(self._experimental_suffix(suffix))
 
   #override
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
     try:
       return super().pre_run(
-          self._experimental_suffix(suffix), include_utr_instruction)
+          self._experimental_suffix(suffix),
+          include_utr_instruction,
+          is_ci_only=is_ci_only)
     except self.api.m.step.StepFailure:
       pass
 
@@ -1724,8 +1762,11 @@ class LocalTest(Test):
   def locality(self) -> TestLocality:
     return TestLocality.LOCAL
 
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
-    del suffix
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
+    del suffix, is_ci_only
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
     inv = self._suffix_to_invocation_names.get(suffix)
@@ -2454,12 +2495,14 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       suffix: str,
       cas_input_root: str,
       include_utr_instruction: bool,
+      is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     """Creates a swarming task. Must be overridden in subclasses.
 
     Args:
       suffix: Suffix added to the test name.
       cas_input_root: Hash or digest of the isolated test to be run.
+      is_ci_only: Whether the test is marked as ci_only.
 
     Returns:
       A SwarmingTask object.
@@ -2531,7 +2574,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         ))
 
   def _apply_swarming_task_config(self, task, suffix, filter_flag,
-                                  filter_delimiter, extra_args):
+                                  filter_delimiter, extra_args, is_ci_only):
     """Applies shared configuration for swarming tasks.
     """
     add_one_test_shard_enabled = False
@@ -2737,6 +2780,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
           'normally_assigned_shard_count': [str(shards - 1)],
       })
 
+    if is_ci_only and self.api.m.tryserver.is_tryserver:
+      tags['include_ci_only_tests'] = ['true']
+
     if self.spec.server:
       task.server = self.spec.server
 
@@ -2758,7 +2804,10 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       return task.get_invocation_names()
     return []
 
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
     """Launches the test on Swarming."""
     assert suffix not in self._tasks, ('Test %s was already triggered' %
                                        self.step_name(suffix))
@@ -2774,7 +2823,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # Create task.
     _create_turboci_test_check(self.step_name(suffix))
     self._tasks[suffix] = self._create_task(suffix, task_input,
-                                            include_utr_instruction)
+                                            include_utr_instruction, is_ci_only)
 
     # Export TARGET_PLATFORM to resultdb tags
     resultdb = self.spec.resultdb
@@ -2869,6 +2918,7 @@ class SwarmingGTestTest(SwarmingTest):
       suffix: str,
       cas_input_root: str,
       include_utr_instruction: bool,
+      is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     json_override = None
     # TODO(crbug.com/1255217): Remove this android exception when logcats and
@@ -2902,7 +2952,7 @@ class SwarmingGTestTest(SwarmingTest):
       extra_args = _merge_arg(extra_args, '--test-launcher-filter-file',
                               merged_filter_file_arg)
     self._apply_swarming_task_config(task, suffix, '--gtest_filter', ':',
-                                     extra_args)
+                                     extra_args, is_ci_only)
     return task
 
 
@@ -3078,6 +3128,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
       suffix: str,
       cas_input_root: str,
       include_utr_instruction: bool,
+      is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     if self.is_rts:
       cmd = self.rts_raw_cmd
@@ -3094,7 +3145,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
 
     self._apply_swarming_task_config(task, suffix,
                                      '--isolated-script-test-filter', '::',
-                                     self.spec.args)
+                                     self.spec.args, is_ci_only)
     return task
 
   def _handle_results(
@@ -3227,6 +3278,15 @@ class MockTest(AbstractSwarmingTest, Test):
     assert self.runs_on_swarming
     return self._tasks_by_suffix[suffix]
 
+  def _create_task(
+      self,
+      suffix: str,
+      cas_input_root: str,
+      include_utr_instruction: bool,
+      is_ci_only: bool,
+  ) -> chromium_swarming.SwarmingTask:  # pragma: no cover
+    return None  # pragma: no cover
+
   @contextlib.contextmanager
   def _mock_exit_codes(self):
     try:
@@ -3239,7 +3299,11 @@ class MockTest(AbstractSwarmingTest, Test):
       self._failures.append('test_failure')
       raise
 
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
+    del is_ci_only
     with self._mock_exit_codes():
       self.api.m.step('pre_run {}'.format(self.step_name(suffix)),
                       ['mock_test.pre_run'])
@@ -3472,7 +3536,11 @@ class SkylabTest(AbstractSkylabTest, Test):
       return [f'invocations/build-{build_id}']
     return []
 
-  def pre_run(self, suffix: str, include_utr_instruction: bool = False) -> None:
+  def pre_run(self,
+              suffix: str,
+              include_utr_instruction: bool = False,
+              is_ci_only: bool = False) -> None:
+    del is_ci_only
     retry_shards = []
     runtime_excluded_tests = []
     runtime_override_tests = []

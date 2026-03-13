@@ -795,3 +795,32 @@ def GenTests(api):
       ),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'ci_only',
+      boilerplate(
+          'chrome-test-builds',
+          is_ci_build=False,
+          ci_only_tests=True,
+          target_name=GTEST_TARGET),
+      api.step_data(
+          'parse description',
+          api.json.output({
+              'Include-Ci-Only-Tests': [
+                  'chromium.chromiumos:lacros-amd64-generic-rel|basic_EVE_TOT'
+              ]
+          })),
+      api.skylab.mock_wait_on_suites(
+          'basic_EVE_TOT (with patch)',
+          1,
+          runner_builds=[(901, common_pb2.SUCCESS)]),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
+      api.post_process(
+          post_process.MustRun,
+          'test_pre_run (with patch).basic_EVE_TOT (with patch).schedule'),
+      api.post_process(post_process.DropExpectation),
+  )

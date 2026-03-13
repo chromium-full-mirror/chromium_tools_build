@@ -21,11 +21,11 @@ from RECIPE_MODULES.build.chromium_tests import steps
 def RunSteps(api):
   test_spec = steps.MockTestSpec.create(
       name=api.properties.get('test_name', 'MockTest'),
-      runs_on_swarming=True,
+      runs_on_swarming=api.properties.get('runs_on_swarming', True),
       shards=4)
   test = test_spec.get_test(api.chromium_tests)
 
-  test.pre_run('')
+  test.pre_run('', is_ci_only=api.properties.get('is_ci_only', False))
 
   checkout_dir = api.path.start_dir
   source_dir = checkout_dir / 'fake-repo'
@@ -37,8 +37,9 @@ def RunSteps(api):
   except api.step.StepFailure:
     api.step.empty('step failure in %s' % test.name)
 
-  task = test.get_task('')
-  api.assertions.assertEqual(len(task.get_task_ids()), 4)
+  if test.runs_on_swarming:
+    task = test.get_task('')
+    api.assertions.assertEqual(len(task.get_task_ids()), 4)
 
   api.assertions.assertEqual(test.isolate_profile_data, False)
 
@@ -66,6 +67,14 @@ def GenTests(api):
   )
 
   yield api.test(
+      'is_ci_only',
+      api.properties(is_ci_only=True),
+      api.post_process(post_process.MustRun, 'pre_run MockTest'),
+      api.post_process(post_process.MustRun, 'MockTest'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'failure',
       api.properties(test_name='base_unittests'),
       api.chromium_tests.override_step_data(
@@ -80,5 +89,13 @@ def GenTests(api):
       api.chromium_tests.override_step_data(
           'base_unittests', retcode=infra_code),
       api.post_process(post_process.MustRun, 'infra failure in base_unittests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'local',
+      api.properties(runs_on_swarming=False),
+      api.post_process(post_process.MustRun, 'pre_run MockTest'),
+      api.post_process(post_process.MustRun, 'MockTest'),
       api.post_process(post_process.DropExpectation),
   )
