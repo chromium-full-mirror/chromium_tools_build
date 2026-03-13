@@ -9,6 +9,7 @@ per-file binary_size_trybot.py=file://recipes/recipe_modules/binary_size/OWNERS
 per-file boringssl.py=file:boringssl.expected/OWNERS
 per-file boringssl_bazel.py=file:boringssl.expected/OWNERS
 per-file boringssl_docs.py=file:boringssl.expected/OWNERS
+per-file build_codesearch.py=file:chromium_codesearch.expected/OWNERS
 per-file catapult.py=file:catapult.expected/OWNERS
 per-file celab.py=file:celab.expected/OWNERS
 per-file chromium.py=iannucci@chromium.org
