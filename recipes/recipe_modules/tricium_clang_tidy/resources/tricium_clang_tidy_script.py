@@ -1384,6 +1384,13 @@ def _convert_tidy_output_json_obj(base_path: str,
   def normalize_expansion_locs(expansion_locs):
     results = []
     for loc in expansion_locs:
+
+      if not loc.file_path:
+        logging.warning(
+            'Failed to normalize expansion loc with no file path: %r', loc)
+        results.append(loc)
+        continue
+
       n = _normalize_path_to_base(loc.file_path, base_path)
       if n is None:
         logging.warning('Failed to normalize expansion loc path %s',
@@ -1604,6 +1611,11 @@ def main():
   else:
     logging.info('Plan to tidy %d targets.', len(tidy_actions))
 
+  tidy_jobs = args.tidy_jobs
+  if tidy_jobs is None:
+    tidy_jobs = multiprocessing.cpu_count()
+  logging.info('Running clang-tidy with %d jobs.', tidy_jobs)
+
   # FIXME(gbiv): We might want to do something with failed_tidy_src_files some
   # day. The issue is that a clang-tidy death can indicate all sorts of things:
   # it could be as simple as a clang -Werror diag being tripped, or clang-tidy
@@ -1612,7 +1624,7 @@ def main():
   failed_tidy_actions, timed_out_actions, findings = _run_all_tidy_actions(
       tidy_actions,
       _run_tidy_action,
-      args.tidy_jobs,
+      tidy_jobs,
       clang_tidy_binary,
       args.tidy_checks,
       use_threads=False)

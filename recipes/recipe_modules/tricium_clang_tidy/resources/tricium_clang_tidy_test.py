@@ -1026,6 +1026,61 @@ class Tests(unittest.TestCase):
             'timed_out_src_files': [],
         })
 
+  def test_output_conversion_keeps_expansion_locs_with_empty_paths(self):
+    self._silence_logs()
+
+    main_action = tidy._TidyAction(
+        cc_file='/foo/src_file.cc',
+        target='bar.o',
+        in_dir='in/',
+        flags='',
+        flags_use_cl_driver_mode=False,
+    )
+    result = tidy._convert_tidy_output_json_obj(
+        base_path='/foo',
+        tidy_actions={
+            main_action: ['/foo/src_file.cc'],
+        },
+        failed_actions=[],
+        failed_tidy_actions=[],
+        timed_out_actions=[],
+        findings=[
+            _build_tidy_diagnostic(
+                file_path='/foo/src_file.cc',
+                line_number=1,
+                diag_name='bar',
+                message='baz',
+                expansion_locs=(
+                    tidy._ExpandedFrom(file_path='', line_number=1),
+                    tidy._ExpandedFrom(
+                        file_path='/foo/src_file.cc', line_number=2),
+                ),
+                notes=(tidy._TidyNote(
+                    file_path='/foo/v8/src/common/globals.h',
+                    line_number=786,
+                    message='make conversion explicit to silence this warning',
+                    expansion_locs=(tidy._ExpandedFrom(
+                        file_path='', line_number=1),),
+                ),),
+            )
+        ],
+        only_src_files=None,
+    )
+
+    self.assertEqual(result['diagnostics'][0]['expansion_locs'], (
+        dataclasses.asdict(tidy._ExpandedFrom(file_path='', line_number=1)),
+        dataclasses.asdict(
+            tidy._ExpandedFrom(file_path='src_file.cc', line_number=2)),
+    ))
+    self.assertEqual(result['diagnostics'][0]['notes'], (dataclasses.asdict(
+        tidy._TidyNote(
+            file_path='v8/src/common/globals.h',
+            line_number=786,
+            message='make conversion explicit to silence this warning',
+            expansion_locs=(dataclasses.asdict(
+                tidy._ExpandedFrom(file_path='', line_number=1)),),
+        )),))
+
   def test_output_conversion_translates_expansion_locs(self):
     self._silence_logs()
 
