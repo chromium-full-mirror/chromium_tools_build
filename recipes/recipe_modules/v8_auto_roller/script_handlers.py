@@ -33,7 +33,7 @@ SUPPORTED_SCRIPTS = {
             'Browser Protocol & CfT', 'scripts/deps/roll_deps.py', [
                 '--ref', 'CfT', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
                 '--update-node', '--output', '{{OUTPUT_JSON}}'
-            ], 'Rolling CfT pin toghether with browser-protocol files: '
+            ], 'Rolling CfT pin together with browser-protocol files: '
             'https://chromium.googlesource.com/chromium/src/+log/{old_revision}..{new_revision}\n'
             'In case of failures or errors, reach out to someone from '
             'config/owner/COMMON_OWNERS.', True),
