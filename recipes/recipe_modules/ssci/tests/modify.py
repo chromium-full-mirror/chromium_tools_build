@@ -44,8 +44,8 @@ def GenTests(api):
               '-output-file', '[CLEANUP]/tmp_tmp_1/spdx-out.json',
               '-sbom-generator-version',
               'vresolved-instance_id-of-prod------------', '-product',
-              'modify..modified', '-product-version', '2d7251', '-platform',
-              'linux_intel64', '-document-path', 'path1/path.spdx.json'
+              'modify..modified', '-platform', 'linux_intel64',
+              '-document-path', 'path1/path.spdx.json'
           ]),
       api.override_step_data(
           'run SSCI SBOM Generator to modify the provided SBOM',

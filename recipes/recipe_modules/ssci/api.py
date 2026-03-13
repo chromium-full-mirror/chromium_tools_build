@@ -652,7 +652,6 @@ class SsciAPI(recipe_api.RecipeApi):
 
     recipe_name = self.m.properties["recipe"].split("/")[-1]
     product = f'{recipe_name}.{self.execution_id}.{name}'
-    p_version = self._get_product_version()
 
     spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
 
@@ -660,8 +659,8 @@ class SsciAPI(recipe_api.RecipeApi):
         'run SSCI SBOM Generator to modify the provided SBOM', [
             self.ssci_sbom.tool_path, "-output-file", spdx_file,
             "-sbom-generator-version", self.ssci_sbom.resolved_version,
-            "-product", product, "-product-version", p_version, "-platform",
-            platform, "-document-path", sbom_path
+            "-product", product, "-platform", platform, "-document-path",
+            sbom_path
         ],
         infra_step=True,
         step_test_data=(lambda: self.m.json.test_api.output(
