@@ -54,6 +54,7 @@ def RunSteps(api):
     raise api.step.StepFailure('No go.mod files found in the repository.')
 
   targets = []
+  targets_dir = []
   go_version = '1.26'
   for mod_file in go_mod_files:
     mod_text = api.file.read_text('read %s' % mod_file, mod_file)
@@ -61,12 +62,15 @@ def RunSteps(api):
     if not match:
       raise api.step.StepFailure('Did not detect Modules for %s' % mod_file)
     targets.append(match.group(1))
+    targets_dir.append(api.path.basename(api.path.dirname(mod_file)))
     match = GO_VERSION_RE.search(mod_text)
     if not match:
       raise api.step.StepFailure('Did not detect Go version for %s' % mod_file)
     go_version = max(go_version, match.group(1), key=parse)
 
   with api.golang(version=go_version), api.context(cwd=build_dir):
+    # Without go.work we have to loop multiple directories and merge kzips.
+    api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
     api.step('generate go kzip', [
         kythe_bin, '--corpus', "'chromium.googlesource.com/build//main'",
         '--output', kzip_loc
@@ -88,11 +92,22 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/build'),
       api.platform('linux', 64),
       api.path.exists(api.path.cache_dir / 'build'),
-      api.step_data('find go.mod files',
-                    api.file.glob_paths([
-                        'siso/go.mod',
-                        'kajiya/go.mod',
-                    ])),
+      api.step_data(
+          'find go.mod files',
+          api.file.glob_paths(['siso/go.mod', 'kajiya/go.mod',
+                               'bench/go.mod'])),
+      api.step_data(
+          'read [CACHE]/build/bench/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/build/bench
+              go 1.25.9
+
+              tool (
+                google.golang.org/a/foo
+                google.golang.org/b/bar
+              )''')),
+      ),
       api.step_data(
           'read [CACHE]/build/siso/go.mod',
           api.file.read_text(
@@ -119,6 +134,8 @@ def GenTests(api):
       ),
       api.post_process(StepCommandContains, 'ensure_installed (2)',
                        ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
+      api.post_process(StepCommandContains, 'init go modules',
+                       ['go', 'work', 'init', 'bench', 'kajiya', 'siso']),
       api.post_process(
           StepCommandContains, 'generate go kzip',
           ['go.chromium.org/build/kajiya', 'go.chromium.org/build/siso']),
