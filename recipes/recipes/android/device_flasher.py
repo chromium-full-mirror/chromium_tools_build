@@ -138,7 +138,7 @@ def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
   task_request = None
 
   if (not flash_criteria.max_uid_threshold and
-      not flash_criteria.disk_free_threshold):  # pragma: no cover
+      not flash_criteria.min_disk_free_threshold):  # pragma: no cover
     return task_request
 
   pool, device_type, device_os = None, None, None
@@ -174,13 +174,13 @@ def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
     flash_reasons.append('max_uid (%d) reaches threshold %d' %
                          (max_uid, flash_criteria.max_uid_threshold))
 
-  if (flash_criteria.disk_free_threshold and
+  if (flash_criteria.min_disk_free_threshold and
       disk_free_percentage is not None and
-      disk_free_percentage < flash_criteria.disk_free_threshold):
+      disk_free_percentage < flash_criteria.min_disk_free_threshold):
     should_flash = True
     flash_reasons.append(
         'disk free percentage (%d%%) is below threshold %d%%' %
-        (disk_free_percentage, flash_criteria.disk_free_threshold))
+        (disk_free_percentage, flash_criteria.min_disk_free_threshold))
 
   if should_flash:
     step = api.step.empty(
@@ -460,7 +460,7 @@ def GenTests(api):
           'pool': 'chromium.tests',
           'device_type': 'walleye',
           'device_os': 'PQ3A.190801.002',
-          'disk_free_threshold': 5,
+          'min_disk_free_threshold': 5,
       }]),
       api.override_step_data(
           'Process flash criteria 0.List Android bots',

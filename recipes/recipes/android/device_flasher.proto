@@ -34,7 +34,7 @@ message FlashCriteria {
   // Flash the device when disk free percentage is less than this threshold.
   // Calculated as: disk.data.free_mb / disk.data.size_mb * 100.
   // 0 means never flash for this reason.
-  optional int32 disk_free_threshold = 7;
+  optional int32 min_disk_free_threshold = 7;
 }
 
 message InputProperties {
