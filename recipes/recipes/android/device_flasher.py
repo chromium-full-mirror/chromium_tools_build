@@ -137,7 +137,8 @@ def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
 def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
   task_request = None
 
-  if not flash_criteria.max_uid_threshold:  # pragma: no cover
+  if (not flash_criteria.max_uid_threshold and
+      not flash_criteria.disk_free_threshold):  # pragma: no cover
     return task_request
 
   pool, device_type, device_os = None, None, None
@@ -152,16 +153,40 @@ def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
   # Default bot's max_uid to UID_LOWER_LIMIT, in case bot does not have this
   # prop, e.g. in fastboot mode.
   max_uid = UID_LOWER_LIMIT
+  disk_free_percentage = None
 
   if bot.state and 'devices' in bot.state:
     # Note that one Android swarming bot will have at most *one* device.
     for _, device_state in bot.state['devices'].items():
       max_uid = device_state['max_uid']
-  if max_uid and max_uid >= flash_criteria.max_uid_threshold:
+      if 'data' in device_state['disk']:
+        disk_free_mb = device_state['disk']['data']['free_mb']
+        disk_size_mb = device_state['disk']['data']['size_mb']
+        if disk_size_mb > 0:
+          disk_free_percentage = int(disk_free_mb / disk_size_mb * 100)
+
+  should_flash = False
+  flash_reasons = []
+
+  if (flash_criteria.max_uid_threshold and max_uid and
+      max_uid >= flash_criteria.max_uid_threshold):
+    should_flash = True
+    flash_reasons.append('max_uid (%d) reaches threshold %d' %
+                         (max_uid, flash_criteria.max_uid_threshold))
+
+  if (flash_criteria.disk_free_threshold and
+      disk_free_percentage is not None and
+      disk_free_percentage < flash_criteria.disk_free_threshold):
+    should_flash = True
+    flash_reasons.append(
+        'disk free percentage (%d%%) is below threshold %d%%' %
+        (disk_free_percentage, flash_criteria.disk_free_threshold))
+
+  if should_flash:
     step = api.step.empty(
         'Create flash task for %s' % bot.bot_id,
-        step_text='max_uid (%d) reaches threshold %d' %
-        (max_uid, flash_criteria.max_uid_threshold))
+        step_text=', '.join(flash_reasons),
+    )
     step.presentation.links['bot UI: %s' % bot.bot_id] = bot.bot_ui_link
     task_request = _CreateFlashTaskRequest(api, bot.bot_id, pool, device_type,
                                            device_os)
@@ -248,8 +273,20 @@ def GenTests(api):
       'device_type': ['sailfish'],
       'device_os': ['P', 'PQ3A.190801.002'],
   }
-  flash_state = {'devices': {'device_serial': {'max_uid': 19000}}}
-  no_flash_state = {'devices': {'device_serial': {'max_uid': 17000}}}
+  flash_state = {'devices': {'device_serial': {'max_uid': 19000, 'disk': {}}}}
+  no_flash_state = {
+      'devices': {
+          'device_serial': {
+              'max_uid': 17000,
+              'disk': {
+                  'data': {
+                      'free_mb': 900,
+                      'size_mb': 1000
+                  }
+              }
+          }
+      }
+  }
 
   yield api.test(
       'basic',
@@ -402,4 +439,48 @@ def GenTests(api):
                        'Some flash tasks failed. See above steps for details'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
+  )
+
+  disk_flash_state = {
+      'devices': {
+          'device_serial': {
+              'max_uid': 17000,
+              'disk': {
+                  'data': {
+                      'free_mb': 400,
+                      'size_mb': 10000
+                  }
+              },
+          }
+      }
+  }
+  yield api.test(
+      'disk-free-threshold',
+      api.properties(flash_criteria=[{
+          'pool': 'chromium.tests',
+          'device_type': 'walleye',
+          'device_os': 'PQ3A.190801.002',
+          'disk_free_threshold': 5,
+      }]),
+      api.override_step_data(
+          'Process flash criteria 0.List Android bots',
+          api.json.output([
+              api.swarming.generate_bot_json(
+                  'flash--device1',
+                  dimensions=walleye_dimensions,
+                  state=disk_flash_state,
+              ),
+          ]),
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'Process flash criteria 0.Create flash task for flash--device1',
+      ),
+      api.post_process(
+          post_process.StepTextEquals,
+          'Process flash criteria 0.Create flash task for flash--device1',
+          'disk free percentage (4%) is below threshold 5%',
+      ),
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )
