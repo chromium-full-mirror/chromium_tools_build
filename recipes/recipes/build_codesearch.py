@@ -72,7 +72,7 @@ def RunSteps(api):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
     api.step('generate go kzip', [
-        kythe_bin, '--corpus', "'chromium.googlesource.com/build//main'",
+        kythe_bin, '--corpus', 'chromium.googlesource.com/build//main',
         '--output', kzip_loc
     ] + targets)
 
