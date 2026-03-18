@@ -511,6 +511,15 @@ def setup_target(api,
       defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
     test_logging(api, 'test optimizing')
 
+    if product == 'armv8':
+      with api.context(env=test_env):
+        defer(
+            api.step, 'test optimizing all-isa-features', testrunner_cmd + [
+                '--optimizing', '--run-test-option=--Xcompiler-option=' +
+                '--instruction-set-features=-a53,crc,lse,fp16,-dotprod,-sve'
+            ])
+      test_logging(api, 'test optimizing all-isa-features')
+
     with api.context(env=test_env):
       # We pass --optimizing for interpreter debuggable to run AOT checker tests
       # compiled debuggable.

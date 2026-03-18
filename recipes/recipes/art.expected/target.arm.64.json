@@ -858,6 +858,181 @@
       "--verbose",
       "--debug",
       "--optimizing",
+      "--run-test-option=--Xcompiler-option=--instruction-set-features=-a53,crc,lse,fp16,-dotprod,-sve"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "false",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "true",
+      "ART_USE_READ_BARRIER": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test optimizing all-isa-features"
+  },
+  {
+    "cmd": [
+      "adb",
+      "logcat",
+      "-d",
+      "-v",
+      "threadtime"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "false",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "true",
+      "ART_USE_READ_BARRIER": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test optimizing all-isa-features: adb logcat"
+  },
+  {
+    "cmd": [
+      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "false",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "true",
+      "ART_USE_READ_BARRIER": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test optimizing all-isa-features: crashes"
+  },
+  {
+    "cmd": [
+      "adb",
+      "logcat",
+      "-c"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "false",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "true",
+      "ART_USE_READ_BARRIER": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test optimizing all-isa-features: adb clear log"
+  },
+  {
+    "cmd": [
+      "./art/test/testrunner/testrunner.py",
+      "--target",
+      "--verbose",
+      "--debug",
+      "--optimizing",
       "--debuggable"
     ],
     "cwd": "[CACHE]/art",
