@@ -107,14 +107,6 @@
   },
   {
     "cmd": [
-      "rm",
-      "-rf",
-      "[CACHE]/builder/devtools-frontend/out"
-    ],
-    "name": "Clean out dir"
-  },
-  {
-    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
