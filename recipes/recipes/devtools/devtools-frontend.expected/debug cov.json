@@ -154,7 +154,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/builder/devtools-frontend/out/Debug"
+      "[CACHE]/builder/devtools-frontend/out/Release"
     ],
     "env_prefixes": {
       "PATH": [
