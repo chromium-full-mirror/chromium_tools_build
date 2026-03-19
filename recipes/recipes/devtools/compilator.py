@@ -56,6 +56,7 @@ def RunSteps(api, properties):
     update_result.out_commit.position = 1
     api.chromium_checkout.update_rdb_source_spec_invocation(
         gitiles_commit=update_result.out_commit)
+    api.step('Clean out dir', ['rm', '-rf', api.devtools.source_dir / 'out'])
     build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
     with api.devtools.depot_on_path():
       api.devtools.clean_out_dir(builder_config, properties.clobber)

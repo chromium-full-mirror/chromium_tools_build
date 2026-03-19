@@ -62,6 +62,7 @@ def RunSteps(api, properties):
                          properties.devtools_skip_typecheck)
   api.devtools.update()
 
+  api.step('Clean out dir', ['rm', '-rf', api.devtools.source_dir / 'out'])
   build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, properties.clobber)
