@@ -77,6 +77,7 @@ def RunSteps(api, properties):
           'Unit Tests (node)',
           node_unit_tests=True),
       E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests (non-hosted)'),
+      LintCheck(api, trigger, builder_config, 'Lint Check', target_os),
       ScriptsTests(api, trigger, builder_config, 'Scripts Tests', target_os),
       PerformanceTests(api, trigger, builder_config, 'Performance Tests',
                        target_os)
