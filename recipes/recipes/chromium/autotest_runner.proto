@@ -7,4 +7,17 @@ syntax = "proto3";
 package recipes.build.chromium.autotest_runner;
 
 message InputProperties {
+  repeated AutotestInvocation tests = 1;
+}
+
+message EnvProperties {
+}
+
+message AutotestInvocation {
+  // Optional: The name of the test step in the UI.
+  // If not provided, the recipe will fallback to joining the args.
+  string step_name = 1;
+
+  // The arguments to pass to autotest.py (e.g., "base/strings" or "StringUtilTest.IsStringUTF8")
+  repeated string args = 2;
 }
