@@ -73,7 +73,8 @@ def RunSteps(api):
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
     api.step('generate go kzip', [
         kythe_bin, '--corpus', 'chromium.googlesource.com/build//main',
-        '--output', kzip_loc
+        '--use_default_corpus_for_stdlib=true',
+        '--use_default_corpus_for_deps=true', '--output', kzip_loc
     ] + targets)
 
   api.gsutil.upload(
