@@ -68,7 +68,9 @@ def RunSteps(api):
       raise api.step.StepFailure('Did not detect Go version for %s' % mod_file)
     go_version = max(go_version, match.group(1), key=parse)
 
-  with api.golang(version=go_version), api.context(cwd=build_dir):
+  # KYTHE_ROOT_DIRECTORY makes sub modules relpath to build repo root.
+  with api.golang(version=go_version), api.context(
+      cwd=build_dir, env={'KYTHE_ROOT_DIRECTORY': build_dir}):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
     api.step('generate go kzip', [
