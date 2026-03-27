@@ -499,6 +499,49 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests_identified
 
+  def _get_legacy_filter_from_test_id(self, test_id):
+    """
+    Translates a ResultDB v2 test_id to a legacy test filter string
+    compatible with --isolated-script-test-filter.
+    Ref: go/chrome-test-id-v2
+    """
+    if not test_id:
+      return None
+
+    if not test_id.startswith('://'):
+      return None
+
+    # New v2 format
+    test_id_pattern = re.compile(r"://(?P<module_name>[^!]+)!"
+                                 r"(?P<scheme>[^:]+):"
+                                 r"(?P<coarse>[^:]*):"
+                                 r"(?P<fine>[^#]+)#"
+                                 r"(?P<case>.+)")
+    match = test_id_pattern.match(test_id)
+    if not match:
+      # Pattern didn't match, might be a different v2 structure or malformed.
+      return None
+
+    components = match.groupdict()
+    scheme = components['scheme']
+    coarse = components['coarse']
+    fine = components['fine']
+    case = components['case']
+
+    # Decode case name per go/chrome-test-id-v2 "Note about encoding"
+    # Unescape ':' and '\' in the case name.
+    case = case.replace('\\:', ':').replace('\\\\', '\\')
+
+    if scheme == 'pyunit':
+      # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted
+      # Expected filter: __main__.ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
+      return f"{coarse}.{fine}.{case}"
+    # TODO(crbug.com/456432041): Add in other schemes besides pyunit.
+
+    # Fallback for unhandled schemes:
+    # Let the caller use test.test_name
+    return None
+
   def _map_test_object(
       self,
       test_objects: collections.abc.Iterable[steps.Test],
@@ -540,7 +583,13 @@ class FlakinessApi(recipe_api.RecipeApi):
             # Otherwise create a new one.
             test_filter, duration_milliseconds = new_tests.setdefault(
                 test_obj, ([], 0))
-            test_filter.append(test.test_name)
+
+            legacy_filter = self._get_legacy_filter_from_test_id(test.test_id)
+            if legacy_filter:
+              test_filter.append(legacy_filter)
+            else:
+              test_filter.append(test.test_name)
+
             # duration_milliseconds can default to 0 for our calculations because
             # it's only calculated if duration values are reported to ResultDB.
             test_duration_ms = test.duration_milliseconds or 0
