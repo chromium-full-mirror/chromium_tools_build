@@ -61,7 +61,7 @@ def RunSteps(api):
     match = MODULE_RE.search(mod_text)
     if not match:
       raise api.step.StepFailure('Did not detect Modules for %s' % mod_file)
-    targets.append(match.group(1))
+    targets.append(match.group(1) + '/...')
     targets_dir.append(api.path.basename(api.path.dirname(mod_file)))
     match = GO_VERSION_RE.search(mod_text)
     if not match:
@@ -139,9 +139,9 @@ def GenTests(api):
                        ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
       api.post_process(StepCommandContains, 'init go modules',
                        ['go', 'work', 'init', 'bench', 'kajiya', 'siso']),
-      api.post_process(
-          StepCommandContains, 'generate go kzip',
-          ['go.chromium.org/build/kajiya', 'go.chromium.org/build/siso']),
+      api.post_process(StepCommandContains, 'generate go kzip', [
+          'go.chromium.org/build/kajiya/...', 'go.chromium.org/build/siso/...'
+      ]),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
