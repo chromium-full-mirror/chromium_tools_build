@@ -4,14 +4,17 @@
 """Triggers compilator and tests"""
 
 from recipe_engine import post_process
+
 from PB.recipe_modules.build.chromium_orchestrator.properties import (
     InputProperties)
+
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
     'chromium_orchestrator',
     'chromium_tests_builder_config',
+    'chromium_turboci',
     'code_coverage',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
@@ -27,7 +30,8 @@ DEPS = [
 def RunSteps(api):
   api.tryserver.require_is_tryserver()
 
-  with api.chromium.chromium_layout():
+  with api.chromium.chromium_layout(), \
+       api.chromium_turboci.display_turboci_checks():
     return api.chromium_orchestrator.trybot_steps()
 
 

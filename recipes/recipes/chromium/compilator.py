@@ -3,19 +3,22 @@
 # found in the LICENSE file.
 
 from recipe_engine import post_process
+
 from PB.recipe_modules.build.chromium_compilator.properties import InputProperties
 
 DEPS = [
     'chromium',
     'chromium_compilator',
     'chromium_tests_builder_config',
+    'chromium_turboci',
     'recipe_engine/properties',
 ]
 
 PROPERTIES = InputProperties
 
 def RunSteps(api, properties):
-  with api.chromium.chromium_layout():
+  with api.chromium.chromium_layout(), \
+       api.chromium_turboci.display_turboci_checks():
     return api.chromium_compilator.compilator_steps(properties)
 
 

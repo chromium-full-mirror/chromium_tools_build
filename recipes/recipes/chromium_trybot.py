@@ -15,6 +15,7 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'chromium_turboci',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/gerrit',
@@ -42,7 +43,8 @@ def RunSteps(api):
 
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
-  with api.chromium.chromium_layout():
+  with api.chromium.chromium_layout(), \
+       api.chromium_turboci.display_turboci_checks():
     return api.chromium_tests.trybot_steps(builder_id, builder_config)
 
 
