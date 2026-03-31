@@ -106,11 +106,18 @@ def RunSteps(api, properties):
           f'{props["codesearch_mirror_revision"]}:refs/kythe/{props["root_solution_revision"]}'
       )
 
-    # Trigger the codesearch builders in the same project.
-    api.scheduler.emit_trigger(
-        api.scheduler.BuildbucketTrigger(properties=props),
-        project=api.buildbucket.build.builder.project,
-        jobs=properties.builders)
+    # Fan out the children codesearch builders and wait for completions.
+    build_requests = [
+        api.buildbucket.schedule_request(
+            builder=b,
+            properties=props,
+            project=api.buildbucket.build.builder.project,
+        ) for b in properties.builders
+    ]
+    builders = api.buildbucket.schedule(build_requests)
+    api.buildbucket.collect_builds([b.id for b in builders],
+                                   step_name='wait for children builders',
+                                   timeout=14400)
 
 
 def GenTests(api):
