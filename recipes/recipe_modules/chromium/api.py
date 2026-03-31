@@ -540,7 +540,8 @@ class ChromiumApi(recipe_api.RecipeApi):
               ),
               **kwargs)
 
-          if crash_step and crash_step.stdout:
+          if crash_step and crash_step.stdout is not None:
+            crash_step.presentation.logs['stdout'] = crash_step.stdout
             for line in crash_step.stdout.splitlines():
               line = line.strip()
               if line.startswith('gs://'):
