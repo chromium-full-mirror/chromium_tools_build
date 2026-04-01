@@ -38,6 +38,10 @@ DEPS = [
 
 PROPERTIES = InputProperties
 
+# The name of the manifest file that will be written to the archive's build
+# directory to store metadata about the archive for use by ClusterFuzz.
+MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
+
 
 def gn_refs(api, build_dir: Path, step_name, target):
   """Runs gn refs to calculate targets depending on target.
@@ -76,38 +80,35 @@ def copy_path(api, source_dir: Path, build_dir: Path, path_name):
     api.file.copytree('copying directory:' + str(src), src, dest)
 
 
-def extract_paths_to_copy(list_of_runtime_deps, set_of_gn_targets):
+def filter_runtime_deps(runtime_deps: list[str],
+                        gn_targets: set[str]) -> set[str]:
   """Get the subset of runtime dependencies for the specified targets.
 
   The list of runtime dependencies has the following format:
   some compiler warning
   some compiler warning2
   Target target1
-  runtime deps
+  runtime_deps
     ./path/to/dependency1
     ../../path/to/dependency2
   Target target2
-  runtime deps
+  runtime_deps
     ./path/to/dependency3
     ../../path/to/dependency4
   """
   result = set()
-  size = len(list_of_runtime_deps)
-  i = 0
+  is_collecting = False
+  TARGET_PREFIX = 'Target '
 
-  while i < size:
-    target = list_of_runtime_deps[i]
-    i += 1
-    if target.startswith(
-        'Target ') and target[len('Target '):] in set_of_gn_targets:
-      while (i < size and not list_of_runtime_deps[i].startswith('Target ')):
-        # lines corresponding to runtime_dependencies start with spaces.
-        dependency = list_of_runtime_deps[i].strip()
-        # Add runtime dependencies that are not already under
-        # {build_dir}/ to the set of paths to copy.
-        if dependency.startswith('../../'):
-          result.add(dependency)
-        i += 1
+  for line in runtime_deps:
+    if line.startswith(TARGET_PREFIX):
+      target_name = line[len(TARGET_PREFIX):]
+      is_collecting = target_name in gn_targets
+    elif is_collecting:
+      # lines corresponding to runtime dependencies start with spaces.
+      dependency = line.strip()
+      if dependency and dependency != 'runtime_deps':
+        result.add(dependency)
   return result
 
 # How many elements to return per batch by `batched()`.
@@ -377,45 +378,70 @@ def RunSteps(api, properties):
       # Needed for tests
       api.path.mock_add_file('[CACHE]/builder/src/path2')
 
-      paths_to_copy = set()
-      with api.step.nest(
-          'generate runtime dependencies to copy') as step_result:
+      with api.step.nest('collect all runtime dependencies') as step_result:
         set_of_gn_targets = set(gn_targets)
-        list_of_runtime_deps = api.gn.desc(
+        raw_list_of_runtime_deps = api.gn.desc(
             build_dir,
-            "*",
+            '*',
             'runtime_deps',
             step_name='get runtime dependencies with pattern *',
-            use_cache=True)
-        paths_to_copy = extract_paths_to_copy(list_of_runtime_deps,
-                                              set_of_gn_targets)
-        paths_to_copy = sorted(paths_to_copy)
-        step_result.logs['runtime_dependencies_to_copy'] = paths_to_copy
+            use_cache=True,
+        )
+        runtime_deps = filter_runtime_deps(raw_list_of_runtime_deps,
+                                           set_of_gn_targets)
+        runtime_deps = sorted(runtime_deps)
+        step_result.logs['runtime_dependencies'] = runtime_deps
 
-      with api.step.nest('copy runtime dependencies to build directory'):
-        for path_name in paths_to_copy:
-          copy_path(api, source_dir, build_dir, path_name)
+      manifest_dict = {
+          'archive_schema_version': properties.archive_schema_version
+      }
+      paths_to_archive = None
+      if properties.archive_schema_version == 0:
+        archive_root = build_dir
+        with api.step.nest('copy runtime dependencies to build directory'):
+          for path in runtime_deps:
+            if path.startswith('../../'):
+              copy_path(api, source_dir, build_dir, path)
+
+      else:
+        archive_root = source_dir
+        paths_to_archive = [
+            api.path.relpath(build_dir / path, source_dir)
+            for path in runtime_deps
+        ]
+        paths_to_archive.append(MANIFEST_FILENAME)
+
+      api.file.write_json(
+          'write archive manifest',
+          archive_root / MANIFEST_FILENAME,
+          manifest_dict,
+      )
 
       api.archive.clusterfuzz_archive(
           source_dir=source_dir,
-          build_dir=build_dir,
+          build_dir=archive_root,
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
+          paths_to_archive=paths_to_archive,
           archive_prefix=properties.archive_prefix or 'libfuzzer',
           build_config=api.chromium.c.build_config_fs,
           archive_subdir_suffix=properties.upload_directory,
           gs_acl='public-read',
-          **kwargs)
+          **kwargs,
+      )
 
 
 def GenTests(api):
 
-  def generate_test(is_try=False,
-                    is_coverage=False,
-                    is_ios=False,
-                    is_v8=False,
-                    coverage_metadata_failure=False,
-                    engine='libfuzzer'):
+  def generate_test(
+      is_try=False,
+      is_coverage=False,
+      is_ios=False,
+      is_v8=False,
+      coverage_metadata_failure=False,
+      engine='libfuzzer',
+      archive_schema_version=0,
+  ):
     test = api.properties(
         upload_bucket='chromium-browser-libfuzzer',
         upload_directory='fuzz',
@@ -423,60 +449,72 @@ def GenTests(api):
         ios_targets_only=is_ios,
         collect_fuzz_coverage=is_coverage,
         fuzz_engine=engine,
+        archive_schema_version=archive_schema_version,
     )
     if engine != 'fuzzilli':
       targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n')
       test += api.step_data('calculate all_fuzzers', stdout=targets)
       test += api.step_data(
           'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
-      if is_coverage:
+      if is_v8:
+        test += api.step_data('calculate v8_fuzzers', stdout=targets)
+      if is_ios:
+        test += api.step_data('calculate ios_fuzzers', stdout=targets)
+      # Tryjobs provide their own mocks for 'list gn targets'
+      if not is_try:
         test += api.step_data('list gn targets', stdout=targets)
 
     if not (is_try or is_coverage):
       test += api.post_process(post_process.MustRun,
-                               'generate runtime dependencies to copy')
+                               'collect all runtime dependencies')
       # this will lead to us having ../../path2 and ../../path4 as runtime
       # dependencies to copy
-      if not (is_v8 or is_ios):
-        step_output = ('some warning1\n\n'
-                       'some warning2\n'
-                       'Target target1\n'
-                       'runtime_deps\n'
-                       '  ../../path14\n'
-                       '  ./path15\n\n\n'
-                       'Target target2\n'
-                       'runtime_deps\n'
-                       '  ../../path1\n'
-                       '  ../../path2\n'
-                       'Target target3\n'
-                       'runtime_deps\n'
-                       '  ./path3\n'
-                       '  ../../path4\n'
-                       'Target target5\n'
-                       'runtime_deps\n'
-                       '  ./path16\n'
-                       '  ../../path17\n')
+      step_output = ('some warning1\n\n'
+                     'some warning2\n'
+                     'Target target1\n'
+                     'runtime_deps\n'
+                     '  ./target1\n'
+                     '  ../../path14\n'
+                     '  ./path15\n\n\n'
+                     'Target target2\n'
+                     'runtime_deps\n'
+                     '  ./target2\n'
+                     '  ../../path1\n'
+                     '  ../../path2\n'
+                     'Target target3\n'
+                     'runtime_deps\n'
+                     '  ./target3\n'
+                     '  ./path3\n'
+                     '  ../../path4\n'
+                     'Target target5\n'
+                     'runtime_deps\n'
+                     '  ./path16\n'
+                     '  ../../path17\n')
 
-        test += api.step_data(
-            'generate runtime dependencies to copy.get runtime '
-            'dependencies with pattern *',
-            stdout=api.raw_io.output_text(step_output))
-        # ../../path1, ../../path2 and ../../path4 need to be copied.
-        test += api.post_process(LogEquals,
-                                 'generate runtime dependencies to copy',
-                                 'runtime_dependencies_to_copy',
-                                 '../../path1\n../../path2\n../../path4')
+      test += api.step_data(
+          'collect all runtime dependencies.get runtime '
+          'dependencies with pattern *',
+          stdout=api.raw_io.output_text(step_output),
+      )
+      # ../../path1, ../../path2 and ../../path4 need to be copied.
+      test += api.post_process(
+          LogEquals, 'collect all runtime dependencies', 'runtime_dependencies',
+          '../../path1\n../../path2\n../../path4\n./path3\n./target2\n./target3'
+      )
+      if archive_schema_version == 0:
         test += api.post_process(
             post_process.MustRun,
             'copy runtime dependencies to build directory')
         test += api.post_process(
             post_process.MustRun,
             'copy runtime dependencies to build directory.copying file:'
-            '[CACHE]/builder/src/path2')
+            '[CACHE]/builder/src/path2',
+        )
         test += api.post_process(
             post_process.MustRun,
             'copy runtime dependencies to build directory.copying directory:'
-            '[CACHE]/builder/src/path4')
+            '[CACHE]/builder/src/path4',
+        )
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if is_coverage:
       test += api.post_process(post_process.MustRun,
@@ -497,9 +535,30 @@ def GenTests(api):
       test += api.step_data(
           'process fuzz coverage (overall).generate coverage metadata',
           retcode=retcode)
-    test += api.post_process(post_process.DropExpectation)
     if is_ios:
-      return (test + api.properties(xcode_build_version='12345'))
+      test += api.properties(xcode_build_version='12345')
+    if archive_schema_version != 0:
+      test += api.post_process(
+          post_process.DoesNotRun,
+          'copy runtime dependencies to build directory',
+      )
+      if not is_try:
+        # Verify that targets and runtime_deps are in the archive.
+        # targets in test are target1, target2, target3
+        # runtime_deps in test (filtered) are ../../path1, ../../path2, ../../path4, ./path3
+        expected_paths = ('["path1", '
+                          '"path2", '
+                          '"path4", '
+                          '"out/1826-some-ci-bot/path3", '
+                          '"out/1826-some-ci-bot/target2", '
+                          '"out/1826-some-ci-bot/target3", '
+                          '"clusterfuzz_manifest.json"]')
+        test += api.post_process(
+            post_process.StepCommandContains,
+            'zipping',
+            [expected_paths],
+        )
+    test += api.post_process(post_process.DropExpectation)
     return test
 
   yield api.test(
@@ -541,11 +600,30 @@ def GenTests(api):
                           },
                       ),
               },
-          })),
+          }),
+      ),
       api.path.exists(api.path.cache_dir /
                       'builder/src/out/1826-some-ci-bot/src_root/path1'),
       api.platform.name('linux'),
       generate_test(),
+  )
+  yield api.test(
+      'schema_v1',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          }),
+      ),
+      api.platform.name('linux'),
+      generate_test(archive_schema_version=1),
   )
 
   yield api.test(

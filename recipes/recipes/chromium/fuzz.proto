@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.fuzz;
 
-// Next ID: 8
+// Next ID: 9
 message InputProperties {
   string archive_prefix = 1;
   bool v8_targets_only = 2;
@@ -15,4 +15,9 @@ message InputProperties {
   string upload_directory = 5;
   bool collect_fuzz_coverage = 6;
   string fuzz_engine = 7;
+  // Optional Version number to control how libfuzzer archives are formatted.
+  // 0 (Default): Legacy with src_root archiving where archive root is build dir
+  // 1: New archive schema where archive root is source dir
+  // May be deprecated in the future, learn more: go/crfuzz-fixing-msan-builds
+  uint32 archive_schema_version = 8;
 }

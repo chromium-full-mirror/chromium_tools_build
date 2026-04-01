@@ -179,6 +179,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                           archive_prefix,
                           build_config,
                           *,
+                          paths_to_archive: list[str] | None = None,
                           archive_subdir_suffix='',
                           gs_acl=None,
                           revision_dir=None,
@@ -218,6 +219,9 @@ class ArchiveApi(recipe_api.RecipeApi):
       archive_prefix: Prefix of the archive zip file
       build_config: Name of build config, e.g. release or debug. This is used
                     to qualify archive file names.
+      paths_to_archive: Optional list of dependency paths to include in the archive,
+                        relative to the build directory. If included, it will skip
+                        discovering paths to zip and use the provided list.
       archive_subdir_suffix: Optional suffix to the google storage subdirectory
                              name that contains the archive files
       gs_acl: ACL used for the file on google storage
@@ -302,25 +306,29 @@ class ArchiveApi(recipe_api.RecipeApi):
           # exception. Either way, this shouldn't cause the whole build to fail.
           pass
 
-    # Build the list of files to archive.
-    cmd = [
-        'python3',
-        self.resource('filter_build_files.py'),
-        '--dir',
-        build_dir,
-        '--platform',
-        self.m.platform.name,
-        '--output',
-        self.m.json.output(),
-    ]
-    filter_result = self.m.step(
-        'filter build_dir',
-        cmd,
-        infra_step=True,
-        step_test_data=lambda: self.m.json.test_api.output(['file1', 'file2']),
-        **kwargs)
+    if paths_to_archive:
+      zip_file_list = paths_to_archive
+    else:
+      # Build the list of files to archive.
+      cmd = [
+          'python3',
+          self.resource('filter_build_files.py'),
+          '--dir',
+          build_dir,
+          '--platform',
+          self.m.platform.name,
+          '--output',
+          self.m.json.output(),
+      ]
+      filter_result = self.m.step(
+          'filter build_dir',
+          cmd,
+          infra_step=True,
+          step_test_data=lambda: self.m.json.test_api.output(['file1', 'file2']
+                                                            ),
+          **kwargs)
 
-    zip_file_list = filter_result.json.output
+      zip_file_list = filter_result.json.output
 
     # Use the legacy platform name if specified as Clusterfuzz has some
     # expectations on this (it only affects Windows, where it replace 'win'

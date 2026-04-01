@@ -9,7 +9,6 @@ import datetime
 from PB.recipe_modules.build.archive import properties
 from recipe_engine import post_process
 
-
 DEPS = [
     'archive',
     'chromium',
@@ -28,10 +27,10 @@ MINOR=0
 BUILD=4711
 PATCH=0'''
 
-TEST_HASH_MAIN='5e3250aadda2b170692f8e762d43b7e8deadbeef'
-TEST_COMMIT_POSITON_MAIN='refs/heads/B1@{#123456}'
+TEST_HASH_MAIN = '5e3250aadda2b170692f8e762d43b7e8deadbeef'
+TEST_COMMIT_POSITON_MAIN = 'refs/heads/B1@{#123456}'
 
-TEST_HASH_COMPONENT='deadbeefdda2b170692f8e762d43b7e8e7a96686'
+TEST_HASH_COMPONENT = 'deadbeefdda2b170692f8e762d43b7e8e7a96686'
 TEST_COMMIT_POSITON_COMPONENT = 'refs/heads/main@{#234}'
 
 source_side_spec_path = ['archive', 'foo.json']
@@ -111,19 +110,20 @@ def RunSteps(api):
       bitness=api.properties.get('bitness'),
       use_legacy=api.properties.get('use_legacy', True),
       sortkey_datetime=api.properties.get('sortkey_datetime', None),
+      paths_to_archive=api.properties.get('paths_to_archive', None),
   )
 
 
 def GenTests(api):
   update_properties = {
-    'got_revision': TEST_HASH_MAIN,
-    'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+      'got_revision': TEST_HASH_MAIN,
+      'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
   }
   for platform, build_files in (
-        ('win', ['chrome', 'icu.dat', 'lib', 'file.obj']),
-        ('mac', ['chrome', 'icu.dat', 'pdfsqueeze']),
-        ('linux', ['chrome', 'icu.dat', 'lib.host']),
-      ):
+      ('win', ['chrome', 'icu.dat', 'lib', 'file.obj']),
+      ('mac', ['chrome', 'icu.dat', 'pdfsqueeze']),
+      ('linux', ['chrome', 'icu.dat', 'lib.host']),
+  ):
     yield api.test(
         'cf_archiving_%s' % platform,
         api.platform(platform, 64),
@@ -168,19 +168,17 @@ def GenTests(api):
       'custom_build_config',
       api.platform('linux', 64),
       api.properties(
-          build_config='debease',
-          update_properties=update_properties),
+          build_config='debease', update_properties=update_properties),
       api.post_process(
-          check_gs_url_equals,
-          'gs://chromium/linux-debease/'
+          check_gs_url_equals, 'gs://chromium/linux-debease/'
           'chrome-asan-linux-debease-refs_heads_B1-123456.zip'),
       api.post_process(post_process.DropExpectation),
   )
 
   # A component build with git.
   update_properties = {
-    'got_x10_revision': TEST_HASH_COMPONENT,
-    'got_x10_revision_cp': TEST_COMMIT_POSITON_COMPONENT,
+      'got_x10_revision': TEST_HASH_COMPONENT,
+      'got_x10_revision_cp': TEST_COMMIT_POSITON_COMPONENT,
   }
   yield api.test(
       'cf_archiving_component',
@@ -195,8 +193,8 @@ def GenTests(api):
   )
 
   update_properties = {
-    'got_revision': TEST_HASH_MAIN,
-    'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+      'got_revision': TEST_HASH_MAIN,
+      'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
   }
   yield api.test(
       'cf_archiving_no_llvm',
@@ -229,6 +227,24 @@ def GenTests(api):
       ),
       api.override_step_data('filter build_dir',
                              api.json.output(['chrome', 'resources'])),
+  )
+
+  yield api.test(
+      'cf_archiving_with_paths_to_archive',
+      api.platform('linux', 64),
+      api.properties(
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          gs_acl='public-read',
+          archive_subdir_suffix='subdir',
+          paths_to_archive=['target1', 'dir/target2'],
+      ),
+      api.post_process(post_process.DoesNotRun, 'filter build_dir'),
+      api.post_process(post_process.StepCommandContains, 'zipping',
+                       ['["target1", "dir/target2"]']),
+      api.post_process(post_process.DropExpectation),
   )
 
   def check_stdin(check, step_odict, step, included_args, excluded_args=None):
