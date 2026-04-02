@@ -127,9 +127,12 @@ def RunSteps(api, properties):
     api.cipd.ensure(gcloud_path, ensure_file)
     with api.context(env_prefixes={'PATH': [gcloud_path / 'bin']}):
       cmd = [
-          'gcloud', 'pubsub', 'topics', 'publish',
-          'codesearch_luci_notifications',
-          f'--message="{api.buildbucket.build.id}"'
+          'gcloud',
+          'pubsub',
+          'topics',
+          'publish',
+          'projects/chromium-build-stats/topics/codesearch_luci_notifications',
+          f'--message="{api.buildbucket.build.id}"',
       ]
       api.step('notify completion', cmd)
 

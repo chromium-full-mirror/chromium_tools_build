@@ -812,7 +812,7 @@
       "pubsub",
       "topics",
       "publish",
-      "codesearch_luci_notifications",
+      "projects/chromium-build-stats/topics/codesearch_luci_notifications",
       "--message=\"8945511751514863184\""
     ],
     "cwd": "[CACHE]/builder/src",
