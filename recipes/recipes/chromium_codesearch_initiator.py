@@ -20,6 +20,7 @@ PROPERTIES = InputProperties
 DEPS = [
     'depot_tools/git',
     'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
@@ -118,6 +119,19 @@ def RunSteps(api, properties):
     api.buildbucket.collect_builds([b.id for b in builders],
                                    step_name='wait for children builders',
                                    timeout=14400)
+
+    gcloud_path = checkout_dir / 'gcloudsdk'
+    ensure_file = api.cipd.EnsureFile()
+    ensure_file.add_package('infra/3pp/tools/gcloud/${platform}',
+                            'version:2@463.0.0.chromium.4')
+    api.cipd.ensure(gcloud_path, ensure_file)
+    with api.context(env_prefixes={'PATH': [gcloud_path / 'bin']}):
+      cmd = [
+          'gcloud', 'pubsub', 'topics', 'publish',
+          'codesearch_luci_notifications',
+          f'--message="{api.buildbucket.build.id}"'
+      ]
+      api.step('notify completion', cmd)
 
 
 def GenTests(api):

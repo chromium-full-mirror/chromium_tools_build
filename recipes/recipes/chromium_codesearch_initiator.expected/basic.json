@@ -761,6 +761,85 @@
     ]
   },
   {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/builder/gcloudsdk",
+      "-ensure-file",
+      "infra/3pp/tools/gcloud/${platform} version:2@463.0.0.chromium.4",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-version:2@463.0.\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/3pp/tools/gcloud/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "gcloud",
+      "pubsub",
+      "topics",
+      "publish",
+      "codesearch_luci_notifications",
+      "--message=\"8945511751514863184\""
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
+      "GIT_HTTP_LOW_SPEED_TIME": "0"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/gcloudsdk/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "infra:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "notify completion"
+  },
+  {
     "name": "$result"
   }
 ]
