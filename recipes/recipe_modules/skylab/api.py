@@ -325,10 +325,6 @@ class SkylabApi(recipe_api.RecipeApi):
 
         if test.exe_rel_path:
           test_args.append(('exe_rel_path', test.exe_rel_path))
-        elif 'tast' in test.spec.autotest_name:
-          # TODO(b/450596053): Remove after M140 is no longer built.
-          test_args.append(
-              ('exe_rel_path', os.path.join(test.build_output_dir, 'chrome')))
 
         if test.spec.extra_browser_args:
           test_args.append(('extra_browser_args_b64',
