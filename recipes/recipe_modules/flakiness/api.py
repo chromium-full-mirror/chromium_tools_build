@@ -499,16 +499,27 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests_identified
 
-  def _get_legacy_filter_from_test_id(self, test_id):
+  def _get_legacy_filter_from_test(self, test):
     """
     Translates a ResultDB v2 test_id to a legacy test filter string
     compatible with --isolated-script-test-filter.
     Ref: go/chrome-test-id-v2
     """
+    test_id = test.test_id
     if not test_id:
       return None
 
     if not test_id.startswith('://'):
+      return None
+
+    # Only need a conversion when test_id == test_name as
+    # //chrome/test/chromedriver\:chromedriver_py_tests!pyunit at the beginning
+    # of a test_id is not a good filter.
+    # This has shown to happen for:
+    #    -chromedriver_py related tests which use the default "coarse" setting
+    #        of "__main__".
+    #    -json result_adapter gtests that exceed the 256 test_name char limit.
+    if test_id != test.test_name:
       return None
 
     # New v2 format
@@ -536,7 +547,12 @@ class FlakinessApi(recipe_api.RecipeApi):
       # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted
       # Expected filter: __main__.ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
       return f"{coarse}.{fine}.{case}"
-    # TODO(crbug.com/456432041): Add in other schemes besides pyunit.
+    if scheme == 'gtest':
+      # Example: ://chrome/test:sync_integration_tests!gtest::WebAppIntegration#WAI_InstallOmniboxIconStandalone/kSyncTheFeature
+      # Expected filter: WebAppIntegration.WAI_InstallOmniboxIconStandalone/kSyncTheFeature
+      return f"{fine}.{case}"
+    # TODO(crbug.com/456432041): Find out if there are other schemes where
+    # test_name == test_id.
 
     # Fallback for unhandled schemes:
     # Let the caller use test.test_name
@@ -584,7 +600,7 @@ class FlakinessApi(recipe_api.RecipeApi):
             test_filter, duration_milliseconds = new_tests.setdefault(
                 test_obj, ([], 0))
 
-            legacy_filter = self._get_legacy_filter_from_test_id(test.test_id)
+            legacy_filter = self._get_legacy_filter_from_test(test)
             if legacy_filter:
               test_filter.append(legacy_filter)
             else:
