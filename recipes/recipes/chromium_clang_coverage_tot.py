@@ -110,7 +110,10 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   cmd.extend(['--coverage-tools-dir', coverage_tools_dir_path])
 
   cmd.extend(['-v'])
+  cmd.extend(['--no-compile'])
   with api.depot_tools.on_path():
+    api.chromium.compile(
+        source_dir=source_dir, build_dir=build_dir, targets=SAMPLE_TARGETS)
     api.step('run coverage script', cmd)
 
   # Following steps are added for debugging purpose.

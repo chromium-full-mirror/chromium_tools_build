@@ -629,6 +629,252 @@
   },
   {
     "cmd": [
+      "python3",
+      "[CACHE]/builder/src/tools/clang/scripts/update.py",
+      "--print-revision",
+      "--llvm-force-head-revision"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "FORCE_MAC_TOOLCHAIN": "1"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "clang_revision",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@llvmorg-whatever-g123456-7@@@",
+      "@@@SET_BUILD_PROPERTY@clang_revision@\"llvmorg-whatever-g123456-7\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
+      "--ninja_info_output",
+      "/path/to/tmp/json",
+      "--failure_output",
+      "/path/to/tmp/",
+      "--",
+      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/builder/src/out/d42b-ToTMacCoverage",
+      "base_unittests",
+      "boringssl_crypto_tests",
+      "boringssl_ssl_tests",
+      "unit_tests"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "FORCE_MAC_TOOLCHAIN": "1"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile",
+    "tags": {
+      "luci-bisection.is_bisectable": "true",
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    }
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/d42b-ToTMacCoverage/.ninja_log",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read ninja log"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake gzip data",
+      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create ninja log gzip"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload ninja_log",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/builder/src/out/d42b-ToTMacCoverage",
+      "base_unittests",
+      "boringssl_crypto_tests",
+      "boringssl_ssl_tests",
+      "unit_tests",
+      "-d",
+      "explain",
+      "-n"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "FORCE_MAC_TOOLCHAIN": "1"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile confirm no-op"
+  },
+  {
+    "cmd": [
       "vpython3",
       "[CACHE]/builder/src/tools/code_coverage/coverage.py",
       "base_unittests",
@@ -649,7 +895,8 @@
       "[CACHE]/builder/src/out/clang_tot_coverage_report",
       "--coverage-tools-dir",
       "[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin",
-      "-v"
+      "-v",
+      "--no-compile"
     ],
     "cwd": "[CACHE]/builder",
     "env_suffixes": {
