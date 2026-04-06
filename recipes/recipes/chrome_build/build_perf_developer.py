@@ -80,15 +80,16 @@ def _incremental_build_with_one_day_changes(
     build_dir_parent = default_build_dir.parent
 
     ##  Ninja+Reclient
-    api.chromium_build_perf.recreate_build_dir(
-        source_dir, default_build_dir, phase='ninja')
-    raw_result = api.chromium_build_perf.build_with_ninja(
-        source_dir,
-        default_build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=' at current revision (warmup)')
-    _raise_raw_result_on_failure(api, raw_result)
+    # b/498283357 - Stop Reclient workloads speculatively.
+    # api.chromium_build_perf.recreate_build_dir(
+    #     source_dir, default_build_dir, phase='ninja')
+    # raw_result = api.chromium_build_perf.build_with_ninja(
+    #     source_dir,
+    #     default_build_dir,
+    #     target,
+    #     with_remote_cache=True,
+    #     step_name_suffix=' at current revision (warmup)')
+    # _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso build
     siso_build_dir = build_dir_parent / 'siso'
@@ -128,15 +129,16 @@ def _incremental_build_with_one_day_changes(
 
     # Run a warm up build for local build dir.
     ## Ninja+Reclient
-    api.chromium_build_perf.recreate_build_dir(
-        source_dir, default_build_dir, phase='ninja', remove_deps_cache=True)
-    raw_result = api.chromium_build_perf.build_with_ninja(
-        source_dir,
-        default_build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=' at base revision (warmup)')
-    _raise_raw_result_on_failure(api, raw_result)
+    # b/498283357 - Stop Reclient workloads speculatively.
+    # api.chromium_build_perf.recreate_build_dir(
+    #     source_dir, default_build_dir, phase='ninja', remove_deps_cache=True)
+    # raw_result = api.chromium_build_perf.build_with_ninja(
+    #     source_dir,
+    #     default_build_dir,
+    #     target,
+    #     with_remote_cache=True,
+    #     step_name_suffix=' at base revision (warmup)')
+    # _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso
     api.chromium_build_perf.recreate_build_dir(
@@ -172,9 +174,10 @@ def _incremental_build_with_one_day_changes(
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
     ## Ninja+Reclient
-    raw_result = api.chromium_build_perf.build_with_ninja(
-        source_dir, default_build_dir, target, with_remote_cache=True)
-    _raise_raw_result_on_failure(api, raw_result)
+    # b/498283357 - Stop Reclient workloads speculatively.
+    # raw_result = api.chromium_build_perf.build_with_ninja(
+    #     source_dir, default_build_dir, target, with_remote_cache=True)
+    # _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso
     raw_result = api.chromium_build_perf.build_with_siso(
@@ -302,13 +305,14 @@ def _incremental_builds_with_patch(
         step_name_suffix = ''
 
       # Ninja+Reclient
-      raw_result = api.chromium_build_perf.build_with_ninja(
-          source_dir,
-          default_build_dir,
-          target,
-          with_remote_cache=with_remote_cache,
-          step_name_suffix=step_name_suffix)
-      _raise_raw_result_on_failure(api, raw_result)
+      # b/498283357 - Stop Reclient workloads speculatively.
+      # raw_result = api.chromium_build_perf.build_with_ninja(
+      #     source_dir,
+      #     default_build_dir,
+      #     target,
+      #     with_remote_cache=with_remote_cache,
+      #     step_name_suffix=step_name_suffix)
+      # _raise_raw_result_on_failure(api, raw_result)
 
       # Siso
       siso_build_dir = build_dir_parent / 'siso'
@@ -338,17 +342,18 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
     # Ninja+Reclient builds.
-    phase = 'ninja'
-    api.chromium_build_perf.recreate_build_dir(
-        source_dir, build_dir, phase=phase, remove_deps_cache=True)
-    result = api.chromium_build_perf.build_with_ninja(
-        source_dir, build_dir, target, with_remote_cache=False)
-    _raise_raw_result_on_failure(api, result)
+    # b/498283357 - Stop Reclient workloads speculatively.
+    # phase = 'ninja'
+    # api.chromium_build_perf.recreate_build_dir(
+    #     source_dir, build_dir, phase=phase, remove_deps_cache=True)
+    # result = api.chromium_build_perf.build_with_ninja(
+    #     source_dir, build_dir, target, with_remote_cache=False)
+    # _raise_raw_result_on_failure(api, result)
 
-    api.chromium_build_perf.recreate_build_dir(
-        source_dir, build_dir, phase=phase)
-    result = api.chromium_build_perf.build_with_ninja(
-        source_dir, build_dir, target, with_remote_cache=True)
+    # api.chromium_build_perf.recreate_build_dir(
+    #     source_dir, build_dir, phase=phase)
+    # result = api.chromium_build_perf.build_with_ninja(
+    #     source_dir, build_dir, target, with_remote_cache=True)
 
     # Siso builds.
     phase = 'siso_native'
@@ -566,7 +571,8 @@ def GenTests(api):
       api.reclient.properties(),
       api.siso.properties(),
       api.step_data(
-          'Clean builds.Build chrome without remote cache', retcode=1),
+          'Clean builds.Build chrome without remote cache with Siso in native mode',
+          retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
