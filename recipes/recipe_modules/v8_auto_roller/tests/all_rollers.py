@@ -96,6 +96,13 @@ CHROMIUM_DEPS = "deps = " + json.dumps({
             "version": "version:2@1.8.2.chromium.4",
         },],
     },
+    "src/chrome/android/orderfiles/arm": {
+        "packages": [{
+            "package": "chromium/chrome/android/orderfiles/arm",
+            "version_file": "chrome/build/android-arm.orderfile.txt",
+        },],
+        "dep_type": "cipd",
+    },
     "src/mock-skip-chromium-roll":
         "https://chromium.googlesource.com/mock/skip-chromium-roll.git@2",
     "src/third_party/js_code_coverage": {

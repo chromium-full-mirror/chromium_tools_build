@@ -142,7 +142,13 @@ class CipdDep(BaseDep):
 
   @cached_property
   def artifacts(self):
-    return [CipdArtifact(self, package) for package in self.spec['packages']]
+    return [
+        CipdArtifact(self, package)
+        for package in self.spec['packages']
+        # TODO(https://crbug.com/500339449): We don't yet support CIPD deps
+        # with a `version_file` entry.
+        if 'version' in package
+    ]
 
 
 @dataclass
