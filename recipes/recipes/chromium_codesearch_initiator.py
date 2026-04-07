@@ -14,6 +14,7 @@ linked by commit hash.
 """
 
 from PB.recipes.build.chromium_codesearch_initiator import InputProperties
+from recipe_engine import post_process
 
 PROPERTIES = InputProperties
 
@@ -107,6 +108,15 @@ def RunSteps(api, properties):
           f'{props["codesearch_mirror_revision"]}:refs/kythe/{props["root_solution_revision"]}'
       )
 
+    if api.buildbucket.build.builder.builder == 'codesearch-gen-chrome-internal-initiator':
+      # Trigger the codesearch builders in the same project.
+      # For internal project, do no optimize the workflow
+      api.scheduler.emit_trigger(
+          api.scheduler.BuildbucketTrigger(properties=props),
+          project=api.buildbucket.build.builder.project,
+          jobs=properties.builders)
+      return
+
     # Fan out the children codesearch builders and wait for completions.
     build_requests = [
         api.buildbucket.schedule_request(
@@ -170,4 +180,25 @@ def GenTests(api):
                     api.raw_io.stream_output_text('b' * 40, stream='stdout')),
       api.step_data('fetch source timestamp',
                     api.raw_io.stream_output_text('50', stream='stdout')),
+  )
+
+  yield api.test(
+      'internal-basic',
+      api.buildbucket.generic_build(
+          project='infra', builder='codesearch-gen-chrome-internal-initiator'),
+      api.properties(
+          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+          source_repo=(
+              'https://chromium.googlesource.com/codesearch/chromium/src'),
+      ),
+      api.step_data('fetch mirror hash',
+                    api.raw_io.stream_output_text('a' * 40, stream='stdout')),
+      api.step_data('fetch mirror timestamp',
+                    api.raw_io.stream_output_text('100', stream='stdout')),
+      api.step_data('fetch source hash',
+                    api.raw_io.stream_output_text('b' * 40, stream='stdout')),
+      api.step_data('fetch source timestamp',
+                    api.raw_io.stream_output_text('50', stream='stdout')),
+      api.post_process(post_process.DoesNotRun, 'wait for children builders'),
+      api.post_process(post_process.DropExpectation),
   )
