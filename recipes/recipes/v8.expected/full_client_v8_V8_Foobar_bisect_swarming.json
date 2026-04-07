@@ -528,6 +528,34 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build.check siso namespace support",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -677,6 +705,34 @@
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133a.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133a.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build.check siso namespace support (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -1832,6 +1888,34 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a0.check siso namespace support",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -1981,6 +2065,34 @@
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001340.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001340.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001340.gz\", \"build|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/V8 Foobar/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.json\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a0.check siso namespace support (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -2896,6 +3008,34 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a2.check siso namespace support",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -3045,6 +3185,34 @@
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001346.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001346.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/V8 Foobar/a0.json\", \"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001340.gz\", \"Bisect a2|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001346.gz\", \"build|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/V8 Foobar/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.json\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a2.check siso namespace support (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -3999,6 +4167,34 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a1.check siso namespace support",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -4148,6 +4344,34 @@
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-00000000134c.gz@@@",
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-00000000134c.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Bisect a0|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/V8 Foobar/a0.json\", \"Bisect a0|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-130720.00000000-0000-0000-0000-000000001340.gz\", \"Bisect a1|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131920.00000000-0000-0000-0000-00000000134c.gz\", \"Bisect a2|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/V8 Foobar/a2.json\", \"Bisect a2|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-131320.00000000-0000-0000-0000-000000001346.gz\", \"build|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/V8 Foobar/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.json\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125720.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Bisect a1.check siso namespace support (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {

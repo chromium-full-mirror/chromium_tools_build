@@ -515,6 +515,31 @@
   {
     "cmd": [
       "[CACHE]/builder/angle/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/angle",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "angle:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/angle/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",

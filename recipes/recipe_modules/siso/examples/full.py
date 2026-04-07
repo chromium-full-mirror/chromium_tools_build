@@ -16,6 +16,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
     'siso',
 ]
@@ -328,5 +329,33 @@ def GenTests(api):
       api.siso.properties(disable_batch_mode=True),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['-batch=false']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'namespace_supported',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.buildbucket.ci_build(
+          project='chromium', bucket='ci', builder='linux-rel'),
+      api.siso.properties(),
+      api.step_data(
+          'check siso namespace support',
+          stdout=api.raw_io.output_text('-namespace flag exists')),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['-namespace', 'builder:chromium/ci/linux-rel']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'namespace_not_supported',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.buildbucket.ci_build(
+          project='chromium', bucket='ci', builder='linux-rel'),
+      api.siso.properties(),
+      api.step_data(
+          'check siso namespace support',
+          stdout=api.raw_io.output_text('some other flags')),
+      api.post_check(
+          lambda check, steps: check('-namespace' not in steps['compile'].cmd)),
       api.post_process(post_process.DropExpectation),
   )

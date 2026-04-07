@@ -170,6 +170,14 @@ class SisoApi(recipe_api.RecipeApi):
         self.remote_jobs,
     ])
 
+    builder_id = self.m.buildbucket.build.builder
+    if (builder_id.project and builder_id.bucket and builder_id.builder and
+        self._supports_namespace(source_dir)):
+      cmd.extend([
+          '-namespace',
+          f"builder:{builder_id.project}/{builder_id.bucket}/{builder_id.builder}",
+      ])
+
     if (self.m.tryserver.is_gerrit_issue and
         (footers := self.m.tryserver.get_footers()) and
         _MAX_COMPILE_FAILURES in footers):
@@ -384,6 +392,20 @@ class SisoApi(recipe_api.RecipeApi):
         return ninja_command[i + 1]
 
     return "."
+
+  def _supports_namespace(self, source_dir):
+    """Check if siso supports -namespace flag."""
+    cmd = [self.siso_path(source_dir), 'help', 'ninja']
+    step_result = self.m.step(
+        'check siso namespace support',
+        cmd,
+        stdout=self.m.raw_io.output_text(),
+        infra_step=True,
+        raise_on_failure=False,
+    )
+    stdout = step_result.stdout or ''
+    supported = '-namespace' in stdout
+    return supported
 
   def isolate_tests(self, step_name: str, source_dir: Path, build_dir: Path,
                     tests: list[str], **kwargs) -> step_data.StepData:

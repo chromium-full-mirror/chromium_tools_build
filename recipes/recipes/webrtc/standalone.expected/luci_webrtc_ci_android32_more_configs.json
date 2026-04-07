@@ -684,6 +684,31 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -825,6 +850,31 @@
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
     ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support (2)"
   },
   {
     "cmd": [
@@ -1367,6 +1417,31 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support (3)"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -1508,6 +1583,31 @@
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz\"}@@@"
     ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support (4)"
   },
   {
     "cmd": [
@@ -2076,6 +2176,31 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support (5)"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",
@@ -2217,6 +2342,31 @@
       "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz@@@",
       "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload ninja_log (2)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125327.00000000-0000-0000-0000-000000001340.gz\", \"gsutil upload ninja_log (3)\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001346.gz\"}@@@"
     ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support (6)"
   },
   {
     "cmd": [

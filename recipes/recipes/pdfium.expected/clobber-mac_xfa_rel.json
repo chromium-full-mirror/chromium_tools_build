@@ -315,6 +315,31 @@
   {
     "cmd": [
       "[CACHE]/builder/pdfium/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "env": {
+      "SISO_PROJECT": "test-rbe-project",
+      "SISO_REAPI_INSTANCE": "default_instance"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/pdfium/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",

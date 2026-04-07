@@ -569,6 +569,34 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
+      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/linux-Debug/kzip",
+      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/siso/siso",
       "ninja",
       "--project",
       "test-rbe-project",

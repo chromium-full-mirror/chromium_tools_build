@@ -232,6 +232,30 @@
   },
   {
     "cmd": [
+      "[CACHE]/builder/pdfium/third_party/siso/siso",
+      "help",
+      "ninja"
+    ],
+    "env": {
+      "SISO_PROJECT": "test-rbe-project",
+      "SISO_REAPI_INSTANCE": "default_instance"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check siso namespace support"
+  },
+  {
+    "cmd": [
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
