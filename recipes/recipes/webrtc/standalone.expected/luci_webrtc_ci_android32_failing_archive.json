@@ -722,8 +722,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d151-Android32",
-      "default"
+      "[CACHE]/builder/src/out/d151-Android32"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -891,7 +890,6 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/src/out/d151-Android32",
-      "default",
       "-d",
       "explain",
       "-n"

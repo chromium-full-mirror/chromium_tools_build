@@ -722,8 +722,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more",
-      "default"
+      "[CACHE]/builder/src/out/d562-Android32_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -891,7 +890,6 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/src/out/d562-Android32_(more",
-      "default",
       "-d",
       "explain",
       "-n"
@@ -1455,8 +1453,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more",
-      "default"
+      "[CACHE]/builder/src/out/d562-Android32_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1624,7 +1621,6 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/src/out/d562-Android32_(more",
-      "default",
       "-d",
       "explain",
       "-n"
@@ -2214,8 +2210,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more",
-      "default"
+      "[CACHE]/builder/src/out/d562-Android32_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -2383,7 +2378,6 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/src/out/d562-Android32_(more",
-      "default",
       "-d",
       "explain",
       "-n"

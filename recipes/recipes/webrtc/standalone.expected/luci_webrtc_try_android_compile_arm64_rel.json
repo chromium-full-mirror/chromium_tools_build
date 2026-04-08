@@ -622,7 +622,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "-v",
       "[CACHE]/builder/src/out/22eb-android_compile",
-      "{\"additional_compile_targets\": [\"default\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
+      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
       "/path/to/tmp/json"
@@ -660,7 +660,7 @@
       "@@@STEP_LOG_LINE@analyze_details@{@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
-      "@@@STEP_LOG_LINE@analyze_details@    \"default\"@@@",
+      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
       "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"affected test targets\": [],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"affected compile targets\": [@@@",

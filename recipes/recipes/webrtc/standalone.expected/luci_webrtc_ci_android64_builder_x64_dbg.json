@@ -705,8 +705,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/ee80-Android64_Build",
-      "default"
+      "[CACHE]/builder/src/out/ee80-Android64_Build"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -874,7 +873,6 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/src/out/ee80-Android64_Build",
-      "default",
       "-d",
       "explain",
       "-n"

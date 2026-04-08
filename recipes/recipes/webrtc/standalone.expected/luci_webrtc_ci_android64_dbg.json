@@ -722,8 +722,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/e33d-Android64_(dbg)",
-      "default"
+      "[CACHE]/builder/src/out/e33d-Android64_(dbg)"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -891,7 +890,6 @@
       "default_instance",
       "-C",
       "[CACHE]/builder/src/out/e33d-Android64_(dbg)",
-      "default",
       "-d",
       "explain",
       "-n"
