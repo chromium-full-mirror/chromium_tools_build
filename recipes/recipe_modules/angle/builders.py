@@ -184,8 +184,6 @@ _SPEC = {
             'win', 'Release', 64, gclient_config='angle_nointernal'),
     'win-x86-dbg-compile':
         _create_builder_config('win', 'Debug', 32),
-    'win-x86-test':
-        _create_builder_config('win', 'Release', 32),
     'winuwp-compile':
         _create_builder_config('win', 'Release', 64, is_clang=False),
     'winuwp-dbg-compile':
@@ -200,8 +198,6 @@ _SPEC = {
         _create_tester_config('win', 64, 'win-perf'),
     'win10-x64-swiftshader-asan':
         _create_tester_config('win', 64, 'win-asan-test'),
-    'win10-x86-swiftshader':
-        _create_tester_config('win', 32, 'win-x86-test'),
 }
 
 BUILDERS = builder_db.BuilderDatabase.create({

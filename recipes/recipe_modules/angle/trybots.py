@@ -281,18 +281,6 @@ _SPEC = {
         _create_compile_spec('win-msvc-x86-dbg-compile'),
     'win-x86-dbg-compile':
         _create_compile_spec('win-x86-dbg-compile'),
-    'win-x86-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='win-x86-test',
-                    tester='win10-x86-swiftshader',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'win10-intel-uhd630-perf':
         try_spec.TrySpec.create(
             mirrors=[
