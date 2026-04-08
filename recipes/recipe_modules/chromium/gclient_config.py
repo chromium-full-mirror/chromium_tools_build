@@ -451,12 +451,6 @@ def openscreen_tot(c):
   c.revisions['src/third_party/openscreen/src'] = 'HEAD'
 
 @CONFIG_CTX()
-def ios_webkit_tot(c):
-  c.solutions[0].custom_vars['checkout_ios_webkit'] = 'True'
-  c.solutions[0].custom_vars['ios_webkit_revision'] = 'refs/heads/main'
-
-
-@CONFIG_CTX()
 def ninja_staging(c):
   cv = c.solutions[0].custom_vars
   cv['ninja_package'] = 'infra/3pp/tools/ninja/'

@@ -109,11 +109,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'ios_webkit_tot',
-      api.properties(apply_gclient_config='ios_webkit_tot'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
       'no_generate_location_tags',
       api.properties(apply_gclient_config='no_generate_location_tags'),
       api.post_process(post_process.DropExpectation),
