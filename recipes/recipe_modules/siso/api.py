@@ -269,7 +269,12 @@ class SisoApi(recipe_api.RecipeApi):
     cmd.extend(ninja_command[1:])
     env = ninja_env or {}
     if len(self._props.experiments) > 0:
-      env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
+      original_experiments = env.get('SISO_EXPERIMENTS')
+      if original_experiments is not None:
+        env['SISO_EXPERIMENTS'] = original_experiments + ',' + ','.join(
+            self._props.experiments)
+      else:
+        env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     if ninja_invocation_id:
       env['SISO_BUILD_ID'] = ninja_invocation_id
     if self._props.limits:
