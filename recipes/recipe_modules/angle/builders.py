@@ -90,34 +90,16 @@ _SPEC = {
         _create_android_builder_config('Debug', 64),
     'android-arm64-dbg-compile':
         _create_android_builder_config('Debug', 64),
-    'android-arm64-exp-pixel6':
-        _create_android_tester_config(64, 'android-arm64-exp-test'),
-    'android-arm64-exp-pixel10':
-        _create_android_tester_config(64, 'android-arm64-exp-pixel10-test'),
-    'android-arm64-exp-pixel10-test':
-        _create_android_builder_config('Release', 64),
-    'android-arm64-exp-s24':
-        _create_android_tester_config(64, 'android-arm64-exp-s24-test'),
-    'android-arm64-exp-s24-test':
-        _create_android_builder_config('Release', 64),
-    'android-arm64-exp-test':
-        _create_android_builder_config('Release', 64),
     'android-arm64-ir-pixel4':
         _create_android_tester_config(64, 'android-arm64-ir-test'),
     'android-arm64-ir-pixel6':
         _create_android_tester_config(64, 'android-arm64-ir-test'),
     'android-arm64-ir-test':
         _create_android_builder_config('Release', 64),
-    'android-arm64-pixel4':
-        _create_android_tester_config(64, 'android-arm64-test'),
     'android-arm64-pixel4-perf':
         _create_android_tester_config(64, 'android-perf'),
-    'android-arm64-pixel6':
-        _create_android_tester_config(64, 'android-arm64-test'),
     'android-arm64-pixel6-perf':
         _create_android_tester_config(64, 'android-perf'),
-    'android-arm64-test':
-        _create_android_builder_config('Release', 64),
     'android-perf':
         _create_android_builder_config('Release', 64, perf_isolate_upload=True),
     'linux-asan-test':

@@ -43,59 +43,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'android-arm64-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-arm64-test',
-                    tester='android-arm64-pixel4',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-arm64-test',
-                    tester='android-arm64-pixel6',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-    'android-arm64-exp-pixel10-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-arm64-exp-pixel10-test',
-                    tester='android-arm64-exp-pixel10',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-    'android-arm64-exp-s24-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-arm64-exp-s24-test',
-                    tester='android-arm64-exp-s24',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-    'android-arm64-exp-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-arm64-exp-test',
-                    tester='android-arm64-exp-pixel6',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'android-pixel4-perf':
         try_spec.TrySpec.create(
             mirrors=[
