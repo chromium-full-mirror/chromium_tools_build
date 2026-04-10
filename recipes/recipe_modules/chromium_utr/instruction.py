@@ -135,3 +135,4 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
       local_content=local_instructions,
       local_dependency=dependency,
   )
+  step_result.presentation.step_text += utr_instructions.replace('<br/>', '\n')

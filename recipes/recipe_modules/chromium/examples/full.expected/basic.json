@@ -424,7 +424,10 @@
       "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001337",
       "resultdb.instruction.id": "compile_repro_instructions"
-    }
+    },
+    "~followup_annotations": [
+      "@@@STEP_TEXT@[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce from your Chromium checkout:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso compile```</details><br/>To run in your own build dir:<br/>```vpython3 tools/utr -p chromium -B ci -b fake-builder --build-dir ${YOUR_BUILD_DIR_HERE} compile```<br/><br/><details><summary>For non-Googlers, use this command</summary>```vpython3 tools/utr -p chromium -B ci -b fake-builder --no-siso --build-dir ${YOUR_BUILD_DIR_HERE} compile```</details>@@@"
+    ]
   },
   {
     "cmd": [
