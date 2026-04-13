@@ -982,7 +982,7 @@ class V8Api(recipe_api.RecipeApi):
           revision_dir='v8',
           build_config=self.get_build_type(build_dir),
           source_dir=source_dir,
-          build_dir=build_dir,
+          archive_root=build_dir,
           update_properties=update_result.properties,
           gs_bucket=clusterfuzz_archive.get('bucket'),
           gs_acl='public-read',

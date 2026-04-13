@@ -12,6 +12,7 @@ DEPS = [
     'depot_tools/depot_tools',
     'depot_tools/gitiles',
     'depot_tools/gsutil',
+    'gn',
     'infra/zip',
     'recipe_engine/bcid_reporter',
     'recipe_engine/buildbucket',

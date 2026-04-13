@@ -158,7 +158,7 @@ message BuilderSpec {
   // Details of an archive to be created containing artifacts for use by
   // clusterfuzz.
   //
-  // Next ID: 5
+  // Next ID: 6
   message ClusterfuzzArchive {
       // Required, the Google Storage bucket to upload the archive containing
       // artifacts for clusterfuzz
@@ -173,6 +173,11 @@ message BuilderSpec {
       // An additional subdirectory within the target/platform directory for
       // uploading the archive to
       string archive_subdir = 4;
+      // Optional, version number to control how libfuzzer archives are formatted.
+      // 0 (Default): Legacy with src_root archiving where archive root is build dir
+      // 1: New archive schema where archive root is source dir
+      // Learn more: go/crfuzz-fixing-msan-builds
+      uint32 archive_schema_version = 5;
   }
   ClusterfuzzArchive clusterfuzz_archive = 16;
 

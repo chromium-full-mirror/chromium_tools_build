@@ -950,32 +950,28 @@ def GenTests(api):
     check(expected == steps['gsutil upload'].cmd[-1])
 
   # Test configurations for clusterfuzz builders.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'clusterfuzz',
-        clobber=True,
-        clusterfuzz_archive={
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'clusterfuzz',
+      clobber=True,
+      clusterfuzz_archive={
           'name': 'd8_bar',
           'bucket': 'v8_clusterfoo',
           'bitness': 64,
-        },
-        default_targets=['v8_foobar'],
-    ) +
-    api.post_process(
-        check_gs_url_equals,
-        'gs://v8_clusterfoo/linux64-release/'
-        'd8_bar-linux64-release-v8-component-50110.zip') +
-    api.post_process(MustRun, 'initialization.clobber') +
-    api.post_process(Filter(
-        'build.compile',
-        'create staging_dir',
-        'filter build_dir',
-        'zipping',
-        'gsutil upload',
-    ))
-  )
+      },
+      default_targets=['v8_foobar'],
+  ) + api.post_process(
+      check_gs_url_equals, 'gs://v8_clusterfoo/linux64-release/'
+      'd8_bar-linux64-release-v8-component-50110.zip') +
+         api.post_process(MustRun, 'initialization.clobber') + api.post_process(
+             Filter(
+                 'build.compile',
+                 'create staging_dir',
+                 'filter archive_root',
+                 'zipping',
+                 'gsutil upload',
+             )))
 
   # Test configurations for perf builders.
   yield (api.v8.test(

@@ -168,6 +168,8 @@ class BuilderSpec:
   # uploaded to
   # Cannot be provided when cf_archive_build is not True
   cf_archive_subdir_suffix = attrib(str, default='')
+  # The schema version used for the clusterfuzz archive
+  cf_archive_schema_version = attrib(int, default=0)
 
   # The platform of the builder (e.g. 'linux'), used when running simulation
   # tests

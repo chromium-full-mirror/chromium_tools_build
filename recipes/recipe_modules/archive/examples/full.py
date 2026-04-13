@@ -96,22 +96,43 @@ def RunSteps(api):
 
   build_dir = api.path.start_dir.joinpath('src', 'out', 'Release')
 
-  api.archive.clusterfuzz_archive(
-      source_dir=source_dir,
-      build_dir=build_dir,
-      update_properties=api.properties.get('update_properties'),
-      gs_bucket='chromium',
-      gs_acl=api.properties.get('gs_acl', ''),
-      archive_prefix='chrome-asan',
-      build_config=api.properties.get('build_config', 'Release'),
-      archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
-      revision_dir=api.properties.get('revision_dir'),
-      primary_project=api.properties.get('primary_project'),
-      bitness=api.properties.get('bitness'),
-      use_legacy=api.properties.get('use_legacy', True),
-      sortkey_datetime=api.properties.get('sortkey_datetime', None),
-      paths_to_archive=api.properties.get('paths_to_archive', None),
-  )
+  if api.properties.get('archive_schema_version',
+                        0) != 0 and not api.properties.get('paths_to_archive'):
+    api.archive.clusterfuzz_archive_targets(
+        source_dir=source_dir,
+        archive_root=source_dir,
+        archive_schema_version=api.properties.get('archive_schema_version', 0),
+        build_dir=build_dir,
+        compile_targets=api.properties.get('compile_targets', []),
+        update_properties=api.properties.get('update_properties'),
+        gs_bucket='chromium',
+        gs_acl=api.properties.get('gs_acl', ''),
+        archive_prefix='chrome-asan',
+        build_config=api.properties.get('build_config', 'Release'),
+        archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
+        revision_dir=api.properties.get('revision_dir'),
+        primary_project=api.properties.get('primary_project'),
+        bitness=api.properties.get('bitness'),
+        use_legacy=api.properties.get('use_legacy', True),
+        sortkey_datetime=api.properties.get('sortkey_datetime', None),
+    )
+  else:
+    api.archive.clusterfuzz_archive(
+        source_dir=source_dir,
+        archive_root=build_dir,
+        update_properties=api.properties.get('update_properties'),
+        gs_bucket='chromium',
+        gs_acl=api.properties.get('gs_acl', ''),
+        archive_prefix='chrome-asan',
+        build_config=api.properties.get('build_config', 'Release'),
+        archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
+        revision_dir=api.properties.get('revision_dir'),
+        primary_project=api.properties.get('primary_project'),
+        bitness=api.properties.get('bitness'),
+        use_legacy=api.properties.get('use_legacy', True),
+        sortkey_datetime=api.properties.get('sortkey_datetime', None),
+        paths_to_archive=api.properties.get('paths_to_archive', None),
+    )
 
 
 def GenTests(api):
@@ -132,7 +153,7 @@ def GenTests(api):
             gs_acl='public-read',
             archive_subdir_suffix='subdir',
         ),
-        api.override_step_data('filter build_dir',
+        api.override_step_data('filter archive_root',
                                api.json.output(build_files)),
     )
 
@@ -144,7 +165,8 @@ def GenTests(api):
           update_properties=update_properties,
           use_legacy=False,
       ),
-      api.override_step_data('filter build_dir', api.json.output(['chrome'])),
+      api.override_step_data('filter archive_root',
+                             api.json.output(['chrome'])),
   )
 
   yield api.test(
@@ -155,7 +177,8 @@ def GenTests(api):
           update_properties=update_properties,
           use_legacy=False,
       ),
-      api.override_step_data('filter build_dir', api.json.output(['chrome'])),
+      api.override_step_data('filter archive_root',
+                             api.json.output(['chrome'])),
       api.runtime(is_experimental=True),
   )
 
@@ -188,7 +211,7 @@ def GenTests(api):
           revision_dir='x10',
           primary_project='x10',
       ),
-      api.override_step_data('filter build_dir',
+      api.override_step_data('filter archive_root',
                              api.json.output(['chrome', 'resources'])),
   )
 
@@ -203,7 +226,8 @@ def GenTests(api):
           update_properties=update_properties,
           no_llvm=True,
       ),
-      api.override_step_data('filter build_dir', api.json.output(['chrome'])),
+      api.override_step_data('filter archive_root',
+                             api.json.output(['chrome'])),
   )
 
   yield api.test(
@@ -225,7 +249,7 @@ def GenTests(api):
           archive_subdir_suffix='subdir',
           sortkey_datetime=datetime.datetime.utcfromtimestamp(100),
       ),
-      api.override_step_data('filter build_dir',
+      api.override_step_data('filter archive_root',
                              api.json.output(['chrome', 'resources'])),
   )
 
@@ -241,7 +265,10 @@ def GenTests(api):
           archive_subdir_suffix='subdir',
           paths_to_archive=['target1', 'dir/target2'],
       ),
-      api.post_process(post_process.DoesNotRun, 'filter build_dir'),
+      api.post_process(post_process.DoesNotRun, 'filter archive_root'),
+      api.post_process(post_process.DoesNotRun, 'Copy llvm-symbolizer'),
+      api.post_process(post_process.DoesNotRun, 'Copy sancov'),
+      api.post_process(post_process.DoesNotRun, 'Copy libstdc++.so.6'),
       api.post_process(post_process.StepCommandContains, 'zipping',
                        ['["target1", "dir/target2"]']),
       api.post_process(post_process.DropExpectation),
@@ -1639,5 +1666,36 @@ def GenTests(api):
                   },
               })),
       api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archiving_schema_v1',
+      api.platform('linux', 64),
+      api.properties(
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          archive_schema_version=1,
+          compile_targets=['chrome'],
+      ),
+      api.post_process(post_process.MustRun,
+                       'collect runtime deps for compile targets'),
+      api.post_process(post_process.MustRun, 'write archive manifest'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archiving_schema_v1_missing_compile_targets',
+      api.platform('linux', 64),
+      api.properties(
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          archive_schema_version=1,
+      ),
+      api.expect_exception('ValueError'),
       api.post_process(post_process.DropExpectation),
   )

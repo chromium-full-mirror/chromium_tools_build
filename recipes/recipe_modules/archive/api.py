@@ -31,6 +31,9 @@ GS_GIT_COMMIT_KEY = 'Cr-Git-Commit'
 # SBOM file extension.
 SBOM_EXTENSION = '.spdx.json'
 
+# The name of the manifest file that will be written to the archive's build
+# directory to store metadata about the archive for use by ClusterFuzz.
+MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
 
 class ArchiveApi(recipe_api.RecipeApi):
   """Chromium specific module for zipping, uploading and downloading build
@@ -171,9 +174,91 @@ class ArchiveApi(recipe_api.RecipeApi):
       return '%s-%s' % (branch, number)
     return str(number)
 
+  def _collect_runtime_deps(
+      self,
+      compile_targets: list[str] | None,
+      build_dir: Path,
+      archive_root: Path,
+  ) -> list[str]:
+    """Collects the necessary runtime dependencies for the compile targets.
+
+    Returns the sorted set (list) of runtime dependencies with paths relative
+    to the archive_root.
+    """
+    runtime_deps = set()
+    compile_targets = compile_targets or []
+
+    with self.m.step.nest(
+        'collect runtime deps for compile targets') as step_result:
+      for target in compile_targets:
+        deps = self.m.gn.desc(
+            build_dir,
+            target,
+            'runtime_deps',
+            step_name=f'gn desc {target}',
+        )
+        runtime_deps.update(
+            self.m.path.relpath(build_dir / dep, archive_root) for dep in deps)
+      runtime_deps = sorted(runtime_deps)
+      step_result.logs['paths_to_archive'] = runtime_deps
+    return runtime_deps
+
+  def clusterfuzz_archive_targets(self,
+                                  source_dir: Path,
+                                  archive_root: Path,
+                                  update_properties,
+                                  gs_bucket,
+                                  archive_prefix,
+                                  build_config,
+                                  compile_targets: list[str],
+                                  build_dir: Path,
+                                  *,
+                                  archive_schema_version: int = 1,
+                                  **kwargs) -> None:
+    """Wrapper for clusterfuzz_archive that collects runtime deps for GN targets.
+
+    This handles the GN dependency resolution and delegates to the core archiver.
+    It is specifically designed for builders that use a small number of
+    top-level targets (like Chrome builders).
+
+    Args:
+      compile_targets: List of compiled GN targets. The output archive will
+        contain all these targets' outputs, all their runtime dependencies,
+        and nothing more.
+      build_dir: The absolute path to the build output directory.
+      archive_schema_version: Optional int to set metadata in
+        `MANIFEST_FILENAME`. Default is 1.
+      ... (other args are passed to clusterfuzz_archive)
+    """
+    if not compile_targets:
+      raise ValueError("compile_targets must be provided and non-empty")
+
+    paths_to_archive = self._collect_runtime_deps(compile_targets, build_dir,
+                                                  archive_root)
+    paths_to_archive.append(MANIFEST_FILENAME)
+
+    manifest_dict = {
+        'archive_schema_version': archive_schema_version,
+    }
+    self.m.file.write_json(
+        'write archive manifest',
+        archive_root / MANIFEST_FILENAME,
+        manifest_dict,
+    )
+
+    self.clusterfuzz_archive(
+        source_dir=source_dir,
+        archive_root=archive_root,
+        update_properties=update_properties,
+        gs_bucket=gs_bucket,
+        archive_prefix=archive_prefix,
+        build_config=build_config,
+        paths_to_archive=paths_to_archive,
+        **kwargs)
+
   def clusterfuzz_archive(self,
                           source_dir: Path,
-                          build_dir: Path,
+                          archive_root: Path,
                           update_properties,
                           gs_bucket,
                           archive_prefix,
@@ -187,7 +272,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                           bitness=None,
                           use_legacy=True,
                           sortkey_datetime=None,
-                          **kwargs):
+                          **kwargs) -> None:
     # TODO(machenbach): Merge revision_dir and primary_project. The
     # revision_dir is only used for building the archive name while the
     # primary_project is authoritative for the commit position.
@@ -211,17 +296,19 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     Args:
       source_dir: The path to the top-level repo.
-      build_dir: The absolute path to the build output directory, e.g.
-                 [cache]/builder/src/out/Release
+      archive_root: The absolute path of the directory to set as the root of
+                    the archive. e.g., [cache]/builder/src/out/Release or
+                    [cache]/builder/src.
       update_properties: The properties from the bot_update step (containing
                          commit information)
       gs_bucket: Name of the google storage bucket to upload to
       archive_prefix: Prefix of the archive zip file
       build_config: Name of build config, e.g. release or debug. This is used
                     to qualify archive file names.
-      paths_to_archive: Optional list of dependency paths to include in the archive,
-                        relative to the build directory. If included, it will skip
-                        discovering paths to zip and use the provided list.
+      paths_to_archive: Optional list of dependency paths to include in the
+                        archive, relative to archive_root. If included, it
+                        will skip discovering paths to zip and use the
+                        provided list.
       archive_subdir_suffix: Optional suffix to the google storage subdirectory
                              name that contains the archive files
       gs_acl: ACL used for the file on google storage
@@ -238,6 +325,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                         it from the commit information.  This will be formatted
                         as YYYYMMDDHHMM.
     """
+
     # We should distinguish build archives also by bitness on new bots, so that
     # 32 and 64 bit bots can coexist. We don't change old bots to not confuse
     # clusterfuzz bisect jobs.
@@ -271,57 +359,58 @@ class ArchiveApi(recipe_api.RecipeApi):
           os.path.dirname(str(self.m.cipd.ensure_tool(cipd_pkg, 'latest')))
       ]
 
-    llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
-    llvm_bin_dir = source_dir / 'third_party/llvm-build/Release+Asserts/bin'
-    ext = '.exe' if self.m.platform.is_win else ''
-
-    for tool in llvm_tools_to_copy:
-      tool_src = self.m.path.join(llvm_bin_dir, tool + ext)
-      tool_dst = self.m.path.join(build_dir, tool + ext)
-
-      if not self.m.path.exists(tool_src):
-        continue
-
-      try:
-        self.m.file.copy('Copy ' + tool, tool_src, tool_dst)
-      except self.m.step.StepFailure:  # pragma: no cover
-        # On some builds, it appears that a soft/hard link of llvm-symbolizer
-        # exists in the build directory, which causes shutil.copy to raise an
-        # exception. Either way, this shouldn't cause the whole build to fail.
-        pass
-
-    if not self.m.platform.is_win:
-      llvm_lib_dir = source_dir / 'third_party/llvm-build/Release+Asserts/lib'
-      libstdcplusplus_lib = 'libstdc++.so.6'
-      libstdcplusplus_lib_src = self.m.path.join(llvm_lib_dir,
-                                                 libstdcplusplus_lib)
-      libstdcplusplus_lib_dst = self.m.path.join(build_dir, libstdcplusplus_lib)
-      if self.m.path.exists(libstdcplusplus_lib_src):
-        try:
-          self.m.file.copy('Copy ' + libstdcplusplus_lib,
-                           libstdcplusplus_lib_src, libstdcplusplus_lib_dst)
-        except self.m.step.StepFailure:  # pragma: no cover
-          # On some builds, it appears that a soft/hard link of libstdc++.so.6
-          # exists in the build directory, which causes shutil.copy to raise an
-          # exception. Either way, this shouldn't cause the whole build to fail.
-          pass
-
     if paths_to_archive:
       zip_file_list = paths_to_archive
     else:
+      llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
+      llvm_bin_dir = source_dir / 'third_party/llvm-build/Release+Asserts/bin'
+      ext = '.exe' if self.m.platform.is_win else ''
+
+      for tool in llvm_tools_to_copy:
+        tool_src = self.m.path.join(llvm_bin_dir, tool + ext)
+        tool_dst = self.m.path.join(archive_root, tool + ext)
+
+        if not self.m.path.exists(tool_src):
+          continue
+
+        try:
+          self.m.file.copy('Copy ' + tool, tool_src, tool_dst)
+        except self.m.step.StepFailure:  # pragma: no cover
+          # On some builds, it appears that a soft/hard link of llvm-symbolizer
+          # exists in the archive root, which causes shutil.copy to raise an
+          # exception. Either way, this shouldn't cause the whole build to fail.
+          pass
+
+      if not self.m.platform.is_win:
+        llvm_lib_dir = source_dir / 'third_party/llvm-build/Release+Asserts/lib'
+        libstdcplusplus_lib = 'libstdc++.so.6'
+        libstdcplusplus_lib_src = self.m.path.join(llvm_lib_dir,
+                                                   libstdcplusplus_lib)
+        libstdcplusplus_lib_dst = self.m.path.join(archive_root,
+                                                   libstdcplusplus_lib)
+        if self.m.path.exists(libstdcplusplus_lib_src):
+          try:
+            self.m.file.copy('Copy ' + libstdcplusplus_lib,
+                             libstdcplusplus_lib_src, libstdcplusplus_lib_dst)
+          except self.m.step.StepFailure:  # pragma: no cover
+            # On some builds, it appears that a soft/hard link of libstdc++.so.6
+            # exists in the archive root, which causes shutil.copy to raise an
+            # exception. Either way, this shouldn't cause the whole build to fail.
+            pass
+
       # Build the list of files to archive.
       cmd = [
           'python3',
           self.resource('filter_build_files.py'),
           '--dir',
-          build_dir,
+          archive_root,
           '--platform',
           self.m.platform.name,
           '--output',
           self.m.json.output(),
       ]
       filter_result = self.m.step(
-          'filter build_dir',
+          'filter archive_root',
           cmd,
           infra_step=True,
           step_test_data=lambda: self.m.json.test_api.output(['file1', 'file2']
@@ -363,7 +452,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         'python3',
         self.resource('zip_archive.py'), '--output-dir', staging_dir,
         '--archive-name', zip_file_base_name, '--json-file-list',
-        self.m.json.input(zip_file_list), '--file-relative-dir', build_dir,
+        self.m.json.input(zip_file_list), '--file-relative-dir', archive_root,
         '--no-root-dir'
     ]
     if len(lzma_sdk_args) > 0:

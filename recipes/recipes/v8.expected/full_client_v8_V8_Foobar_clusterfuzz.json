@@ -94,7 +94,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "filter build_dir",
+    "name": "filter archive_root",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  \"file1\",@@@",

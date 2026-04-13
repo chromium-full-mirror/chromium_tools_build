@@ -1315,19 +1315,49 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       update_result: bot_update.Result,
       builder_config,
       build_dir: Path,
-  ):
-    builder_spec = builder_config.builder_db[builder_id]
+      compile_targets: list[str] | None = None,
+  ) -> None:
+    """Archives the build for ClusterFuzz, if necessary.
 
-    if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
+    Checks if builder_spec specifies that this build should be archived for
+    ClusterFuzz. Skips this step otherwise.
+
+    If the ClusterFuzz archive schema version is non-zero, the resulting
+    archive contains the exact set of all runtime deps of all the given
+    `compile_targets`. Otherwise uses a set of heuristics to zip most of the
+    contents of the build directory.
+    """
+    if self.m.tryserver.is_tryserver:
+      return
+
+    builder_spec = builder_config.builder_db[builder_id]
+    if not builder_spec.cf_archive_build:
+      return
+
+    source_dir = update_result.source_root.path
+    common_kwargs = {
+        'source_dir': source_dir,
+        'update_properties': update_result.properties,
+        'gs_bucket': builder_spec.cf_gs_bucket,
+        'gs_acl': builder_spec.cf_gs_acl,
+        'archive_prefix': builder_spec.cf_archive_name,
+        'build_config': self.m.chromium.c.build_config_fs,
+        'archive_subdir_suffix': builder_spec.cf_archive_subdir_suffix,
+    }
+    if builder_spec.cf_archive_schema_version == 0:
+      archive_root = build_dir
       self.m.archive.clusterfuzz_archive(
-          update_result.source_root.path,
+          archive_root=archive_root,
+          **common_kwargs,
+      )
+    else:
+      archive_root = source_dir
+      self.m.archive.clusterfuzz_archive_targets(
+          archive_root=archive_root,
           build_dir=build_dir,
-          update_properties=update_result.properties,
-          gs_bucket=builder_spec.cf_gs_bucket,
-          gs_acl=builder_spec.cf_gs_acl,
-          archive_prefix=builder_spec.cf_archive_name,
-          build_config=self.m.chromium.c.build_config_fs,
-          archive_subdir_suffix=builder_spec.cf_archive_subdir_suffix,
+          compile_targets=compile_targets,
+          archive_schema_version=builder_spec.cf_archive_schema_version,
+          **common_kwargs,
       )
 
   def _get_chrome_version(self):
@@ -2124,7 +2154,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.bcid_reporter.report_stage('upload')
 
     self.archive_clusterfuzz(builder_id, update_result, builder_config,
-                             build_dir)
+                             build_dir, targets_config.compile_targets)
     upload_results = self.archive_build(
         build_dir, update_result, enable_snoopy=self._enable_snoopy)
 

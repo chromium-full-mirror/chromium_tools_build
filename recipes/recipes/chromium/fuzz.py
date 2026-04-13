@@ -419,7 +419,7 @@ def RunSteps(api, properties):
 
       api.archive.clusterfuzz_archive(
           source_dir=source_dir,
-          build_dir=archive_root,
+          archive_root=archive_root,
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
           paths_to_archive=paths_to_archive,

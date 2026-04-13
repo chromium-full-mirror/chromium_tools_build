@@ -210,6 +210,7 @@ class _PropertiesAssembler:
         ('cf_gs_acl', 'gs_acl'),
         ('cf_archive_name', 'archive_name_prefix'),
         ('cf_archive_subdir_suffix', 'archive_subdir'),
+        ('cf_archive_schema_version', 'archive_schema_version'),
     ):
       val = getattr(builder_spec, src)
       if val is not None:

@@ -4,14 +4,16 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import (DropExpectation, StepCommandContains,
-                                        StepSuccess)
+from recipe_engine.post_process import (DoesNotRun, DropExpectation,
+                                        StepCommandContains, StepSuccess)
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
 
@@ -24,8 +26,13 @@ def RunSteps(api):
     api.chromium_tests.configure_build(builder_config)
     update_step, build_dir, _ = api.chromium_tests.prepare_checkout(
         builder_config)
-  api.chromium_tests.archive_clusterfuzz(builder_id, update_step,
-                                         builder_config, build_dir)
+  api.chromium_tests.archive_clusterfuzz(
+      builder_id=builder_id,
+      update_result=update_step,
+      builder_config=builder_config,
+      build_dir=build_dir,
+      compile_targets=api.properties.get('compile_targets'),
+  )
   api.chromium_tests.archive_build(build_dir, update_step)
 
 
@@ -59,5 +66,69 @@ def GenTests(api):
       api.post_process(StepSuccess, 'gsutil upload'),
       api.post_process(StepSuccess,
                        'cf_archive_build_test-linux-release-170242.zip'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archive_schema_v1',
+      api.properties(compile_targets=['fuzzer_target']),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          cf_archive_build=True,
+                          cf_archive_name='cf_archive_build_test',
+                          cf_gs_bucket='clusterfuzz-gs-bucket',
+                          cf_gs_acl='public-read',
+                          cf_archive_schema_version=1,
+                      ),
+              },
+          })),
+      api.step_data(
+          'collect runtime deps for compile targets.gn desc fuzzer_target',
+          stdout=api.raw_io.output_text('./fuzzer_target\n'
+                                        '../../testing/data/fuzzer_seed.txt\n'),
+      ),
+      api.post_process(StepCommandContains, 'zipping', [
+          '["out/ceb4-fake-builder/fuzzer_target", '
+          '"testing/data/fuzzer_seed.txt", '
+          '"clusterfuzz_manifest.json"]'
+      ]),
+      api.post_process(StepSuccess, 'gsutil upload'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archive_build_tryserver',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          cf_archive_build=True,
+                          cf_archive_name='cf_archive_build_test',
+                          cf_gs_bucket='clusterfuzz-gs-bucket',
+                          cf_gs_acl='public-read',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-try-group': {
+                  'fake-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'fake-group', 'fake-builder'),
+              },
+          })),
+      api.post_process(DoesNotRun, 'collect runtime deps for compile targets'),
+      api.post_process(DoesNotRun, 'zipping'),
       api.post_process(DropExpectation),
   )
