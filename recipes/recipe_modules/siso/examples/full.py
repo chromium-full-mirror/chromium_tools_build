@@ -28,7 +28,7 @@ def RunSteps(api):
   src_cfg = api.gclient.make_config(CACHE_DIR=api.path.cache_dir / 'git')
   src_cfg.solutions.add()
   api.gclient.c = src_cfg
-  env = dict(api.properties.get('env', {}))
+  env = {}
   if api.siso.enabled:
     # for code coverage
     _ = api.siso.project
@@ -107,14 +107,6 @@ def GenTests(api):
   yield api.test(
       'experiments',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
-      api.siso.properties(experiments=['no-file-access-trace']),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
-      'experiments_with_env',
-      api.properties(
-          build_command=['ninja', '-C', 'out/Release'],
-          env={'SISO_EXPERIMENTS': 'simulate-remote-cache-misses'}),
       api.siso.properties(experiments=['no-file-access-trace']),
       api.post_process(post_process.DropExpectation),
   )

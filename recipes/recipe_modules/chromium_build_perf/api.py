@@ -66,7 +66,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     else:
       step_name += ' without remote cache'
       env['RBE_remote_accept_cache'] = "false"
-      env['SISO_EXPERIMENTS'] = 'simulate-remote-cache-misses'
+      siso_args += ['-re_cache_enable_read=false']
       extra_ninja_args += ['-j', self.m.reclient.jobs]
     if step_name_suffix:
       step_name += step_name_suffix
