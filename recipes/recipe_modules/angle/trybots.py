@@ -117,33 +117,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'linux-ir-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-ir-test',
-                    tester='linux-ir-amd',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-ir-test',
-                    tester='linux-ir-intel',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-ir-test',
-                    tester='linux-ir-nvidia',
-                ),
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-ir-test',
-                    tester='linux-ir-swiftshader',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'linux-nvidia-gtx1660-perf':
         try_spec.TrySpec.create(
             mirrors=[

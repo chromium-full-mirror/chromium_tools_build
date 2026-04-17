@@ -116,16 +116,6 @@ _SPEC = {
         _create_builder_config('linux', 'Release', 64),
     'linux-intel-perf':
         _create_tester_config('linux', 64, 'linux-perf'),
-    'linux-ir-amd':
-        _create_tester_config('linux', 64, 'linux-ir-test'),
-    'linux-ir-intel':
-        _create_tester_config('linux', 64, 'linux-ir-test'),
-    'linux-ir-nvidia':
-        _create_tester_config('linux', 64, 'linux-ir-test'),
-    'linux-ir-swiftshader':
-        _create_tester_config('linux', 64, 'linux-ir-test'),
-    'linux-ir-test':
-        _create_builder_config('linux', 'Release', 64),
     'linux-nvidia-perf':
         _create_tester_config('linux', 64, 'linux-perf'),
     'linux-perf':
