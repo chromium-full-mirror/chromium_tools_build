@@ -34,6 +34,7 @@ TEST_CONFIGS = [
     'show_v8_revision',
     'v8_canary',
     'v8_tot',
+    'webpagereplay',
     'webrtc_test_resources',
     'win',
 ]

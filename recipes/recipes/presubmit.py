@@ -151,6 +151,7 @@ def GenTests(api):
       'pdfium',
       'skia',
       'v8',
+      'webpagereplay',
       'webports',
       'webrtc',
   ]
