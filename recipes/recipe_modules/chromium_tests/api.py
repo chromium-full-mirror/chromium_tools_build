@@ -1352,13 +1352,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       )
     else:
       archive_root = source_dir
-      self.m.archive.clusterfuzz_archive_targets(
-          archive_root=archive_root,
-          build_dir=build_dir,
-          compile_targets=compile_targets,
-          archive_schema_version=builder_spec.cf_archive_schema_version,
-          **common_kwargs,
-      )
+      # `clusterfuzz_archive_targets()` resolves GN runtime dependencies
+      # before calling `clusterfuzz_archive()`, which requires the chromium
+      # environment.
+      with self.m.context(env=self.m.chromium.get_env(source_dir)):
+        self.m.archive.clusterfuzz_archive_targets(
+            archive_root=archive_root,
+            build_dir=build_dir,
+            compile_targets=compile_targets,
+            archive_schema_version=builder_spec.cf_archive_schema_version,
+            **common_kwargs,
+        )
 
   def _get_chrome_version(self):
     chrome_version = self.m.properties.get('chrome_version')
