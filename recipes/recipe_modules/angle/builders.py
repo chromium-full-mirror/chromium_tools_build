@@ -133,8 +133,6 @@ _SPEC = {
         _create_builder_config('win', 'Release', 64),
     'win-dbg-compile':
         _create_builder_config('win', 'Debug', 64),
-    'win-ir-test':
-        _create_builder_config('win', 'Release', 64),
     'win-msvc-compile':
         _create_builder_config('win', 'Release', 64, is_clang=False),
     'win-msvc-dbg-compile':
@@ -156,10 +154,6 @@ _SPEC = {
         _create_builder_config('win', 'Debug', 64, is_clang=False),
     'win10-x64-intel-perf':
         _create_tester_config('win', 64, 'win-perf'),
-    'win10-x64-ir-intel':
-        _create_tester_config('win', 64, 'win-ir-test'),
-    'win10-x64-ir-nvidia':
-        _create_tester_config('win', 64, 'win-ir-test'),
     'win10-x64-nvidia-perf':
         _create_tester_config('win', 64, 'win-perf'),
     'win10-x64-swiftshader-asan':
