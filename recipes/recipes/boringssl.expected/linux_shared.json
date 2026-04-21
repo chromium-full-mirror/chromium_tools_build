@@ -285,39 +285,6 @@
     "cmd": [
       "go",
       "run",
-      "[CACHE]/builder/boringssl/util/check_imported_libraries.go",
-      "[CACHE]/builder/boringssl/build/libcrypto.so",
-      "[CACHE]/builder/boringssl/build/libssl.so"
-    ],
-    "env": {
-      "GOCACHE": "[CACHE]/gocache",
-      "GOFLAGS": "-mod=readonly",
-      "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/boringssl/util/bot/golang/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "boringssl:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "check imported libraries"
-  },
-  {
-    "cmd": [
-      "go",
-      "run",
       "[CACHE]/builder/boringssl/util/check_filenames.go"
     ],
     "cwd": "[CACHE]/builder/boringssl",

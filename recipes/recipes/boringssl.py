@@ -30,11 +30,6 @@ DEPS = [
 PROPERTIES = {
     'android':
         Property(default=False, kind=bool, help='whether to build for Android'),
-    'check_imported_libraries':
-        Property(
-            default=False,
-            kind=bool,
-            help='whether to run the check_imported_libraries script'),
     'check_pregenerated_files':
         Property(
             default=True, kind=bool,
@@ -217,10 +212,9 @@ def _CleanupMSVC(api):
           ok_ret='any')
 
 
-def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
-             check_stack, clang, cmake_args, gclient_vars, msvc_target,
-             prefixed_symbols, runner_args, run_ssl_tests, run_unit_tests, rust,
-             sde):
+def RunSteps(api, android, check_pregenerated_files, check_stack, clang,
+             cmake_args, gclient_vars, msvc_target, prefixed_symbols,
+             runner_args, run_ssl_tests, run_unit_tests, rust, sde):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
       android=android,
@@ -357,14 +351,6 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
             [cargo, 'build', '--all-targets', '--all-features', '--keep-going'])
 
     with api.defer.context() as defer:
-      if check_imported_libraries:
-        defer(api.step, 'check imported libraries', [
-            'go', 'run',
-            src.joinpath('util', 'check_imported_libraries.go'),
-            build_dir.joinpath('libcrypto.so'),
-            build_dir.joinpath('libssl.so')
-        ])
-
       if check_stack:
         defer(api.step, 'check stack', [
             'go', 'run',
@@ -511,7 +497,6 @@ def GenTests(api):
           "cmake_args": {
               "BUILD_SHARED_LIBS": "1",
           },
-          "check_imported_libraries": True,
       }),
       ('linux_prefixed', api.platform('linux', 64), {
           "prefixed_symbols": True,
@@ -650,17 +635,6 @@ def GenTests(api):
         api.properties(rust=True, **addl_props),
         api.expect_status('FAILURE'),
     )
-
-  yield api.test(
-      'failed_imported_libraries',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux_shared'),
-      mock_go_tests,
-      api.properties(
-          cmake_args={"BUILD_SHARED_LIBS": "1"}, check_imported_libraries=True),
-      api.override_step_data('check imported libraries', retcode=1),
-      api.expect_status('FAILURE'),
-  )
 
   yield api.test(
       'failed_filenames',
