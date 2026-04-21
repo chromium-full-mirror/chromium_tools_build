@@ -90,12 +90,6 @@ _SPEC = {
         _create_android_builder_config('Debug', 64),
     'android-arm64-dbg-compile':
         _create_android_builder_config('Debug', 64),
-    'android-arm64-ir-pixel4':
-        _create_android_tester_config(64, 'android-arm64-ir-test'),
-    'android-arm64-ir-pixel6':
-        _create_android_tester_config(64, 'android-arm64-ir-test'),
-    'android-arm64-ir-test':
-        _create_android_builder_config('Release', 64),
     'android-arm64-pixel4-perf':
         _create_android_tester_config(64, 'android-perf'),
     'android-arm64-pixel6-perf':
