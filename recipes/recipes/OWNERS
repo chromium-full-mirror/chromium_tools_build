@@ -33,6 +33,7 @@ per-file publish_tarball.py=file:publish_tarball.expected/OWNERS
 per-file reclient*=file://recipes/reclient/OWNERS
 per-file tricium_clang_tidy_wrapper.py=file://recipes/BUILD_TEAM_OWNERS
 per-file v8.py=file:v8.expected/OWNERS
+per-file webpagereplay.py=file:webpagereplay.expected/OWNERS
 
 # Generic owners, if the file isn't listed above.
 bpastene@chromium.org
