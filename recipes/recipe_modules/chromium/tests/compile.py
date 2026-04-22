@@ -347,3 +347,19 @@ def GenTests(api):
                        ['/some/ninja/path']),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'siso infra failure',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.siso.properties(),
+      api.step_data('compile', retcode=1),
+      api.path.exists(build_dir / 'siso_result.json'),
+      api.step_data(
+          'read siso_result.json',
+          api.file.read_json({
+              "infra_failure": True,
+              "message": "too many fallback"
+          })),
+      api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )

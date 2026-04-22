@@ -379,6 +379,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   def _run_ninja(self,
                  source_dir: Path,
+                 build_dir: Path,
                  ninja_command,
                  *,
                  name=None,
@@ -396,6 +397,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     Args:
       source_dir: The path to the top-level repo.
+      build_dir: The path to build dir (e.g. out/Release).
       ninja_command: Command used for build.
                      This is sent as part of log.
                      (e.g. ['ninja', '-C', 'out/Release'])
@@ -503,6 +505,16 @@ class ChromiumApi(recipe_api.RecipeApi):
       if ninja_step_result.retcode != 1:
         raise self.m.step.InfraFailure(
             ninja_step_result.name, result=ninja_step_result)
+      siso_result_path = build_dir / 'siso_result.json'
+      if self.m.path.exists(siso_result_path):
+        siso_result = self.m.file.read_json('read siso_result.json',
+                                            siso_result_path)
+        if siso_result.get("infra_failure", False):
+          name = ninja_step_result.name
+          msg = siso_result.get("message", None)
+          if msg:
+            name += " : " + msg
+          raise self.m.step.InfraFailure(name, result=ninja_step_result)
 
       failure_summary = ('(retcode=%d) No failure summary provided.' %
                          ninja_step_result.retcode)
@@ -553,7 +565,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                ninja_invocation_id)
 
     if self.fail_build_on_clang_warnings:
-      result = self.check_for_clang_warnings(self.m.siso._ninja_dir(cmd))
+      result = self.check_for_clang_warnings(build_dir)
       if result:
         return CompileResult(
             failure_summary=result, failure_summary_url='', retcode=1)
@@ -645,7 +657,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       status = self.m.step.SUCCESS
       failure_summary = ''
 
-      siso_output_path = os.path.join(build_dir, 'siso_output')
+      siso_output_path = build_dir / 'siso_output'
       if self.m.path.exists(siso_output_path):
         siso_output = self.m.file.read_text('read siso_output',
                                             siso_output_path)
@@ -865,6 +877,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       ninja_invocation_id = self.m.uuid.random()
       ninja_result = self._run_ninja(
           source_dir,
+          build_dir,
           name=name or 'compile',
           ninja_command=command,
           ninja_extra_args=extra_ninja_args,
