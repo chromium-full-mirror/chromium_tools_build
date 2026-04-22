@@ -282,6 +282,8 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec(
     'mac-m4-mini-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
+    'mac-m4-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
+_AddIsolatedTestSpec(
     'mac-m5-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
@@ -294,6 +296,8 @@ _AddIsolatedTestSpec('linux-r350-processor-perf', 'linux', 'linux-r350-perf')
 
 _AddIsolatedTestSpec(
     'mac-m4-mini-processor-perf', 'mac', 'mac-m4-mini-perf', target_arch='arm')
+_AddIsolatedTestSpec(
+    'mac-m4-pro-processor-perf', 'mac', 'mac-m4-pro-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('win-10-processor-perf', 'win', 'win-10-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-processor-perf', 'win',

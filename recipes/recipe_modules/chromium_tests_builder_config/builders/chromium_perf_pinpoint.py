@@ -260,6 +260,8 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec(
     'mac-m4-mini-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
+    'mac-m4-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
+_AddIsolatedTestSpec(
     'mac-m5-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
