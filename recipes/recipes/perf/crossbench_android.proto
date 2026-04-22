@@ -10,4 +10,6 @@ message InputProperties {
   // the builder to start an Android emulator.
   // See docs/android_emulator.md for a list of available SDKs.
   int32 android_sdk = 1;
+  // The path to the test driver to run.
+  string test_driver = 2;
 }

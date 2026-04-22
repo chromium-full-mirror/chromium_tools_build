@@ -33,6 +33,8 @@ _AVD_CIPD_VERSION = 'latest'
 _AVD_CONFIG_VERSION = 'android_%s_google_apis_x64%s.textpb'
 # The prefix is used in the tests to identify whether they are running in CQ.
 _CAS_DIR_PREFIX = 'cq_archive_'
+# By default, the test runner executes all tests without sharding.
+_DEFAULT_RUNNER = 'crossbench/tests/end2end/android/runner.py'
 
 
 class AndroidEmulator:
@@ -179,7 +181,7 @@ def RunSteps(api, properties):
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
-  test_driver = 'crossbench/tests/end2end/android/runner.py'
+  test_driver = getattr(properties, 'test_driver', None) or _DEFAULT_RUNNER
 
   configs = [
       _TestRunConfig(properties.android_sdk, '', '-m',
