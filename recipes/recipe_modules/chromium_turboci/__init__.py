@@ -5,9 +5,11 @@
 from __future__ import annotations
 
 DEPS = [
+    'chromium',
     'recipe_engine/buildbucket',
     'recipe_engine/runtime',
     'recipe_engine/step',
+    'recipe_engine/uuid',
 ]
 
 from .api import ChromiumTurbociApi as API

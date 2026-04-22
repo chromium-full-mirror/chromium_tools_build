@@ -102,7 +102,7 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
             (t.runs_on_swarming or t.runs_on_skylab)
         ]
 
-        self.m.chromium_tests.turboci.create_build_check(
+        self.m.chromium_turboci.create_build_check(
             chromium_tests.WITHOUT_PATCH_BUILD_CHECK_ID,
             chromium_tests.WITHOUT_PATCH_SOURCE_CHECK_ID,
             builder_full_name=builder_full_name)
@@ -126,7 +126,7 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
                 no_fetch_tags=True,
                 turboci_source_check_id=chromium_tests.SOURCE_CHECK_ID))
 
-        turboci_analyze_check_id = self.m.chromium_tests.turboci.create_build_check(
+        turboci_analyze_check_id = self.m.chromium_turboci.create_build_check(
             chromium_tests.BUILD_CHECK_ID,
             chromium_tests.SOURCE_CHECK_ID,
             create_analyze_check=True,

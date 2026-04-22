@@ -42,7 +42,7 @@ import re
 import struct
 import urllib
 
-from recipe_engine import step_data, turboci
+from recipe_engine import step_data
 from recipe_engine.config_types import Path
 
 from .resultdb import ResultDB
@@ -50,11 +50,6 @@ from .resultdb import ResultDB
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
-from PB.turboci.data.common.v1.display_message import DisplayMessage
-from PB.turboci.data.test.v1.test_check_description_option import (
-    TestCheckDescriptionOption)
-from PB.turboci.data.test.v1.test_check_summary_result import (
-    TestCheckSummaryResult)
 
 from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
@@ -286,49 +281,6 @@ def _present_info_messages(presentation, test, messages):
     messages.append(test.spec.description)
   messages.append(presentation.step_text)
   presentation.step_text = '\n'.join(messages)
-
-
-def get_turboci_test_check_id(test_step_name):
-  """Create a valid turboci test check_id for the given test step name."""
-  return hashlib.sha256(test_step_name.encode('utf-8')).hexdigest()
-
-
-def _create_turboci_test_check(test_step_name):
-  """Create a TurboCI test check for the test suite on a given phase."""
-  turboci.write_nodes(
-      turboci.reason('Create test %s' % test_step_name),
-      turboci.check(
-          get_turboci_test_check_id(test_step_name),
-          kind='CHECK_KIND_TEST',
-          options=[TestCheckDescriptionOption(title=test_step_name)],
-      ))
-
-
-def _set_turboci_test_check_planned(test_step_name):
-  """Set test check's state to PLANNED for a test suite on a given phase."""
-  turboci.write_nodes(
-      turboci.reason('Trigger test %s' % test_step_name),
-      turboci.check(
-          get_turboci_test_check_id(test_step_name),
-          state='CHECK_STATE_PLANNED',
-      ))
-
-
-def _finalize_turboci_test_check(test_step_name, is_success, display_text):
-  """Mark test check as FINAL and record the test results."""
-  result = TestCheckSummaryResult(
-      success=is_success,
-      display_message=DisplayMessage(
-          message=display_text,
-          message_format=DisplayMessage.MessageFormat.MESSAGE_FORMAT_HTML,
-      ))
-  turboci.write_nodes(
-      turboci.reason('Collect results for test %s' % test_step_name),
-      turboci.check(
-          get_turboci_test_check_id(test_step_name),
-          state='CHECK_STATE_FINAL',
-          results=[result],
-      ))
 
 
 class AbstractTestSpec(abc.ABC):
@@ -2821,7 +2773,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
                      self.isolate_target))
 
     # Create task.
-    _create_turboci_test_check(self.step_name(suffix))
+    self.api.m.chromium_turboci.create_test_check(self.step_name(suffix))
     self._tasks[suffix] = self._create_task(suffix, task_input,
                                             include_utr_instruction, is_ci_only)
 
@@ -2836,7 +2788,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     self.api.m.chromium_swarming.trigger_task(
         self._tasks[suffix], resultdb=resultdb)
-    _set_turboci_test_check_planned(self.step_name(suffix))
+    self.api.m.chromium_turboci.set_test_check_planned(self.step_name(suffix))
 
     # Add instructions now that we have invocations
     self._add_instructions(suffix, include_utr_instruction)
@@ -2875,7 +2827,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     _present_info_messages(step_result.presentation, self, info_message_list)
 
     self._present_rdb_results(step_result, self._rdb_results.get(suffix))
-    _finalize_turboci_test_check(
+    self.api.m.chromium_turboci.finalize_test_check(
         self.step_name(suffix), not failure_on_exit,
         step_result.presentation.step_text)
 

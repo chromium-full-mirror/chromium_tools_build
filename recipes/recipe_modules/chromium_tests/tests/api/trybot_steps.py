@@ -12,7 +12,7 @@ from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
-from RECIPE_MODULES.build.chromium_tests.steps import get_turboci_test_check_id
+from RECIPE_MODULES.build.chromium_turboci.api import ChromiumTurbociApi
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
@@ -521,9 +521,10 @@ def GenTests(api: RecipeTestApi):
   def retry_shards_without_patch_assert_workplan(assert_, workplan: WorkPlan):
     analyze_check_id = f'{chromium_tests.BUILD_CHECK_ID} analyze'
     test_check_ids = (
-        get_turboci_test_check_id('base_unittests (with patch)'),
-        get_turboci_test_check_id('base_unittests (retry shards with patch)'),
-        get_turboci_test_check_id('base_unittests (without patch)'),
+        ChromiumTurbociApi.get_test_check_id('base_unittests (with patch)'),
+        ChromiumTurbociApi.get_test_check_id(
+            'base_unittests (retry shards with patch)'),
+        ChromiumTurbociApi.get_test_check_id('base_unittests (without patch)'),
     )
     check_ids = set(c.identifier.id for c in workplan.checks)
     if not assert_(

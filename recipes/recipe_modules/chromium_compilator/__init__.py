@@ -11,6 +11,7 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'chromium_turboci',
     'code_coverage',
     'depot_tools/tryserver',
     'filter',
