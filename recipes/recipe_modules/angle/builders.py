@@ -98,8 +98,6 @@ _SPEC = {
         _create_android_builder_config('Release', 64, perf_isolate_upload=True),
     'linux-asan-test':
         _create_builder_config('linux', 'Release', 64),
-    'linux-dbg-compile':
-        _create_builder_config('linux', 'Debug', 64),
     'linux-exp-asan-test':
         _create_builder_config('linux', 'Release', 64),
     'linux-exp-swiftshader-asan':

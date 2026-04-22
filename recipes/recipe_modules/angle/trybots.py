@@ -62,8 +62,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'linux-dbg-compile':
-        _create_compile_spec('linux-dbg-compile'),
     'linux-exp-asan-test':
         try_spec.TrySpec.create(
             mirrors=[
