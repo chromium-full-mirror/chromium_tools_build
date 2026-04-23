@@ -101,6 +101,10 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
     step_result: The compile step's returned stepData
     builder_id: ID of the builder to use for the instruction
   """
+  # UTR prefers orch builder names when running a compilator's compile.
+  orch_name = chromium_api.m.properties.get('orchestrator',
+                                            {}).get('builder_name')
+  builder_name = orch_name if orch_name else builder_id.builder
   # Include instructions with no targets to compile all. This can cause
   # the instruction to reproduce failures in compile targets that are being
   # filtered on the builder. This is preferable to plumbing the test names
@@ -110,7 +114,7 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
       chromium_api.m.buildbucket.build.builder.project,
       (chromium_api.m.led.shadowed_bucket or
        chromium_api.m.buildbucket.build.builder.bucket),
-      builder_id.builder,
+      builder_name,
       [],
   )
   utr_instructions += '<br/>To run in your own build dir:<br/>'
@@ -119,7 +123,7 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
       chromium_api.m.buildbucket.build.builder.project,
       (chromium_api.m.led.shadowed_bucket or
        chromium_api.m.buildbucket.build.builder.bucket),
-      builder_id.builder,
+      builder_name,
       [],
       utr_flags=['--build-dir', '${YOUR_BUILD_DIR_HERE}'],
       include_preface_text=False,
