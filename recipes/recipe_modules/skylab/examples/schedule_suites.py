@@ -60,7 +60,7 @@ GITILES_COMMIT = common_pb2.GitilesCommit(
 
 
 def gen_skylab_rdb(suite):
-  sources = invocation_pb.Sources(
+  sources = common_rdb_pb.Sources(
       gitiles_commit=common_rdb_pb.GitilesCommit(
           host=GITILES_COMMIT.host,
           project=GITILES_COMMIT.project,

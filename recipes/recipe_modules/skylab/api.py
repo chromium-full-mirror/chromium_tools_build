@@ -519,7 +519,7 @@ class SkylabApi(recipe_api.RecipeApi):
 
     gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
 
-    sources = invocation_pb.Sources(
+    sources = common_rdb_pb.Sources(
         gitiles_commit=common_rdb_pb.GitilesCommit(
             host=gitiles_commit.host,
             project=gitiles_commit.project,

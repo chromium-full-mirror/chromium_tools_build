@@ -373,7 +373,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           step_name='update invocation',
           is_source_spec_final=True,
           source_spec=invocation_pb.SourceSpec(
-              sources=invocation_pb.Sources(
+              sources=common_rdb_pb.Sources(
                   gitiles_commit=common_rdb_pb.GitilesCommit(
                       host=gitiles_commit.host,
                       project=gitiles_commit.project,

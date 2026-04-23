@@ -19,6 +19,8 @@ from .util import GTestResults, RDBPerSuiteResults, RDBResults
 from .util import IndividualTestStabilityAnalysis, StabilityAnalysisPerSuite
 from google.protobuf import timestamp_pb2
 
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_exoneration as
+                                                       test_exoneration_pb2)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
@@ -466,11 +468,11 @@ class TestUtilsApi(recipe_api.RecipeApi):
             'not fail the build.')
         for t in results.unexpected_failing_tests:
           exonerations.append(
-              test_result_pb2.TestExoneration(
+              test_exoneration_pb2.TestExoneration(
                   test_id=t.test_id,
                   variant=results.variant,
                   explanation_html=explanation_html,
-                  reason=test_result_pb2.ExonerationReason.NOT_CRITICAL,
+                  reason=test_exoneration_pb2.ExonerationReason.NOT_CRITICAL,
               ))
       elif suffix == 'without patch':
         # Most unexpected failures in the "without patch" phase should be
@@ -494,18 +496,19 @@ class TestUtilsApi(recipe_api.RecipeApi):
               '<br><a href="{}" target="_blank">Test results without patch</a>'
           ).format(test_results_link)
           exonerations.append(
-              test_result_pb2.TestExoneration(
+              test_exoneration_pb2.TestExoneration(
                   test_id=t.test_id,
                   variant=results.variant,
                   explanation_html=updated_html,
-                  reason=test_result_pb2.ExonerationReason.OCCURS_ON_MAINLINE,
+                  reason=test_exoneration_pb2.ExonerationReason
+                  .OCCURS_ON_MAINLINE,
               ))
       # Any failure known to be flaky should also be exonerated.
       elif suffix == 'with patch':
         flakes = suite.known_luci_analysis_flaky_failures
         for known_flake in flakes:
           exonerations.append(
-              test_result_pb2.TestExoneration(
+              test_exoneration_pb2.TestExoneration(
                   test_id=(results.individual_unexpected_test_by_test_name[
                       known_flake].test_id),
                   variant=results.variant,
@@ -514,7 +517,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
                   explanation_html=(
                       'LUCI Analysis reported this test as being flaky or '
                       'failing.'),
-                  reason=test_result_pb2.ExonerationReason.OCCURS_ON_OTHER_CLS,
+                  reason=test_exoneration_pb2.ExonerationReason
+                  .OCCURS_ON_OTHER_CLS,
               ))
 
     if exonerations:
