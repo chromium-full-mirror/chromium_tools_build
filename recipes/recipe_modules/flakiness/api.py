@@ -593,6 +593,11 @@ class FlakinessApi(recipe_api.RecipeApi):
         test_suite_results = test_obj.get_rdb_results(suffix)
         vh = test_suite_results.variant_hash
 
+        all_test_names = []
+        for t in test_suite_results.all_tests:
+          legacy_filter = self._get_legacy_filter_from_test(t)
+          all_test_names.append(legacy_filter if legacy_filter else t.test_name)
+
         for test in test_suite_results.all_tests:
           if (test.test_id, vh) in new_test_tuples:
             # Test object in list of new tests already, so update the filter.
@@ -601,10 +606,13 @@ class FlakinessApi(recipe_api.RecipeApi):
                 test_obj, ([], 0))
 
             legacy_filter = self._get_legacy_filter_from_test(test)
-            if legacy_filter:
-              test_filter.append(legacy_filter)
-            else:
-              test_filter.append(test.test_name)
+            test_name_for_filter = legacy_filter if legacy_filter else test.test_name
+
+            actual_group = utils.get_actual_test_group(test_name_for_filter,
+                                                       all_test_names)
+            for t in actual_group:
+              if t not in test_filter:
+                test_filter.append(t)
 
             # duration_milliseconds can default to 0 for our calculations because
             # it's only calculated if duration values are reported to ResultDB.
@@ -862,8 +870,26 @@ class FlakinessApi(recipe_api.RecipeApi):
                               test.canonical_name] = '\n'.join(log_lines)
 
           # Rework test filter into the required format
-          test_filter = [new_test.test_name for new_test in test_filter]
-          filter_and_time_by_test_object[test] = (test_filter,
+
+          all_test_names = []
+          rdb_suite_result = test.get_rdb_results('with patch')
+          if rdb_suite_result:
+            for t in rdb_suite_result.all_tests:
+              legacy_filter = self._get_legacy_filter_from_test(t)
+              all_test_names.append(
+                  legacy_filter if legacy_filter else t.test_name)
+
+          expanded_filter = []
+          for new_test in test_filter:
+            legacy_filter = self._get_legacy_filter_from_test(new_test)
+            test_name_for_filter = legacy_filter if legacy_filter else new_test.test_name
+            actual_group = utils.get_actual_test_group(test_name_for_filter,
+                                                       all_test_names)
+            for t in actual_group:
+              if t not in expanded_filter:
+                expanded_filter.append(t)
+
+          filter_and_time_by_test_object[test] = (expanded_filter,
                                                   total_duration_ms)
 
     # For each new test update all test filters to repeat and rerun 20 times.

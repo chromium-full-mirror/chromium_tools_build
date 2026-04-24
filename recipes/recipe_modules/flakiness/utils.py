@@ -81,6 +81,23 @@ def set_to_string(test_set):
   ])
 
 
+def get_base_test_name(test_name):
+  """Strips PRE_ prefixes to return the base test name."""
+  base_name = test_name
+  while '.PRE_' in base_name:
+    base_name = base_name.replace('.PRE_', '.', 1)
+  return base_name
+
+
+def get_actual_test_group(test_name, all_suite_test_names):
+  """Returns all tests in the suite that belong to the same group (base test and its PRE_ variants)."""
+  base_name = get_base_test_name(test_name)
+  if '.' not in base_name:
+    return [test_name]
+
+  return [t for t in all_suite_test_names if get_base_test_name(t) == base_name]
+
+
 def apply_script_test_filter(test, test_filter, repeat_count):
   script_args = list([
       '--gtest_repeat=%s' % str(repeat_count),

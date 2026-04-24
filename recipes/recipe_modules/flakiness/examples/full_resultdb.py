@@ -477,12 +477,15 @@ def GenTests(api):
   gtest_v = _generate_variant(os='Ubuntu-16', test_suite='base_unittests')
   gtest_vh = _generate_variant_hash(gtest_v)
   gtest_test_id = 'ninja://base:base_unittests/TestSuite.test_d'
+  gtest_pre_test_id = 'ninja://base:base_unittests/TestSuite.PRE_test_d'
 
   current_build_gtest_test_results = {
       'invocations/build:8945511751514863184':
           api.resultdb.Invocation(test_results=[
               _generate_test_result(
                   test_id=gtest_test_id, variant_hash=gtest_vh),
+              _generate_test_result(
+                  test_id=gtest_pre_test_id, variant_hash=gtest_vh),
           ])
   }
 
@@ -531,10 +534,11 @@ def GenTests(api):
               'luci.resultdb.v1.ResultDB',
               'QueryNewTestVariants',
           ]),
-      api.post_process(post_process.StepCommandContains,
-                       ('test new tests for flakiness.base_unittests '
-                        '(check flakiness shard #0)'),
-                       ('--isolated-script-test-filter=TestSuite.test_d')),
+      api.post_process(post_process.StepCommandContains, (
+          'test new tests for flakiness.base_unittests '
+          '(check flakiness shard #0)'
+      ), ('--isolated-script-test-filter=TestSuite.test_d::TestSuite.PRE_test_d'
+         )),
       api.post_process(post_process.DropExpectation),
   )
 
