@@ -143,6 +143,10 @@ TEST_CONFIGS = freeze({
         ],
         'test_args': ['--random-gc-stress'],
     },
+    'jetstream3': {
+        'tool': 'run-jetstream3',
+        'isolated_target': 'jetstream3',
+    },
     'jsfunfuzz': {
         'tool': 'jsfunfuzz',
         'isolated_target': 'jsfunfuzz',
@@ -988,21 +992,42 @@ class V8RunPerf(V8CompositeSwarmingTest):
     ]
 
 
+class V8RunJetStream3(V8CompositeSwarmingTest):
+
+  @property
+  def composite_tests(self):
+    return [
+        V8GenericSwarmingTest(
+            self.test_step_config,
+            self.api,
+            title='JetStream3',
+            command=[
+                'tools/run_perf.py',
+                'test/benchmarks/JetStream3.json',
+                '--arch',
+                'x64',
+                '--buildbot',
+            ],
+        )
+    ]
+
+
 TOOL_TO_TEST = freeze({
   'run-tests': V8Test,
 })
 
 
 TOOL_TO_TEST_SWARMING = freeze({
-  'check-bytecode-baseline': V8CheckBytecodeBaseline,
-  'check-static-initializers': V8CheckInitializers,
-  'jsfunfuzz': V8Fuzzer,
-  'run-gcmole-v2': V8GCMoleV2,
-  'run-gcmole-v3': V8GCMoleV3,
-  'run-num-fuzzer': V8SwarmingTest,
-  'run-perf': V8RunPerf,
-  'run-tests': V8SwarmingTest,
-  'fuchsia-unittests': V8FuchsiaUnittests,
+    'check-bytecode-baseline': V8CheckBytecodeBaseline,
+    'check-static-initializers': V8CheckInitializers,
+    'jsfunfuzz': V8Fuzzer,
+    'run-gcmole-v2': V8GCMoleV2,
+    'run-gcmole-v3': V8GCMoleV3,
+    'run-num-fuzzer': V8SwarmingTest,
+    'run-jetstream3': V8RunJetStream3,
+    'run-perf': V8RunPerf,
+    'run-tests': V8SwarmingTest,
+    'fuchsia-unittests': V8FuchsiaUnittests,
 })
 
 

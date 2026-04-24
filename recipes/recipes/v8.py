@@ -512,16 +512,15 @@ def GenTests(api):
          api.post_process(Filter().include_re(r'.*Unittests.*')
   ))
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'perf',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec='{"tests": [{"name": "perf_integration"}]}',
-    )
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'perf',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec='{"tests": [{"name": "perf_integration"}, '
+      '{"name": "jetstream3"}]}',
+  ))
 
   # Bisect over range a1, a2, a3. Assume a2 is the culprit. Steps:
   # Bisect a0 -> no failures.
