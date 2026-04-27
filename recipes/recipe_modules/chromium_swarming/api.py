@@ -549,24 +549,96 @@ class SwarmingApi(recipe_api.RecipeApi):
         test_name=test_name,
         include_utr_instruction=include_utr_instruction)
 
+  # TODO: This massive list of args is duplicated with `tasks` above.
+  # Both functions should ideally be refactored to take an args
+  # dataclass instead.
   def gtest_task(self,
-                 raw_cmd,
-                 name=None,
-                 test_name=None,
-                 cas_input_root='',
-                 cipd_packages=None,
-                 merge=None,
-                 relative_cwd=None,
-                 instructions_tag=None,
-                 include_utr_instruction=False,
-                 **kwargs):
+                 name: str | None = None,
+                 test_name: str | None = None,
+                 build_properties: dict | None = None,
+                 cipd_packages: list[chromium_swarming.CipdPackage]
+                 | None = None,
+                 collect_step: callable | None = None,
+                 env: dict | None = None,
+                 env_prefixes: dict | None = None,
+                 extra_args: list[str] | None = None,
+                 idempotent: bool | None = None,
+                 cas_input_root: str = '',
+                 merge: chromium_swarming.MergeScript | None = None,
+                 named_caches: dict | None = None,
+                 optional_dimensions: dict | None = None,
+                 raw_cmd: list[str] | None = None,
+                 service_account: str | None = None,
+                 shards: int = 1,
+                 shard_indices: Iterable[int] | None = None,
+                 task_output_dir: Path | None = None,
+                 task_to_retry: SwarmingTask | None = None,
+                 trigger_script: chromium_swarming.TriggerScript | None = None,
+                 relative_cwd: str | None = None,
+                 collect_json_output_override: Path | recipe_util.Placeholder
+                 | None = None,
+                 instructions_tag: str | None = None,
+                 include_utr_instruction: bool = False):
     """Returns a new SwarmingTask instance to run an isolated gtest on Swarming.
 
     The implementation uses a test_utils.gtest_results() placeholder to parse
     the JSON output.
 
-    For meaning of the rest of the arguments see 'task' method.
+    Args:
+      * name: The name of the request, used as part of a task ID.
+      * test_name: The name of the test that this task belongs to.
+      * cas_input_root: digeste of isolated test on RBE-CAS, the test should
+          be already isolated there, see 'isolate' recipe module.
+      * shards: if defined, the number of shards to use for the task. By default
+          this value is either 1 or based on the name.
+      * shard_indices: Which shards to run. If None, all shards are run.
+      * task_output_dir: if defined, the directory where task results are
+          placed. The caller is responsible for removing this folder when
+          finished.
+      * extra_args: list of command line arguments to pass to isolated tasks.
+      * idempotent: whether this task is considered idempotent. Defaults
+          to self.default_idempotent if not specified.
+      * cipd_packages: A list of CipdPackage instances describing CIPD packages
+          to be downloaded for the task.
+      * build_properties: An optional dict containing various build properties.
+          These are typically but not necessarily the properties emitted by
+          bot_update.
+      * merge: An optional chromium_swarming.MergeScript instance.
+      * trigger_script: An optional chromium_swarming.TriggerScript instance.
+      * named_caches: a dict {name: relpath} requesting a cache named `name`
+          to be installed in `relpath` relative to the task root directory.
+      * service_account: (string) a service account email to run the task under.
+      * raw_cmd: Optional list of arguments to be used as raw command. Can be
+          used instead of extra args.
+      * env_prefixes: a dict {ENVVAR: [relative, paths]} which instructs
+          swarming to prepend the given relative paths to the PATH-style ENVVAR
+          specified.
+      * env: a dict {ENVVAR: ENVVALUE} which instructs swarming to set the
+          environment variables before invoking the command. These are applied
+          on top of the default environment variables.
+      * optional_dimensions: {expiration: {key: value}} mapping with swarming
+          dimensions that specify on what Swarming bots tasks can run.  These
+          are similar to what is specified in dimensions but will create
+          additional 'fallback' task slice(s) with the optional dimensions. Note
+          that the slice expirations are cumulative. e.g. if the first slice
+          has an expiration of 60s and the second has 120s, the second slice
+          will only wait an additional 60s after the first slice expires.
+      * task_to_retry: Task object. If set, indicates that this task is a
+          (potentially partial) retry of another task. When collecting, the
+          successful shards from 'task_to_retry' will be merged with the new
+          shards in this task.
+      * relative_cwd: An optional string indicating the working directory
+        relative to the task root where `raw_cmd` (or the command specified
+        in the isolate, if raw_cmd is empty) will run.
+      * collect_json_output_override: Overrides the output json placeholder
+          passed to the collect script.
+      * instructions_tag: Tag to attach to the step which will link the
+          reproduction instructions
+      * include_utr_instruction: Whether or not to include UTR in reproduction
+          instructions
     """
+
+    raw_cmd = raw_cmd or []
 
     # TODO(crbug.com/1108005): enable this assertion.
     # assert len(raw_cmd) > 0
@@ -596,14 +668,28 @@ class SwarmingApi(recipe_api.RecipeApi):
     task = self.task(
         name=name,
         test_name=test_name,
+        build_properties=build_properties,
         cipd_packages=cipd_packages,
+        collect_step=collect_step,
+        env=env,
+        env_prefixes=env_prefixes,
+        extra_args=extra_args,
+        idempotent=idempotent,
         cas_input_root=cas_input_root,
         merge=merge,
+        named_caches=named_caches,
+        optional_dimensions=optional_dimensions,
         raw_cmd=raw_cmd,
+        service_account=service_account,
+        shards=shards,
+        shard_indices=shard_indices,
+        task_output_dir=task_output_dir,
+        task_to_retry=task_to_retry,
+        trigger_script=trigger_script,
         relative_cwd=relative_cwd,
+        collect_json_output_override=collect_json_output_override,
         instructions_tag=instructions_tag,
-        include_utr_instruction=include_utr_instruction,
-        **kwargs)
+        include_utr_instruction=include_utr_instruction)
     return task
 
   def isolated_script_task(self,
