@@ -177,6 +177,7 @@ class ArchiveApi(recipe_api.RecipeApi):
   def _collect_runtime_deps(
       self,
       compile_targets: list[str] | None,
+      source_dir: Path,
       build_dir: Path,
       archive_root: Path,
   ) -> list[str]:
@@ -188,19 +189,21 @@ class ArchiveApi(recipe_api.RecipeApi):
     runtime_deps = set()
     compile_targets = compile_targets or []
 
-    with self.m.step.nest(
-        'collect runtime deps for compile targets') as step_result:
-      for target in compile_targets:
-        deps = self.m.gn.desc(
-            build_dir,
-            target,
-            'runtime_deps',
-            step_name=f'gn desc {target}',
-        )
-        runtime_deps.update(
-            self.m.path.relpath(build_dir / dep, archive_root) for dep in deps)
-      runtime_deps = sorted(runtime_deps)
-      step_result.logs['paths_to_archive'] = runtime_deps
+    with self.m.context(cwd=source_dir):
+      with self.m.step.nest(
+          'collect runtime deps for compile targets') as step_result:
+        for target in compile_targets:
+          deps = self.m.gn.desc(
+              build_dir,
+              target,
+              'runtime_deps',
+              step_name=f'gn desc {target}',
+          )
+          runtime_deps.update(
+              self.m.path.relpath(build_dir / dep, archive_root)
+              for dep in deps)
+        runtime_deps = sorted(runtime_deps)
+        step_result.logs['paths_to_archive'] = runtime_deps
     return runtime_deps
 
   def clusterfuzz_archive_targets(self,
@@ -233,8 +236,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     if not compile_targets:
       raise ValueError("compile_targets must be provided and non-empty")
 
-    paths_to_archive = self._collect_runtime_deps(compile_targets, build_dir,
-                                                  archive_root)
+    paths_to_archive = self._collect_runtime_deps(compile_targets, source_dir,
+                                                  build_dir, archive_root)
     paths_to_archive.append(MANIFEST_FILENAME)
 
     manifest_dict = {
