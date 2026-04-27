@@ -80,6 +80,8 @@ def copy_path(api, source_dir: Path, build_dir: Path, path_name):
     api.file.copytree('copying directory:' + str(src), src, dest)
 
 
+# TODO(506138501): Deduplicate in `filter_runtime_deps` and remove
+# deduplication logic in `RunSteps` when removing schema v0 logic.
 def filter_runtime_deps(runtime_deps: list[str],
                         gn_targets: set[str]) -> set[str]:
   """Get the subset of runtime dependencies for the specified targets.
@@ -405,10 +407,13 @@ def RunSteps(api, properties):
 
       else:
         archive_root = source_dir
-        paths_to_archive = [
+        # `runtime_deps` set can still contain unnormalized duplicates (e.g.,
+        # `foo` and `foo/`) so using a dict to deduplicate normalized paths
+        # from `relpath` with same sort order.
+        paths_to_archive_dict = dict.fromkeys(
             api.path.relpath(build_dir / path, source_dir)
-            for path in runtime_deps
-        ]
+            for path in runtime_deps)
+        paths_to_archive = list(paths_to_archive_dict)
         paths_to_archive.append(MANIFEST_FILENAME)
 
       api.file.write_json(
