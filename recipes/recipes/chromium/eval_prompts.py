@@ -72,7 +72,9 @@ def RunSteps(api: RecipeApi):
       _run_tests(api, update_result, source_dir, True)
 
       # Run the unstable tests that we just want to collect metrics for
-      _run_tests(api, update_result, source_dir, False)
+      # TODO(b/503830579): Re-enable these tests once they stop flakily killing
+      # the GCE instance they run on.
+      # _run_tests(api, update_result, source_dir, False)
     except Exception:
       status = common_pb2.FAILURE
 
@@ -152,14 +154,16 @@ def _run_tests(api, update_result, source_dir, stable):
         '--build-number',
         build.number,
     ])
-  if stable:
-    step_name = 'run stable eval prompts'
-    cmd += ['--tag-filter=stable']
-    ok_ret = (0,)
-  else:
-    step_name = 'run unstable eval prompts'
-    cmd += ['--tag-filter=-stable']
-    ok_ret = 'any'
+  # TODO(b/503830579): Re-add the conditional step_name, etc. once unstable
+  # evals are run again.
+  # if stable:
+  step_name = 'run stable eval prompts'
+  cmd += ['--tag-filter=stable']
+  ok_ret = (0,)
+  # else:
+  #   step_name = 'run unstable eval prompts'
+  #   cmd += ['--tag-filter=-stable']
+  #   ok_ret = 'any'
   api.step(
       step_name,
       api.resultdb.wrap(
@@ -220,20 +224,22 @@ def GenTests(api: RecipeTestApi):
       'basic',
       gen_ci_test_props(),
       api.post_process(post_process.MustRun, 'run stable eval prompts'),
-      api.post_process(post_process.MustRun, 'run unstable eval prompts'),
+      # TODO(b/503830579): Re-add the unstable test asserts when they are
+      # re-enabled.
+      # api.post_process(post_process.MustRun, 'run unstable eval prompts'),
       api.post_process(post_process.StepCommandContains,
                        'run stable eval prompts', ['--enable-perf-uploading']),
       api.post_process(post_process.StepCommandContains,
                        'run stable eval prompts', ['fake-builder']),
       api.post_process(post_process.StepCommandContains,
                        'run stable eval prompts', ['fake-group']),
-      api.post_process(post_process.StepCommandContains,
-                       'run unstable eval prompts',
-                       ['--enable-perf-uploading']),
-      api.post_process(post_process.StepCommandContains,
-                       'run unstable eval prompts', ['fake-builder']),
-      api.post_process(post_process.StepCommandContains,
-                       'run unstable eval prompts', ['fake-group']),
+      # api.post_process(post_process.StepCommandContains,
+      #                  'run unstable eval prompts',
+      #                  ['--enable-perf-uploading']),
+      # api.post_process(post_process.StepCommandContains,
+      #                  'run unstable eval prompts', ['fake-builder']),
+      # api.post_process(post_process.StepCommandContains,
+      #                  'run unstable eval prompts', ['fake-group']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -241,12 +247,14 @@ def GenTests(api: RecipeTestApi):
       'basic_try',
       gen_try_test_props(),
       api.post_process(post_process.MustRun, 'run stable eval prompts'),
-      api.post_process(post_process.MustRun, 'run unstable eval prompts'),
+      # TODO(b/503830579): Re-add the unstable test asserts when they are
+      # re-enabled.
+      # api.post_process(post_process.MustRun, 'run unstable eval prompts'),
       api.post_process(post_process.StepCommandDoesNotContain,
                        'run stable eval prompts', ['--enable-perf-uploading']),
-      api.post_process(post_process.StepCommandDoesNotContain,
-                       'run unstable eval prompts',
-                       ['--enable-perf-uploading']),
+      # api.post_process(post_process.StepCommandDoesNotContain,
+      #                  'run unstable eval prompts',
+      #                  ['--enable-perf-uploading']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -261,7 +269,9 @@ def GenTests(api: RecipeTestApi):
   yield api.test(
       'fail unstable',
       gen_ci_test_props(),
-      api.step_data('run unstable eval prompts', retcode=1),
+      # TODO(b/503830579): Re-add the unstable test asserts when they are
+      # re-enabled.
+      # api.step_data('run unstable eval prompts', retcode=1),
       api.post_process(post_process.DropExpectation),
   )
 
