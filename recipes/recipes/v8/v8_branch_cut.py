@@ -118,7 +118,6 @@ def update_branch_version(api, source_dir, latest_version):
         branch_ref,
         version_at_branch_head,
         push_account=PUSH_ACCOUNT,
-        extra_edits=lambda api: update_gn(api, source_dir),
         bot_commit=True,
     )
     issue = get_issue(api)
@@ -145,21 +144,6 @@ def update_main_version(api, source_dir):
 def get_issue(api):
   issue = api.v8.git_output('cl', 'issue')
   return re.search('\((.*)\)', issue).group(1)
-
-
-def update_gn(api, source_dir):
-  toggle_path = source_dir.joinpath("gni", "release_branch_toggle.gni")
-  build_gn_content = api.file.read_text('Read release_branch_toggle.gni',
-                                        toggle_path)
-  MAIN_LINE = 'v8_is_on_release_branch = false'
-  BRANCH_LINE = 'v8_is_on_release_branch = true'
-  build_gn_content = build_gn_content.replace(MAIN_LINE, BRANCH_LINE)
-
-  api.file.write_text(
-      'Update release_branch_toggle.gni',
-      toggle_path,
-      build_gn_content,
-  )
 
 
 def GenTests(api):

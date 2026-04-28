@@ -403,60 +403,6 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]/builder/v8/gni/release_branch_toggle.gni",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "New branch detected.Update on branch.Read release_branch_toggle.gni",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@release_branch_toggle.gni@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "",
-      "[CACHE]/builder/v8/gni/release_branch_toggle.gni"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "New branch detected.Update on branch.Update release_branch_toggle.gni",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@release_branch_toggle.gni@@@"
-    ]
-  },
-  {
-    "cmd": [
       "git",
       "commit",
       "-a",

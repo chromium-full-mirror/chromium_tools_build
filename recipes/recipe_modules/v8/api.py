@@ -1477,8 +1477,7 @@ class V8Api(recipe_api.RecipeApi):
                         latest_version,
                         push_account,
                         bot_commit=False,
-                        force_land=False,
-                        extra_edits=None):
+                        force_land=False):
     """Update the version on branch 'ref'.
 
       Args:
@@ -1490,7 +1489,6 @@ class V8Api(recipe_api.RecipeApi):
         push_account: Account to be used for uploading the CL
         bot_commit: Use True to allow a bot commit.
         force_land: Use True to force land the CL.
-        extra_edits: Callback used to edit extra files before generating the CL
       """
     self.m.git('branch', '-D', 'work', ok_ret='any')
     self.m.git('clean', '-ffd')
@@ -1520,9 +1518,6 @@ class V8Api(recipe_api.RecipeApi):
         source_dir / self.m.v8.VERSION_FILE,
         latest_version_file,
     )
-
-    if extra_edits:
-      extra_edits(self.m)
 
     # Commit and push changes.
     commit_cmd = ['commit', '-a']
