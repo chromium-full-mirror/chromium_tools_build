@@ -21,6 +21,7 @@ DEPS = [
     "gn",
     "depot_tools/depot_tools",
     "depot_tools/gclient",
+    "depot_tools/osx_sdk",
     "recipe_engine/file",
     "recipe_engine/path",
     "recipe_engine/step",
@@ -42,6 +43,17 @@ def run_autotest(
   api.step(step_name, cmd)
 
 
+def run_tests(api: RecipeApi, properties: InputProperties, src_dir, build_dir):
+  with api.depot_tools.on_path(), api.context(
+      cwd=src_dir, env={
+          'LANG': 'en_US.UTF-8',
+          'PYTHONIOENCODING': 'utf-8'
+      }):
+    autotest_path = src_dir / "tools" / "autotest.py"
+    base_cmd = [autotest_path, "-C", build_dir, "--run-all"]
+    for test in properties.tests:
+      run_autotest(api, base_cmd, test)
+
 def RunSteps(api: RecipeApi, properties: InputProperties):
   if not properties.tests:
     return result_pb.RawResult(
@@ -49,22 +61,20 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
         summary_markdown="No tests provided in InputProperties. Exiting early.",
     )
 
-  api.gclient.set_config("chromium")
-  api.chromium.set_config("chromium")
-  api.chromium_checkout.ensure_checkout()
-  src_dir = api.chromium_checkout.source_dir
+  ctx = api.osx_sdk('mac') if api.platform.is_mac else api.context()
+  with ctx:
+    api.gclient.set_config("chromium")
+    api.chromium.set_config("chromium")
+    api.chromium_checkout.ensure_checkout()
+    src_dir = api.chromium_checkout.source_dir
 
-  build_dir = api.chromium.default_build_dir(src_dir)
-  api.file.ensure_directory("ensure out/Default", build_dir)
-  api.chromium.runhooks(src_dir, build_dir)
-  api.chromium.run_gn(src_dir, build_dir)
+    build_dir = api.chromium.default_build_dir(src_dir)
+    api.file.ensure_directory("ensure out/Default", build_dir)
 
-  autotest_path = src_dir / "tools" / "autotest.py"
-  with api.context(cwd=src_dir):
-    with api.depot_tools.on_path():
-      base_cmd = [autotest_path, "-C", build_dir, "--run-all"]
-      for test in properties.tests:
-        run_autotest(api, base_cmd, test)
+    api.chromium.runhooks(src_dir, build_dir)
+    api.chromium.run_gn(src_dir, build_dir)
+
+    run_tests(api, properties, src_dir, build_dir)
 
 
 def GenTests(api: RecipeTestApi):
@@ -103,6 +113,19 @@ def GenTests(api: RecipeTestApi):
               "base/pickle_unittest.cc",
           ],
       ),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      "mac_happy_path",
+      api.platform('mac', 64),
+      api.properties(
+          InputProperties(tests=[
+              AutotestInvocation(
+                  step_name="run base/strings",
+                  args=["base/strings"],
+              ),
+          ])),
       api.post_process(DropExpectation),
   )
 
