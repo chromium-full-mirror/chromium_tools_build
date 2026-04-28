@@ -82,14 +82,6 @@ def _create_android_tester_config(target_bits, parent_builder):
 
 
 _SPEC = {
-    'android-arm-compile':
-        _create_android_builder_config('Release', 32),
-    'android-arm-dbg-compile':
-        _create_android_builder_config('Debug', 32),
-    'android-arm64-dbg':
-        _create_android_builder_config('Debug', 64),
-    'android-arm64-dbg-compile':
-        _create_android_builder_config('Debug', 64),
     'android-arm64-pixel4-perf':
         _create_android_tester_config(64, 'android-perf'),
     'android-arm64-pixel6-perf':

@@ -18,14 +18,6 @@ def _create_compile_spec(buildername):
 
 
 _SPEC = {
-    'android-arm-compile':
-        _create_compile_spec('android-arm-compile'),
-    'android-arm-dbg-compile':
-        _create_compile_spec('android-arm-dbg-compile'),
-    'android-arm64-dbg':
-        _create_compile_spec('android-arm64-dbg'),
-    'android-arm64-dbg-compile':
-        _create_compile_spec('android-arm64-dbg-compile'),
     'android-pixel4-perf':
         try_spec.TrySpec.create(
             mirrors=[
