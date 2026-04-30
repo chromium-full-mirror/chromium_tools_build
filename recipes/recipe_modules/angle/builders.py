@@ -88,10 +88,6 @@ _SPEC = {
         _create_android_tester_config(64, 'android-perf'),
     'android-perf':
         _create_android_builder_config('Release', 64, perf_isolate_upload=True),
-    'linux-exp-swiftshader-tsan':
-        _create_tester_config('linux', 64, 'linux-exp-tsan-test'),
-    'linux-exp-tsan-test':
-        _create_builder_config('linux', 'Release', 64),
     'linux-intel-perf':
         _create_tester_config('linux', 64, 'linux-perf'),
     'linux-nvidia-perf':
@@ -99,10 +95,6 @@ _SPEC = {
     'linux-perf':
         _create_builder_config(
             'linux', 'Release', 64, perf_isolate_upload=True),
-    'linux-swiftshader-tsan':
-        _create_tester_config('linux', 64, 'linux-tsan-test'),
-    'linux-tsan-test':
-        _create_builder_config('linux', 'Release', 64),
     'mac-dbg-compile':
         _create_builder_config('mac', 'Debug', 64),
     'win-asan-test':

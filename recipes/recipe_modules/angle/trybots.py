@@ -42,18 +42,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'linux-exp-tsan-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-exp-tsan-test',
-                    tester='linux-exp-swiftshader-tsan',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'linux-intel-uhd630-perf':
         try_spec.TrySpec.create(
             mirrors=[
@@ -73,18 +61,6 @@ _SPEC = {
                     builder_group='angle',
                     buildername='linux-perf',
                     tester='linux-nvidia-perf',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-    'linux-tsan-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='linux-tsan-test',
-                    tester='linux-swiftshader-tsan',
                 ),
             ],
             analyze_names=['angle'],
