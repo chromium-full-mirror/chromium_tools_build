@@ -432,14 +432,15 @@ class SisoApi(recipe_api.RecipeApi):
         build_dir,
         '--dump_json',
         self.m.json.output(),
-    ] + list(tests)
+    ] + list(tests or [])
     with self.m.context(cwd=source_dir):
       return self.m.step(
           step_name,
           cmd,
-          step_test_data=lambda: self.m.json.test_api.output(
-              {test: '[dummy hash for %s/dummy size]' % test
-               for test in tests}),
+          step_test_data=lambda: self.m.json.test_api.output({
+              test: '[dummy hash for %s/dummy size]' % test
+              for test in (tests or [])
+          }),
           **kwargs)
 
   def fs_flush(self, step_name: str, source_dir: Path, files: list[str]):
@@ -466,7 +467,7 @@ class SisoApi(recipe_api.RecipeApi):
     """Return True if Siso build does not downlaod remote execution outptus
        by default.
     """
-    return self._props.output_local_strategy == 'minimum'
+    return self._props.output_local_strategy != 'full'
 
   def check_version(self, source_dir: Path):
     """Print Siso version info"""
