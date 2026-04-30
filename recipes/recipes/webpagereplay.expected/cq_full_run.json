@@ -1,0 +1,267 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'webpagereplay', 'url': 'https://chromium.googlesource.com/webpagereplay'}]",
+      "--revision_mapping_file",
+      "{}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "webpagereplay@HEAD"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DEPOT_TOOLS_COLLECT_METRICS": "0",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "bot_update",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"webpagereplay\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"webpagereplay\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/webpagereplay.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"c32840fdbd5889c32142bdf23cc37c1cd38c57e7\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": null,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"c32840fdbd5889c32142bdf23cc37c1cd38c57e7\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#295197}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"webpagereplay\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"webpagereplay\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/webpagereplay.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"c32840fdbd5889c32142bdf23cc37c1cd38c57e7\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"c32840fdbd5889c32142bdf23cc37c1cd38c57e7\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#295197}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/golang",
+      "-ensure-file",
+      "infra/3pp/tools/go/${platform} version:3@1.26.2",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "name": "ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-version:3@1.26.2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/3pp/tools/go/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/webpagereplay/scripts/check_go_format.py"
+    ],
+    "cwd": "[START_DIR]/webpagereplay",
+    "env": {
+      "GO111MODULE": "on",
+      "GOBIN": "[CACHE]/gocache/bin",
+      "GOCACHE": "[CACHE]/gocache/cache",
+      "GOMODCACHE": "[CACHE]/gocache/modcache",
+      "GOPACKAGESDRIVER": "off",
+      "GOPATH": null,
+      "GOPRIVATE": "*.googlesource.com,*.git.corp.google.com,google.com",
+      "GOPROXY": null,
+      "GOROOT": "[CACHE]/golang",
+      "GOTOOLCHAIN": "local"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/golang/bin"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "[CACHE]/gocache/bin"
+      ]
+    },
+    "name": "check go format"
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "./webpagereplay"
+    ],
+    "cwd": "[START_DIR]/webpagereplay/src",
+    "env": {
+      "GO111MODULE": "on",
+      "GOBIN": "[CACHE]/gocache/bin",
+      "GOCACHE": "[CACHE]/gocache/cache",
+      "GOMODCACHE": "[CACHE]/gocache/modcache",
+      "GOPACKAGESDRIVER": "off",
+      "GOPATH": null,
+      "GOPRIVATE": "*.googlesource.com,*.git.corp.google.com,google.com",
+      "GOPROXY": null,
+      "GOROOT": "[CACHE]/golang",
+      "GOTOOLCHAIN": "local"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/golang/bin"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "[CACHE]/gocache/bin"
+      ]
+    },
+    "name": "test webpagereplay"
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "wpr.go",
+      "wpr_test.go"
+    ],
+    "cwd": "[START_DIR]/webpagereplay/src",
+    "env": {
+      "GO111MODULE": "on",
+      "GOBIN": "[CACHE]/gocache/bin",
+      "GOCACHE": "[CACHE]/gocache/cache",
+      "GOMODCACHE": "[CACHE]/gocache/modcache",
+      "GOPACKAGESDRIVER": "off",
+      "GOPATH": null,
+      "GOPRIVATE": "*.googlesource.com,*.git.corp.google.com,google.com",
+      "GOPROXY": null,
+      "GOROOT": "[CACHE]/golang",
+      "GOTOOLCHAIN": "local"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/golang/bin"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "[CACHE]/gocache/bin"
+      ]
+    },
+    "name": "test wpr.go"
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "httparchive.go",
+      "httparchive_test.go"
+    ],
+    "cwd": "[START_DIR]/webpagereplay/src",
+    "env": {
+      "GO111MODULE": "on",
+      "GOBIN": "[CACHE]/gocache/bin",
+      "GOCACHE": "[CACHE]/gocache/cache",
+      "GOMODCACHE": "[CACHE]/gocache/modcache",
+      "GOPACKAGESDRIVER": "off",
+      "GOPATH": null,
+      "GOPRIVATE": "*.googlesource.com,*.git.corp.google.com,google.com",
+      "GOPROXY": null,
+      "GOROOT": "[CACHE]/golang",
+      "GOTOOLCHAIN": "local"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/golang/bin"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "[CACHE]/gocache/bin"
+      ]
+    },
+    "name": "test httparchive.go"
+  },
+  {
+    "cmd": [
+      "../scripts/upload_new_binaries.py",
+      "--check-only",
+      "--verbose"
+    ],
+    "cwd": "[START_DIR]/webpagereplay/src",
+    "env": {
+      "GO111MODULE": "on",
+      "GOBIN": "[CACHE]/gocache/bin",
+      "GOCACHE": "[CACHE]/gocache/cache",
+      "GOMODCACHE": "[CACHE]/gocache/modcache",
+      "GOPACKAGESDRIVER": "off",
+      "GOPATH": null,
+      "GOPRIVATE": "*.googlesource.com,*.git.corp.google.com,google.com",
+      "GOPROXY": null,
+      "GOROOT": "[CACHE]/golang",
+      "GOTOOLCHAIN": "local"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/golang/bin"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "[CACHE]/gocache/bin"
+      ]
+    },
+    "name": "test prebuilt binaries up-to-date"
+  },
+  {
+    "name": "$result"
+  }
+]

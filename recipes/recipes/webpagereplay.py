@@ -10,6 +10,7 @@ DEPS = [
     'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
+    'recipe_engine/cv',
     'recipe_engine/file',
     'recipe_engine/golang',
     'recipe_engine/path',
@@ -35,7 +36,15 @@ def RunSteps(api):
       api.step('test wpr.go', ['go', 'test', 'wpr.go', 'wpr_test.go'])
       api.step('test httparchive.go',
                ['go', 'test', 'httparchive.go', 'httparchive_test.go'])
+      if api.cv.active and api.cv.run_mode == api.cv.FULL_RUN:
+        api.step(
+            'test prebuilt binaries up-to-date',
+            ['../scripts/upload_new_binaries.py', '--check-only', '--verbose'])
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test('cq_dry_run')
+  yield api.test(
+      'cq_full_run',
+      api.cv(run_mode=api.cv.FULL_RUN),
+  )
