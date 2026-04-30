@@ -6,6 +6,8 @@
 
 import datetime
 
+from recipe_engine import post_process
+
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
@@ -20,6 +22,7 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/futures',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/runtime',
@@ -185,31 +188,62 @@ def install_rts_executables(api):
   return ret
 
 
-def pick_executable_version(api):
-  """Returns the CIPD version of rts-executable CIPD packages to use."""
-
-  # Find the git_revision of the latest mac-amd64 package.
+def pick_executable_version(api) -> str:
+  """Returns the CIPD version of rts-executable CIPD packages to use.
+  Waits until the latest Windows revision is available on all platforms.
+  """
+  # Find the git_revision of the latest windows-amd64 package.
   # Using the git revision guarantees that packages for all platforms are built
   # from the same source code.
-  # Use Mac because it is slower than other packagers, so it is likely that
-  # all other are already built.
+  # Use Windows because it seems to be slower to update than Mac now,
+  # so its latest version is more likely to exist on all platforms.
   descr = api.cipd.describe(
-      RTS_EXEC_CIPD_PREFIX + 'mac-amd64',
+      RTS_EXEC_CIPD_PREFIX + 'windows-amd64',
       'latest',
       test_data_tags=['git_revision:c1ee0e03d15281730ebedf1f7151474f7a523001'],
   )
 
   # Pick any git_revision.
   # It doesn't matter which one if they produced the same instance hash.
+  ver = None
   for t in descr.tags:
     if t.tag.startswith('git_revision:'):
-      return t.tag
+      ver = t.tag
+      break
+
+  if not ver:
+    raise api.step.StepFailure(
+        'git_revision tag not found in windows-amd64 latest')
+
+  max_attempts = 10
+  sleep_seconds = 60
+
+  for attempt in range(max_attempts):
+    # Check if this specific version exists on all other platforms.
+    all_present = True
+    for plat in PLATFORMS:
+      if plat == 'windows-amd64':
+        continue
+      try:
+        api.cipd.describe(
+            RTS_EXEC_CIPD_PREFIX + plat,
+            ver,
+            test_data_tags=[
+                'git_revision:c1ee0e03d15281730ebedf1f7151474f7a523001'
+            ],
+        )
+      except api.step.StepFailure:
+        all_present = False
+        break
+
+    if all_present:
+      return ver
+
+    if attempt < max_attempts - 1:
+      api.time.sleep(sleep_seconds)
 
   raise api.step.StepFailure(
-      # pragma: no cover
-      'git_revision tag not found in '
-      'https://chrome-infra-packages.appspot.com/p/'
-      'chromium/rts/rts-chromium/linux-amd64/+/latest')
+      'Timed out waiting for version %s to appear on all platforms' % ver)
 
 
 def checkout_chromium(api):
@@ -338,3 +372,46 @@ def GenTests(api):
       api.platform.bits(64))
 
   yield api.test('basic') + linux_amd64
+
+  yield api.test(
+      'missing_git_revision', status='FAILURE') + linux_amd64 + api.step_data(
+          'cipd describe chromium/rts/rts-chromium/windows-amd64',
+          api.json.output({
+              'result': {
+                  'pin': {
+                      'instance_id': 'resolved-instance_id-of-latest----------',
+                      'package': 'chromium/rts/rts-chromium/windows-amd64'
+                  },
+                  'refs': [{
+                      'instance_id':
+                          'resolved-instance_id-of-latest----------',
+                      'modified_by':
+                          'user:44-blablbla@developer.gserviceaccount.com',
+                      'modified_ts':
+                          1446574210,
+                      'ref':
+                          'latest'
+                  }],
+                  'registered_by':
+                      'user:44-blablbla@developer.gserviceaccount.com',
+                  'registered_ts':
+                      1446574210,
+                  'tags': [{
+                      'registered_by':
+                          'user:44-blablbla@developer.gserviceaccount.com',
+                      'registered_ts':
+                          1446574210,
+                      'tag':
+                          'some_other_tag'
+                  }]
+              }
+          }),
+      ) + api.post_process(post_process.DropExpectation)
+
+  timeout_test = api.test('timeout', status='FAILURE') + linux_amd64
+  for i in range(10):
+    suffix = f' ({i+1})' if i > 0 else ''
+    timeout_test += api.step_data(
+        f'cipd describe chromium/rts/rts-chromium/linux-amd64{suffix}',
+        retcode=1)
+  yield timeout_test + api.post_process(post_process.DropExpectation)
