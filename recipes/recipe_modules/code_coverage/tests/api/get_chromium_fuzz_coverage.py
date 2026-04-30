@@ -8,6 +8,7 @@ from recipe_engine import post_process
 from recipe_engine.post_process import DropExpectation
 from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.code_coverage import constants
 
 DEPS = [
     'code_coverage',
@@ -62,6 +63,8 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'process fuzz coverage (overall).generate coverage metadata', [
+              '--exclusion-pattern',
+              constants.EXCLUDED_FILE_REGEX,
               '--binaries',
               '[START_DIR]/build/blink_unittest',
               '[START_DIR]/build/blink_unittest_fake_fuzzer',
@@ -83,6 +86,8 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'process fuzz coverage (fake_fuzzer).generate coverage metadata', [
+              '--exclusion-pattern',
+              constants.EXCLUDED_FILE_REGEX,
               '--binaries',
               '[START_DIR]/build/fake_fuzzer',
           ]),

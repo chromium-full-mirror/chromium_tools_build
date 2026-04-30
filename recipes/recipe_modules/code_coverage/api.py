@@ -1295,6 +1295,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--profdata-path',
           llvm_raw_data,
           '--fuzz',
+          '--exclusion-pattern',
+          constants.EXCLUDED_FILE_REGEX,
           '--binaries',
           *sorted(binaries),
       ]
