@@ -95,8 +95,6 @@ _SPEC = {
     'linux-perf':
         _create_builder_config(
             'linux', 'Release', 64, perf_isolate_upload=True),
-    'mac-dbg-compile':
-        _create_builder_config('mac', 'Debug', 64),
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
     'win-dbg-compile':

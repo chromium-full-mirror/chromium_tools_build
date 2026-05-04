@@ -66,8 +66,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'mac-dbg-compile':
-        _create_compile_spec('mac-dbg-compile'),
     'win-asan-test':
         try_spec.TrySpec.create(
             mirrors=[
