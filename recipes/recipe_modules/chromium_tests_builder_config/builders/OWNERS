@@ -1,5 +1,4 @@
 # Able to approve any builder change
-estaab@chromium.org
 gatong@chromium.org
 
 per-file chromium_android*=bpastene@chromium.org
