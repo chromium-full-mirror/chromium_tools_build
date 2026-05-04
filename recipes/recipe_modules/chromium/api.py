@@ -1078,6 +1078,9 @@ class ChromiumApi(recipe_api.RecipeApi):
           xcode_app_path,
       ]
 
+      if self.m.properties.get('with_metal_toolchain'):
+        install_args.append('-with-metal-toolchain')
+
       self.m.step('install xcode', install_args, infra_step=True)
       self.m.step(
           'select xcode', ['sudo', 'xcode-select', '-switch', xcode_app_path],

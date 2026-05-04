@@ -211,6 +211,25 @@ def GenTests(api):
       ),
   )
 
+  yield api.test(
+      'mac_with_metal_toolchain',
+      api.platform('mac', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          bot_id='build1-a1',
+          build_number=77457,
+      ),
+      api.properties(
+          chromium_configs=['mac_toolchain'],
+          xcode_build_version='12345',
+          with_metal_toolchain=True,
+      ),
+      api.post_process(post_process.StepCommandContains,
+                       'ensure xcode.install xcode', ['-with-metal-toolchain']),
+      api.post_process(post_process.DropExpectation),
+  )
+
   # Coverage for the chromeos gclient config defined in this module
   yield api.test(
       'chromeos',
