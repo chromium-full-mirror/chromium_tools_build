@@ -741,8 +741,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         arg_re = self.m.gn.ARG_RE
         for arg_line in gn_args:
           match = arg_re.match(arg_line)
-          if (match and match.group(1) in gn_args_to_remove or
-              match.group(1) in gn_args_to_update):
+          if match and (match.group(1) in gn_args_to_remove or
+                        match.group(1) in gn_args_to_update):
             gn_args.remove(arg_line)
 
         for update_arg, update_val in gn_args_to_update.items():
