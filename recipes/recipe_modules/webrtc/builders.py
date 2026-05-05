@@ -49,23 +49,6 @@ _CLIENT_WEBRTC_SPEC = {
                 'TARGET_ARCH': 'arm',
                 'TARGET_BITS': 32,
             }),
-    'Android32 (more configs)':
-        WebRTCBuilderSpec.create(
-            phases=(
-                'cxx23',
-                'dummy_audio_file_devices_no_protobuf',
-                'rtti_no_sctp',
-            ),
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Debug',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-            }),
     'Android32 Builder arm':
         WebRTCBuilderSpec.create(
             binary_size_files=('libjingle_peerconnection_so.so',
@@ -120,6 +103,23 @@ _CLIENT_WEBRTC_SPEC = {
     'Android64 (dbg)':
         WebRTCBuilderSpec.create(
             archive_apprtc=True,
+            chromium_config='webrtc_android',
+            android_config='webrtc',
+            gclient_config='webrtc',
+            gclient_apply_config=['android'],
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_PLATFORM': 'android',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 64,
+            }),
+    'Android64 (more configs)':
+        WebRTCBuilderSpec.create(
+            phases=(
+                'cxx23',
+                'dummy_audio_file_devices_no_protobuf',
+                'rtti_no_sctp',
+            ),
             chromium_config='webrtc_android',
             android_config='webrtc',
             gclient_config='webrtc',
@@ -682,7 +682,7 @@ _TRYSERVER_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_PLATFORM': 'android',
                 'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
+                'TARGET_BITS': 64,
             }),
     'android_arm_rel':
         WebRTCBuilderSpec.create(

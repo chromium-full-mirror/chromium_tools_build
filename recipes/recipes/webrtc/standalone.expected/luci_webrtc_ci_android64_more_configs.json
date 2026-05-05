@@ -74,7 +74,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android32 (more configs)/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android64 (more configs)/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -232,14 +232,14 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"ci:Android32 (more configs)\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"ci:Android64 (more configs)\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:Android32 (more configs)\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:Android64 (more configs)\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
@@ -287,7 +287,7 @@
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/infra/specs/client.webrtc.json@@@",
       "@@@STEP_LOG_LINE@client.webrtc.json@{@@@",
-      "@@@STEP_LOG_LINE@client.webrtc.json@  \"Android32 (more configs)\": {@@@",
+      "@@@STEP_LOG_LINE@client.webrtc.json@  \"Android64 (more configs)\": {@@@",
       "@@@STEP_LOG_LINE@client.webrtc.json@    \"gtest_tests\": [@@@",
       "@@@STEP_LOG_LINE@client.webrtc.json@      {@@@",
       "@@@STEP_LOG_LINE@client.webrtc.json@        \"swarming\": {@@@",
@@ -313,7 +313,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android32 (more configs)/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android64 (more configs)/8945511751514863184",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
     },
     "env_suffixes": {
@@ -411,7 +411,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "infra_step": true,
     "luci_context": {
@@ -437,7 +437,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/src/out/d562-Android32_(more/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -471,7 +471,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]/builder/src/out/d562-Android32_(more/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -501,7 +501,7 @@
       "-m",
       "client.webrtc",
       "-b",
-      "Android32 (more configs)",
+      "Android64 (more configs)",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
@@ -539,14 +539,14 @@
       "-m",
       "client.webrtc",
       "-b",
-      "Android32 (more configs)",
+      "Android64 (more configs)",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
       "cxx23",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -583,7 +583,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/gn_logs.txt",
+      "[CACHE]/builder/src/out/4347-Android64_(more/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -632,7 +632,7 @@
       }
     },
     "name": "update invocation instructions (3)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -664,7 +664,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -722,7 +722,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -762,7 +762,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/.ninja_log",
+      "[CACHE]/builder/src/out/4347-Android64_(more/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -889,7 +889,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more",
+      "[CACHE]/builder/src/out/4347-Android64_(more",
       "-d",
       "explain",
       "-n"
@@ -931,7 +931,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/src/out/d562-Android32_(more/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -989,7 +989,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android32 (more configs)/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android64 (more configs)/8945511751514863184",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
     },
     "env_suffixes": {
@@ -1041,7 +1041,7 @@
       }
     },
     "name": "update invocation instructions (4)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1073,7 +1073,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1098,7 +1098,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/LAST_BUILD_SYSTEM.txt",
+      "[CACHE]/builder/src/out/4347-Android64_(more/LAST_BUILD_SYSTEM.txt",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1129,7 +1129,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1155,7 +1155,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/src/out/d562-Android32_(more/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1189,7 +1189,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]/builder/src/out/d562-Android32_(more/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1219,7 +1219,7 @@
       "-m",
       "client.webrtc",
       "-b",
-      "Android32 (more configs)",
+      "Android64 (more configs)",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
@@ -1257,14 +1257,14 @@
       "-m",
       "client.webrtc",
       "-b",
-      "Android32 (more configs)",
+      "Android64 (more configs)",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
       "dummy_audio_file_devices_no_protobuf",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1301,7 +1301,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/gn_logs.txt",
+      "[CACHE]/builder/src/out/4347-Android64_(more/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -1350,7 +1350,7 @@
       }
     },
     "name": "update invocation instructions (5)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1382,7 +1382,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1395,7 +1395,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1453,7 +1453,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1493,7 +1493,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/.ninja_log",
+      "[CACHE]/builder/src/out/4347-Android64_(more/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -1620,7 +1620,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more",
+      "[CACHE]/builder/src/out/4347-Android64_(more",
       "-d",
       "explain",
       "-n"
@@ -1662,7 +1662,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/src/out/d562-Android32_(more/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1720,7 +1720,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android32 (more configs)/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/ci/Android64 (more configs)/8945511751514863184",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
     },
     "env_suffixes": {
@@ -1772,7 +1772,7 @@
       }
     },
     "name": "update invocation instructions (6)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1804,7 +1804,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1817,7 +1817,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -1842,7 +1842,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/LAST_BUILD_SYSTEM.txt",
+      "[CACHE]/builder/src/out/4347-Android64_(more/LAST_BUILD_SYSTEM.txt",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1873,7 +1873,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1899,7 +1899,7 @@
       "/path/to/tmp/json",
       "copy",
       "This file exists while a build compiles and is removed at the end of\ncompilation. If the next build finds that the file exists prior to\ncompilation, it will wipe the output directory.\n\nSee https://crbug.com/959436 for more context.\n",
-      "[CACHE]/builder/src/out/d562-Android32_(more/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1933,7 +1933,7 @@
       "/path/to/tmp/json",
       "copy",
       "siso",
-      "[CACHE]/builder/src/out/d562-Android32_(more/LAST_BUILD_SYSTEM.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/LAST_BUILD_SYSTEM.txt"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1963,7 +1963,7 @@
       "-m",
       "client.webrtc",
       "-b",
-      "Android32 (more configs)",
+      "Android64 (more configs)",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
@@ -2001,14 +2001,14 @@
       "-m",
       "client.webrtc",
       "-b",
-      "Android32 (more configs)",
+      "Android64 (more configs)",
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
       "rtti_no_sctp",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -2045,7 +2045,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/gn_logs.txt",
+      "[CACHE]/builder/src/out/4347-Android64_(more/gn_logs.txt",
       "/path/to/tmp/"
     ],
     "env": {
@@ -2094,7 +2094,7 @@
       }
     },
     "name": "update invocation instructions (7)",
-    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (3) instructions\", \"id\": \"generate_build_files_3_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\"download_remoteexec_cfg\\\":&nbsp;\\\"True\\\"\\n&nbsp;&nbsp;&nbsp;&nbsp;},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\"DEPS\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://webrtc.googlesource.com/src\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[\\n&nbsp;&nbsp;\\\"android\\\"\\n]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (2) instructions\", \"id\": \"generate_build_files_2_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files (3) instructions\", \"id\": \"generate_build_files_3_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -2126,7 +2126,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase cxx23 out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -2139,7 +2139,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_2_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase dummy_audio_file_devices_no_protobuf out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -2152,7 +2152,7 @@
       "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_3_repro_instructions\",@@@",
       "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
       "@@@STEP_LOG_LINE@json.input@            {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android32 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/d562-Android32_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools_webrtc/mb/mb.py gen -m client.webrtc -b \\\"Android64 (more configs)\\\" --config-file tools_webrtc/mb/mb_config.pyl --phase rtti_no_sctp out/4347-Android64_(more```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
       "@@@STEP_LOG_LINE@json.input@              ]@@@",
@@ -2210,7 +2210,7 @@
       "-failure_summary",
       "/path/to/tmp/",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more"
+      "[CACHE]/builder/src/out/4347-Android64_(more"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -2250,7 +2250,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/d562-Android32_(more/.ninja_log",
+      "[CACHE]/builder/src/out/4347-Android64_(more/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -2377,7 +2377,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]/builder/src/out/d562-Android32_(more",
+      "[CACHE]/builder/src/out/4347-Android64_(more",
       "-d",
       "explain",
       "-n"
@@ -2419,7 +2419,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CACHE]/builder/src/out/d562-Android32_(more/CR_COMPILE_GUARD.txt"
+      "[CACHE]/builder/src/out/4347-Android64_(more/CR_COMPILE_GUARD.txt"
     ],
     "infra_step": true,
     "luci_context": {
