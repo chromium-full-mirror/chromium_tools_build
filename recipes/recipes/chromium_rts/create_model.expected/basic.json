@@ -458,7 +458,7 @@
   {
     "cmd": [
       "[CLEANUP]/rts-chromium/linux-amd64/rts-chromium",
-      "fetch-rejections",
+      "fetch-rejections-fast",
       "-out",
       "[CLEANUP]/rts-chromium-model-data/rejections",
       "-from",
@@ -466,7 +466,7 @@
       "-to",
       "2012-05-13"
     ],
-    "name": "fetch rejections"
+    "name": "fetch rejections (fast)"
   },
   {
     "cmd": [

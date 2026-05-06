@@ -268,9 +268,9 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
   futures = api.futures.wait([
     api.futures.spawn_immediate(
         api.step,
-        'fetch rejections',
+        'fetch rejections (fast)',
         [
-          str(exec_path), 'fetch-rejections', \
+          str(exec_path), 'fetch-rejections-fast', \
           '-out', str(rejections_dir),
         ] + _date_range_flags(rejection_date_range),
     ),
