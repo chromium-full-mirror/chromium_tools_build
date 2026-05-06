@@ -128,7 +128,7 @@ def GenTests(api):
   yield generate_builder(builder_id, suffix='_fail_compile', fail_compile=True)
 
   builder_id = chromium_types.BuilderId.create_for_group(
-      'client.webrtc', 'Android32')
+      'client.webrtc', 'Android64')
   yield generate_builder(
       builder_id,
       fail_android_archive=True,

@@ -1059,6 +1059,94 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/src/tools_webrtc/android/build_aar.py",
+      "--verbose",
+      "--build-dir",
+      "[CACHE]/builder/src/andriod-archive",
+      "--use-remoteexec"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "SISO_PROJECT": "test-rbe-project",
+      "SISO_REAPI_INSTANCE": "default_instance"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build android archive"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CACHE]/builder/src/andriod-archive"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Remove android archive dir"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "-a",
+      "public-read",
+      "[CACHE]/builder/src/libwebrtc.aar",
+      "gs://chromium-webrtc/android_archive/webrtc_android_170242.aar"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.googleapis.com/chromium-webrtc/android_archive/webrtc_android_170242.aar@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-webrtc/android_archive/webrtc_android_170242.aar\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
       "python3",
       "RECIPE_MODULE[infra::zip]/resources/zip.py"
     ],
@@ -1104,10 +1192,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload",
+    "name": "gsutil upload (2)",
     "~followup_annotations": [
       "@@@STEP_LINK@gsutil.upload@https://storage.googleapis.com/chromium-webrtc/client.webrtc/Android64/AppRTCMobile_apk_170242.zip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-webrtc/client.webrtc/Android64/AppRTCMobile_apk_170242.zip\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-webrtc/android_archive/webrtc_android_170242.aar\", \"gsutil upload (2)\": \"gs://chromium-webrtc/client.webrtc/Android64/AppRTCMobile_apk_170242.zip\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
     ]
   },
   {

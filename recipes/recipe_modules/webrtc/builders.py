@@ -22,33 +22,6 @@ class WebRTCBuilderSpec(builder_spec.BuilderSpec):
 
 
 _CLIENT_WEBRTC_SPEC = {
-    'Android32':
-        WebRTCBuilderSpec.create(
-            archive_apprtc=True,
-            build_android_archive=True,
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-            }),
-    'Android32 (dbg)':
-        WebRTCBuilderSpec.create(
-            archive_apprtc=True,
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Debug',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-            }),
     'Android32 Builder arm':
         WebRTCBuilderSpec.create(
             binary_size_files=('libjingle_peerconnection_so.so',
@@ -90,6 +63,7 @@ _CLIENT_WEBRTC_SPEC = {
     'Android64':
         WebRTCBuilderSpec.create(
             archive_apprtc=True,
+            build_android_archive=True,
             chromium_config='webrtc_android',
             android_config='webrtc',
             gclient_config='webrtc',
@@ -565,35 +539,9 @@ _TRYSERVER_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_PLATFORM': 'android',
                 'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-            }),
-    'android_compile_arm_rel':
-        WebRTCBuilderSpec.create(
-            binary_size_files=('libjingle_peerconnection_so.so',
-                               'apks/AppRTCMobile.apk'),
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-            }),
-    'android_compile_arm64_dbg':
-        WebRTCBuilderSpec.create(
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Debug',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
                 'TARGET_BITS': 64,
             }),
-    'android_compile_arm64_rel':
+    'android_compile_arm_rel':
         WebRTCBuilderSpec.create(
             binary_size_files=('libjingle_peerconnection_so.so',
                                'apks/AppRTCMobile.apk'),
@@ -665,7 +613,7 @@ _TRYSERVER_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_PLATFORM': 'android',
                 'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
+                'TARGET_BITS': 64,
             }),
     'android_arm_more_configs':
         WebRTCBuilderSpec.create(
@@ -687,30 +635,6 @@ _TRYSERVER_WEBRTC_SPEC = {
     'android_arm_rel':
         WebRTCBuilderSpec.create(
             build_android_archive=True,
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 32,
-            }),
-    'android_arm64_dbg':
-        WebRTCBuilderSpec.create(
-            chromium_config='webrtc_android',
-            android_config='webrtc',
-            gclient_config='webrtc',
-            gclient_apply_config=['android'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Debug',
-                'TARGET_PLATFORM': 'android',
-                'TARGET_ARCH': 'arm',
-                'TARGET_BITS': 64,
-            }),
-    'android_arm64_rel':
-        WebRTCBuilderSpec.create(
             chromium_config='webrtc_android',
             android_config='webrtc',
             gclient_config='webrtc',
