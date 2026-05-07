@@ -90,30 +90,6 @@ _SPEC = {
         _create_compile_spec('win-msvc-x86-dbg-compile'),
     'win-x86-dbg-compile':
         _create_compile_spec('win-x86-dbg-compile'),
-    'win10-intel-uhd630-perf':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='win-perf',
-                    tester='win10-x64-intel-perf',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-    'win10-nvidia-gtx1660-perf':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='win-perf',
-                    tester='win10-x64-nvidia-perf',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'win-trace':
         _create_compile_spec('win-trace'),
     'winuwp-compile':
