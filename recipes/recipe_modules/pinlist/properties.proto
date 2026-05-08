@@ -1,0 +1,12 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.pinlist;
+
+message InputProperties {
+  // Determines whether to run the cipd upload flow for pinlist.
+  bool upload_pinlist = 1;
+}
