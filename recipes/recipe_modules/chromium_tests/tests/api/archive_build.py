@@ -129,6 +129,7 @@ def GenTests(api):
               },
           })),
       api.post_process(DoesNotRun, 'collect runtime deps for compile targets'),
-      api.post_process(DoesNotRun, 'zipping'),
+      api.post_process(StepSuccess, 'zipping'),
+      api.post_process(DoesNotRun, 'gsutil upload'),
       api.post_process(DropExpectation),
   )

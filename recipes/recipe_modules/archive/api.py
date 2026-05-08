@@ -470,14 +470,16 @@ class ArchiveApi(recipe_api.RecipeApi):
     gs_args = []
     if gs_acl:
       gs_args.extend(['-a', gs_acl])
-    self.m.gsutil.upload(
-        zip_file,
-        gs_bucket,
-        "/".join([subdir, zip_file_name]),
-        args=gs_args,
-        metadata=gs_metadata,
-        use_retry_wrapper=False,
-    )
+    # Only upload to GCS from CI bots, for ClusterFuzz to consume.
+    if not self.m.tryserver.is_tryserver:
+      self.m.gsutil.upload(
+          zip_file,
+          gs_bucket,
+          "/".join([subdir, zip_file_name]),
+          args=gs_args,
+          metadata=gs_metadata,
+          use_retry_wrapper=False,
+      )
     self.m.file.remove(zip_file_name, zip_file)
 
   def download_and_unzip_build(self,

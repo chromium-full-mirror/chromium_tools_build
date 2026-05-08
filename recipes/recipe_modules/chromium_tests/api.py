@@ -1045,12 +1045,18 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     `compile_targets`. Otherwise uses a set of heuristics to zip most of the
     contents of the build directory.
     """
-    if self.m.tryserver.is_tryserver:
-      return
+    if self.m.tryserver.is_tryserver and builder_id not in builder_config.builder_db:
+      # `builder_config.builder_db` contains a spec for the CI builder that the
+      # trybot mirrors, if any, but no spec for the trybot itself. Get the CI
+      # builder's ID from the list in `builder_config.builder_ids` to perform the
+      # spec lookup instead.
+      builder_id = builder_config.builder_ids[0]
 
     builder_spec = builder_config.builder_db[builder_id]
     if not builder_spec.cf_archive_build:
       return
+
+    step_result = self.m.step.empty('archive clusterfuzz')
 
     source_dir = update_result.source_root.path
     common_kwargs = {
@@ -1069,6 +1075,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           **common_kwargs,
       )
     else:
+      step_result.presentation.logs['compile_targets'] = (
+          compile_targets if compile_targets else ['no compile targets'])
       archive_root = source_dir
       # `clusterfuzz_archive_targets()` resolves GN runtime dependencies
       # before calling `clusterfuzz_archive()`, which requires the chromium
@@ -2259,6 +2267,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     assert compile_result
     if compile_result.status != common_pb.SUCCESS:
       return compile_result
+
+    # Does nothing if the builder is not configured to upload builds for ClusterFuzz.
+    self.archive_clusterfuzz(builder_id, update_result, builder_config,
+                             build_dir, targets_config.compile_targets)
 
     self.archive_build(
         build_dir, update_result, enable_snoopy=self._enable_snoopy)
