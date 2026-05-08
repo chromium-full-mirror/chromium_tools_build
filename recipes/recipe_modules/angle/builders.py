@@ -107,9 +107,6 @@ _SPEC = {
         _create_builder_config('win', 'Release', 32, is_clang=False),
     'win-msvc-x86-dbg-compile':
         _create_builder_config('win', 'Debug', 32, is_clang=False),
-    'win-trace':
-        _create_builder_config(
-            'win', 'Release', 64, gclient_config='angle_nointernal'),
     'win-x86-dbg-compile':
         _create_builder_config('win', 'Debug', 32),
     'winuwp-compile':

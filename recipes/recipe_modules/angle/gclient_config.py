@@ -34,8 +34,3 @@ def angle_android(c):
 @CONFIG_CTX(includes=['angle'])
 def angle_mesa(c):
   c.solutions[0].custom_vars['checkout_angle_mesa'] = True
-
-
-@CONFIG_CTX(includes=['angle'])
-def angle_nointernal(c):
-  c.solutions[0].custom_vars['checkout_angle_internal'] = False

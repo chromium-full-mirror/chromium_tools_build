@@ -90,8 +90,6 @@ _SPEC = {
         _create_compile_spec('win-msvc-x86-dbg-compile'),
     'win-x86-dbg-compile':
         _create_compile_spec('win-x86-dbg-compile'),
-    'win-trace':
-        _create_compile_spec('win-trace'),
     'winuwp-compile':
         _create_compile_spec('winuwp-compile'),
     'winuwp-dbg-compile':
