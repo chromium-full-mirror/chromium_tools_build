@@ -85,6 +85,19 @@ class ChromiumTestApi(recipe_test_api.RecipeTestApi):
         tags=tags,
         **kwargs)
 
+  def properties(self,
+                 xcode_build_version=None,
+                 fail_build_on_clang_warnings=None,
+                 mac_toolchain_version=None):
+    properties = {}
+    if xcode_build_version is not None:
+      properties['xcode_build_version'] = xcode_build_version
+    if fail_build_on_clang_warnings is not None:
+      properties['fail_build_on_clang_warnings'] = fail_build_on_clang_warnings
+    if mac_toolchain_version is not None:
+      properties['mac_toolchain_version'] = mac_toolchain_version
+    return self.m.properties(**{'$build/chromium': properties})
+
   def generic_build(self,
                     project='chromium',
                     bucket='ci',

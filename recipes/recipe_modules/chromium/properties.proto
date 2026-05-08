@@ -16,4 +16,7 @@ message InputProperties {
   reserved "goma_cache_silo";
 
   bool fail_build_on_clang_warnings = 3;
+
+  // When set overrides the default version hardcoded in the recipe module
+  string mac_toolchain_version = 4;
 }

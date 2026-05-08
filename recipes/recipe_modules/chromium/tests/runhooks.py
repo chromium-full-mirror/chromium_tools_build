@@ -12,6 +12,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/runtime',
+    'recipe_engine/step',
 ]
 
 
@@ -49,6 +50,10 @@ def GenTests(api):
       api.platform.name('mac'),
       api.properties(target_platform='mac'),
       api.post_process(post_process.StepSuccess, 'ensure_installed'),
+      api.post_process(post_process.StepCommandContains, 'ensure_installed', [
+          'infra/tools/mac_toolchain/${platform} '
+          'git_revision:b0c0a706097c27444dbe3f84e5553f1aaa77c1a6'
+      ]),
       api.post_process(post_process.StepEnvContains, 'gclient runhooks',
                        {'FORCE_MAC_TOOLCHAIN': '1'}),
       api.post_process(post_process.StepEnvContains, 'gclient runhooks',
@@ -56,5 +61,18 @@ def GenTests(api):
       api.post_process(
           post_process.StepEnvContains, 'gclient runhooks',
           {'MAC_TOOLCHAIN_INSTALLER': '[START_DIR]/mac_toolchain'}),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'with_mac_toolchain_version',
+      api.platform.name('mac'),
+      api.properties(target_platform='mac'),
+      api.chromium.properties(mac_toolchain_version='custom_version'),
+      api.post_process(post_process.StepSuccess, 'ensure_installed'),
+      api.post_process(
+          post_process.StepCommandContains, 'ensure_installed',
+          ['infra/tools/mac_toolchain/${platform} git_revision:custom_version'
+          ]),
       api.post_process(post_process.DropExpectation),
   )

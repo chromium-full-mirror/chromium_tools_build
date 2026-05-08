@@ -166,6 +166,11 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
+      api.post_process(post_process.StepSuccess, 'ensure_installed'),
+      api.post_process(post_process.StepCommandContains, 'ensure_installed', [
+          'infra/tools/mac_toolchain/${platform} '
+          'git_revision:b0c0a706097c27444dbe3f84e5553f1aaa77c1a6'
+      ]),
   )
 
   yield api.test(
@@ -227,6 +232,27 @@ def GenTests(api):
       ),
       api.post_process(post_process.StepCommandContains,
                        'ensure xcode.install xcode', ['-with-metal-toolchain']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'with_mac_toolchain_version',
+      api.platform('mac', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          bot_id='build1-a1',
+          build_number=77457,
+      ),
+      api.properties(chromium_configs=['mac_toolchain'],),
+      api.chromium.properties(
+          mac_toolchain_version='custom_version',
+          xcode_build_version='12345',
+      ),
+      api.post_process(
+          post_process.StepCommandContains, 'ensure xcode.ensure_installed',
+          ['infra/tools/mac_toolchain/${platform} git_revision:custom_version'
+          ]),
       api.post_process(post_process.DropExpectation),
   )
 

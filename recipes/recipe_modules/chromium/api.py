@@ -59,6 +59,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     # no longer sets this property
     self._xcode_build_version = input_properties.xcode_build_version
     self._fail_build_on_clang_warnings = input_properties.fail_build_on_clang_warnings
+    self._mac_toolchain_version = input_properties.mac_toolchain_version
 
 
   @property
@@ -68,6 +69,10 @@ class ChromiumApi(recipe_api.RecipeApi):
   @property
   def fail_build_on_clang_warnings(self):
     return self._fail_build_on_clang_warnings
+
+  @property
+  def mac_toolchain_version(self):
+    return self._mac_toolchain_version
 
   @property
   def verify_config(self):
@@ -1033,6 +1038,9 @@ class ChromiumApi(recipe_api.RecipeApi):
     cipd_root = self.m.path.start_dir
     cipd_pkg = self.c.mac_toolchain.installer_cipd_package
     pkg_version = self.c.mac_toolchain.installer_version
+    # overwrite pkg_version with per-builder value set as a recipe property
+    if self.mac_toolchain_version:
+      pkg_version = f'git_revision:{self.mac_toolchain_version}'
     cmd = self.c.mac_toolchain.installer_cmd
     self.m.cipd.ensure(
         cipd_root,

@@ -282,18 +282,12 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  fail_on_warnings_properties = {
-      '$build/chromium': {
-          'fail_build_on_clang_warnings': True
-      },
-  }
-
   build_dir = api.path.cache_dir / 'builder/src' / 'out/Release'
 
   yield api.test(
       'warning_failure',
       api.chromium.generic_build(builder_group='test_group'),
-      api.properties(**fail_on_warnings_properties),
+      api.chromium.properties(fail_build_on_clang_warnings=True),
       api.path.exists(build_dir / 'siso_output'),
       api.step_data(
           'check for compile warnings.read siso_output',
@@ -311,7 +305,7 @@ def GenTests(api):
   yield api.test(
       'warning_failure_long_msg',
       api.chromium.generic_build(builder_group='test_group'),
-      api.properties(**fail_on_warnings_properties),
+      api.chromium.properties(fail_build_on_clang_warnings=True),
       api.path.exists(build_dir / 'siso_output'),
       api.step_data(
           'check for compile warnings.read siso_output',
@@ -330,7 +324,7 @@ def GenTests(api):
   yield api.test(
       'no_warnings_no_failure',
       api.chromium.generic_build(builder_group='test_group'),
-      api.properties(**fail_on_warnings_properties),
+      api.chromium.properties(fail_build_on_clang_warnings=True),
       api.post_process(post_process.DropExpectation),
   )
 
