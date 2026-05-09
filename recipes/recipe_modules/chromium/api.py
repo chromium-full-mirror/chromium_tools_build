@@ -808,6 +808,9 @@ class ChromiumApi(recipe_api.RecipeApi):
               builder_id: chromium.BuilderId | None = None,
               ninja_path: str = None,
               extra_ninja_args: list[str] | None = None,
+              siso_args: list[str] | None = None,
+              skip_log_upload: bool = False,
+              resource_usage_output_file: Path | None = None,
               **kwargs):
     """Return a compile.py invocation.
 
@@ -820,12 +823,14 @@ class ChromiumApi(recipe_api.RecipeApi):
         invokes ninja's behavior to build all targets that do not appear as an
         input to another target.
       name: Name of compile step.
-      resource_usage_output_file (BasePath): Path to the file which will hold stats related
-                                            to resource usage while compiling
       include_utr_instruction: Whether or not to include instructions using utr
       builder_id: BuilderId for the compile being run
       ninja_path: Custom path to ninja binary.
       extra_ninja_args: Additional Ninja args.
+      siso_args: Additional arguments to pass to Siso.
+      skip_log_upload: If True, skip uploading ninja logs.
+      resource_usage_output_file: Path to the file which will hold stats related
+                                  to resource usage while compiling
 
     Returns:
       A RawResult object with the compile step's status and failure message
@@ -890,6 +895,9 @@ class ChromiumApi(recipe_api.RecipeApi):
           ninja_invocation_id=ninja_invocation_id,
           include_utr_instruction=include_utr_instruction,
           builder_id=builder_id,
+          siso_args=siso_args,
+          skip_log_upload=skip_log_upload,
+          resource_usage_output_file=resource_usage_output_file,
           **kwargs)
 
     if ninja_result.retcode:
@@ -917,6 +925,7 @@ class ChromiumApi(recipe_api.RecipeApi):
               test_type=None,
               python_mode=False,
               test_launcher_summary_output=None,
+              resultdb=None,
               **kwargs):
     """Return a runtest.py invocation.
 
@@ -924,6 +933,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       checkout_dir: The path to the directory where the checkout was performed.
       build_dir: The path to the build dir.
       test: Name of the test suite to run.
+      resultdb: A resultdb object to wrap the test command.
     """
     args = args or []
     assert isinstance(args, collections.abc.Sequence), repr(args)
@@ -974,7 +984,6 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     runtest_path = self.repo_resource('recipes', 'runtest.py')
     with self.m.context(cwd=checkout_dir):
-      resultdb = kwargs.pop('resultdb', None)
       cmd = ['python3', runtest_path] + full_args
       if resultdb:
         cmd = resultdb.wrap(self.m, cmd, step_name=name)
