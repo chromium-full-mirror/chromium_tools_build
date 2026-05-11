@@ -16,6 +16,8 @@ linked by commit hash.
 from PB.recipes.build.chromium_codesearch_initiator import InputProperties
 from recipe_engine import post_process
 
+import datetime
+
 PROPERTIES = InputProperties
 
 DEPS = [
@@ -33,8 +35,60 @@ DEPS = [
     'recipe_engine/url',
 ]
 
+TEST_GOB_JSON = {
+    "log": [
+        {
+            "commit": "398e74869153a12e825bc789c2134762cbe81c36",
+            "parents": ["a58afde0c1eb50eeff2332a688bc226805e70c64"],
+            "committer": {
+                "time": "Mon May 11 04:00:51 2026"
+            },
+        },
+        {
+            "commit": "a58afde0c1eb50eeff2332a688bc226805e70c64",
+            "parents": ["d9b76b952adc6212685d7a019fc8be1f95c93d0b"],
+            "committer": {
+                "time": "Mon May 11 03:59:53 2026"
+            },
+        },
+    ],
+}
 
-def RunSteps(api, properties):
+
+def RevisionFromGob(api, properties):
+  res = api.url.get_json(
+      f"{properties.source_repo}/+log/refs/heads/main?n=2&format=JSON",
+      log=True,
+      default_test_data=TEST_GOB_JSON,
+  ).output
+
+  props = {}
+  if properties.no_synthetic_commit:
+    props["root_solution_revision"] = res["log"][0]["commit"].strip()
+    props["root_solution_revision_timestamp"] = int(
+        datetime.datetime.strptime(
+            res["log"][0]["committer"]["time"].strip(),
+            "%a %b %d %H:%M:%S %Y").replace(
+                tzinfo=datetime.timezone.utc).timestamp())
+
+  else:
+    props["codesearch_mirror_revision"] = res["log"][0]["commit"].strip()
+    props["codesearch_mirror_revision_timestamp"] = int(
+        datetime.datetime.strptime(
+            res["log"][0]["committer"]["time"].strip(),
+            "%a %b %d %H:%M:%S %Y").replace(
+                tzinfo=datetime.timezone.utc).timestamp())
+    props["root_solution_revision"] = res["log"][1]["commit"].strip()
+    props["root_solution_revision_timestamp"] = int(
+        datetime.datetime.strptime(
+            res["log"][1]["committer"]["time"].strip(),
+            "%a %b %d %H:%M:%S %Y").replace(
+                tzinfo=datetime.timezone.utc).timestamp())
+
+  return props
+
+
+def RevisionFromGit(api, properties):
   env = {
       # Turn off the low speed limit, since checkout will be long.
       'GIT_HTTP_LOW_SPEED_LIMIT': '0',
@@ -108,43 +162,52 @@ def RunSteps(api, properties):
           f'{props["codesearch_mirror_revision"]}:refs/kythe/{props["root_solution_revision"]}'
       )
 
-    if api.buildbucket.build.builder.builder == 'codesearch-gen-chrome-internal-initiator':
-      # Trigger the codesearch builders in the same project.
-      # For internal project, do no optimize the workflow
-      api.scheduler.emit_trigger(
-          api.scheduler.BuildbucketTrigger(properties=props),
+      return props
+
+
+def RunSteps(api, properties):
+  checkout_dir = api.path.cache_dir / 'builder'
+  props = (
+      RevisionFromGob(api, properties) if properties.fetch_revision_from_gob
+      else RevisionFromGit(api, properties))
+
+  if api.buildbucket.build.builder.builder == 'codesearch-gen-chrome-internal-initiator':
+    # Trigger the codesearch builders in the same project.
+    # For internal project, do no optimize the workflow
+    api.scheduler.emit_trigger(
+        api.scheduler.BuildbucketTrigger(properties=props),
+        project=api.buildbucket.build.builder.project,
+        jobs=properties.builders)
+    return
+
+  # Fan out the children codesearch builders and wait for completions.
+  build_requests = [
+      api.buildbucket.schedule_request(
+          builder=b,
+          properties=props,
           project=api.buildbucket.build.builder.project,
-          jobs=properties.builders)
-      return
+      ) for b in properties.builders
+  ]
+  builders = api.buildbucket.schedule(build_requests)
+  api.buildbucket.collect_builds([b.id for b in builders],
+                                 step_name='wait for children builders',
+                                 timeout=14400)
 
-    # Fan out the children codesearch builders and wait for completions.
-    build_requests = [
-        api.buildbucket.schedule_request(
-            builder=b,
-            properties=props,
-            project=api.buildbucket.build.builder.project,
-        ) for b in properties.builders
+  gcloud_path = checkout_dir / 'gcloudsdk'
+  ensure_file = api.cipd.EnsureFile()
+  ensure_file.add_package('infra/3pp/tools/gcloud/${platform}',
+                          'version:2@463.0.0.chromium.4')
+  api.cipd.ensure(gcloud_path, ensure_file)
+  with api.context(env_prefixes={'PATH': [gcloud_path / 'bin']}):
+    cmd = [
+        'gcloud',
+        'pubsub',
+        'topics',
+        'publish',
+        'projects/chromium-build-stats/topics/codesearch_luci_notifications',
+        f'--message="{api.buildbucket.build.id}"',
     ]
-    builders = api.buildbucket.schedule(build_requests)
-    api.buildbucket.collect_builds([b.id for b in builders],
-                                   step_name='wait for children builders',
-                                   timeout=14400)
-
-    gcloud_path = checkout_dir / 'gcloudsdk'
-    ensure_file = api.cipd.EnsureFile()
-    ensure_file.add_package('infra/3pp/tools/gcloud/${platform}',
-                            'version:2@463.0.0.chromium.4')
-    api.cipd.ensure(gcloud_path, ensure_file)
-    with api.context(env_prefixes={'PATH': [gcloud_path / 'bin']}):
-      cmd = [
-          'gcloud',
-          'pubsub',
-          'topics',
-          'publish',
-          'projects/chromium-build-stats/topics/codesearch_luci_notifications',
-          f'--message="{api.buildbucket.build.id}"',
-      ]
-      api.step('notify completion', cmd)
+    api.step('notify completion', cmd)
 
 
 def GenTests(api):
@@ -201,4 +264,27 @@ def GenTests(api):
                     api.raw_io.stream_output_text('50', stream='stdout')),
       api.post_process(post_process.DoesNotRun, 'wait for children builders'),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'basic-revision-from-gob',
+      api.buildbucket.generic_build(project='infra'),
+      api.properties(
+          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+          source_repo=(
+              'https://chromium.googlesource.com/codesearch/chromium/src'),
+          fetch_revision_from_gob=True,
+      ),
+  )
+
+  yield api.test(
+      'no-synthetic-commit-revision-from-gob',
+      api.buildbucket.generic_build(project='infra'),
+      api.properties(
+          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+          source_repo=(
+              'https://chromium.googlesource.com/codesearch/chromium/src'),
+          fetch_revision_from_gob=True,
+          no_synthetic_commit=True,
+      ),
   )

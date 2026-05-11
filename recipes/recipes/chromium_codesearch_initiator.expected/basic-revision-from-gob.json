@@ -3,14 +3,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
+      "https://chromium.googlesource.com/codesearch/chromium/src/+log/refs/heads/main?n=2&format=JSON",
+      "--status-json",
       "/path/to/tmp/json",
-      "glob",
-      "[CACHE]/builder",
-      "src"
+      "--outfile",
+      "/path/to/tmp/json"
     ],
-    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "infra:cron"
@@ -23,225 +23,32 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Check for existing checkout",
+    "name": "GET https://chromium.googlesource.com/codesearch/chromium/src/+log/refs/heads/main?n=2&format=JSON",
     "~followup_annotations": [
-      "@@@STEP_LOG_END@glob@@@"
+      "@@@STEP_LOG_LINE@json.output[output]@{@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@    {@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      \"commit\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      \"committer\": {@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@        \"time\": \"Mon May 11 04:00:51 2026\"@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      },@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      \"parents\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@        \"a58afde0c1eb50eeff2332a688bc226805e70c64\"@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      ]@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@    },@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@    {@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      \"commit\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      \"committer\": {@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@        \"time\": \"Mon May 11 03:59:53 2026\"@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      },@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      \"parents\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@        \"d9b76b952adc6212685d7a019fc8be1f95c93d0b\"@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@      ]@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@    }@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output[output]@}@@@",
+      "@@@STEP_LOG_END@json.output[output]@@@"
     ]
-  },
-  {
-    "cmd": [
-      "git",
-      "clone",
-      "--progress",
-      "https://chromium.googlesource.com/codesearch/chromium/src",
-      "src"
-    ],
-    "cwd": "[CACHE]/builder",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git clone"
-  },
-  {
-    "cmd": [
-      "git",
-      "reset",
-      "--hard",
-      "HEAD"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git reset"
-  },
-  {
-    "cmd": [
-      "git",
-      "fetch"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git fetch"
-  },
-  {
-    "cmd": [
-      "git",
-      "rev-parse",
-      "FETCH_HEAD"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "fetch mirror hash"
-  },
-  {
-    "cmd": [
-      "git",
-      "log",
-      "-1",
-      "--format=%ct",
-      "FETCH_HEAD"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "fetch mirror timestamp"
-  },
-  {
-    "cmd": [
-      "git",
-      "rev-parse",
-      "FETCH_HEAD^"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "fetch source hash"
-  },
-  {
-    "cmd": [
-      "git",
-      "log",
-      "-1",
-      "--format=%ct",
-      "FETCH_HEAD^"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "fetch source timestamp"
-  },
-  {
-    "cmd": [
-      "git",
-      "push",
-      "https://chromium.googlesource.com/codesearch/chromium/src",
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:refs/kythe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "GIT_HTTP_LOW_SPEED_LIMIT": "0",
-      "GIT_HTTP_LOW_SPEED_TIME": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "infra:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git push"
   },
   {
     "cmd": [
@@ -264,7 +71,7 @@
       }
     },
     "name": "buildbucket.schedule",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-android\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-chromiumos\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-fuchsia\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-lacros\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-linux\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-mac\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-win\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"codesearch_mirror_revision_timestamp\": 100.0, \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"root_solution_revision_timestamp\": 50.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-android\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-chromiumos\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-fuchsia\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-lacros\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-linux\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-mac\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}, {\"scheduleBuild\": {\"builder\": {\"bucket\": \"cron\", \"builder\": \"codesearch-gen-chromium-win\", \"project\": \"infra\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"priority\": 30, \"properties\": {\"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\", \"codesearch_mirror_revision_timestamp\": 1778472051.0, \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\", \"root_solution_revision_timestamp\": 1778471993.0}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
@@ -357,10 +164,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
@@ -389,10 +196,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
@@ -421,10 +228,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
@@ -453,10 +260,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
@@ -485,10 +292,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
@@ -517,10 +324,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
@@ -549,10 +356,10 @@
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 100.0,@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
-      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 50.0@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision\": \"398e74869153a12e825bc789c2134762cbe81c36\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"codesearch_mirror_revision_timestamp\": 1778472051.0,@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision\": \"a58afde0c1eb50eeff2332a688bc226805e70c64\",@@@",
+      "@@@STEP_LOG_LINE@request@          \"root_solution_revision_timestamp\": 1778471993.0@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",

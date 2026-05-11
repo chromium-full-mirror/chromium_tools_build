@@ -17,4 +17,7 @@ message InputProperties {
   // Defines if source_repo uses synthetic commits (e.g. it's a codesearch
   // mirror repo like codesearch/chromium/src).
   bool no_synthetic_commit = 3;
+
+  // Defines if we use git or GoB API to get the revision information.
+  bool fetch_revision_from_gob = 4;
 }
