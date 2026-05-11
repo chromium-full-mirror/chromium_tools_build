@@ -21,6 +21,7 @@ def angle(c):
   # then to 'angle' in the recipes here:
   soln.custom_vars = {'angle_root': 'angle'}
   soln.custom_vars['checkout_angle_internal'] = True
+  soln.custom_vars['checkout_angle_partition_alloc'] = True
 
   c.got_revision_mapping['angle'] = 'got_revision'
   c.got_revision_reverse_mapping['got_angle_revision'] = 'angle'
