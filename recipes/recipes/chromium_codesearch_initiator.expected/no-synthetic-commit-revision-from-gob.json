@@ -9,7 +9,9 @@
       "--status-json",
       "/path/to/tmp/json",
       "--outfile",
-      "/path/to/tmp/json"
+      "/path/to/tmp/json",
+      "--strip-prefix",
+      "\")]}'\""
     ],
     "luci_context": {
       "realm": {

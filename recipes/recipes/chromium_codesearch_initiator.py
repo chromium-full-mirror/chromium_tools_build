@@ -59,6 +59,7 @@ def RevisionFromGob(api, properties):
   res = api.url.get_json(
       f"{properties.source_repo}/+log/refs/heads/main?n=2&format=JSON",
       log=True,
+      strip_prefix=")]}'",
       default_test_data=TEST_GOB_JSON,
   ).output
 
