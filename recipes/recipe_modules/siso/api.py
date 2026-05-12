@@ -21,6 +21,7 @@ _TIME_CMD = '/usr/bin/time'
 
 # Name of git footer for setting value of -k
 _MAX_COMPILE_FAILURES = 'Max-Compile-Failures'
+_CHECK_DEPS = 'Check-Deps'
 
 # Resource usage format for time command.
 # See also the documents of time and getrusage:
@@ -178,21 +179,26 @@ class SisoApi(recipe_api.RecipeApi):
           f"builder:{builder_id.project}/{builder_id.bucket}/{builder_id.builder}",
       ])
 
+    experiments = self._props.experiments or []
+    max_compile_failures = None
+    if self._props.HasField('keep_going'):
+      max_compile_failures = self._props.keep_going
     if (self.m.tryserver.is_gerrit_issue and
-        (footers := self.m.tryserver.get_footers()) and
-        _MAX_COMPILE_FAILURES in footers):
-      try:
-        footer = footers[_MAX_COMPILE_FAILURES]
-        value = int(footer[0])
-      except (IndexError, ValueError, TypeError) as e:
-        res = self.m.step.empty(f"Invalid {_MAX_COMPILE_FAILURES} footer")
-        res.presentation.status = self.m.step.FAILURE
-        res.presentation.step_text = f"Invalid value: {footer}\n{e}"
-        raise self.m.step.StepFailure(f"Invalid {_MAX_COMPILE_FAILURES} footer",
-                                      res)
-      cmd.extend(['-k', value])
-    elif self._props.HasField('keep_going'):
-      cmd.extend(['-k', self._props.keep_going])
+        (footers := self.m.tryserver.get_footers())):
+      if _MAX_COMPILE_FAILURES in footers:
+        try:
+          footer = footers[_MAX_COMPILE_FAILURES]
+          max_compile_failures = int(footer[0])
+        except (IndexError, ValueError, TypeError) as e:
+          res = self.m.step.empty(f"Invalid {_MAX_COMPILE_FAILURES} footer")
+          res.presentation.status = self.m.step.FAILURE
+          res.presentation.step_text = f"Invalid value: {footer}\n{e}"
+          raise self.m.step.StepFailure(
+              f"Invalid {_MAX_COMPILE_FAILURES} footer", res)
+      if footers.get(_CHECK_DEPS):
+        experiments.append('check-deps')
+    if max_compile_failures is not None:
+      cmd.extend(['-k', max_compile_failures])
 
     if self._props.disable_batch_mode:
       cmd.extend(['-batch=false'])
@@ -268,8 +274,8 @@ class SisoApi(recipe_api.RecipeApi):
       cmd.extend(siso_args)
     cmd.extend(ninja_command[1:])
     env = ninja_env or {}
-    if len(self._props.experiments) > 0:
-      env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
+    if len(experiments) > 0:
+      env['SISO_EXPERIMENTS'] = ','.join(experiments)
     if ninja_invocation_id:
       env['SISO_BUILD_ID'] = ninja_invocation_id
     if self._props.limits:

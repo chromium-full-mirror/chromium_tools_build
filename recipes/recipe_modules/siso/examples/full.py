@@ -234,6 +234,19 @@ def GenTests(api):
   )
 
   yield api.test(
+      'check_deps_git_footer',
+      api.buildbucket.try_build(project='chromium'),
+      api.properties(build_command=['ninja', '-C', 'out/Release']),
+      api.siso.properties(),
+      api.tryserver.get_footers({
+          'Check-Deps': ['true'],
+      }),
+      api.post_process(post_process.StepEnvContains, 'compile',
+                       {'SISO_EXPERIMENTS': 'check-deps'}),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'limits',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(limits='fastlocal=0'),
