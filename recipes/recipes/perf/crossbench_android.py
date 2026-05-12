@@ -7,6 +7,7 @@ Recipe for running Crossbench's End2End tests on Android.
 
 from contextlib import contextmanager
 from PB.recipes.build.perf.crossbench_android import InputProperties
+from PB.recipes.build.perf.crossbench_android import TestRunConfig
 
 DEPS = [
     'adb',
@@ -168,14 +169,6 @@ class AndroidEmulator:
             stdout=self.api.raw_io.output_text(add_output_log=True))
 
 
-class _TestRunConfig:
-
-  def __init__(self, sdk_version, avd_suffix, *extra_flags):
-    self.sdk_version = sdk_version
-    self.avd_suffix = avd_suffix
-    self.extra_flags = extra_flags
-
-
 def RunSteps(api, properties):
   api.gclient.set_config('crossbench')
   api.bot_update.ensure_checkout()
@@ -183,11 +176,10 @@ def RunSteps(api, properties):
 
   test_driver = getattr(properties, 'test_driver', None) or _DEFAULT_RUNNER
 
-  configs = [
-      _TestRunConfig(properties.android_sdk, '', '-m',
-                     'not legacy_android_sdk'),
-      _TestRunConfig(32, '_foldable', '-m', 'legacy_android_sdk'),
-  ]
+  if hasattr(properties, 'test_run_config') and properties.test_run_config:
+    configs = properties.test_run_config
+  else:
+    configs = [TestRunConfig(sdk_version=properties.android_sdk, avd_suffix='')]
 
   for config in configs:
     android_emulator = AndroidEmulator(
@@ -206,7 +198,7 @@ def RunSteps(api, properties):
                   f'--adb-path={android_emulator.adb_path}',
                   f'--cas-archive={cas_archive}',
                   f'--log-file={cas_archive}/pytest.tests.android.out.txt',
-                  *config.extra_flags,
+                  *(config.extra_flags or []),
               ],
           )
         finally:
@@ -217,6 +209,7 @@ def RunSteps(api, properties):
 def GenTests(api):
 
   _INSTALL_STEP = 'Install android_35_google_apis_x64.textpb'
+  run_config = TestRunConfig(sdk_version=35, avd_suffix='')
 
   def gen_test_data_retry_start(max_attempts=2):
     start_step = 'Start Android emulator'
@@ -255,3 +248,11 @@ def GenTests(api):
       'no-emulator-test', api.platform('linux', 64), api.platform.arch('intel'),
       api.properties(android_sdk=35), api.path.exists(gen_adb_path()),
       api.step_data(f'{_INSTALL_STEP}.List adb devices', api.json.output([])))
+
+  yield api.test(
+      'test-run-config-prop-test',
+      api.platform('linux', 64),
+      api.platform.arch('intel'),
+      api.properties(InputProperties(test_run_config=[run_config])),
+      api.path.exists(gen_adb_path()),
+  )

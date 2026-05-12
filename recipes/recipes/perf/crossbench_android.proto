@@ -5,11 +5,21 @@
 syntax = "proto3";
 package recipes.build.perf.crossbench_android;
 
-message InputProperties {
-  // To run Android end-to-end tests, you must set android_sdk to instruct
-  // the builder to start an Android emulator.
+message TestRunConfig {
+  // [Required] The Android SDK version.
   // See docs/android_emulator.md for a list of available SDKs.
+  int32 sdk_version = 1;
+  // [Optional] The `avd` suffix to install the emulator.
+  string avd_suffix = 2;
+  // A list of extra arguments to pass the runner script.
+  repeated string extra_flags = 3;
+}
+
+message InputProperties {
+  // obsolete. Use the `test_run_config` field instead.
   int32 android_sdk = 1;
   // The path to the test driver to run.
   string test_driver = 2;
+  // Configurations for test runs.
+  repeated TestRunConfig test_run_config = 3;
 }
