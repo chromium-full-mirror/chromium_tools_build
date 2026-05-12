@@ -2576,7 +2576,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     merge = self.spec.merge
     using_pgo = self.api.m.chromium_tests.m.pgo.using_pgo
-    if self.isolate_profile_data or using_pgo:
+    if self.api.m.pinlist.upload_pinlist:
+      merge = self.api.m.pinlist.shard_merge()
+    elif self.isolate_profile_data or using_pgo:
       # Targets built with 'use_clang_coverage' or 'use_clang_profiling' (also
       # set by chrome_pgo_phase=1) will look at this environment variable to
       # determine where to write the profile dumps. The %Nm syntax is understood

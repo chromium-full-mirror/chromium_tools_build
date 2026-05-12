@@ -22,6 +22,7 @@ DEPS = [
     'code_coverage',
     'orderfile',
     'pgo',
+    'pinlist',
     'profiles',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
@@ -208,6 +209,7 @@ def RunSteps(api, fail_compile):
   api.path.mock_add_paths(api.profiles.profile_dir().joinpath(
       api.pgo.TEMP_PROFDATA_FILENAME))
   api.path.mock_add_paths(api.profiles.profile_dir().joinpath('orderfile.out'))
+  api.path.mock_add_paths(api.pinlist.pinlist_dir.joinpath('pinlist.meta'))
   source_dir = api.path.cache_dir / 'builder/src'
   api.path.mock_add_paths(source_dir / 'chrome/build/pgo_profiles/profile.pgo')
 
@@ -1160,5 +1162,48 @@ def GenTests(api):
           post_process.SummaryMarkdownRE,
           'failed because of:\s+- Test.Two',
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'pinlist_ci_bots',
+      api.chromium.ci_build(
+          builder_group='fake-group', builder='fake-webview-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-webview-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_config_kwargs={
+                      'TARGET_ARCH': 'arm',
+                      'TARGET_BITS': 64,
+                  },
+              ),
+          ).assemble()),
+      api.properties(
+          swarm_hashes={
+              'performance_test_suite':
+                  '[dummy hash for performance_test_suite/size]'
+          },),
+      api.pinlist(upload_pinlist=True),
+      api.platform('linux', 64),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-webview-builder': {
+                  'isolated_scripts': [{
+                      'name': 'performance_test_suite',
+                      'isolate_profile_data': True,
+                      'test': 'performance_test_suite',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      }
+                  }],
+              },
+          }),
+      api.post_process(post_process.MustRun, 'processing generated pinlist'),
       api.post_process(post_process.DropExpectation),
   )

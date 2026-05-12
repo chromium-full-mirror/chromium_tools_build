@@ -31,6 +31,7 @@ DEPS = [
     'orderfile',
     'perf_dashboard',
     'pgo',
+    'pinlist',
     'presentation_utils',
     'profiles',
     'recipe_engine/bcid_reporter',

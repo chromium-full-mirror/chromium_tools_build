@@ -3179,6 +3179,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         assert update_result is not None
         self.m.orderfile.process_orderfile_data(source_dir, update_result)
 
+      if self.m.pinlist.upload_pinlist:
+        assert update_result is not None
+        self.m.pinlist.process_pinlist_data(update_result)
+
       test_success = True
       if test_failure_summary:
         test_success = False
