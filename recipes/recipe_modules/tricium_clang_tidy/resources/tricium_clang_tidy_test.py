@@ -11,7 +11,6 @@
 # [VPYTHON:END]
 
 from __future__ import annotations
-from __future__ import print_function
 
 import collections
 import dataclasses
@@ -26,8 +25,6 @@ import tricium_clang_tidy_script as tidy
 
 
 def _to_stringio(contents):
-  if sys.version_info[0] == 2 and isinstance(contents, str):
-    contents = unicode(contents)
   return io.StringIO(contents)
 
 

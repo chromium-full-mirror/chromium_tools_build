@@ -84,9 +84,7 @@ class Chromium3ppApi(recipe_api.RecipeApi):
       * Build the 3pp packages, and upload them to CIPD if applicable.
     """
     if self._package_prefix:
-      # Cast package_prefix to str since its type is unicode, but
-      # set_package_prefix expects a str
-      self.m.support_3pp.set_package_prefix(str(self._package_prefix))
+      self.m.support_3pp.set_package_prefix(self._package_prefix)
     self.m.support_3pp.set_source_cache_prefix('3pp_sources')
 
     package_paths_to_build = set(self._package_paths_to_build)
