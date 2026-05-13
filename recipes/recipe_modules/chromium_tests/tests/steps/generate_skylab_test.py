@@ -142,6 +142,10 @@ def GenTests(api):
 
     if cros_test_tags:
       test_spec['cros_test_tags'] = cros_test_tags
+    elif benchmark:
+      test_spec['autotest_name'] = 'chromium_Telemetry'
+    else:
+      test_spec['autotest_name'] = 'chromium'
     if cros_test_max_in_shards:
       test_spec['cros_test_max_in_shards'] = cros_test_max_in_shards
 
@@ -709,6 +713,7 @@ def GenTests(api):
                       'benchmark': "",
                       'args': [],
                       'test': GTEST_TARGET,
+                      'autotest_name': 'chromium',
                       'resultdb': {
                           'enable': True,
                       },

@@ -271,6 +271,7 @@ solutions = [
                   'skylab_tests': [{
                       'name': 'skylab_test',
                       'cros_board': 'foo-board',
+                      'autotest_name': 'chromium',
                   }]
               }
           },
@@ -319,6 +320,7 @@ solutions = [
                   'skylab_tests': [{
                       'name': 'skylab_test',
                       'cros_board': 'foo-board',
+                      'autotest_name': 'chromium',
                   }]
               }
           },

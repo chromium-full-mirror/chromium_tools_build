@@ -335,6 +335,7 @@ def GenTests(api):
                   'skylab_tests': [{
                       'name': 'lacros_all_tast_tests',
                       'cros_board': 'volteer',
+                      'autotest_name': 'chromium',
                   }],
               },
           }),
@@ -402,6 +403,7 @@ def GenTests(api):
                   'skylab_tests': [{
                       'name': 'lacros_all_tast_tests',
                       'cros_board': 'volteer',
+                      'autotest_name': 'chromium',
                   }],
               },
           }),
@@ -954,6 +956,7 @@ def GenTests(api):
                   'skylab_tests': [{
                       'name': 'lacros_all_tast_tests',
                       'cros_board': 'volteer',
+                      'autotest_name': 'chromium',
                   }],
               },
           }),

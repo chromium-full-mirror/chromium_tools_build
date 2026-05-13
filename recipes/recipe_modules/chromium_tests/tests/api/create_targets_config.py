@@ -60,6 +60,7 @@ FAKE_TARGETS_SPEC = {
         'cros_board': 'eve',
         'cros_img': 'eve-release/R89-13631.0.0',
         'name': 'basic_EVE_TOT',
+        'autotest_name': 'chromium',
     }],
 }
 

@@ -68,6 +68,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
       skylab_tests = [{
           'name': t,
           'cros_board': 'volteer',
+          'autotest_name': 'chromium',
       } for t in skylab_tests]
       tester_dict['skylab_tests'] = skylab_tests
 

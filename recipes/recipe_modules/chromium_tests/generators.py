@@ -580,11 +580,11 @@ class Generator:
         'cros_test_names_from_file',
         'cros_test_names_exclude_from_file',
     ])
-    if not common_skylab_kwargs.get('autotest_name') and not has_tag_criteria:
-      if common_skylab_kwargs.get('benchmark'):
-        common_skylab_kwargs['autotest_name'] = 'chromium_Telemetry'
-      else:
-        common_skylab_kwargs['autotest_name'] = 'chromium'
+    assert common_skylab_kwargs.get('autotest_name') or has_tag_criteria, (
+        f'{raw_test_spec} must have either autotest_name or tag-based criteria'
+        'Autotest name candidates can be: chromium, chromium_Telemetry, '
+        'chromium_Graphics, and etc, or legacy tast.chrome-from-gcs if '
+        'tag-based criteria does not fit the need.')
     # Default test exeuction timeout to half of the total timeout to allow for
     # DUT provisioning and other overhead.
     if not common_skylab_kwargs.get('max_run_sec') and common_skylab_kwargs.get(
