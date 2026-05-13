@@ -88,13 +88,6 @@ _SPEC = {
         _create_android_tester_config(64, 'android-perf'),
     'android-perf':
         _create_android_builder_config('Release', 64, perf_isolate_upload=True),
-    'linux-intel-perf':
-        _create_tester_config('linux', 64, 'linux-perf'),
-    'linux-nvidia-perf':
-        _create_tester_config('linux', 64, 'linux-perf'),
-    'linux-perf':
-        _create_builder_config(
-            'linux', 'Release', 64, perf_isolate_upload=True),
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
     'win-dbg-compile':
