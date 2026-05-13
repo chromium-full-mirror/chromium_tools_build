@@ -34,8 +34,11 @@ MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 RTS_EXEC_CIPD_PREFIX = 'chromium/rts/rts-chromium/'
 PLATFORMS = [
     'linux-amd64',
+    'linux-arm64',
     'mac-amd64',
+    'mac-arm64',
     'windows-amd64',
+    'windows-arm64',
 ]
 REJECTION_DATA_WINDOW = datetime.timedelta(weeks=12)
 TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
