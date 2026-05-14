@@ -233,6 +233,10 @@ _AddIsolatedTestSpec('android-pixel25-ultra-perf', 'android',
 _AddIsolatedTestSpec('android-pixel25-ultra-xl-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
+# Pixel 10
+_AddIsolatedTestSpec('android-pixel10-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+
 # AL
 _AddIsolatedTestSpec('android-brya-kano-i5-8gb-perf', 'android',
                      'android-desktop-x64-builder-perf')

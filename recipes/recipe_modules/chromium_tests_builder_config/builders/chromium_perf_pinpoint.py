@@ -204,6 +204,10 @@ _AddIsolatedTestSpec('android-pixel9-pro-perf', 'android',
 _AddIsolatedTestSpec('android-pixel9-pro-xl-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
+# Pixel 10
+_AddIsolatedTestSpec('android-pixel10-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
+
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
     'android',
