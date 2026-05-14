@@ -291,7 +291,7 @@ def CheckTestsOnCommit(input_api, output_api):
   return input_api.RunTests(tests)
 
 
-def CheckPanProjectChecksOnCommit(input_api, output_api):
+def CheckPanProjectChecks(input_api, output_api):
   return input_api.canned_checks.PanProjectChecks(
       input_api,
       output_api,
