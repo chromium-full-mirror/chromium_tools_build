@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 from __future__ import annotations
-from __future__ import print_function
 import json
 import optparse
 import os
