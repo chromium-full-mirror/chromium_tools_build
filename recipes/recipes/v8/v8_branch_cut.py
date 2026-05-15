@@ -40,21 +40,20 @@ def RunSteps(api):
     api.v8.git_output('checkout', 'infra/config')
     api.v8.git_output('pull')
 
-    defintions = api.v8.git_output(
+    definitions = api.v8.git_output(
         'show', 'HEAD:definitions.star', name='Read branch definitions')
-    beta_version = infer_beta_version(defintions)
+    beta_version = infer_beta_version(definitions)
     if last_version != beta_version:
       with api.step.nest('New branch detected'):
-        defintions = calculate_versions(api, defintions, last_version)
-        update_branch_version(api, source_dir, last_version)
+        definitions = calculate_versions(api, definitions, last_version)
         update_main_version(api, source_dir)
-        update_infra_config(api, source_dir, defintions)
+        update_infra_config(api, source_dir, definitions)
     else:
       api.step('No new branch detected', [])
 
 
-def infer_beta_version(defintions):
-  contents = ast.parse(defintions, mode='exec')
+def infer_beta_version(definitions):
+  contents = ast.parse(definitions, mode='exec')
   defined_versions = contents.body[0].value.values
   return version(defined_versions[0].s)
 
@@ -68,7 +67,7 @@ def update_infra_config(api, source_dir, definitions):
     api.v8.git_output('checkout', '-b', 'branch_cut_update')
     api.v8.git_output('branch', '--set-upstream-to=origin/infra/config')
     definitions_path = source_dir / 'definitions.star'
-    api.file.write_text('Write branch defintions', definitions_path,
+    api.file.write_text('Write branch definitions', definitions_path,
                         definitions)
     api.step('Lucicfg format', ['lucicfg', 'format'])
     api.step('Lucicfg generate', ['lucicfg', 'main.star'])
@@ -86,8 +85,9 @@ def version(version_text):
   major, minor = version_components[:2]
   return int(major) * 10 + int(minor)
 
-def calculate_versions(api, defintions, last_version):
-  contents = ast.parse(defintions, mode='exec')
+
+def calculate_versions(api, definitions, last_version):
+  contents = ast.parse(definitions, mode='exec')
   defined_versions = contents.body[0].value.values
 
   beta_version = version(defined_versions[0].s)
@@ -104,24 +104,6 @@ def calculate_versions(api, defintions, last_version):
   defined_versions[2].s = api.v8.version_num2str(extended_version)
 
   return astunparse.unparse(contents)
-
-
-def update_branch_version(api, source_dir, latest_version):
-  with api.step.nest('Update on branch') as parent_step:
-    branch_ref = 'branch-heads/%s' % api.v8.version_num2str(latest_version)
-    api.v8.git_output('checkout', branch_ref)
-    version_at_branch_head = api.v8.read_version_from_ref(
-        source_dir, "HEAD", branch_ref)
-    version_at_branch_head = version_at_branch_head.with_incremented_patch()
-    api.v8.update_version_cl(
-        source_dir,
-        branch_ref,
-        version_at_branch_head,
-        push_account=PUSH_ACCOUNT,
-        bot_commit=True,
-    )
-    issue = get_issue(api)
-    parent_step.links[issue] = issue
 
 
 def update_main_version(api, source_dir):
@@ -169,14 +151,6 @@ def GenTests(api):
               '"beta": "9.9", "stable": "9.8", "extended": "9.8"}') +
       api.v8.version_file(
           4,
-          'branch-heads/10.0',
-          prefix='New branch detected.Update on branch.',
-          major=9,
-          minor=9) + stdout('New branch detected.Update on branch.git cl (2)',
-                            'Issue number: 1 '
-                            '(https://review.source.com/1)') +
-      api.v8.version_file(
-          4,
           'main',
           prefix='New branch detected.Update on main.',
           major=9,
@@ -196,11 +170,7 @@ def GenTests(api):
               'Read branch definitions', 'versions = {'
               '"beta": "9.8", "stable": "9.7", "extended": "9.5"}') +
       api.v8.version_file(
-          4, 'branch-heads/9.9', prefix='New branch detected.Update on branch.')
-      + stdout('New branch detected.Update on branch.git cl (2)',
-               'Issue number: 1 '
-               '(https://review.source.com/1)') + api.v8.version_file(
-                   4, 'main', prefix='New branch detected.Update on main.') +
+          4, 'main', prefix='New branch detected.Update on main.') +
       stdout('New branch detected.Update on main.git cl (2)', 'Issue number: 2 '
              '(https://review.source.com/2)') +
       stdout('New branch detected.Update infra/config.git cl (2)',
