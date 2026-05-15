@@ -23,12 +23,14 @@ def RunSteps(api):
   build_dir = api.chromium.default_build_dir(source_dir)
 
   use_remoteexec = api.properties.get('use_remoteexec', False)
+  extra_args = api.properties.get('extra_args')
 
   api.chromium.run_gn(
       source_dir,
       build_dir,
       gn_path=api.properties.get('gn_path'),
-      use_remoteexec=use_remoteexec)
+      use_remoteexec=use_remoteexec,
+      extra_args=extra_args)
 
 
 def GenTests(api):
@@ -97,6 +99,16 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'gn', [
           '[CACHE]/builder/src/out/2796-Linux_Builder',
           '--args=is_debug=true target_cpu="x64" use_remoteexec=true',
+      ]),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'extra_args',
+      api.chromium.ci_build(),
+      api.properties(extra_args=['--export-compile-commands']),
+      api.post_process(StepCommandContains, 'gn', [
+          '--export-compile-commands',
       ]),
       api.post_process(DropExpectation),
   )

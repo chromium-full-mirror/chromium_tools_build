@@ -1192,6 +1192,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       *,
       gn_path=None,
       use_remoteexec=False,
+      extra_args: list[str] | None = None,
       **kwargs,
   ):
     """Run gn gen to generate the ninja files.
@@ -1200,6 +1201,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       source_dir: The path to the top-level repo.
       build_dir: The path to the directory containing built outputs.
       use_remoteexec: If True, `use_remoteexec=true` will be added to GN args.
+      extra_args: Additional arguments to pass to the GN command.
     """
     if not gn_path:
       gn_path = self.m.depot_tools.gn_py_path
@@ -1244,6 +1246,8 @@ class ChromiumApi(recipe_api.RecipeApi):
         build_dir,
         '--args=%s' % ' '.join(gn_args),
     ]
+    if extra_args:
+      cmd.extend(extra_args)
     if str(gn_path).endswith('.py'):
       cmd = ['python3'] + cmd
     with self.m.context(cwd=source_dir, env=gn_env):
