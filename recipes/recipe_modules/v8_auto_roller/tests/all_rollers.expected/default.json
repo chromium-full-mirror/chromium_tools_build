@@ -1740,7 +1740,7 @@
       "[CACHE]/builder/dummy/scripts/deps/roll_front_end_third_party.py",
       "puppeteer-core",
       "puppeteer",
-      "lib/esm"
+      "lib"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {

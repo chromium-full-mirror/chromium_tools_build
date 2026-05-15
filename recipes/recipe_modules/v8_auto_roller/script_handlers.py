@@ -19,7 +19,7 @@ SUPPORTED_SCRIPTS = {
     'puppeteer-core':
         SupportedScript(
             'Puppeteer Core', 'scripts/deps/roll_front_end_third_party.py',
-            ['puppeteer-core', 'puppeteer', 'lib/esm'],
+            ['puppeteer-core', 'puppeteer', 'lib'],
             'In case of failures or errors, reach out to someone from '
             'config/owner/RECORDER_OWNERS.'),
     'puppeteer-replay':
