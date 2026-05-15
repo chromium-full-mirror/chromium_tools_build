@@ -1,0 +1,1413 @@
+[
+  {
+    "cmd": [],
+    "name": "Report target_platform",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@target_platform@\"android\"@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "gclient config",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@config@{@@@",
+      "@@@STEP_LOG_LINE@config@  \"USE_MIRROR\": true,@@@",
+      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]/git\",@@@",
+      "@@@STEP_LOG_LINE@config@  \"delete_unversioned_trees\": true,@@@",
+      "@@@STEP_LOG_LINE@config@  \"deps_os\": {},@@@",
+      "@@@STEP_LOG_LINE@config@  \"got_revision_mapping\": {},@@@",
+      "@@@STEP_LOG_LINE@config@  \"got_revision_reverse_mapping\": {@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_angle_revision\": \"src/third_party/angle\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_buildtools_revision\": \"src/buildtools\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_dawn_revision\": \"src/third_party/dawn\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_nacl_revision\": \"src/native_client\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_revision\": \"src\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_swiftshader_revision\": \"src/third_party/swiftshader\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_v8_revision\": \"src/v8\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"got_webrtc_revision\": \"src/third_party/webrtc\"@@@",
+      "@@@STEP_LOG_LINE@config@  },@@@",
+      "@@@STEP_LOG_LINE@config@  \"hooks\": [],@@@",
+      "@@@STEP_LOG_LINE@config@  \"parent_got_revision_mapping\": {@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_angle_revision\": \"angle_revision\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_dawn_revision\": \"dawn_revision\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_nacl_revision\": \"nacl_revision\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_revision\": null,@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_swiftshader_revision\": \"swiftshader_revision\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_v8_revision\": \"v8_revision\",@@@",
+      "@@@STEP_LOG_LINE@config@    \"parent_got_webrtc_revision\": \"webrtc_revision\"@@@",
+      "@@@STEP_LOG_LINE@config@  },@@@",
+      "@@@STEP_LOG_LINE@config@  \"repo_path_map\": {@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://boringssl.googlesource.com/boringssl\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/boringssl/src\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/angle/angle\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/angle\",@@@",
+      "@@@STEP_LOG_LINE@config@      null@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/catapult\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/catapult\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/buildtools\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/buildtools\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/deps/flac\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/flac\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/deps/icu\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/icu\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/src\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src\",@@@",
+      "@@@STEP_LOG_LINE@config@      null@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/devtools/devtools-frontend\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/devtools-frontend/src\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/v8/v8\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/v8\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://dawn.googlesource.com/dawn\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/dawn\",@@@",
+      "@@@STEP_LOG_LINE@config@      null@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://pdfium.googlesource.com/pdfium\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/pdfium\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://skia.googlesource.com/skia\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/skia\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://swiftshader.googlesource.com/SwiftShader/\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/swiftshader\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"refs/heads/master\"@@@",
+      "@@@STEP_LOG_LINE@config@    ],@@@",
+      "@@@STEP_LOG_LINE@config@    \"https://webrtc.googlesource.com/src\": [@@@",
+      "@@@STEP_LOG_LINE@config@      \"src/third_party/webrtc\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@config@    ]@@@",
+      "@@@STEP_LOG_LINE@config@  },@@@",
+      "@@@STEP_LOG_LINE@config@  \"revisions\": {},@@@",
+      "@@@STEP_LOG_LINE@config@  \"solutions\": [@@@",
+      "@@@STEP_LOG_LINE@config@    {@@@",
+      "@@@STEP_LOG_LINE@config@      \"custom_deps\": {},@@@",
+      "@@@STEP_LOG_LINE@config@      \"custom_vars\": {},@@@",
+      "@@@STEP_LOG_LINE@config@      \"deps_file\": \".DEPS.git\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"managed\": true,@@@",
+      "@@@STEP_LOG_LINE@config@      \"name\": \"src\",@@@",
+      "@@@STEP_LOG_LINE@config@      \"revision\": null,@@@",
+      "@@@STEP_LOG_LINE@config@      \"safesync_url\": null,@@@",
+      "@@@STEP_LOG_LINE@config@      \"url\": \"https://chromium.googlesource.com/chromium/src.git\"@@@",
+      "@@@STEP_LOG_LINE@config@    }@@@",
+      "@@@STEP_LOG_LINE@config@  ],@@@",
+      "@@@STEP_LOG_LINE@config@  \"target_cpu\": [],@@@",
+      "@@@STEP_LOG_LINE@config@  \"target_cpu_only\": false,@@@",
+      "@@@STEP_LOG_LINE@config@  \"target_os\": [],@@@",
+      "@@@STEP_LOG_LINE@config@  \"target_os_only\": false,@@@",
+      "@@@STEP_LOG_LINE@config@  \"with_branch_heads\": false,@@@",
+      "@@@STEP_LOG_LINE@config@  \"with_tags\": false@@@",
+      "@@@STEP_LOG_LINE@config@}@@@",
+      "@@@STEP_LOG_END@config@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]",
+      "--revision_mapping_file",
+      "{\"got_angle_revision\": \"src/third_party/angle\", \"got_buildtools_revision\": \"src/buildtools\", \"got_dawn_revision\": \"src/third_party/dawn\", \"got_nacl_revision\": \"src/native_client\", \"got_revision\": \"src\", \"got_swiftshader_revision\": \"src/third_party/swiftshader\", \"got_v8_revision\": \"src/v8\", \"got_webrtc_revision\": \"src/third_party/webrtc\"}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "src@2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--refs",
+      "refs/heads/main",
+      "--no_fetch_tags"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/some-ci-bot/8945511751514863184",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bot_update",
+    "tags": {
+      "resultdb.instruction.id": "bot_update_repro_instructions"
+    },
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/buildtools\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/buildtools.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/native_client\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/native_client.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/angle\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/angle.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/swiftshader\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/swiftshader.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/webrtc\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/webrtc.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/v8\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/v8.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": null,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#170242}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/buildtools\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/buildtools.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/native_client\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/native_client.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/angle\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/angle.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/swiftshader\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/swiftshader.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/webrtc\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/webrtc.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/v8\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/v8.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_angle_revision@\"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_angle_revision_cp@\"refs/heads/main@{#297276}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_buildtools_revision@\"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_buildtools_revision_cp@\"refs/heads/main@{#182578}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_dawn_revision@\"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_dawn_revision_cp@\"refs/heads/main@{#51819}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_nacl_revision@\"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_nacl_revision_cp@\"refs/heads/main@{#274981}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#170242}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_swiftshader_revision@\"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_swiftshader_revision_cp@\"refs/heads/main@{#202157}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_v8_revision@\"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_v8_revision_cp@\"refs/heads/main@{#43426}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_webrtc_revision@\"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_webrtc_revision_cp@\"refs/heads/main@{#120644}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]/builder",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "set rdb sources"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "set rdb sources.update invocation",
+    "stdin": "{\"invocation\": {\"baselineId\": \"ci:some-ci-bot\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:some-ci-bot\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"host\": \"fake.org\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"position\": \"170242\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"project\": \"src\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      }@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "runhooks"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DEPOT_TOOLS_REPORT_BUILD": "chromium/ci/some-ci-bot/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gclient runhooks",
+    "tags": {
+      "resultdb.instruction.id": "bot_update_repro_instructions"
+    }
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions (2)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools/mb/mb.py",
+      "lookup",
+      "-m",
+      "chromium.fuzz",
+      "-b",
+      "some-ci-bot",
+      "--config-file",
+      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "--quiet"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "lookup GN args",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools/mb/mb.py",
+      "gen",
+      "-m",
+      "chromium.fuzz",
+      "-b",
+      "some-ci-bot",
+      "--config-file",
+      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "--json-output",
+      "/path/to/tmp/json",
+      "[CACHE]/builder/src/out/1826-some-ci-bot"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "generate_build_files",
+    "tags": {
+      "luci-bisection.is_bisectable": "true",
+      "resultdb.instruction.id": "generate_build_files_repro_instructions"
+    },
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/gn_logs.txt",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read gn_logs.txt",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@gn_logs.txt@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update invocation instructions (3)",
+    "stdin": "{\"invocation\": {\"instructions\": {\"instructions\": [{\"descriptiveName\": \"bot_update instructions\", \"id\": \"bot_update_repro_instructions\", \"targetedInstructions\": [{\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"LOCAL\"]}, {\"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\", \"targets\": [\"REMOTE\"]}], \"type\": \"STEP_INSTRUCTION\"}, {\"descriptiveName\": \"generate_build_files instructions\", \"id\": \"generate_build_files_repro_instructions\", \"targetedInstructions\": [{\"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m chromium.fuzz -b some-ci-bot --config-file tools/mb/mb_config.pyl out/1826-some-ci-bot```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\", \"targets\": [\"LOCAL\"]}], \"type\": \"STEP_INSTRUCTION\"}]}, \"name\": \"invocations/build:8945511751514863184\"}, \"updateMask\": \"instructions\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"instructions\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"instructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"bot_update instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"bot_update_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"See the [docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) for more platform specific update instructions.<br/><details><summary>`.gclient`&nbsp;file&nbsp;for&nbsp;this&nbsp;update</summary><pre><code>solutions&nbsp;=&nbsp;[\\n&nbsp;&nbsp;{\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_deps\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"custom_vars\\\":&nbsp;{},\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"deps_file\\\":&nbsp;\\\".DEPS.git\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"managed\\\":&nbsp;True,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"name\\\":&nbsp;\\\"src\\\",\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"revision\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"safesync_url\\\":&nbsp;None,\\n&nbsp;&nbsp;&nbsp;&nbsp;\\\"url\\\":&nbsp;\\\"https://chromium.googlesource.com/chromium/src.git\\\"\\n&nbsp;&nbsp;}\\n]\\ntarget_cpu&nbsp;=&nbsp;[]\\ntarget_os&nbsp;=&nbsp;[]</code></pre></details><br/>To test at the same revision as this builder run:<br/>```git fetch; git checkout 2d72510e447ab60a9728aeea2362d8be2cbd7789; gclient sync```<br/><br/>To test at the latest revision run:<br/>```git pull; gclient sync```<br/><br/>*This will run both bot update and runhook steps. To separate these instead run `gclient sync --nohooks` and `gclient runhooks` separately*\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"REMOTE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        },@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"descriptiveName\": \"generate_build_files instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"id\": \"generate_build_files_repro_instructions\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"targetedInstructions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@            {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"content\": \"From your Chromium checkout:<br/>```python3 -u tools/mb/mb.py gen -m chromium.fuzz -b some-ci-bot --config-file tools/mb/mb_config.pyl out/1826-some-ci-bot```<br/></br>*Note: The gn_args used in this gen:*<br/><li> target_cpu = \\\"x86\\\"</br><li> use_remoteexec = true\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"LOCAL\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              ]@@@",
+      "@@@STEP_LOG_LINE@json.input@            }@@@",
+      "@@@STEP_LOG_LINE@json.input@          ],@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"type\": \"STEP_INSTRUCTION\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    },@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  },@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"instructions\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "refs",
+      "-q",
+      "--as=label",
+      "--all",
+      "--type=shared_library",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "//testing/libfuzzer:fuzzing_engine"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "calculate all_fuzzers",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo:target1__library@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo:target2__library@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[refs]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "refs",
+      "-q",
+      "--as=label",
+      "--all",
+      "--type=shared_library",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "//testing/libfuzzer:no_clusterfuzz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "calculate no_clusterfuzz",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@target1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[refs]@@@",
+      "@@@STEP_LOG_LINE@all_fuzzers@//foo:target1__library@@@",
+      "@@@STEP_LOG_LINE@all_fuzzers@//foo:target2__library@@@",
+      "@@@STEP_LOG_END@all_fuzzers@@@",
+      "@@@STEP_LOG_LINE@no_clusterfuzz@target1@@@",
+      "@@@STEP_LOG_END@no_clusterfuzz@@@",
+      "@@@STEP_LOG_LINE@targets@//foo:target1__library@@@",
+      "@@@STEP_LOG_LINE@targets@//foo:target2__library@@@",
+      "@@@STEP_LOG_END@targets@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "ls",
+      "--as=output",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "//foo:target1",
+      "//foo:target2"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "list gn targets",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[targets]@target1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[targets]@target2@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[targets]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
+      "--ninja_info_output",
+      "/path/to/tmp/json",
+      "--failure_output",
+      "/path/to/tmp/",
+      "--",
+      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "target1",
+      "target2"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile",
+    "tags": {
+      "luci-bisection.is_bisectable": "true",
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    }
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/.ninja_log",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read ninja log"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake gzip data",
+      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create ninja log gzip"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload ninja_log",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "target1",
+      "target2",
+      "-d",
+      "explain",
+      "-n"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile confirm no-op"
+  },
+  {
+    "cmd": [],
+    "name": "collect all runtime dependencies",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@runtime_dependencies@../../path1@@@",
+      "@@@STEP_LOG_LINE@runtime_dependencies@../../path2@@@",
+      "@@@STEP_LOG_LINE@runtime_dependencies@../../path4@@@",
+      "@@@STEP_LOG_LINE@runtime_dependencies@./path3@@@",
+      "@@@STEP_LOG_LINE@runtime_dependencies@./target2@@@",
+      "@@@STEP_LOG_LINE@runtime_dependencies@./target3@@@",
+      "@@@STEP_LOG_END@runtime_dependencies@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "desc",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "*",
+      "runtime_deps"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "collect all runtime dependencies.get runtime dependencies with pattern *",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@Target //foo:target1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@runtime_deps@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ../../path1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ../../path2@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ../../path4@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./path3@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./target2@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./target3@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[desc]@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "copy runtime dependencies to build directory"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copytree",
+      "[CACHE]/builder/src/path1",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/src_root/path1"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "copy runtime dependencies to build directory.copying directory:[CACHE]/builder/src/path1",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/src_root"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "copy runtime dependencies to build directory.ensure builder cache dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/path2",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/src_root/path2"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "copy runtime dependencies to build directory.copying file:[CACHE]/builder/src/path2",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copytree",
+      "[CACHE]/builder/src/path4",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/src_root/path4"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "copy runtime dependencies to build directory.copying directory:[CACHE]/builder/src/path4",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "{\"archive_schema_version\": 0}",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/clusterfuzz_manifest.json"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "write archive manifest",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@clusterfuzz_manifest.json@{\"archive_schema_version\": 0}@@@",
+      "@@@STEP_LOG_END@clusterfuzz_manifest.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CLEANUP]/cs"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create staging_dir"
+  },
+  {
+    "cmd": [],
+    "name": "install infra/3pp/tools/7z"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install infra/3pp/tools/7z.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "-ensure-file",
+      "infra/3pp/tools/7z/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install infra/3pp/tools/7z.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/3pp/tools/7z/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::archive]/resources/filter_build_files.py",
+      "--dir",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "--platform",
+      "linux",
+      "--output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "filter archive_root",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"file1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"file2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::archive]/resources/zip_archive.py",
+      "--output-dir",
+      "[CLEANUP]/cs",
+      "--archive-name",
+      "libfuzzer-linux-release-170242",
+      "--json-file-list",
+      "[\"file1\", \"file2\"]",
+      "--file-relative-dir",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "--no-root-dir",
+      "--lzma-sdk-dir",
+      "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "zipping"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "--",
+      "-h",
+      "x-goog-meta-Cr-Commit-Position:refs/heads/main@{#170242}",
+      "-h",
+      "x-goog-meta-Cr-Commit-Position-Number:170242",
+      "-h",
+      "x-goog-meta-Cr-Git-Commit:2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "cp",
+      "-a",
+      "public-read",
+      "[CLEANUP]/cs/libfuzzer-linux-release-170242.zip",
+      "gs://chromium-browser-libfuzzer/linux-release-fuzz/libfuzzer-linux-release-170242.zip"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-libfuzzer/linux-release-fuzz/libfuzzer-linux-release-170242.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium-browser-libfuzzer/linux-release-fuzz/libfuzzer-linux-release-170242.zip\", \"gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "remove",
+      "[CLEANUP]/cs/libfuzzer-linux-release-170242.zip"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "libfuzzer-linux-release-170242.zip"
+  },
+  {
+    "name": "$result"
+  }
+]
