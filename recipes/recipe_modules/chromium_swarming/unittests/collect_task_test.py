@@ -131,8 +131,8 @@ class CollectTaskTest(unittest.TestCase):
         build_props_json, None, task_output_dir, output_json,
         summary_json)
 
-    self.assertEquals(0, exit_code)
-    self.assertEquals([
+    self.assertEqual(0, exit_code)
+    self.assertEqual([
         [
             'swarming.py',
             'positional0',
@@ -181,8 +181,8 @@ class CollectTaskTest(unittest.TestCase):
         build_props_json, None, task_output_dir, output_json,
         summary_json)
 
-    self.assertEquals(0, exit_code)
-    self.assertEquals([
+    self.assertEqual(0, exit_code)
+    self.assertEqual([
         [
             'swarming.py',
             'positional0',
@@ -233,8 +233,8 @@ class CollectTaskTest(unittest.TestCase):
         collect_cmd, merge_script, self.merge_script_log, build_props,
         merge_args, task_output_dir, output_json, summary_json)
 
-    self.assertEquals(0, exit_code)
-    self.assertEquals([
+    self.assertEqual(0, exit_code)
+    self.assertEqual([
         [
             'swarming.py',
             'positional0',

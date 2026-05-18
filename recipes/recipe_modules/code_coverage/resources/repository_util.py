@@ -333,7 +333,8 @@ def AddGitRevisionsToCoverageFilesMetadata(files_coverage_data, src_path,
   for file_record in files_coverage_data:
     git_metadata = file_git_metadata.get(file_record['path'])
     if not git_metadata:
-      logging.warn('Failed to retrive git metadata for %s', file_record['path'])
+      logging.warning('Failed to retrieve git metadata for %s',
+                      file_record['path'])
       continue
 
     file_record['revision'], file_record['timestamp'] = git_metadata
@@ -380,7 +381,7 @@ def GetUnmodifiedLinesSinceCommit(src_path, file_path, reference_commit):
     show_cmd = [GIT, 'show', show_arg]
     show_output = subprocess.check_output(show_cmd, cwd=src_path, text=True)
   except subprocess.CalledProcessError:
-    logging.warn('Unable to fetch file content at HEAD' % file_path)
+    logging.warning('Unable to fetch file content at HEAD for %s', file_path)
     raise
   local_lines = show_output.splitlines()
 

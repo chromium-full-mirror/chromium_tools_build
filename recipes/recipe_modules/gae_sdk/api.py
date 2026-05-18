@@ -32,8 +32,7 @@ class GaeSdkApi(recipe_api.RecipeApi):
 
   class PackageNotFound(Exception):
     def __init__(self, plat, arch):
-      super(GaeSdkApi.PackageNotFound, self).__init__(
-          'Package not found for %s on %s' % (plat, arch))
+      super().__init__('Package not found for %s on %s' % (plat, arch))
       self.plat = plat
       self.arch = arch
 

@@ -53,8 +53,9 @@ def _get_binaries_with_coverage_data(profdata_path, llvm_cov_path, binaries,
       if e.returncode == 1 and ('no coverage data found' in e.output.lower() or
                                 'could not load coverage information'
                                 in e.output.lower()):
-        logging.warn('%s does not have coverage data, and will be excluded '
-                     'from exporting coverage metadata' % binary)
+        logging.warning(
+            '%s does not have coverage data, and will be excluded '
+            'from exporting coverage metadata', binary)
         continue
 
       raise

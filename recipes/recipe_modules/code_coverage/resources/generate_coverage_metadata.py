@@ -537,13 +537,13 @@ def _get_per_target_coverage_summary(profdata_path, llvm_cov_path, build_dir,
       output = subprocess.check_output(args, text=True)
       summaries[binary] = json.loads(output)['data'][0]['totals']
     except subprocess.CalledProcessError as e:
-      logging.warn('Summary for binary %s failed with return code %d', binary,
-                   e.returncode)
-      logging.warn('%s', e.output)
+      logging.warning('Summary for binary %s failed with return code %d',
+                      binary, e.returncode)
+      logging.warning('%s', e.output)
       continue
     except (ValueError, TypeError):
-      logging.warn('Invalid JSON output for binary %s', binary)
-      logging.warn('%s', output)
+      logging.warning('Invalid JSON output for binary %s', binary)
+      logging.warning('%s', output)
       continue
   logging.info('Done generating per-target coverage summaries')
   return summaries

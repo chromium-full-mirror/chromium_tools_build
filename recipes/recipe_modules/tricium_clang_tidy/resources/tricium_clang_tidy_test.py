@@ -1168,7 +1168,7 @@ class Tests(unittest.TestCase):
     ])
 
     output = list(
-        tidy._parse_ninja_deps_output(_to_stringio(test_input), u'/in/dir'))
+        tidy._parse_ninja_deps_output(_to_stringio(test_input), '/in/dir'))
     self.assertEqual(output, [
         ('obj/bar.o', [
             '/in/dir/../../tools/cfi/blacklist.txt',
