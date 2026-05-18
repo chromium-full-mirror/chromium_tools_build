@@ -54,8 +54,6 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
-    'win-dbg-compile':
-        _create_compile_spec('win-dbg-compile'),
     'win-msvc-compile':
         _create_compile_spec('win-msvc-compile'),
     'win-msvc-dbg-compile':
@@ -64,8 +62,6 @@ _SPEC = {
         _create_compile_spec('win-msvc-x86-compile'),
     'win-msvc-x86-dbg-compile':
         _create_compile_spec('win-msvc-x86-dbg-compile'),
-    'win-x86-dbg-compile':
-        _create_compile_spec('win-x86-dbg-compile'),
     'winuwp-compile':
         _create_compile_spec('winuwp-compile'),
     'winuwp-dbg-compile':

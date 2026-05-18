@@ -90,8 +90,6 @@ _SPEC = {
         _create_android_builder_config('Release', 64, perf_isolate_upload=True),
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
-    'win-dbg-compile':
-        _create_builder_config('win', 'Debug', 64),
     'win-msvc-compile':
         _create_builder_config('win', 'Release', 64, is_clang=False),
     'win-msvc-dbg-compile':
@@ -100,8 +98,6 @@ _SPEC = {
         _create_builder_config('win', 'Release', 32, is_clang=False),
     'win-msvc-x86-dbg-compile':
         _create_builder_config('win', 'Debug', 32, is_clang=False),
-    'win-x86-dbg-compile':
-        _create_builder_config('win', 'Debug', 32),
     'winuwp-compile':
         _create_builder_config('win', 'Release', 64, is_clang=False),
     'winuwp-dbg-compile':
