@@ -1241,3 +1241,32 @@ target_os=[]
                        'test_pre_run.[trigger] browser_tests (2)'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'jj_workspace_success',
+      boilerplate(),
+      api.step_data('git rev-parse', retcode=1),
+      api.step_data('jj root', retcode=0),
+      api.step_data(
+          'get jj revision', stdout=api.raw_io.output('jj_commit_id')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'jj_workspace_not_jj',
+      boilerplate(target_spec=False),
+      api.step_data('git rev-parse', retcode=1),
+      api.step_data('jj root', retcode=1),
+      api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'jj_workspace_log_fail',
+      boilerplate(target_spec=False),
+      api.step_data('git rev-parse', retcode=1),
+      api.step_data('jj root', retcode=0),
+      api.step_data('get jj revision', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )

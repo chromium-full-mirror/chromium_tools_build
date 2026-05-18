@@ -600,6 +600,20 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     return result_pb2.RawResult(
         status=common_pb2.FAILURE, summary_markdown=info)
 
+  def _is_jj_workspace(self, source_dir: Path) -> bool:
+    with self.m.context(cwd=source_dir):
+      result = self.m.step('jj root', ['jj', 'root'], raise_on_failure=False)
+    return result.retcode == 0
+
+  def _get_jj_revision(self, source_dir: Path) -> str:
+    with self.m.context(cwd=source_dir):
+      result = self.m.step(
+          'get jj revision',
+          ['jj', 'log', '-r', '@', '-T', 'commit_id'],
+          stdout=self.m.raw_io.output(),
+      )
+    return result.stdout.decode('utf-8').strip()
+
   def generate_got_revisions_map(self, source_dir: Path):
     """Generates a minimalistic got_revisions mapping.
 
@@ -613,9 +627,15 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     The rev these keys point to is the local HEAD. Note that if the checkout
     contains any local commits, this rev will be unique to the checkout.
     """
-    with self.m.context(cwd=source_dir):
-      result = self.m.git('rev-parse', 'HEAD', stdout=self.m.raw_io.output())
-    rev = result.stdout.decode('utf-8').strip()
+    try:
+      with self.m.context(cwd=source_dir):
+        result = self.m.git('rev-parse', 'HEAD', stdout=self.m.raw_io.output())
+      rev = result.stdout.decode('utf-8').strip()
+    except self.m.step.StepFailure as git_error:
+      if self._is_jj_workspace(source_dir):
+        rev = self._get_jj_revision(source_dir)
+      else:
+        raise git_error
     rev_map = {
         # See the substitutions in recipe_modules/chromium_tests/generators.py
         # for what got_* revision keys might be used.
@@ -829,7 +849,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         return _run_compile()
     else:
       return _run_compile()
-
 
   def create_tests(
       self,
