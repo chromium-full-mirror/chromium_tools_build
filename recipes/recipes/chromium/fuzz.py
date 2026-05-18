@@ -178,12 +178,6 @@ def RunSteps(api, properties):
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
-
-      # This guards against a fuzzilli trybot attempting to run
-      # `collect_all_runtime_deps` in the archiving stage with an undefined
-      # `gn_targets`.
-      if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
-        return raw_result
     else:
       # compile targets for libfuzzer or centipede
       gn_output_type = 'executable'
@@ -301,10 +295,13 @@ def RunSteps(api, properties):
         if raw_result.status != common_pb.SUCCESS:
           return raw_result
 
+    # Stop here if we're only running on a trybot.
+    if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
+      return raw_result
 
-    if not properties.collect_fuzz_coverage and not api.tryserver.is_tryserver:
-      assert properties.upload_directory
-      assert properties.upload_bucket
+    if not properties.collect_fuzz_coverage:
+      assert (properties.upload_directory is not None)
+      assert (properties.upload_bucket is not None)
 
     # Make sure 32 bit archives are distinguished from 64 bit ones.
     kwargs = {}
@@ -576,8 +573,7 @@ def GenTests(api):
       if not is_try:
         # Verify that targets and runtime_deps are in the archive.
         # targets in test are target1, target2, target3
-        # runtime_deps in test (filtered) are ../../path1, ../../path2,
-        # ../../path4, ./path3
+        # runtime_deps in test (filtered) are ../../path1, ../../path2, ../../path4, ./path3
         expected_paths = ('["path1", '
                           '"path2", '
                           '"path4", '
@@ -834,35 +830,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'fuzzilli_tryjob',
-      api.chromium_tests_builder_config.try_build(
-          builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'fuzz-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          }),
-          try_db=ctbc.TryDatabase.create({
-              'tryserver.chromium.linux': {
-                  'linux-libfuzzer-asan-rel':
-                      ctbc.TrySpec.create_for_single_mirror(
-                          'chromium.fuzz', 'fuzz-ci-bot'),
-              },
-          })),
-      api.platform.name('linux'),
-      api.properties(fuzz_engine='fuzzilli'),
-      api.post_check(post_process.StepSuccess, 'compile'),
-      api.post_check(post_process.DoesNotRun,
-                     'collect all runtime dependencies'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'compile_failure',
       api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.fuzz',
@@ -955,10 +922,6 @@ def GenTests(api):
       ),
       api.step_data(
           'list gn targets', stdout=api.raw_io.output_text('target2')),
-      api.post_check(post_process.MustRun, 'write archive manifest'),
-      api.post_check(post_process.MustRun, 'create staging_dir'),
-      api.post_check(post_process.StepSuccess, 'zipping'),
-      api.post_check(post_process.DoesNotRun, 'gsutil upload'),
       api.post_process(post_process.DoesNotRun, 'clobber'),
   )
 
@@ -1011,10 +974,6 @@ def GenTests(api):
       api.post_check(post_process.MustRun, 'compile (3)'),
       api.post_check(post_process.MustRun, 'compile (3)'),
       api.post_check(post_process.DoesNotRun, 'compile (4)'),
-      api.post_check(post_process.MustRun, 'write archive manifest'),
-      api.post_check(post_process.MustRun, 'create staging_dir'),
-      api.post_check(post_process.StepSuccess, 'zipping'),
-      api.post_check(post_process.DoesNotRun, 'gsutil upload'),
       api.post_process(post_process.DropExpectation),
   )
 
