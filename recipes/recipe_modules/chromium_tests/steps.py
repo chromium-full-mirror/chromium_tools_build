@@ -3498,12 +3498,12 @@ class SkylabTest(AbstractSkylabTest, Test):
     retry_shards = []
     runtime_excluded_tests = []
     runtime_override_tests = []
-    runtime_no_retry = False
+    is_without_patch = suffix == 'without patch'
     if self.is_tag_criteria_test:
       if suffix == 'without patch':
         valid, failures = self.with_patch_failures_including_retry()
-        runtime_no_retry = True
-        assert valid, "Invalid with patch result should not trigger without patch"
+        assert valid, (
+            "Invalid with patch result should not trigger without patch")
         runtime_override_tests = [
             t.removeprefix(self.test_id_prefix or '') for t in failures
         ]
@@ -3525,7 +3525,7 @@ class SkylabTest(AbstractSkylabTest, Test):
         self,
         suffix,
         retry_shards=retry_shards,
-        runtime_no_retry=runtime_no_retry,
+        runtime_no_retry=is_without_patch,
         runtime_override_tests=runtime_override_tests,
         runtime_excluded_tests=runtime_excluded_tests)
 
