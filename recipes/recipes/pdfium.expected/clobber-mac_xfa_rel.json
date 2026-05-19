@@ -348,6 +348,8 @@
       "--remote_jobs",
       "160",
       "--enable_cloud_logging",
+      "--reapi_address",
+      "passthrough:///remotebuildexecution.googleapis.com:443",
       "--reapi_instance",
       "default_instance",
       "-C",
