@@ -395,6 +395,10 @@ def RunSteps(api, properties):
             use_cache=True)
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
+        api.step('diagnostic: df -h', ['df', '-h'])
+        api.step('diagnostic: df -ih', ['df', '-ih'])
+        with api.context(cwd=source_dir):
+          api.step('diagnostic: du -sh *', ['sh', '-c', 'du -sh *'])
         raise
 
     else:
