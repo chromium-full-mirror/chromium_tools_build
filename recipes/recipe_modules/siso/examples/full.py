@@ -92,8 +92,7 @@ def GenTests(api):
       api.siso.properties(
           reapi_address='us-east1-remotebuildexecution.googleapis.com:443'),
       api.post_process(post_process.StepCommandContains, 'compile', [
-          '--reapi_address',
-          'passthrough:///us-east1-remotebuildexecution.googleapis.com:443'
+          '--reapi_address', 'us-east1-remotebuildexecution.googleapis.com:443'
       ]),
       api.post_process(post_process.DropExpectation),
   )

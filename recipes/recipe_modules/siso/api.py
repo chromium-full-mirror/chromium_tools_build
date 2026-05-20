@@ -58,18 +58,6 @@ RUSAGE_FORMAT = """
 """
 
 
-# TODO: crbug.com/510934478 - Speculatively enforce passthrough resolver
-# to disable DNS dynamic resolution. Should remove this logic if it doesn't
-# help fix the performance issues on the CAS operations.
-def get_reapi_address(address):
-  """Prepends passthrough schema if address doesn't specify DNS/Passthrough schemas."""
-  if not address:
-    address = "passthrough:///remotebuildexecution.googleapis.com:443"
-  elif "://" not in address:
-    address = "passthrough:///" + address
-  return address
-
-
 class SisoApi(recipe_api.RecipeApi):
   """A module for interacting with siso."""
 
@@ -217,10 +205,11 @@ class SisoApi(recipe_api.RecipeApi):
 
     if not skip_log_upload:
       cmd.append('--enable_cloud_logging')
-    cmd.extend([
-        '--reapi_address',
-        get_reapi_address(self._props.reapi_address),
-    ])
+    if self._props.reapi_address:
+      cmd.extend([
+          '--reapi_address',
+          self._props.reapi_address,
+      ])
     if self._props.reapi_instance:
       cmd.extend([
           '--reapi_instance',
@@ -450,13 +439,7 @@ class SisoApi(recipe_api.RecipeApi):
         '--dump_json',
         self.m.json.output(),
     ] + list(tests)
-    addr = get_reapi_address(self._props.reapi_address)
-    env = {
-        'SISO_REAPI_ADDRESS': addr,
-        # TODO: fix the typo.
-        'SISO_DEST_CASS_ADDRESS': addr,
-    }
-    with self.m.context(cwd=source_dir, env=env):
+    with self.m.context(cwd=source_dir):
       return self.m.step(
           step_name,
           cmd,
