@@ -452,12 +452,8 @@ class SisoApi(recipe_api.RecipeApi):
     ] + list(tests)
     addr = get_reapi_address(self._props.reapi_address)
     env = {
-        'SISO_SRC_CAS_ADDRESS': addr,
-        'SISO_DST_CAS_ADDRESS': addr,
-        # Setting deprecated env vars for the backward compatibility.
-        # TODO: crbug.com/514216995 - we can remove these flags when all
-        # branches uses a Siso version with https://crrev.com/c/7859209.
         'SISO_REAPI_ADDRESS': addr,
+        # TODO: fix the typo.
         'SISO_DEST_CASS_ADDRESS': addr,
     }
     with self.m.context(cwd=source_dir, env=env):
