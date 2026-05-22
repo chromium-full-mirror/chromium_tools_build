@@ -289,6 +289,42 @@ def RunSteps(api):
   assert_invalid(InputProperties())
 
 
+  # Test conversion with no_history and shallow
+  proto_db_shallow = BuilderDatabase(entries=[
+      BuilderDatabase.Entry(
+          builder_id=builder_common_pb.BuilderID(
+              project='project',
+              bucket='bucket',
+              builder='builder',
+          ),
+          builder_spec=BuilderSpec(
+              builder_group='fake-group',
+              execution_mode=BuilderSpec.ExecutionMode.COMPILE_AND_TEST,
+              legacy_gclient_config=BuilderSpec.LegacyGclientRecipeModuleConfig(
+                  config='config'),
+              legacy_chromium_config=BuilderSpec
+              .LegacyChromiumRecipeModuleConfig(config='config'),
+              no_history=True,
+              shallow=True,
+          ))
+  ])
+
+  proto_config_shallow = BuilderConfig(
+      builder_db=proto_db_shallow,
+      builder_ids=[
+          builder_common_pb.BuilderID(
+              project='project',
+              bucket='bucket',
+              builder='builder',
+          )
+      ])
+
+  converted_config_shallow = proto.convert_builder_config(proto_config_shallow)
+  assert_valid(InputProperties(builder_config=proto_config_shallow))
+  api.assertions.assertTrue(converted_config_shallow.no_history)
+  api.assertions.assertTrue(converted_config_shallow.shallow)
+
+
 def GenTests(api):
   yield api.test(
       'full',

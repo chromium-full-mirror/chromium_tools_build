@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        PropertyEquals, StepSuccess)
+                                        PropertyEquals, StepCommandContains,
+                                        StepSuccess)
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
@@ -27,6 +28,8 @@ DEPS = [
 PROPERTIES = {
     'ignore_input_commit': Property(kind=bool, default=False),
     'set_output_commit': Property(kind=bool, default=True),
+    'no_history': Property(kind=bool, default=False),
+    'shallow': Property(kind=bool, default=False),
 }
 
 
@@ -37,7 +40,7 @@ def revision_resolver(c):
   c.revisions['src-internal'] = gclient.RevisionFallbackChain('refs/heads/main')
 
 
-def RunSteps(api, ignore_input_commit, set_output_commit):
+def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow):
   with api.assertions.assertRaisesRegexp(ValueError, 'checkout_dir is not set'):
     _ = api.chromium_checkout.checkout_dir
   with api.assertions.assertRaisesRegexp(ValueError, 'source_dir is not set'):
@@ -49,7 +52,9 @@ def RunSteps(api, ignore_input_commit, set_output_commit):
       ignore_input_commit=ignore_input_commit,
       set_output_commit=set_output_commit,
       patch=False,
-      suffix='foo')
+      suffix='foo',
+      no_history=no_history,
+      shallow=shallow)
 
   api.step('details', [])
   api.step.active_result.presentation.logs['details'] = [
@@ -200,5 +205,27 @@ def GenTests(api):
           MustRun,
           'set rdb sources.missing gitiles commit info',
       ),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'no_history',
+      api.platform('linux', 64),
+      api.buildbucket.generic_build(),
+      api.properties(no_history=True),
+      api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+      api.post_process(StepCommandContains, 'bot_update (without patch) - foo',
+                       '--no-history'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'shallow',
+      api.platform('linux', 64),
+      api.buildbucket.generic_build(),
+      api.properties(shallow=True),
+      api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+      api.post_process(StepCommandContains, 'bot_update (without patch) - foo',
+                       '--shallow'),
       api.post_process(DropExpectation),
   )

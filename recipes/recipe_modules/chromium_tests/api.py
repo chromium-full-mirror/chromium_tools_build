@@ -463,6 +463,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         set_output_commit=set_output_commit,
         root_solution_revision=root_solution_revision,
         turboci_check_id=turboci_source_check_id,
+        no_history=builder_config.no_history,
+        shallow=builder_config.shallow,
         **kwargs)
     source_dir = update_result.source_root.path
     build_dir = self.m.chromium.default_build_dir(source_dir)

@@ -149,6 +149,8 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
       android_apply_config=obj.legacy_android_config.apply_configs,
       android_version=obj.android_version_file or None,
       clobber=obj.clobber,
+      no_history=obj.no_history,
+      shallow=obj.shallow,
       mb_phase_for_tests=obj.mb_phase_for_tests or None,
       serialize_tests=obj.run_tests_serially,
       perf_isolate_upload=obj.perf_isolate_upload,

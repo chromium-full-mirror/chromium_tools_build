@@ -9,7 +9,7 @@ import "go.chromium.org/luci/buildbucket/proto/builder_common.proto";
 
 // The details configuring execution for a single builder
 //
-// Next ID: 19
+// Next ID: 21
 message BuilderSpec {
   // Required, the builder group that the builder is a part of
   //
@@ -113,6 +113,12 @@ message BuilderSpec {
 
   // The 'mb' phase that the compiling-builder used to compile any tests.
   string mb_phase_for_tests = 18;
+
+  // Whether to perform a shallow checkout without history.
+  bool no_history = 19;
+
+  // Whether to perform a shallow checkout with limited history.
+  bool shallow = 20;
 
   // Whether swarming tests should be run serially
   //

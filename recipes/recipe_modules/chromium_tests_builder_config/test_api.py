@@ -128,6 +128,10 @@ class _PropertiesAssembler:
             builder_spec.android_version,
         'clobber':
             builder_spec.clobber,
+        'no_history':
+            builder_spec.no_history,
+        'shallow':
+            builder_spec.shallow,
         'mb_phase_for_tests':
             builder_spec.mb_phase_for_tests,
         'run_tests_serially':

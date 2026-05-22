@@ -123,6 +123,14 @@ class BuilderSpec:
   # pre-existing build outputs
   clobber = attrib(bool, default=False)
 
+
+  # A bool controlling whether to perform a shallow checkout without history.
+  no_history = attrib(bool, default=False)
+
+  # A bool controlling whether to perform a shallow checkout with limited
+  # history.
+  shallow = attrib(bool, default=False)
+
   # The 'mb' phase that the compiling-builder used to compile any tests.
   mb_phase_for_tests = attrib(str, default=None)
 
