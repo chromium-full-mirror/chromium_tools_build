@@ -9,6 +9,7 @@ from recipe_engine.post_process import DropExpectation, MustRun
 
 DEPS = [
     'chromium',
+    'recipe_engine/path',
     'recipe_engine/step',
     'v8',
 ]
@@ -46,7 +47,21 @@ def RunSteps(api):
   api.v8.runhooks(source_dir, build_dir)
   api.chromium.run_gn(
       source_dir, build_dir, extra_args=['--export-compile-commands'])
-  return api.chromium.compile(source_dir, build_dir)
+  api.chromium.compile(source_dir, build_dir)
+
+  snapshot_file = api.path.cleanup_dir.joinpath('snapshot.tgz')
+  api.v8.vpython(
+      'create snapshot',
+      source_dir / 'tools' / 'bigsleep' / 'create_snapshot.py',
+      args=[
+          '--v8_dir',
+          source_dir,
+          '--build_dir',
+          build_dir,
+          '--output_file',
+          snapshot_file,
+      ],
+  )
 
 
 def GenTests(api):
@@ -61,7 +76,7 @@ def GenTests(api):
       api.v8.check_in_any_arg('gn', 'is_debug=true'),
       api.v8.check_in_any_arg('gn', 'target_cpu="x64"'),
       api.v8.check_in_any_arg('gn', '--export-compile-commands'),
-      api.post_process(MustRun, 'gn', 'compile'),
+      api.post_process(MustRun, 'gn', 'compile', 'create snapshot'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
