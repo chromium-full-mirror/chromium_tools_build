@@ -9,8 +9,13 @@ from recipe_engine.post_process import DropExpectation, MustRun
 
 DEPS = [
     'chromium',
+    'depot_tools/bot_update',
+    'depot_tools/gsutil',
+    'depot_tools/tryserver',
+    'recipe_engine/commit_position',
     'recipe_engine/path',
     'recipe_engine/step',
+    'recipe_engine/time',
     'v8',
 ]
 
@@ -63,20 +68,74 @@ def RunSteps(api):
       ],
   )
 
+  gs_bucket = 'chromium-v8'
+  if api.tryserver.is_tryserver:
+    gs_dest = 'try/linux/x64/debug'
+    gs_filename = 'v8-linux-x64-debug-%d-%d-%d.tgz' % (
+        api.tryserver.gerrit_change_number,
+        api.tryserver.gerrit_patchset_number,
+        int(api.time.time()),
+    )
+  else:
+    gs_dest = 'linux/x64/debug'
+    revision_number = api.v8.revision_number
+    assert revision_number, "Commit position number is required."
+    gs_filename = f'v8-linux-x64-debug-{revision_number}.tgz'
+
+  api.gsutil.upload(
+      snapshot_file,
+      gs_bucket,
+      f'bigsleep/{gs_dest}/{gs_filename}',
+      args=['-a', 'public-read'],
+  )
+
+  if not api.tryserver.is_tryserver:
+    api.gsutil.copy(
+        gs_bucket,
+        f'bigsleep/{gs_dest}/{gs_filename}',
+        gs_bucket,
+        f'bigsleep/{gs_dest}/latest.tgz',
+        args=['-a', 'public-read'],
+    )
+
 
 def GenTests(api):
-  yield api.test(
-      'basic',
-      api.chromium.ci_build(
-          builder_group='client.v8',
-          project='v8',
-          git_repo='https://chromium.googlesource.com/v8/v8',
-          builder='v8_bigsleep',
-      ),
-      api.v8.check_in_any_arg('gn', 'is_debug=true'),
-      api.v8.check_in_any_arg('gn', 'target_cpu="x64"'),
-      api.v8.check_in_any_arg('gn', '--export-compile-commands'),
-      api.post_process(MustRun, 'gn', 'compile', 'create snapshot'),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
-  )
+  yield (
+      api.v8.test('client.v8', 'v8_bigsleep') + api.step_data(
+          'bot_update',
+          api.bot_update.output_json(
+              first_sln='v8',
+              got_revision_mapping={'got_revision': 'v8'},
+              commit_positions=True,
+          )) +
+      api.v8.check_in_any_arg('gsutil upload', 'bigsleep/linux/x64/debug') +
+      api.v8.check_in_any_arg('gsutil upload', 'v8-linux-x64-debug-50110.tgz') +
+      api.v8.check_in_any_arg('gsutil copy',
+                              'bigsleep/linux/x64/debug/latest.tgz') +
+      api.v8.check_in_any_arg('gn', 'is_debug=true') +
+      api.v8.check_in_any_arg('gn', 'target_cpu="x64"') +
+      api.v8.check_in_any_arg('gn', '--export-compile-commands') +
+      api.post_process(MustRun, 'gn', 'compile', 'create snapshot') +
+      api.post_process(DropExpectation))
+
+  yield (
+      api.v8.test('tryserver.v8', 'v8_bigsleep_try', suffix='tryserver') +
+      api.step_data(
+          'bot_update',
+          api.bot_update.output_json(
+              first_sln='v8',
+              got_revision_mapping={'got_revision': 'v8'},
+              commit_positions=True,
+          )) +
+      api.v8.check_in_any_arg('gsutil upload', 'bigsleep/try/linux/x64/debug') +
+      api.post_process(DropExpectation))
+
+  yield (api.v8.test('client.v8', 'v8_bigsleep', suffix='no_commit_position') +
+         api.step_data(
+             'bot_update',
+             api.bot_update.output_json(
+                 first_sln='v8',
+                 got_revision_mapping={'got_revision': 'v8'},
+                 commit_positions=False,
+             )) + api.expect_exception('AssertionError') +
+         api.post_process(DropExpectation))
