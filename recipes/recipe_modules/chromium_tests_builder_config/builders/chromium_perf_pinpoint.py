@@ -186,10 +186,6 @@ _AddPinpointTestSpec('android-pixel4_webview-perf-pgo', 'android',
 _AddIsolatedTestSpec('android-pixel4a_power-perf', 'android',
                      'android_arm64-builder-perf')
 
-_AddIsolatedTestSpec('android-pixel6-perf', 'android',
-                     'android_arm64_high_end-builder-perf')
-_AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
-                     'android_arm64_high_end-builder-perf')
 _AddIsolatedTestSpec('android-pixel-fold-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 
