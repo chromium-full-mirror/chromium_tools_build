@@ -436,9 +436,16 @@ class SsciAPI(recipe_api.RecipeApi):
           with self.m.context(cwd=self.m.path.dirname(self.partybot.tool_path)):
             self.m.step(
                 "run partybot to collect 3P deps", [
-                    "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
-                    self.m.path.dirname(src_dir), "--file", third_party_out,
-                    "--os", self.m.buildbucket.build.builder.builder
+                    "vpython3",
+                    "--vpython-spec=.vpython3",
+                    "-m",
+                    "partybot",
+                    self.m.path.dirname(src_dir),
+                    "--file",
+                    third_party_out,
+                    "--os",
+                    self.m.buildbucket.build.builder.builder,
+                    "--readme-licenses-only",
                 ],
                 infra_step=True)
 

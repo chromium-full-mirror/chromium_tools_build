@@ -811,7 +811,8 @@
       "--file",
       "[CLEANUP]/partybot/third_party_luci-8945511751514863184.json",
       "--os",
-      "mybuilder"
+      "mybuilder",
+      "--readme-licenses-only"
     ],
     "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/partybot/b3a8e0e1f9ab1bfe3a36f231f676f78bb30a519d2b21e6c530c0eee8ebb4a5d0",
     "env_suffixes": {
