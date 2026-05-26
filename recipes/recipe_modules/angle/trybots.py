@@ -18,30 +18,6 @@ def _create_compile_spec(buildername):
 
 
 _SPEC = {
-    'android-pixel4-perf':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-perf',
-                    tester='android-arm64-pixel4-perf',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-    'android-pixel6-perf':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='android-perf',
-                    tester='android-arm64-pixel6-perf',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
     'win-asan-test':
         try_spec.TrySpec.create(
             mirrors=[

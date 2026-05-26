@@ -48,46 +48,7 @@ def _create_tester_config(platform, target_bits, parent_builder):
   )
 
 
-def _create_android_builder_config(config,
-                                   target_bits,
-                                   perf_isolate_upload=False):
-  return _angle_spec(
-      gclient_config='angle_android',
-      simulation_platform='linux',
-      chromium_config_kwargs={
-          'BUILD_CONFIG': config,
-          'TARGET_BITS': target_bits,
-          'TARGET_PLATFORM': 'android',
-      },
-      perf_isolate_upload=perf_isolate_upload,
-  )
-
-
-def _create_android_tester_config(target_bits, parent_builder):
-  is_experimental = '-exp' in parent_builder
-  return _angle_spec(
-      gclient_config='angle_android',
-      simulation_platform='linux',
-      chromium_config_kwargs={
-          # All testing is in Release.
-          'BUILD_CONFIG': 'Release',
-          'TARGET_BITS': target_bits,
-          'TARGET_PLATFORM': 'android',
-      },
-      execution_mode=builder_spec.TEST,
-      parent_buildername=parent_builder,
-      # Serialize tests on exp builders since they are short on resources
-      serialize_tests=is_experimental,
-  )
-
-
 _SPEC = {
-    'android-arm64-pixel4-perf':
-        _create_android_tester_config(64, 'android-perf'),
-    'android-arm64-pixel6-perf':
-        _create_android_tester_config(64, 'android-perf'),
-    'android-perf':
-        _create_android_builder_config('Release', 64, perf_isolate_upload=True),
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
     'win-msvc-compile':
