@@ -22,6 +22,7 @@ PROPERTIES = InputProperties
 
 DEPS = [
     'depot_tools/git',
+    'depot_tools/gitiles',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
@@ -35,54 +36,35 @@ DEPS = [
     'recipe_engine/url',
 ]
 
-TEST_GOB_JSON = {
-    "log": [
-        {
-            "commit": "398e74869153a12e825bc789c2134762cbe81c36",
-            "parents": ["a58afde0c1eb50eeff2332a688bc226805e70c64"],
-            "committer": {
-                "time": "Mon May 11 04:00:51 2026"
-            },
-        },
-        {
-            "commit": "a58afde0c1eb50eeff2332a688bc226805e70c64",
-            "parents": ["d9b76b952adc6212685d7a019fc8be1f95c93d0b"],
-            "committer": {
-                "time": "Mon May 11 03:59:53 2026"
-            },
-        },
-    ],
-}
-
 
 def RevisionFromGob(api, properties):
-  res = api.url.get_json(
-      f"{properties.source_repo}/+log/refs/heads/main?n=2&format=JSON",
-      log=True,
-      strip_prefix=")]}'",
-      default_test_data=TEST_GOB_JSON,
-  ).output
+  commits, _ = api.gitiles.log(
+      properties.source_repo,
+      'refs/heads/main',
+      limit=2,
+      step_name='fetch main revision',
+  )
 
   props = {}
   if properties.no_synthetic_commit:
-    props["root_solution_revision"] = res["log"][0]["commit"].strip()
+    props["root_solution_revision"] = commits[0]["commit"].strip()
     props["root_solution_revision_timestamp"] = int(
         datetime.datetime.strptime(
-            res["log"][0]["committer"]["time"].strip(),
+            commits[0]["committer"]["time"].strip(),
             "%a %b %d %H:%M:%S %Y").replace(
                 tzinfo=datetime.timezone.utc).timestamp())
 
   else:
-    props["codesearch_mirror_revision"] = res["log"][0]["commit"].strip()
+    props["codesearch_mirror_revision"] = commits[0]["commit"].strip()
     props["codesearch_mirror_revision_timestamp"] = int(
         datetime.datetime.strptime(
-            res["log"][0]["committer"]["time"].strip(),
+            commits[0]["committer"]["time"].strip(),
             "%a %b %d %H:%M:%S %Y").replace(
                 tzinfo=datetime.timezone.utc).timestamp())
-    props["root_solution_revision"] = res["log"][1]["commit"].strip()
+    props["root_solution_revision"] = commits[1]["commit"].strip()
     props["root_solution_revision_timestamp"] = int(
         datetime.datetime.strptime(
-            res["log"][1]["committer"]["time"].strip(),
+            commits[1]["committer"]["time"].strip(),
             "%a %b %d %H:%M:%S %Y").replace(
                 tzinfo=datetime.timezone.utc).timestamp())
 
@@ -276,6 +258,8 @@ def GenTests(api):
               'https://chromium.googlesource.com/codesearch/chromium/src'),
           fetch_revision_from_gob=True,
       ),
+      api.step_data('fetch main revision',
+                    api.gitiles.make_log_test_data('main', n=2)),
   )
 
   yield api.test(
@@ -288,4 +272,6 @@ def GenTests(api):
           fetch_revision_from_gob=True,
           no_synthetic_commit=True,
       ),
+      api.step_data('fetch main revision',
+                    api.gitiles.make_log_test_data('main', n=2)),
   )
