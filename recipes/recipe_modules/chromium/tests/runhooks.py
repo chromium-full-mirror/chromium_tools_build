@@ -52,7 +52,7 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess, 'ensure_installed'),
       api.post_process(post_process.StepCommandContains, 'ensure_installed', [
           'infra/tools/mac_toolchain/${platform} '
-          'git_revision:b0c0a706097c27444dbe3f84e5553f1aaa77c1a6'
+          'git_revision:07e67ff89ff11ed0e3071867ed6bb49319a91b05'
       ]),
       api.post_process(post_process.StepEnvContains, 'gclient runhooks',
                        {'FORCE_MAC_TOOLCHAIN': '1'}),
