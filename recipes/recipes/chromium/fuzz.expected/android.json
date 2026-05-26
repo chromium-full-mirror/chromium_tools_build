@@ -732,6 +732,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo:target1__library@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo:target2__library@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo:fuzzer.exe__library@@@",
       "@@@STEP_LOG_END@raw_io.output_text[refs]@@@"
     ]
   },
@@ -764,11 +765,13 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@raw_io.output_text[refs]@target1@@@",
       "@@@STEP_LOG_END@raw_io.output_text[refs]@@@",
+      "@@@STEP_LOG_LINE@all_fuzzers@//foo:fuzzer.exe__library@@@",
       "@@@STEP_LOG_LINE@all_fuzzers@//foo:target1__library@@@",
       "@@@STEP_LOG_LINE@all_fuzzers@//foo:target2__library@@@",
       "@@@STEP_LOG_END@all_fuzzers@@@",
       "@@@STEP_LOG_LINE@no_clusterfuzz@target1@@@",
       "@@@STEP_LOG_END@no_clusterfuzz@@@",
+      "@@@STEP_LOG_LINE@targets@//foo:fuzzer.exe__library@@@",
       "@@@STEP_LOG_LINE@targets@//foo:target1__library@@@",
       "@@@STEP_LOG_LINE@targets@//foo:target2__library@@@",
       "@@@STEP_LOG_END@targets@@@"
@@ -781,6 +784,7 @@
       "ls",
       "--as=output",
       "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "//foo:fuzzer.exe",
       "//foo:target1",
       "//foo:target2"
     ],
@@ -799,6 +803,7 @@
     },
     "name": "list gn targets",
     "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[targets]@fuzzer.exe@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text[targets]@target1@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text[targets]@target2@@@",
       "@@@STEP_LOG_END@raw_io.output_text[targets]@@@"
@@ -816,6 +821,7 @@
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "fuzzer.exe",
       "target1",
       "target2"
     ],
@@ -942,6 +948,7 @@
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "fuzzer.exe",
       "target1",
       "target2",
       "-d",
@@ -973,6 +980,7 @@
       "@@@STEP_LOG_LINE@runtime_dependencies@../../path1@@@",
       "@@@STEP_LOG_LINE@runtime_dependencies@../../path2@@@",
       "@@@STEP_LOG_LINE@runtime_dependencies@../../path4@@@",
+      "@@@STEP_LOG_LINE@runtime_dependencies@./fuzzer.exe@@@",
       "@@@STEP_LOG_LINE@runtime_dependencies@./path3@@@",
       "@@@STEP_LOG_LINE@runtime_dependencies@./target2@@@",
       "@@@STEP_LOG_LINE@runtime_dependencies@./target3@@@",
@@ -1012,6 +1020,9 @@
       "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./path3@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./target2@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./target3@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@Target //foo:fuzzer.exe@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@runtime_deps@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[desc]@  ./fuzzer.exe@@@",
       "@@@STEP_LOG_END@raw_io.output_text[desc]@@@"
     ]
   },
@@ -1148,7 +1159,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "{\"archive_schema_version\": 0}",
+      "{\"archive_schema_version\": 0, \"fuzz_targets\": [\"fuzzer.exe\", \"target1\", \"target2\"]}",
       "[CACHE]/builder/src/out/1826-some-ci-bot/clusterfuzz_manifest.json"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -1167,7 +1178,7 @@
     },
     "name": "write archive manifest",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@clusterfuzz_manifest.json@{\"archive_schema_version\": 0}@@@",
+      "@@@STEP_LOG_LINE@clusterfuzz_manifest.json@{\"archive_schema_version\": 0, \"fuzz_targets\": [\"fuzzer.exe\", \"target1\", \"target2\"]}@@@",
       "@@@STEP_LOG_END@clusterfuzz_manifest.json@@@"
     ]
   },

@@ -420,9 +420,6 @@ def RunSteps(api, properties):
         runtime_deps = sorted(runtime_deps)
         step_result.logs['runtime_dependencies'] = runtime_deps
 
-      manifest_dict = {
-          'archive_schema_version': properties.archive_schema_version
-      }
       paths_to_archive = None
       if properties.archive_schema_version == 0:
         archive_root = build_dir
@@ -441,6 +438,16 @@ def RunSteps(api, properties):
             for path in runtime_deps)
         paths_to_archive = list(paths_to_archive_dict)
         paths_to_archive.append(MANIFEST_FILENAME)
+
+      fuzz_target_paths = [
+          api.path.relpath(build_dir / target, archive_root)
+          for target in targets
+      ]
+
+      manifest_dict = {
+          'archive_schema_version': properties.archive_schema_version,
+          'fuzz_targets': fuzz_target_paths,
+      }
 
       api.file.write_json(
           'write archive manifest',
@@ -484,7 +491,8 @@ def GenTests(api):
         archive_schema_version=archive_schema_version,
     )
     if engine != 'fuzzilli':
-      targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n')
+      targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n'
+                                       'fuzzer.exe\n')
       test += api.step_data('calculate all_fuzzers', stdout=targets)
       test += api.step_data(
           'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
@@ -518,6 +526,9 @@ def GenTests(api):
                      '  ./target3\n'
                      '  ./path3\n'
                      '  ../../path4\n'
+                     'Target fuzzer.exe\n'
+                     'runtime_deps\n'
+                     '  ./fuzzer.exe\n'
                      'Target target5\n'
                      'runtime_deps\n'
                      '  ./path16\n'
@@ -531,8 +542,8 @@ def GenTests(api):
       # ../../path1, ../../path2 and ../../path4 need to be copied.
       test += api.post_process(
           LogEquals, 'collect all runtime dependencies', 'runtime_dependencies',
-          '../../path1\n../../path2\n../../path4\n./path3\n./target2\n./target3'
-      )
+          '../../path1\n../../path2\n../../path4\n./fuzzer.exe\n./path3\n'
+          './target2\n./target3')
       if archive_schema_version == 0:
         test += api.post_process(
             post_process.MustRun,
@@ -576,11 +587,13 @@ def GenTests(api):
       )
       if not is_try:
         # Verify that targets and runtime_deps are in the archive.
-        # targets in test are target1, target2, target3
-        # runtime_deps in test (filtered) are ../../path1, ../../path2, ../../path4, ./path3
+        # targets in test are fuzzer.exe, target1, target2, target3
+        # runtime_deps in test (filtered) are ../../path1, ../../path2,
+        # ../../path4, ./path3
         expected_paths = ('["path1", '
                           '"path2", '
                           '"path4", '
+                          '"out/1826-some-ci-bot/fuzzer.exe", '
                           '"out/1826-some-ci-bot/path3", '
                           '"out/1826-some-ci-bot/target2", '
                           '"out/1826-some-ci-bot/target3", '
@@ -589,6 +602,18 @@ def GenTests(api):
             post_process.StepCommandContains,
             'zipping',
             [expected_paths],
+        )
+        expected_manifest_dict = ('{"archive_schema_version": 1, '
+                                  '"fuzz_targets": ['
+                                  '"out/1826-some-ci-bot/fuzzer.exe", '
+                                  '"out/1826-some-ci-bot/target1", '
+                                  '"out/1826-some-ci-bot/target2", '
+                                  '"out/1826-some-ci-bot/target3"]}')
+        test += api.post_process(
+            LogEquals,
+            'write archive manifest',
+            'clusterfuzz_manifest.json',
+            expected_manifest_dict,
         )
     if drop_expectation:
       test += api.post_process(post_process.DropExpectation)
@@ -720,11 +745,14 @@ def GenTests(api):
       api.step_data(
           'calculate all_fuzzers',
           stdout=api.raw_io.output_text(
-              '//foo:target1__library\n//foo:target2__library\n')),
+              '//foo:target1__library\n//foo:target2__library\n'
+              '//foo:fuzzer.exe__library\n')),
       api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target1\ntarget2')),
+          'list gn targets',
+          stdout=api.raw_io.output_text('fuzzer.exe\ntarget1\ntarget2')),
       api.step_data(
-          'collect all runtime dependencies.get runtime dependencies with pattern *',
+          'collect all runtime dependencies.'
+          'get runtime dependencies with pattern *',
           stdout=api.raw_io.output_text('Target //foo:target1\n'
                                         'runtime_deps\n'
                                         '  ../../path1\n'
@@ -732,7 +760,10 @@ def GenTests(api):
                                         '  ../../path4\n'
                                         '  ./path3\n'
                                         '  ./target2\n'
-                                        '  ./target3\n')),
+                                        '  ./target3\n'
+                                        'Target //foo:fuzzer.exe\n'
+                                        'runtime_deps\n'
+                                        '  ./fuzzer.exe\n')),
       api.post_check(post_process.StepCommandContains, 'list gn targets',
                      ['//foo:target1']),
       api.post_check(post_process.StepCommandDoesNotContain, 'list gn targets',
