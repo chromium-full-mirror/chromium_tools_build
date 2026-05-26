@@ -12,6 +12,7 @@ DEPS = [
     'chromium',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'recipe_engine/file',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -90,9 +91,9 @@ def GenTests(api):
               },
           })),
       api.step_data(
-          'collect runtime deps for compile targets.gn desc fuzzer_target',
-          stdout=api.raw_io.output_text('./fuzzer_target\n'
-                                        '../../testing/data/fuzzer_seed.txt\n'),
+          'collect runtime deps for compile targets.read fuzzer_target.runtime_deps',
+          api.file.read_text(
+              './fuzzer_target\n../../testing/data/fuzzer_seed.txt\n'),
       ),
       api.post_process(StepCommandContains, 'zipping', [
           '["out/ceb4-fake-builder/fuzzer_target", '

@@ -1682,6 +1682,9 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun,
                        'collect runtime deps for compile targets'),
+      api.post_process(
+          post_process.MustRun,
+          'collect runtime deps for compile targets.read chrome.runtime_deps'),
       api.post_process(post_process.MustRun, 'write archive manifest'),
       api.post_process(post_process.DropExpectation),
   )

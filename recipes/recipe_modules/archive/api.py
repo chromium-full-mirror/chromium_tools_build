@@ -176,29 +176,34 @@ class ArchiveApi(recipe_api.RecipeApi):
 
   def _collect_runtime_deps(
       self,
-      compile_targets: list[str] | None,
+      compile_targets: list[str],
       source_dir: Path,
       build_dir: Path,
       archive_root: Path,
   ) -> list[str]:
-    """Collects the necessary runtime dependencies for the compile targets.
+    """Collects the necessary runtime dependencies for the compile targets by
+    reading the `.runtime_deps` file for each target in the `build_dir`.
 
     Returns the sorted set (list) of runtime dependencies with paths relative
     to the archive_root.
+
+    Raises:
+      file.Error: If any target's `.runtime_deps` file does not exist in the
+        `build_dir`.
     """
     runtime_deps = set()
-    compile_targets = compile_targets or []
 
     with self.m.context(cwd=source_dir):
       with self.m.step.nest(
           'collect runtime deps for compile targets') as step_result:
         for target in compile_targets:
-          deps = self.m.gn.desc(
-              build_dir,
-              target,
-              'runtime_deps',
-              step_name=f'gn desc {target}',
+          deps_file = build_dir / f'{target}.runtime_deps'
+          deps_content = self.m.file.read_text(
+              f'read {target}.runtime_deps',
+              deps_file,
+              test_data=f'./{target}\n./{target}_dependency\n../../testing/data/fuzzer_seed.txt'
           )
+          deps = deps_content.splitlines()
           runtime_deps.update(
               self.m.path.relpath(build_dir / dep, archive_root)
               for dep in deps)
