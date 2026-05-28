@@ -1014,7 +1014,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
         'with patch',
         sort_by_shard=True,
         retry_failed_shards=retry_failed_shards,
-        retry_invalid_shards=retry_failed_shards,
+        retry_invalid_shards=(retry_failed_shards or
+                              any(t.runs_on_skylab for t in test_suites)),
         include_utr_instruction=include_utr_instruction,
     )
 
