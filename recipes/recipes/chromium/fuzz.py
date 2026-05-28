@@ -397,8 +397,11 @@ def RunSteps(api, properties):
         api.step.empty('could not process fuzz coverage')
         api.step('diagnostic: df -h', ['df', '-h'])
         api.step('diagnostic: df -ih', ['df', '-ih'])
-        with api.context(cwd=source_dir):
-          api.step('diagnostic: du -sh *', ['sh', '-c', 'du -sh *'])
+        api.step(
+            'diagnostic: ls -laR /dev/shm',
+            ['ls', '-laR', '/dev/shm'],
+            ok_ret='any',
+        )
         raise
 
     else:
