@@ -105,4 +105,12 @@ message EnvProperties {
   // Used so that the UTR can detect when we're running inside Gemini CLI and
   // change its behavior (eg: limiting output lines).
   string GEMINI_CLI = 1;
+
+  // Used to detect when running inside Antigravity/Jetski agent.
+  string ANTIGRAVITY_AGENT = 2;
+
+  string CLAUDECODE = 3;
+  string CODEX_SANDBOX = 4;
+  string CURSOR_AGENT = 5;
+  string AI_AGENT = 6;
 }

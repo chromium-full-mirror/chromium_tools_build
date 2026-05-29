@@ -1037,6 +1037,14 @@ target_os=['os']
   )
 
   yield api.test(
+      'antigravity',
+      boilerplate(run_type=Request.RunType.RUN_TYPE_COMPILE),
+      api.properties.environ(ANTIGRAVITY_AGENT='1',),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'compile_remote_linking',
       boilerplate(run_type=Request.RunType.RUN_TYPE_COMPILE),
       api.siso.properties(output_local_strategy='minimum'),

@@ -47,7 +47,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
   def __init__(self, env_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self._is_inside_gemini = env_properties.GEMINI_CLI
+    self._is_ai_agent = (
+        env_properties.GEMINI_CLI or env_properties.ANTIGRAVITY_AGENT or
+        env_properties.CLAUDECODE or env_properties.CODEX_SANDBOX or
+        env_properties.CURSOR_AGENT or env_properties.AI_AGENT)
 
   def run(
       self,
@@ -831,7 +834,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     def _run_compile():
       extra_ninja_args = []
-      if self._is_inside_gemini:
+      if self._is_ai_agent:
         extra_ninja_args.append('--quiet')
       return self.m.chromium.compile(
           source_dir,
