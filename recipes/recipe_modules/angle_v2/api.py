@@ -37,8 +37,12 @@ class ANGLEV2Api(recipe_api.RecipeApi):
 
     # Skip trace tests if the rest of the build already failed.
     if not _raw_result_was_successful(test_result):
+      # This is not run unconditionally in order to not interfere with the
+      # hacky logic of _assert_no_regular_tests_run().
+      self._kill_mspdbsrv()
       return test_result, update_result
     self._maybe_run_trace_tests()
+    self._kill_mspdbsrv()
     return test_result, update_result
 
   def try_steps(self):
@@ -50,9 +54,30 @@ class ANGLEV2Api(recipe_api.RecipeApi):
 
     # Skip trace tests if the rest of the build already failed.
     if not _raw_result_was_successful(chromium_results):
+      # This is not run unconditionally in order to not interfere with the
+      # hacky logic of _assert_no_regular_tests_run().
+      self._kill_mspdbsrv()
       return chromium_results
     self._maybe_run_trace_tests()
+    self._kill_mspdbsrv()
     return chromium_results
+
+  def _kill_mspdbsrv(self):
+    """Attempts to kill mspdbsrv.exe.
+
+    This is only expected to happen when building with MSVC, but is safe to do
+    on all Windows builds. If this is not done, the process can prevent
+    Swarming from moving the builder directory, which in turn prevents a cache
+    from being created.
+    """
+    if not self.m.platform.is_win:
+      return
+    self.m.step(
+        'Kill mspdbsrv.exe (if running)',
+        ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+        raise_on_failure=False,
+        ok_ret='any',
+    )
 
   def _maybe_run_trace_tests(self):
     """Runs all trace tests if specified to via the recipe module properties.
