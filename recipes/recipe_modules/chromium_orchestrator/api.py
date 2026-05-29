@@ -203,7 +203,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         comp_output.got_revisions,
         source_dir,
         build_dir,
-        targets_spec_dir=source_dir / comp_output.src_side_test_spec_dir,
+        targets_spec_dir=self.m.chromium_tests.get_targets_spec_dir(
+            source_dir, builder_config),
         remote_tests_only=True)
     # This is used to set build properties on swarming tasks
     self.m.chromium.set_build_properties(comp_output.got_revisions)
