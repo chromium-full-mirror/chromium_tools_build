@@ -746,11 +746,14 @@ class AbstractTest(abc.ABC):
     # with NOTRUN in the 'without patch' phase. So when a 'without patch' test
     # fails with a different status, don't ignore it.
     if ignored_failures:
-      with_patch_notruns = self.notrun_failures('with patch')
+      if self.has_valid_results('retry shards with patch'):
+        initial_notruns = self.notrun_failures('retry shards with patch')
+      else:
+        initial_notruns = self.notrun_failures('with patch')
       without_patch_notruns = self.notrun_failures('without patch')
       for ignored_failure in ignored_failures.copy():
-        if ((ignored_failure in with_patch_notruns) !=
-            (ignored_failure in without_patch_notruns)):
+        if ((ignored_failure in initial_notruns) != (ignored_failure
+                                                     in without_patch_notruns)):
           ignored_failures.remove(ignored_failure)
     # Remove the tests that failed wo patch
     return True, test_failures - ignored_failures

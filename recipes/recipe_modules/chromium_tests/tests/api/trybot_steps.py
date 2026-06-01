@@ -1927,3 +1927,35 @@ def GenTests(api: RecipeTestApi):
           }),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'retry_shards_invalid_but_retry_valid_with_failures',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='retry-shards',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+      ),
+      api.properties(swarm_hashes={
+          'base_unittests': '[dummy hash for base_unittests/size]'
+      }),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'retry-shards': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'with patch', invalid=True),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'retry shards with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'without patch', failures=['Test.One']),
+      api.post_process(post_process.MustRun,
+                       'base_unittests (retry shards with patch)'),
+      api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
