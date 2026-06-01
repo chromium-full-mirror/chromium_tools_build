@@ -498,7 +498,8 @@
       "-DDAWN_ENABLE_ASAN=1",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=0"
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DDAWN_USE_WAYLAND=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
@@ -601,7 +602,8 @@
       "-DDAWN_ENABLE_ASAN=1",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=1",
-      "-DTINT_BUILD_AS_OTHER_OS=0"
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DDAWN_USE_WAYLAND=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
@@ -887,7 +889,8 @@
       "-DDAWN_ENABLE_ASAN=1",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=1"
+      "-DTINT_BUILD_AS_OTHER_OS=1",
+      "-DDAWN_USE_WAYLAND=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
@@ -990,7 +993,8 @@
       "-DDAWN_ENABLE_ASAN=1",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=0"
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DDAWN_USE_WAYLAND=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {

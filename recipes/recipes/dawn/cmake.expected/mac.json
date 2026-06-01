@@ -320,6 +320,7 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DDAWN_USE_WAYLAND=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
@@ -410,6 +411,7 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=1",
       "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DDAWN_USE_WAYLAND=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
@@ -587,6 +589,7 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=1",
+      "-DDAWN_USE_WAYLAND=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",
@@ -677,6 +680,7 @@
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DDAWN_USE_WAYLAND=0",
       "-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake"
     ],
     "cwd": "[CACHE]/uncached/dawn",

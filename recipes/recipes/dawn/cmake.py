@@ -280,6 +280,11 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
       f'-DDAWN_ENABLE_UBSAN={cmake_bool_arg(fixed_args.ubsan)}',
       f'-DDAWN_BUILD_NODE_BINDINGS={cmake_bool_arg(dawn_node)}',
       f'-DTINT_BUILD_AS_OTHER_OS={cmake_bool_arg(build_as_other)}',
+
+      # Debian Bullseye Wayland headers conflict with GLFW's Wayland protocol
+      # codegen. TODO(https://crbug.com/517575882): Reenable once the sysroot
+      # is updated to a newer Debian version.
+      '-DDAWN_USE_WAYLAND=0',
   ]
   if fixed_args.clang:
     cmake_args.extend([
