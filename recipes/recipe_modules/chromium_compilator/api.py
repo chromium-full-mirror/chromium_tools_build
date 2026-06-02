@@ -286,16 +286,6 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
       digest = self.m.isolate.isolate('archive src-side deps', isolate_file)
       self.m.file.remove('rm %s' % isolate_file, isolate_file)
 
-      targets_spec_dir = self.m.chromium_tests.get_targets_spec_dir(
-          source_dir, orch_builder_config)
-      relative_test_spec_dir = self.m.path.relpath(targets_spec_dir, source_dir)
-      # On windows compilators, this would use a `\\` path separator instead of
-      # a `/` that the linux orchestrators need to construct Paths
-      relative_test_spec_dir = relative_test_spec_dir.replace(
-          self.m.path.sep, '/')
-
-      nested_step.properties['src_side_test_spec_dir'] = (
-          relative_test_spec_dir)
       nested_step.properties['src_side_deps_digest'] = digest
       nested_step.logs['dep paths'] = self.m.json.dumps(dep_paths, indent=2)
 

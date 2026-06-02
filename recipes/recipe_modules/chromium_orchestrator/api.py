@@ -43,8 +43,6 @@ class CompilatorOutputProps:
       from the root, like v8 CLs.
     affected_files: List containing paths (str) of files affected by the patch
     src_side_deps_digest: CAS digest hash (str) for downloading src-side deps
-    src_side_test_spec_dir: Path (str) to downloaded src-side directory that
-      contains test specs, relative to the root of the downloaded src-side deps
     skipping_coverage: Whether coverage is being skipped. The compilator
       determines this by checking the len of affected eligible files.
   """
@@ -55,7 +53,6 @@ class CompilatorOutputProps:
   got_revisions = attrib(mapping[str, str])
   affected_files = attrib(sequence[str], default=None)
   src_side_deps_digest = attrib(str, default=None)
-  src_side_test_spec_dir = attrib(str, default=None)
   skipping_coverage = attrib(bool, default=None)
 
 
@@ -317,8 +314,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # (without patch) should be skipped
     if invalid_test_suites or self.m.chromium_tests.should_skip_without_patch(
         builder_config, self.m.chromium_checkout.source_dir, affected_files,
-        self.m.chromium_checkout.source_dir.joinpath(
-            comp_output.src_side_test_spec_dir)):
+        self.m.chromium_tests.get_targets_spec_dir(
+            self.m.chromium_checkout.source_dir, builder_config)):
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 
       summary_markdown = self.m.chromium_tests.format_unrecoverable_failures(
@@ -681,13 +678,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
                              skylab_prop_key in sub_build.output.properties):
       output_props = MessageToDict(sub_build.output.properties)
       got_revisions = {k: v for k, v in output_props.items() if 'got_' in k}
-      # TODO (kimstephanie): Replace src_side_.* with
-      # output_props.get() in a separate CL
-      src_side_deps_digest = None
-      src_side_test_spec_dir = None
-      if 'src_side_deps_digest' in output_props:
-        src_side_deps_digest = output_props['src_side_deps_digest']
-        src_side_test_spec_dir = output_props['src_side_test_spec_dir']
+      src_side_deps_digest = output_props.get('src_side_deps_digest')
 
       affected_files = None
       if 'affected_files' in output_props:
@@ -701,7 +692,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           got_revisions=got_revisions,
           affected_files=affected_files,
           src_side_deps_digest=src_side_deps_digest,
-          src_side_test_spec_dir=src_side_test_spec_dir,
           skipping_coverage=output_props.get('skipping_coverage'),
       )
       return comp_output, None

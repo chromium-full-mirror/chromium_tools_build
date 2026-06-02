@@ -130,8 +130,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                 '7d776826a3c4ae0878f026c00beab82765fb4d23',
             'src_side_deps_digest':
                 'ec4fc70b29359beb0490e/168',
-            'src_side_test_spec_dir':
-                'testing/buildbot',
             "gitiles_commit": {
                 "commitHash": "b740e9b724f3756c4ea0825eebf299e0a685225e",
                 "host": "chromium.googlesource.com",

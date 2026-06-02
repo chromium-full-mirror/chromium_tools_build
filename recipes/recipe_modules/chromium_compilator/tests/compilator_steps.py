@@ -543,8 +543,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'archive src-side dep paths.archive src-side deps'),
       api.post_process(post_process.PropertiesContain, 'src_side_deps_digest'),
-      api.post_process(post_process.PropertiesContain,
-                       'src_side_test_spec_dir'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -691,31 +689,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  yield api.test(
-      'win_src_test_spec_dir_prop',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-compilator',
-          revision='deadbeef',
-      ),
-      api.platform.name('win'),
-      api.path.exists(
-          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
-                                         'browser_tests')),
-      ctbc_properties(),
-      api.properties(
-          InputProperties(
-              orchestrator=InputProperties.Orchestrator(
-                  builder_name='fake-orchestrator',
-                  builder_group='fake-try-group'))),
-      override_test_spec(),
-      api.post_process(
-          post_process.PropertyEquals,
-          'src_side_test_spec_dir',
-          'testing/buildbot',
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
 
   yield api.test(
       'full run rts',
