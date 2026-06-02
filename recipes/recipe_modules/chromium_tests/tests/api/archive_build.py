@@ -91,12 +91,14 @@ def GenTests(api):
               },
           })),
       api.step_data(
-          'collect runtime deps for compile targets.read fuzzer_target.runtime_deps',
+          'collect runtime deps for compile targets.'
+          'read fuzzer_target.runtime_deps',
           api.file.read_text(
               './fuzzer_target\n../../testing/data/fuzzer_seed.txt\n'),
       ),
       api.post_process(StepCommandContains, 'zipping', [
           '["out/ceb4-fake-builder/fuzzer_target", '
+          '"out/ceb4-fake-builder/fuzzer_target.runtime_deps", '
           '"testing/data/fuzzer_seed.txt", '
           '"clusterfuzz_manifest.json"]'
       ]),

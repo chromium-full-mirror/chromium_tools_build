@@ -80,8 +80,6 @@ def copy_path(api, source_dir: Path, build_dir: Path, path_name):
     api.file.copytree('copying directory:' + str(src), src, dest)
 
 
-# TODO(506138501): Deduplicate in `filter_runtime_deps` and remove
-# deduplication logic in `RunSteps` when removing schema v0 logic.
 def filter_runtime_deps(runtime_deps: list[str],
                         gn_targets: set[str]) -> set[str]:
   """Get the subset of runtime dependencies for the specified targets.
@@ -409,6 +407,30 @@ def RunSteps(api, properties):
       # Needed for tests
       api.path.mock_add_file('[CACHE]/builder/src/path2')
 
+      # Archive schema version >= 1 compiles runtime dependencies and archives
+      # based on `.runtime_deps` files.
+      if properties.archive_schema_version != 0:
+        archive_root = source_dir
+
+        api.archive.clusterfuzz_archive_targets(
+            source_dir=source_dir,
+            archive_root=archive_root,
+            update_properties=update_result.properties,
+            gs_bucket=properties.upload_bucket,
+            archive_prefix=properties.archive_prefix or 'libfuzzer',
+            build_config=api.chromium.c.build_config_fs,
+            compile_targets=targets,
+            build_dir=build_dir,
+            archive_schema_version=properties.archive_schema_version,
+            fuzz_targets=targets,
+            archive_subdir_suffix=properties.upload_directory,
+            gs_acl='public-read',
+            **kwargs,
+        )
+        return
+
+      archive_root = build_dir
+
       with api.step.nest('collect all runtime dependencies') as step_result:
         set_of_gn_targets = set(gn_targets)
         raw_list_of_runtime_deps = api.gn.desc(
@@ -423,32 +445,17 @@ def RunSteps(api, properties):
         runtime_deps = sorted(runtime_deps)
         step_result.logs['runtime_dependencies'] = runtime_deps
 
-      paths_to_archive = None
-      if properties.archive_schema_version == 0:
-        archive_root = build_dir
-        with api.step.nest('copy runtime dependencies to build directory'):
-          for path in runtime_deps:
-            if path.startswith('../../'):
-              copy_path(api, source_dir, build_dir, path)
-
-      else:
-        archive_root = source_dir
-        # `runtime_deps` set can still contain unnormalized duplicates (e.g.,
-        # `foo` and `foo/`) so using a dict to deduplicate normalized paths
-        # from `relpath` with same sort order.
-        paths_to_archive_dict = dict.fromkeys(
-            api.path.relpath(build_dir / path, source_dir)
-            for path in runtime_deps)
-        paths_to_archive = list(paths_to_archive_dict)
-        paths_to_archive.append(MANIFEST_FILENAME)
+      with api.step.nest('copy runtime dependencies to build directory'):
+        for path in runtime_deps:
+          if path.startswith('../../'):
+            copy_path(api, source_dir, build_dir, path)
 
       fuzz_target_paths = [
           api.path.relpath(build_dir / target, archive_root)
           for target in targets
       ]
-
       manifest_dict = {
-          'archive_schema_version': properties.archive_schema_version,
+          'archive_schema_version': 0,
           'fuzz_targets': fuzz_target_paths,
       }
 
@@ -463,7 +470,6 @@ def RunSteps(api, properties):
           archive_root=archive_root,
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
-          paths_to_archive=paths_to_archive,
           archive_prefix=properties.archive_prefix or 'libfuzzer',
           build_config=api.chromium.c.build_config_fs,
           archive_subdir_suffix=properties.upload_directory,
@@ -508,46 +514,51 @@ def GenTests(api):
         test += api.step_data('list gn targets', stdout=targets)
 
     if not (is_try or is_coverage):
-      test += api.post_process(post_process.MustRun,
-                               'collect all runtime dependencies')
-      # this will lead to us having ../../path2 and ../../path4 as runtime
-      # dependencies to copy
-      step_output = ('some warning1\n\n'
-                     'some warning2\n'
-                     'Target target1\n'
-                     'runtime_deps\n'
-                     '  ./target1\n'
-                     '  ../../path14\n'
-                     '  ./path15\n\n\n'
-                     'Target target2\n'
-                     'runtime_deps\n'
-                     '  ./target2\n'
-                     '  ../../path1\n'
-                     '  ../../path2\n'
-                     'Target target3\n'
-                     'runtime_deps\n'
-                     '  ./target3\n'
-                     '  ./path3\n'
-                     '  ../../path4\n'
-                     'Target fuzzer.exe\n'
-                     'runtime_deps\n'
-                     '  ./fuzzer.exe\n'
-                     'Target target5\n'
-                     'runtime_deps\n'
-                     '  ./path16\n'
-                     '  ../../path17\n')
-
-      test += api.step_data(
-          'collect all runtime dependencies.get runtime '
-          'dependencies with pattern *',
-          stdout=api.raw_io.output_text(step_output),
-      )
-      # ../../path1, ../../path2 and ../../path4 need to be copied.
-      test += api.post_process(
-          LogEquals, 'collect all runtime dependencies', 'runtime_dependencies',
-          '../../path1\n../../path2\n../../path4\n./fuzzer.exe\n./path3\n'
-          './target2\n./target3')
       if archive_schema_version == 0:
+        test += api.post_process(post_process.MustRun,
+                                 'collect all runtime dependencies')
+        # this will lead to us having ../../path2 and ../../path4 as runtime
+        # dependencies to copy
+        step_output = ('some warning1\n\n'
+                       'some warning2\n'
+                       'Target target1\n'
+                       'runtime_deps\n'
+                       '  ./target1\n'
+                       '  ../../path14\n'
+                       '  ./path15\n\n\n'
+                       'Target target2\n'
+                       'runtime_deps\n'
+                       '  ./target2\n'
+                       '  ../../path1\n'
+                       '  ../../path2\n'
+                       'Target target3\n'
+                       'runtime_deps\n'
+                       '  ./target3\n'
+                       '  ./path3\n'
+                       '  ../../path4\n'
+                       'Target fuzzer.exe\n'
+                       'runtime_deps\n'
+                       '  ./fuzzer.exe\n'
+                       'Target target5\n'
+                       'runtime_deps\n'
+                       '  ./path16\n'
+                       '  ../../path17\n')
+
+        test += api.step_data(
+            'collect all runtime dependencies.get runtime '
+            'dependencies with pattern *',
+            stdout=api.raw_io.output_text(step_output),
+        )
+        # ../../path1, ../../path2 and ../../path4 need to be copied.
+        test += api.post_process(
+            LogEquals, 'collect all runtime dependencies',
+            'runtime_dependencies', '../../path1\n'
+            '../../path2\n'
+            '../../path4\n'
+            './fuzzer.exe\n'
+            './path3\n'
+            './target2\n'
+            './target3')
         test += api.post_process(
             post_process.MustRun,
             'copy runtime dependencies to build directory')
@@ -560,6 +571,52 @@ def GenTests(api):
             post_process.MustRun,
             'copy runtime dependencies to build directory.copying directory:'
             '[CACHE]/builder/src/path4',
+        )
+      else:
+        test += api.post_process(
+            post_process.MustRun,
+            'collect runtime deps for compile targets',
+        )
+        test += api.post_process(
+            post_process.MustRun,
+            'collect runtime deps for compile targets.'
+            'read fuzzer.exe.runtime_deps',
+        )
+        test += api.post_process(
+            post_process.MustRun,
+            'collect runtime deps for compile targets.'
+            'read target1.runtime_deps',
+        )
+        test += api.post_process(
+            post_process.MustRun,
+            'collect runtime deps for compile targets.'
+            'read target2.runtime_deps',
+        )
+        test += api.post_process(
+            post_process.MustRun,
+            'collect runtime deps for compile targets.'
+            'read target3.runtime_deps',
+        )
+        expected_paths = '\n'.join([
+            'out/1826-some-ci-bot/fuzzer.exe',
+            'out/1826-some-ci-bot/fuzzer.exe.runtime_deps',
+            'out/1826-some-ci-bot/fuzzer.exe_dependency',
+            'out/1826-some-ci-bot/target1',
+            'out/1826-some-ci-bot/target1.runtime_deps',
+            'out/1826-some-ci-bot/target1_dependency',
+            'out/1826-some-ci-bot/target2',
+            'out/1826-some-ci-bot/target2.runtime_deps',
+            'out/1826-some-ci-bot/target2_dependency',
+            'out/1826-some-ci-bot/target3',
+            'out/1826-some-ci-bot/target3.runtime_deps',
+            'out/1826-some-ci-bot/target3_dependency',
+            'testing/data/fuzzer_seed.txt',
+        ])
+        test += api.post_process(
+            LogEquals,
+            'collect runtime deps for compile targets',
+            'paths_to_archive',
+            expected_paths,
         )
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if is_coverage:
@@ -593,13 +650,19 @@ def GenTests(api):
         # targets in test are fuzzer.exe, target1, target2, target3
         # runtime_deps in test (filtered) are ../../path1, ../../path2,
         # ../../path4, ./path3
-        expected_paths = ('["path1", '
-                          '"path2", '
-                          '"path4", '
-                          '"out/1826-some-ci-bot/fuzzer.exe", '
-                          '"out/1826-some-ci-bot/path3", '
+        expected_paths = ('["out/1826-some-ci-bot/fuzzer.exe", '
+                          '"out/1826-some-ci-bot/fuzzer.exe.runtime_deps", '
+                          '"out/1826-some-ci-bot/fuzzer.exe_dependency", '
+                          '"out/1826-some-ci-bot/target1", '
+                          '"out/1826-some-ci-bot/target1.runtime_deps", '
+                          '"out/1826-some-ci-bot/target1_dependency", '
                           '"out/1826-some-ci-bot/target2", '
+                          '"out/1826-some-ci-bot/target2.runtime_deps", '
+                          '"out/1826-some-ci-bot/target2_dependency", '
                           '"out/1826-some-ci-bot/target3", '
+                          '"out/1826-some-ci-bot/target3.runtime_deps", '
+                          '"out/1826-some-ci-bot/target3_dependency", '
+                          '"testing/data/fuzzer_seed.txt", '
                           '"clusterfuzz_manifest.json"]')
         test += api.post_process(
             post_process.StepCommandContains,

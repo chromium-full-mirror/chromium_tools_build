@@ -201,12 +201,18 @@ class ArchiveApi(recipe_api.RecipeApi):
           deps_content = self.m.file.read_text(
               f'read {target}.runtime_deps',
               deps_file,
-              test_data=f'./{target}\n./{target}_dependency\n../../testing/data/fuzzer_seed.txt'
-          )
+              test_data=f'./{target}\n'
+              f'./{target}_dependency\n'
+              '../../testing/data/fuzzer_seed.txt')
           deps = deps_content.splitlines()
           runtime_deps.update(
+              # relpath() resolves paths relative to archive_root and normalizes
+              # the paths (removes trailing slashes on directory dependencies).
               self.m.path.relpath(build_dir / dep, archive_root)
               for dep in deps)
+          # Archive the .runtime_deps file itself, as it is needed by
+          # ClusterFuzz to do target unpacking for coverage-guided fuzzers.
+          runtime_deps.add(self.m.path.relpath(deps_file, archive_root))
         runtime_deps = sorted(runtime_deps)
         step_result.logs['paths_to_archive'] = runtime_deps
     return runtime_deps
@@ -222,20 +228,26 @@ class ArchiveApi(recipe_api.RecipeApi):
                                   build_dir: Path,
                                   *,
                                   archive_schema_version: int = 1,
+                                  fuzz_targets: list[str] | None = None,
                                   **kwargs) -> None:
-    """Wrapper for clusterfuzz_archive that collects runtime deps for GN targets.
+    """Wrapper for clusterfuzz_archive that collects runtime deps for GN
+    targets.
 
-    This handles the GN dependency resolution and delegates to the core archiver.
-    It is specifically designed for builders that use a small number of
-    top-level targets (like Chrome builders).
+    This handles the dependency discovery, archiving targets and dependencies,
+    and delegates to the main clusterfuzz_archive function.
 
     Args:
-      compile_targets: List of compiled GN targets. The output archive will
-        contain all these targets' outputs, all their runtime dependencies,
-        and nothing more.
+      compile_targets: List of compiled targets with .runtime_deps files. The
+        output archive will contain all these targets' outputs, all their
+        runtime dependencies, the respective `.runtime_deps` files and nothing
+        more.
       build_dir: The absolute path to the build output directory.
       archive_schema_version: Optional int to set metadata in
         `MANIFEST_FILENAME`. Default is 1.
+      fuzz_targets: Optional list of fuzz target names within `build_dir`.
+        These are converted to paths relative to the `archive_root`. This is
+        intended for coverage-guided fuzzers so ClusterFuzz does not waste time
+        discovering fuzzer paths and running non-fuzzer binaries.
       ... (other args are passed to clusterfuzz_archive)
     """
     if not compile_targets:
@@ -248,6 +260,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     manifest_dict = {
         'archive_schema_version': archive_schema_version,
     }
+
+    if fuzz_targets is not None:
+      manifest_dict['fuzz_targets'] = [
+          self.m.path.relpath(build_dir / target, archive_root)
+          for target in fuzz_targets
+      ]
+
     self.m.file.write_json(
         'write archive manifest',
         archive_root / MANIFEST_FILENAME,
@@ -264,6 +283,9 @@ class ArchiveApi(recipe_api.RecipeApi):
         paths_to_archive=paths_to_archive,
         **kwargs)
 
+  # TODO(518016282): Make this method private (e.g. rename to
+  # `_clusterfuzz_archive`) once all builders have switched to
+  # `clusterfuzz_archive_targets`.
   def clusterfuzz_archive(self,
                           source_dir: Path,
                           archive_root: Path,
