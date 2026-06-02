@@ -2827,8 +2827,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     info_message_list = list(info_messages)
     if suffix == 'retry shards with patch' and self.retry_only_failed_tests:
       info_message_list.append(
-          'Ran only previously failing tests, instead of the entire shard. '
-          'This is enabled on a per suite and per builder basis.\n')
+          'Ran only previously failing tests, instead of the entire shard.\n')
     _present_info_messages(step_result.presentation, self, info_message_list)
 
     self._present_rdb_results(step_result, self._rdb_results.get(suffix))
