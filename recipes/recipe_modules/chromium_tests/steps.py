@@ -3590,7 +3590,11 @@ class SkylabTest(AbstractSkylabTest, Test):
           if tr.url:
             shard_step.links['test results'] = (f'{tr.url}/test-results')
           if tr.log_url:
-            shard_step.links['debug log'] = tr.log_url
+            shard_step.links['test log'] = tr.log_url
+          if tr.log_dir:
+            shard_step.links['all logs (including system logs)'] = tr.log_dir
+          shard_step.links[
+              'help doc'] = 'http://go/cros-testing-for-chrome-help'
           shard_steps.append(shard_step)
 
       if any(not s.status in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]

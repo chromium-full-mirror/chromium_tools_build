@@ -252,7 +252,14 @@ def GenTests(api):
       api.post_process(
           _check_link_equals,
           'basic_EVE_TOT.shard: #0',
-          'debug log',
+          'test log',
+          'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
+          '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6',
+      ),
+      api.post_process(
+          _check_link_equals,
+          'basic_EVE_TOT.shard: #0',
+          'all logs (including system logs)',
           'https://tests.chromeos.goog/p/chromeos/logs/unified/'
           'invocations/build-8702874632118866193?treeQuery=cros-test',
       ),
@@ -449,7 +456,12 @@ def GenTests(api):
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.One'),
       api.post_process(
-          _check_link_equals, 'basic_EVE_TOT.shard: #0', 'debug log',
+          _check_link_equals, 'basic_EVE_TOT.shard: #0', 'test log',
+          'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
+          '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6'),
+      api.post_process(
+          _check_link_equals, 'basic_EVE_TOT.shard: #0',
+          'all logs (including system logs)',
           'https://tests.chromeos.goog/p/chromeos/logs/unified/'
           'invocations/build-8702874632118866193?treeQuery=cros-test'),
       api.post_process(post_process.DropExpectation),

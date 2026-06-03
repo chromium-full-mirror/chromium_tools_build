@@ -31,6 +31,7 @@ class TestRunner:
   status = attrib(
       enum(common_pb2.Status.values()), default=common_pb2.STATUS_UNSPECIFIED)
   shard = attrib(int, default=-1)
+  log_dir = attrib(str, default='')
 
   @classmethod
   def create(cls, test, **kwargs):
@@ -55,6 +56,6 @@ class TestRunner:
     # execution log.
     log_url = kwargs.pop('log_url', '')
     if log_url:
-      log_url += '?treeQuery=cros-test'
       kwargs['log_url'] = log_url
+
     return cls(**kwargs)

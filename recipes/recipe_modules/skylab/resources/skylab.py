@@ -62,6 +62,25 @@ def _call_buildbucket(bb_request_data, json_creds, end_point):
   return json.loads(content[content.find('\n') + 1:])
 
 
+def _extract_cros_test_log_url(task_url, child_builds):
+  if not task_url:
+    return None
+  m = re.search(r'/b?(\d+)$', task_url)
+  if not m:
+    return None
+  build_id = m.group(1)
+  build = child_builds.get(build_id)
+  if not build:
+    return None
+  for s in build.get('steps', []):
+    step_name = s.get('name', '')
+    if step_name.startswith('Read Container Log'):
+      for log in s.get('logs', []):
+        if log.get('name') == 'cros-test Log':
+          return log.get('viewUrl')
+  return None
+
+
 def _list_child_trs_status(ctp_bbid, json_creds):
   bb_request_data = {
       'predicate': {
@@ -69,7 +88,7 @@ def _list_child_trs_status(ctp_bbid, json_creds):
       },
       'pageSize': 1000,
       'mask': {
-          'fields': 'id,tags,output.status',
+          'fields': 'id,tags,steps,output.status',
       },
   }
   return _call_buildbucket(
@@ -398,6 +417,12 @@ def read_ctp_results(opts):
                                      not is_infra_failure):
           task_results[k] = Shard(attempt, shard)
 
+  child_builds = {}
+  search_resp = _list_child_trs_status(opts.ctp_build_id, opts.json_creds)
+  for b in search_resp.get('builds', []):
+    build_id = str(b.get('id'))
+    child_builds[build_id] = b
+
   res = {}
   for k, task_result in task_results.items():
     if not task_result.tr_attempt:
@@ -408,12 +433,27 @@ def read_ctp_results(opts):
           'status': 'INFRA_FAILURE',
       }
       continue
+    cros_test_log_url = _extract_cros_test_log_url(
+        task_result.tr_attempt.task_url, child_builds)
+    testhaus_url = task_result.tr_attempt.log_data.testhaus_url
+    if testhaus_url and 'tests.chromeos.goog' in testhaus_url:
+      separator = '&' if '?' in testhaus_url else '?'
+      testhaus_url += f'{separator}treeQuery=cros-test'
+
     res[k] = {
         'url': task_result.tr_attempt.task_url,
         'shard': task_result.shard,
-        'log_url': task_result.tr_attempt.log_data.testhaus_url,
+        'log_url': cros_test_log_url or '',
         'status': _fix_test_runner_status(task_result.tr_attempt),
     }
+
+    is_tast = False
+    for tc in task_result.tr_attempt.test_cases:
+      if tc.name.startswith('tast.'):
+        is_tast = True
+        break
+    if is_tast:
+      res[k]['log_dir'] = testhaus_url
 
   # Canceled test_runners will not present anything in cros_test_platform's
   # output properties.
@@ -427,16 +467,15 @@ def read_ctp_results(opts):
   # Additionally, incomplete result may launch a retry_invalid_shard step, the
   # outer recipe will launch a CTP with 10 minutes timeout, making the builder
   # to timeout.
-  trs = _list_child_trs_status(opts.ctp_build_id, opts.json_creds)
-  for tr in trs['builds']:
-    if tr['output']['status'] != 'CANCELED':
+  for tr in child_builds.values():
+    if tr.get('output', {}).get('status') != 'CANCELED':
       continue
     name = None
-    for tr_tag in tr['tags']:
+    for tr_tag in tr.get('tags', []):
       if tr_tag['key'] == 'display_name':
         name = tr_tag['value']
 
-    if '-retry-' in name:
+    if not name or '-retry-' in name:
       continue
     if '-shard-' not in name:
       continue

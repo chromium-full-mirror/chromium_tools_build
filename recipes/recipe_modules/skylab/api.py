@@ -475,8 +475,11 @@ class SkylabApi(recipe_api.RecipeApi):
                     f'test_runner/b{test.ctp_build_ids[suffix]}0',
                 'shard': None,
                 'log_url':
+                    'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
+                    '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6',
+                'log_dir':
                     'https://tests.chromeos.goog/p/chromeos/logs/unified/'
-                    'invocations/build-8702874632118866193',
+                    'invocations/build-8702874632118866193?treeQuery=cros-test',
                 'status': 'SUCCESS'
             }
         }))
