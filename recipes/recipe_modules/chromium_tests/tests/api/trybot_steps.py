@@ -1424,7 +1424,7 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.MustRun, 'RTS was used'),
       api.post_process(post_process.PropertyEquals, 'rts_model',
-                       'smart-test-selection'),
+                       'chromium-rts'),
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
       api.post_process(post_process.DropExpectation),
   )
@@ -1459,7 +1459,7 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.DoesNotRun, 'RTS was used'),
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.PropertyEquals, 'rts_model',
-                       'smart-test-selection'),
+                       'chromium-rts'),
       api.post_process(post_process.PropertiesDoNotContain, 'rts_was_used'),
       api.post_process(post_process.DropExpectation),
   )

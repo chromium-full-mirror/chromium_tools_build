@@ -25,8 +25,8 @@ PROPERTIES = {
 
 
 def RunSteps(api, builder_rts_selection):
-  api.chromium_rts.rts_model = 'smart-test-selection'
-  assert api.chromium_rts.rts_model == 'smart-test-selection'
+  api.chromium_rts.rts_model = 'chromium-rts'
+  assert api.chromium_rts.rts_model == 'chromium-rts'
 
   builder_config = ctbc.TrySpec.create(
       mirrors=[
@@ -67,7 +67,7 @@ def GenTests(api):
           }])),
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.PropertyEquals, 'rts_model',
-                       'smart-test-selection'),
+                       'chromium-rts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -78,6 +78,6 @@ def GenTests(api):
       api.cv(run_mode='DRY_RUN', top_level=True),
       api.post_process(post_process.MustRun, 'rts options'),
       api.post_process(post_process.PropertyEquals, 'rts_model',
-                       'smart-test-selection'),
+                       'chromium-rts'),
       api.post_process(post_process.DropExpectation),
   )

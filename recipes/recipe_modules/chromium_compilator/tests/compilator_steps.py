@@ -713,7 +713,7 @@ def GenTests(api):
               orchestrator=InputProperties.Orchestrator(
                   builder_group='tryserver.chromium.test',
                   builder_name='rts-rel'),
-              rts_model='smart-test-selection')),
+              rts_model='chromium-rts')),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': [{
@@ -724,7 +724,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'generate_build_files (with patch)',
-          ['smart-test-selection'],
+          ['chromium-rts'],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -753,7 +753,7 @@ def GenTests(api):
                   builder_group='tryserver.chromium.test',
                   builder_name='rts-rel'),
               test_targets=['base_unittests']),
-          rts_model='smart-test-selection'),
+          rts_model='chromium-rts'),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': [{
@@ -764,7 +764,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'generate_build_files (without patch)',
-          ['smart-test-selection'],
+          ['chromium-rts'],
       ),
       api.post_process(post_process.DropExpectation),
   )

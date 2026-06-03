@@ -417,7 +417,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.MustRun, 'RTS was used'),
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
-      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DoesNotRun, 'Fetch test selection results'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -457,7 +457,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.MustRun, 'RTS was used'),
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
-      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DoesNotRun, 'Fetch test selection results'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -497,7 +497,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.MustRun, 'RTS was used'),
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
-      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DoesNotRun, 'Fetch test selection results'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -537,6 +537,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.MustRun, 'RTS was used'),
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
-      api.post_process(post_process.MustRun, 'Fetch test selection results'),
+      api.post_process(post_process.DoesNotRun, 'Fetch test selection results'),
       api.post_process(post_process.DropExpectation),
   )

@@ -689,7 +689,7 @@ def GenTests(api):
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
       api.post_process(post_process.LogContains,
                        'trigger compilator (with patch)', 'request',
-                       ['"rts_model": "smart-test-selection"']),
+                       ['"rts_model": "chromium-rts"']),
       api.post_process(post_process.DropExpectation),
       api.expect_status('INFRA_FAILURE'),
   )

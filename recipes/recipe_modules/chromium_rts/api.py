@@ -4,21 +4,10 @@
 
 from __future__ import annotations
 
-from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
-
-from PB.go.chromium.org.luci.buildbucket.proto \
-  import builds_service as builds_service_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
-from RECIPE_MODULES.build.code_coverage import constants
 
 _DISABLE_RTS_FOOTER = 'Disable-Rts'
-_SMART_TEST_SELECTION_MODEL = 'smart-test-selection'
-_API_KEY_HOLDER_PROJECT = 'findit-for-me'
-_API_KEY_SECRET = 'decisiongraph_api_key'
-
-_DGI_SCRIPT_PATH = 'tools/test_selection/decisiongraph_invoker.py'
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
   """A module for interacting with rts."""
@@ -59,24 +48,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     return disabled
 
   def generate_filter_files(self, src_dir, build_dir, tests):
-    """Generates .filter files for the given tests.
-    """
-    if self._rts_model == _SMART_TEST_SELECTION_MODEL:
-      target_set = {test.canonical_name for test in tests if test.is_rts}
-      if not target_set:
-        self.m.step.empty('No candidate test targets for smart test selection')
-        return
-      sts_input_json_path = self._create_sts_input_json()
-      filter_file_dir = (build_dir / 'gen' / 'rts')
-      dgi_script_path = (src_dir / _DGI_SCRIPT_PATH)
-      cmd = ['vpython3', self.resource(dgi_script_path)]
-      cmd.append('--test-targets')
-      cmd.extend(target_set)
-      cmd.extend([
-          '--sts-config-file', sts_input_json_path, '--test-selection-phase',
-          'FETCH', '--filter-file-dir', filter_file_dir
-      ])
-      self.m.step('Fetch test selection results', cmd)
+    """Generates .filter files for the given tests."""
 
   def setup_tests(self, tests):
     """Sets the given tests up to be run with RTS
@@ -113,7 +85,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
                or builder_config.regression_test_selection == try_spec.ALWAYS)
 
     if use_rts and not self._is_rts_footer_disabled():
-      self._rts_model = _SMART_TEST_SELECTION_MODEL
+      self._rts_model = 'chromium-rts'
       step_result = self.m.step('rts options', [])
       step_result.presentation.step_text = 'RTS was enabled'
       step_result.presentation.properties['rts_model'] = self._rts_model
@@ -122,30 +94,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     """Returns the mb args to generate the RTS filter files"""
     mb_args = []
     if self._rts_model:
-      rts_input_json = self._create_sts_input_json()
       step_result = self.m.step('adding rts to mb args', [])
       mb_args += ['--rts-model', self._rts_model]
-      mb_args += ['--sts-config-file', rts_input_json, '--verbose']
       step_result.presentation.step_text = self._rts_model
     return mb_args
-
-  def _create_sts_input_json(self):
-    gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
-    with self.m.secret_manager.fetch(
-        project=_API_KEY_HOLDER_PROJECT,
-        secret=_API_KEY_SECRET,
-        step_name='fetch decisiongraph api key') as api_key:
-      rts_dict = {
-          'build_id': str(self.test_executor_build_id),
-          'change': gerrit_change.change,
-          'patchset': gerrit_change.patchset,
-          'builder': self.m.buildbucket.build.builder.builder,
-          'api_key': api_key
-      }
-      rts_input_json_path = self.m.path.mkstemp('rts_input.json')
-      # Write to json file
-      self.m.file.write_json(
-          name='create test selection input json',
-          dest=rts_input_json_path,
-          data=rts_dict)
-      return rts_input_json_path
