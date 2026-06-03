@@ -12,6 +12,7 @@ from packaging.version import parse
 DEPS = [
     'chromium',
     'infra/codesearch',
+    'infra/infra_checkout',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/git',
@@ -33,34 +34,36 @@ GO_VERSION_RE = re.compile(r'^go (\d+\.\d+(?:\.\d+)?)$', re.MULTILINE)
 def RunSteps(api):
   kythe_bin = api.codesearch.ensure_kythe().joinpath('extractors',
                                                      'go_extractor')
-  c = api.gclient.make_config()
-  soln = c.solutions.add()
-  soln.name = 'infra_superproject'
-  soln.url = 'https://chromium.googlesource.com/infra/infra_superproject.git'
-  soln.revision = 'HEAD'
-  api.gclient.c = c
 
-  with api.context(cwd=api.path.cache_dir):
-    result = api.bot_update.ensure_checkout()
-    kzip_name = '%s.kzip' % result.properties['got_revision']
-
+  internal = api.properties.get('internal', False)
   checkout_dir = api.path.cache_dir / 'infra_superproject'
+  co = api.infra_checkout.checkout(
+      'infra_internal' if internal else 'infra',
+      patch_root='infra_internal' if internal else 'infra',
+      path=checkout_dir,
+      internal=internal,
+  )
+
+  kzip_name = '%s.kzip' % co.bot_update_step.properties['got_revision']
   kzip_loc = api.path.cache_dir / kzip_name
 
   # Hardcode the active Go modules inside the superproject. We do this because
   # recursive globbing (walking the entire tree) takes extremely long
   # on LUCI bots due to traversing massive package caches (gomodcache/gopath)
   # and compiler distribution folders.
+  # TODO: Figure out a way to glob go.mod files efficiently.
   potential_go_mod_files = [
       'infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
       'infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
       'infra/go/src/go.chromium.org/luci/go.mod',
       'infra/go/src/infra/go.mod',
-      # Internal code won't be readable by public codesearch builders.
-      'infra_internal/dep/bcid.git/go.mod',
-      'infra_internal/dep/bcid.git/proto-public/go.mod',
-      'infra_internal/go/src/infra_internal/go.mod',
   ]
+  if internal:
+    potential_go_mod_files += [
+        'infra_internal/dep/bcid.git/go.mod',
+        'infra_internal/dep/bcid.git/proto-public/go.mod',
+        'infra_internal/go/src/infra_internal/go.mod',
+    ]
 
   go_mod_files = []
   for relpath in potential_go_mod_files:
@@ -119,7 +122,7 @@ def RunSteps(api):
   api.gsutil.upload(
       name='upload kythe index pack',
       source=kzip_loc,
-      bucket='chrome-codesearch',
+      bucket='chrome-internal-codesearch' if internal else 'chrome-codesearch',
       dest='infra/%s' % kzip_name)
 
 
@@ -189,37 +192,6 @@ def GenTests(api):
                 google.golang.org/b/bar
               )''')),
       ),
-      api.step_data(
-          'read [CACHE]/infra_superproject/infra_internal/dep/bcid.git/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
-              module google.com/bcid-provenance-generation-tool
-              go 1.25.0
-
-              tool (
-                google.golang.org/a/foo
-              )''')),
-      ),
-      api.step_data(
-          'read [CACHE]/infra_superproject/infra_internal/dep/bcid.git/proto-public/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
-              module google.com/bcid/proto-public
-              go 1.25.0
-              ''')),
-      ),
-      api.step_data(
-          'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
-              module infra_internal
-              go 1.26.1
-
-              tool (
-                google.golang.org/a/foo
-                google.golang.org/b/bar
-              )''')),
-      ),
       api.post_process(StepCommandContains, 'ensure_installed (2)',
                        ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
       api.post_process(StepCommandContains, 'init go modules', [
@@ -227,16 +199,11 @@ def GenTests(api):
           'infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go',
           'infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
           'infra/go/src/go.chromium.org/luci', 'infra/go/src/infra',
-          'infra_internal/dep/bcid.git',
-          'infra_internal/dep/bcid.git/proto-public',
-          'infra_internal/go/src/infra_internal'
       ]),
       api.post_process(StepCommandContains, 'generate go kzip', [
           'go.chromium.org/chromiumos/config/go/...',
           'go.chromium.org/chromiumos/infra/proto/go/...',
           'go.chromium.org/luci/...', 'go.chromium.org/infra/...',
-          'google.com/bcid-provenance-generation-tool/...',
-          'google.com/bcid/proto-public/...', 'infra_internal/...'
       ]),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
@@ -336,6 +303,31 @@ def GenTests(api):
       ),
       api.post_process(StepCommandContains, 'ensure_installed (2)',
                        ['infra/3pp/tools/go/${platform} version:3@1.24.5']),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'internal',
+      api.buildbucket.try_build(
+          project='infra-internal',
+          builder='generic tester',
+          git_repo='https://chrome-internal.googlesource.com/infra/infra_superproject'
+      ) + api.properties(internal=True),
+      api.platform('linux', 64),
+      api.path.exists(
+          api.path.cache_dir / 'infra_superproject',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra/go/src/infra/go.mod',
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/infra
+              go 1.24.0
+              ''')),
+      ),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
