@@ -1616,7 +1616,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           '</br>*Note: The gn_args used in this gen:*<br/><li> ' +
           '</br><li> '.join([arg for arg in gn_args.split('\n') if arg]))
 
-    mb_args.extend(self.m.chromium_rts.mb_args())
     name = name or 'generate_build_files'
     result = None
     try:

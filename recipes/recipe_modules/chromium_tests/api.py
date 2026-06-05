@@ -810,15 +810,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return raw_result, execution_info
 
-  def find_swarming_command_lines(self, suffix, build_dir: Path, rts=False):
+  def find_swarming_command_lines(self, suffix, build_dir: Path):
 
     script = self.m.chromium_tests.resource('find_command_lines.py')
     args = ['--build-dir', build_dir, '--output-json', self.m.json.output()]
 
     step_name = 'find command lines%s' % suffix
-    if rts:
-      step_name = 'find rts command lines%s' % suffix
-      args.append('--rts-model')
 
     step_result = self.m.step(
         step_name, ['python3', '-u', script] + args,
@@ -894,17 +891,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # If RTS is enabled, create .filter files with test names, and create
     # command lines to filter tests as per those files.
     rts_command_lines = None
-    if self.m.chromium_rts.enabled:
-      rts_command_lines = self.find_swarming_command_lines(
-          name_suffix, build_dir, rts=True)
-      if rts_command_lines:
-        for test in tests:
-          rts_command_line = rts_command_lines.get(test.target_name, [])
-          if rts_command_line:
-            test.rts_raw_cmd = rts_command_line
-      rts_tests = self.m.chromium_rts.setup_tests(tests)
-      self.m.chromium_rts.generate_filter_files(source_dir, build_dir,
-                                                rts_tests)
 
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
@@ -2227,8 +2213,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config)
     self.print_link_to_results()
-    self.m.chromium_rts.init_rts_options(builder_config)
-
     self.configure_build(builder_config)
     self.m.chromium.apply_config('trybot_flavor')
 

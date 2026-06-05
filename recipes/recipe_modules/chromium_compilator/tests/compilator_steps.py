@@ -64,32 +64,6 @@ def RunSteps(api, properties):
 
 
 def GenTests(api):
-  _TEST_BUILDERS = ctbc.BuilderDatabase.create({
-      'chromium.test': {
-          'chromium-rel':
-              ctbc.BuilderSpec.create(
-                  chromium_config='chromium',
-                  gclient_config='chromium',
-              ),
-      },
-  })
-
-  _TEST_TRYBOTS = ctbc.TryDatabase.create({
-      'tryserver.chromium.test': {
-          'rts-rel':
-              ctbc.TrySpec.create(
-                  mirrors=[
-                      ctbc.TryMirror.create(
-                          builder_group='chromium.test',
-                          buildername='chromium-rel',
-                          tester='chromium-rel',
-                      ),
-                  ],
-                  regression_test_selection=try_spec.ALWAYS,
-              ),
-      }
-  })
-
   def override_test_spec():
     return api.chromium_tests.read_targets_spec(
         'fake-group', {
@@ -690,84 +664,7 @@ def GenTests(api):
   )
 
 
-  yield api.test(
-      'full run rts',
-      api.properties(
-          **{
-              "$recipe_engine/cv": {
-                  "active": True,
-                  "dryRun": True,
-                  "runMode": "FULL_RUN",
-                  "topLevel": True
-              }
-          }),
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-compilator',
-          revision='deadbeef',
-      ),
-      api.chromium_tests_builder_config.databases(_TEST_BUILDERS,
-                                                  _TEST_TRYBOTS),
-      api.properties(
-          InputProperties(
-              orchestrator=InputProperties.Orchestrator(
-                  builder_group='tryserver.chromium.test',
-                  builder_name='rts-rel'),
-              rts_model='chromium-rts')),
-      api.chromium_tests.read_targets_spec('chromium.test', {
-          'chromium-rel': {
-              'gtest_tests': [{
-                  'test': 'base_unittests',
-              }],
-          },
-      }),
-      api.post_process(
-          post_process.StepCommandContains,
-          'generate_build_files (with patch)',
-          ['chromium-rts'],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
 
-  yield api.test(
-      'full run rts without_patch',
-      api.properties(
-          **{
-              "$recipe_engine/cv": {
-                  "active": True,
-                  "dryRun": True,
-                  "runMode": "FULL_RUN",
-                  "topLevel": True
-              }
-          }),
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-compilator',
-          revision='deadbeef',
-      ),
-      api.chromium_tests_builder_config.databases(_TEST_BUILDERS,
-                                                  _TEST_TRYBOTS),
-      api.properties(
-          InputProperties(
-              orchestrator=InputProperties.Orchestrator(
-                  builder_group='tryserver.chromium.test',
-                  builder_name='rts-rel'),
-              test_targets=['base_unittests']),
-          rts_model='chromium-rts'),
-      api.chromium_tests.read_targets_spec('chromium.test', {
-          'chromium-rel': {
-              'gtest_tests': [{
-                  'test': 'base_unittests',
-              }],
-          },
-      }),
-      api.post_process(
-          post_process.StepCommandContains,
-          'generate_build_files (without patch)',
-          ['chromium-rts'],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
 
   yield api.test(
       'global_shutdown',

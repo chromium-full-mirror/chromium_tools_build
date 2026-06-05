@@ -62,10 +62,6 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
 
       self.m.chromium_tests.report_builders(orch_builder_config)
 
-      # This should eventually be replaced with a property that controls compile
-      # with RTS independent of compilator
-      self.m.chromium_rts.rts_model = properties.rts_model
-
       self.m.chromium_tests.configure_build(orch_builder_config)
       self.m.chromium.apply_config('trybot_flavor')
 

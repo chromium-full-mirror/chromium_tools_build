@@ -126,9 +126,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             list(self.m.chromium_bootstrap.skip_analysis_reasons),
     }
 
-    if self.m.chromium_rts.rts_model:
-      compilator_properties['rts_model'] = self.m.chromium_rts.rts_model
-
     # Forward on any non-recipe_engine recipe module properties. The
     # recipe_engine module properties are often synthesized based on the current
     # build, so shouldn't be forwarded. For non-module properties, it is more
@@ -221,7 +218,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if comp_output.skylab_props:
       tests.extend(
           self.process_skylab_props(comp_output.skylab_props, targets_config))
-    tests = self.m.chromium_rts.setup_tests(tests)
 
     self.m.chromium_tests.configure_swarming(
         self.m.tryserver.is_tryserver, builder_group=builder_id.group)
@@ -325,9 +321,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         summary_markdown += '\n\n From compilator:\n{}'.format(
             local_tests_raw_result.summary_markdown)
 
-      if self.m.chromium_rts.rts_model:
-        summary_markdown += RTS_SUMMARY
-
       status = self.m.chromium_tests.determine_build_status_from_tests(
           failing_test_suites, 'with patch')
       return result_pb2.RawResult(
@@ -413,9 +406,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       if final_status == common_pb.SUCCESS:
         final_status = local_tests_raw_result.status
 
-    if unrecoverable_test_suites and self.m.chromium_rts.rts_model:
-      summary_markdown += RTS_SUMMARY
-
     return result_pb2.RawResult(
         summary_markdown=summary_markdown, status=final_status)
 
@@ -423,7 +413,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     builder_id, builder_config = (
         self.m.chromium_tests_builder_config.lookup_builder())
 
-    self.m.chromium_rts.init_rts_options(builder_config)
     self.m.chromium_tests.configure_build(builder_config, test_only=True)
 
     self.m.chromium_tests.report_builders(builder_config)

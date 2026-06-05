@@ -119,28 +119,6 @@ _TEST_TRYBOTS = ctbc.TryDatabase.create({
                     ),
                 ],
             ),
-        'rts-rel':
-            ctbc.TrySpec.create(
-                mirrors=[
-                    ctbc.TryMirror.create(
-                        builder_group='chromium.test',
-                        buildername='chromium-rel',
-                        tester='chromium-rel',
-                    ),
-                ],
-                regression_test_selection=try_spec.ALWAYS,
-            ),
-        'rts-exp-rel':
-            ctbc.TrySpec.create(
-                mirrors=[
-                    ctbc.TryMirror.create(
-                        builder_group='chromium.test',
-                        buildername='chromium-rel',
-                        tester='chromium-rel',
-                    ),
-                ],
-                regression_test_selection=try_spec.ALWAYS,
-            ),
     }
 })
 
@@ -1353,79 +1331,26 @@ def GenTests(api: RecipeTestApi):
                   "topLevel": True
               }
           }),
-      api.chromium_tests_builder_config.try_build(
+      api.chromium.try_build(
           builder_group='tryserver.chromium.test',
-          builder='rts-rel',
-          builder_db=_TEST_BUILDERS,
-          try_db=_TEST_TRYBOTS,
+          builder='fake-try-builder',
+          experiments=['chromium_rts.rts'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='chromium.test',
+              builder='chromium-rel',
+          ).assemble()),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'chromium-rel': {
                   'gtest_tests': [{
-                      'test':
-                          'base_unittests',
+                      'test': 'base_unittests',
                       'swarming': {},
-                      'args': [
-                          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter',
-                      ],
                   }],
               },
           }),
-      api.step_data(
-          'find rts command lines (with patch)',
-          api.json.output({
-              'base_unittests': [
-                  './%s' % 'base_unittests', '--fake-without-patch-flag',
-                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
-                  '--test-launcher-filter-file=base_unittests.filter'
-              ]
-          })),
-      api.step_data(api.json.output(
-        [
-          {
-            "approvals": {
-                "Auto-Submit": " 0",
-                "Commit-Queue": " 0"
-            },
-            "_account_id": 1111,
-            "name": "Author Person",
-            "email": "someone@chromium.org"
-         },
-          {
-            "approvals": {
-                "Code-Review": " 0",
-                "Commit-Queue": " 0"
-            },
-            "_account_id": 222,
-            "name": "Reviewer Person",
-            "email": "someoneelse@chromium.org"
-         }
-        ])),
-      api.post_check(
-          api.swarming.check_triggered_request,
-          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
-          lambda check, req: check(
-              '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter;base_unittests.filter'
-              in req[0].command)),
-      api.post_check(
-          api.swarming.check_triggered_request,
-          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
-          lambda check, req: check(
-              '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter'
-              not in req[0].command)),
-      api.post_check(
-          api.swarming.check_triggered_request,
-          'test_pre_run (with patch).[trigger] base_unittests (with patch)',
-          lambda check, req: check(
-              '--test-launcher-filter-file=base_unittests.filter' \
-                not in req[0].command)),
-      api.post_process(post_process.MustRun, 'rts options'),
-      api.post_process(post_process.MustRun, 'RTS was used'),
-      api.post_process(post_process.PropertyEquals, 'rts_model',
-                       'chromium-rts'),
-      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1440,13 +1365,17 @@ def GenTests(api: RecipeTestApi):
                   "topLevel": True
               }
           }),
-      api.chromium_tests_builder_config.try_build(
+      api.chromium.try_build(
           builder_group='tryserver.chromium.test',
-          builder='rts-rel',
-          builder_db=_TEST_BUILDERS,
-          try_db=_TEST_TRYBOTS,
+          builder='fake-try-builder',
+          experiments=['chromium_rts.rts'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='chromium.test',
+              builder='chromium-rel',
+          ).assemble()),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'chromium-rel': {
@@ -1457,41 +1386,7 @@ def GenTests(api: RecipeTestApi):
               },
           }),
       api.post_process(post_process.DoesNotRun, 'RTS was used'),
-      api.post_process(post_process.MustRun, 'rts options'),
-      api.post_process(post_process.PropertyEquals, 'rts_model',
-                       'chromium-rts'),
       api.post_process(post_process.PropertiesDoNotContain, 'rts_was_used'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'full run rts disabled by footer',
-      api.properties(
-          **{
-              "$recipe_engine/cv": {
-                  "active": True,
-                  "dryRun": True,
-                  "runMode": "FULL_RUN",
-                  "topLevel": True
-              }
-          }),
-      api.chromium_tests_builder_config.try_build(
-          builder_group='tryserver.chromium.test',
-          builder='rts-rel',
-          builder_db=_TEST_BUILDERS,
-          try_db=_TEST_TRYBOTS,
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-      ),
-      api.chromium_tests.read_targets_spec('chromium.test', {
-          'chromium-rel': {
-              'gtest_tests': [{
-                  'test': 'base_unittests',
-              }],
-          },
-      }),
-      api.step_data('parse description',
-                    api.json.output({'Disable-Rts': ['true']})),
-      api.post_process(post_process.DoesNotRun, 'rts options'),
       api.post_process(post_process.DropExpectation),
   )
 
