@@ -6,6 +6,7 @@ from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 
 from PB.recipes.build.chromium_toolchain.package import InputProperties
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium_types
 
 DEPS = [
@@ -15,7 +16,11 @@ DEPS = [
     'depot_tools/gsutil',
     'depot_tools/osx_sdk',
     'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
     'recipe_engine/context',
+    'recipe_engine/futures',
+    'recipe_engine/json',
+    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/runtime',
@@ -98,6 +103,35 @@ BUILDERS = freeze(BUILDERS)
 GCS_BUCKET_PROD = 'chromium-browser-toolchain-prod'
 
 
+def _trigger_tbi(api, change=None):
+  with api.step.nest("package clang using TBI"):
+    try:
+      tbi_client = api.cipd.ensure_tool(
+          "infra_internal/tools/security/lexan_tbi_client/${platform}",
+          "latest")
+      env = {}
+      if change:
+        env = {
+            'GERRIT_HOST': str(change.host),
+            'GERRIT_PROJECT': str(change.project),
+            'GERRIT_CHANGE_ID': str(change.change),
+            'GERRIT_PATCHSET_ID': str(change.patchset),
+        }
+      with api.context(env=env):
+        res = api.step('request build', [
+            tbi_client,
+            '--pool',
+            'high-cpu',
+            "--result_file",
+            api.json.output(name="summary"),
+            "--clang",
+        ])
+      if res.exc_result.retcode == 0:
+        res.presentation.step_text = 'TBI finished successfully'
+    except (api.step.StepFailure, api.step.InfraFailure) as e:
+      api.step.active_result.presentation.step_text = (
+          "TBI failed or infra issue: %s" % e)
+
 def RunSteps(api, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
@@ -118,11 +152,25 @@ def RunSteps(api, properties):
         args += ['--bucket', GCS_BUCKET_PROD]
       if properties.llvm_revision:
         args += ['--revision', properties.llvm_revision]
+      # Run a TBI build job in the background only for linux try jobs.
+      tbi_background = None
+      if (not properties.disable_tbi and
+          'linux_upload_clang' in api.buildbucket.builder_name):
+        changes = api.buildbucket.build.input.gerrit_changes
+        change = None
+        if changes:
+          change = changes[0]
+        tbi_background = api.futures.spawn_immediate(_trigger_tbi, api, change)
       api.step('package clang', [
           'python3',
           source_dir.joinpath('tools', 'clang', 'scripts', 'package.py')
       ] + args)
-
+      # Cancel the background TBI job if package clang has finished, TBI for
+      # the time being should be non blocking.
+      if tbi_background:
+        if not tbi_background.done and not api._test_data.enabled:
+          tbi_background.cancel()  # pragma: no cover
+          tbi_background.result()  # pragma: no cover
 
 def GenTests(api):
   yield api.test(
@@ -146,6 +194,46 @@ def GenTests(api):
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'linux-tbi-success',
+      api.properties(disable_tbi=False),
+      api.platform.name('linux'),
+      api.chromium.try_build(
+          builder_group='tryserver.chromium.linux',
+          builder='linux_upload_clang',
+          gerrit_changes=[
+              common_pb2.GerritChange(
+                  host='chromium-review.googlesource.com',
+                  project='fake-project',
+                  change=123456,
+                  patchset=16)
+          ]),
+      api.post_process(post_process.StatusSuccess),
+      api.override_step_data(
+          'package clang using TBI.request build',
+          api.json.output(name='summary', data={'test': 'data'})),
+      api.post_process(post_process.MustRun,
+                       'package clang using TBI.request build'),
+      api.post_process(post_process.StepEnvContains,
+                       'package clang using TBI.request build', {
+                           'GERRIT_CHANGE_ID': '123456',
+                       }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'linux-tbi-failure',
+      api.properties(disable_tbi=False),
+      api.platform.name('linux'),
+      api.chromium.try_build(
+          builder_group='tryserver.chromium.linux',
+          builder='linux_upload_clang'),
+      api.step_data('package clang using TBI.request build', retcode=1),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
 
   yield api.test(
       'official',

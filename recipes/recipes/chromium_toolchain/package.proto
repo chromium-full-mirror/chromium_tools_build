@@ -9,5 +9,7 @@ package recipes.build.chromium_toolchain.package;
 message InputProperties {
   // LLVM revision to build.
   string llvm_revision = 1;
+  // Disable TBI builds.
+  bool disable_tbi = 2;
 }
 
