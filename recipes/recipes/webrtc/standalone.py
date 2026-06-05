@@ -99,6 +99,7 @@ def RunSteps(api):
         build_dir,
         builder_id,
         tests_to_run,
+        retry_invalid_shards=True,
     )
 
     if test_failure_summary:

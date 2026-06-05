@@ -352,14 +352,13 @@ class WebRTCApi(recipe_api.RecipeApi):
           args=['-a', 'public-read'],
           unauthenticated_url=True)
 
-  def run_tests(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      builder_id,
-      tests,
-  ):
+  def run_tests(self,
+                checkout_dir: Path,
+                source_dir: Path,
+                build_dir: Path,
+                builder_id,
+                tests,
+                retry_invalid_shards=False):
     if not tests:
       return
 
@@ -372,7 +371,9 @@ class WebRTCApi(recipe_api.RecipeApi):
         source_dir,
         build_dir,
         tests,
-        surface_invalid_results_as_infra_failure=True)
+        surface_invalid_results_as_infra_failure=True,
+        retry_invalid_shards=retry_invalid_shards,
+    )
     test_failure_summary = test_runner()
 
     if self.m.code_coverage.using_coverage:
