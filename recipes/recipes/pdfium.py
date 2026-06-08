@@ -40,6 +40,7 @@ from recipe_engine.config import Set
 from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
+    'brotli': Property(default=False, kind=bool),
     'component': Property(default=False, kind=bool),
     'memory_tool': Property(default=None, kind=str),
     'partition_alloc': Property(default=True, kind=bool),
@@ -195,7 +196,7 @@ def _checkout_step(api, target_os, rust):
 
 
 def _generate_out_path(memory_tool, partition_alloc, skia, rust, xfa, v8, rel,
-                       component):
+                       brotli, component):
   out_dir = 'release' if rel else 'debug'
 
   if skia:
@@ -207,6 +208,8 @@ def _generate_out_path(memory_tool, partition_alloc, skia, rust, xfa, v8, rel,
     out_dir += '_xfa'
   if v8:
     out_dir += '_v8'
+  if brotli:
+    out_dir += '_brotli'
 
   if component:
     out_dir += '_component'
@@ -227,8 +230,8 @@ def _generate_out_path(memory_tool, partition_alloc, skia, rust, xfa, v8, rel,
 # _gn_gen_builds() calls 'gn gen' and returns a dictionary of
 # the used build configuration to be used by Gold.
 def _gn_gen_builds(api, source_root, memory_tool, partition_alloc, skia, rust,
-                   xfa, v8, target_cpu, rel, component, target_os, use_cxx23,
-                   out_dir):
+                   xfa, v8, target_cpu, rel, brotli, component, target_os,
+                   use_cxx23, out_dir):
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
   gn_cmd = api.depot_tools.gn_py_path
@@ -239,6 +242,7 @@ def _gn_gen_builds(api, source_root, memory_tool, partition_alloc, skia, rust,
       'enable_rust_cxx=%s' % gn_bool[rust],
       'is_component_build=%s' % gn_bool[component],
       'is_debug=%s' % gn_bool[not rel],
+      'pdf_enable_brotli=%s' % gn_bool[brotli],
       'pdf_enable_fontations=%s' % gn_bool[rust],
       'pdf_enable_rust_png=%s' % gn_bool[rust],
       'pdf_enable_v8=%s' % gn_bool[v8],
@@ -964,14 +968,14 @@ def _gen_properties(api, **kwargs):
 
 
 def RunSteps(api, memory_tool, partition_alloc, skia, rust, xfa, v8, target_cpu,
-             rel, run_skia_gold, component, skip_test, target_os, renderers,
-             swarming, use_cxx23):
+             rel, run_skia_gold, brotli, component, skip_test, target_os,
+             renderers, swarming, use_cxx23):
   update_result = _checkout_step(api, target_os, rust)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
 
   out_dir = _generate_out_path(memory_tool, partition_alloc, skia, rust, xfa,
-                               v8, rel, component)
+                               v8, rel, brotli, component)
 
   with api.osx_sdk('mac'):
     # buildbot sets 'clobber' to the empty string which evaluates to false if
@@ -980,7 +984,7 @@ def RunSteps(api, memory_tool, partition_alloc, skia, rust, xfa, v8, target_cpu,
       api.file.rmtree('clobber', source_dir.joinpath('out', out_dir))
 
     build_config = _gn_gen_builds(api, source_dir, memory_tool, partition_alloc,
-                                  skia, rust, xfa, v8, target_cpu, rel,
+                                  skia, rust, xfa, v8, target_cpu, rel, brotli,
                                   component, target_os, use_cxx23, out_dir)
     if not run_skia_gold:
       build_config = {}
@@ -1299,6 +1303,30 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       _gen_properties(api, xfa=True, clobber=''),
       _gen_ci_build(api, 'windows_xfa'),
+  )
+
+  yield api.test(
+      'linux_skia_brotli',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, skia=True, brotli=True, clobber=''),
+      _gen_ci_build(api, 'linux_skia_brotli'),
+  )
+
+  yield api.test(
+      'win_skia_brotli',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, skia=True, brotli=True, clobber=''),
+      _gen_ci_build(api, 'windows_skia_brotli'),
+  )
+
+  yield api.test(
+      'mac_skia_brotli',
+      api.platform('mac', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, skia=True, brotli=True, clobber=''),
+      _gen_ci_build(api, 'mac_skia_brotli'),
   )
 
   yield api.test(
