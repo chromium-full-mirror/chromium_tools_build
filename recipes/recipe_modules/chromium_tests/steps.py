@@ -3559,13 +3559,9 @@ class SkylabTest(AbstractSkylabTest, Test):
         # its lifecycle as expected.
         self._update_failure_on_exit(suffix, False)
       else:
+        self._update_failure_on_exit(suffix, True)
         if ctp_id := self.ctp_build_ids.get(suffix):
           step.links['CTP Build'] = bb_url % ctp_id
-
-        self._raise_failed_nested_step(
-            suffix, step, self.api.m.step.EXCEPTION,
-            'Test did not run or failed to report to ResultDB.'
-            'Check the CTP build for details.')
 
       if rdb_results.unexpected_failing_tests:
         step.status = self.api.m.step.FAILURE
@@ -3596,6 +3592,12 @@ class SkylabTest(AbstractSkylabTest, Test):
           shard_step.links[
               'help doc'] = 'http://go/cros-testing-for-chrome-help'
           shard_steps.append(shard_step)
+
+      if not rdb_results.total_tests_ran:
+        self._raise_failed_nested_step(
+            suffix, step, self.api.m.step.EXCEPTION,
+            'Test did not run or failed to report to ResultDB.'
+            'Check the CTP build for details.')
 
       if any(not s.status in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
              for s in shard_steps):

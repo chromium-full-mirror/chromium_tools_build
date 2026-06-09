@@ -489,6 +489,7 @@ def GenTests(api):
       api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['lacros_fyi_tast_tests']),
+      api.post_process(post_process.MustRun, 'basic_EVE_TOT.shard: #0'),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
                        ['Test did not run or failed to report to ResultDB.']),
