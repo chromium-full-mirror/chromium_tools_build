@@ -6,10 +6,11 @@ from __future__ import annotations
 
 
 DEPS = [
-    'depot_tools/tryserver', 'recipe_engine/buildbucket', 'recipe_engine/cv',
-    'recipe_engine/file', 'recipe_engine/led', 'recipe_engine/path',
-    'recipe_engine/properties', 'recipe_engine/step', 'recipe_engine/swarming',
-    'infra/secret_manager'
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/step',
 ]
 
 from .api import ChromiumRtsApi as API

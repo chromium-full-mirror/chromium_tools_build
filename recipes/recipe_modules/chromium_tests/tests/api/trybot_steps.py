@@ -1334,7 +1334,7 @@ def GenTests(api: RecipeTestApi):
       api.chromium.try_build(
           builder_group='tryserver.chromium.test',
           builder='fake-try-builder',
-          experiments=['chromium_rts.rts'],
+          experiments=['chromium_rts.filter_file_analysis'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       ctbc_api.properties(
@@ -1368,7 +1368,7 @@ def GenTests(api: RecipeTestApi):
       api.chromium.try_build(
           builder_group='tryserver.chromium.test',
           builder='fake-try-builder',
-          experiments=['chromium_rts.rts'],
+          experiments=['chromium_rts.filter_file_analysis'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       ctbc_api.properties(

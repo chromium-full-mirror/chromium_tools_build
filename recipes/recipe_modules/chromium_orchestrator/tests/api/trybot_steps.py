@@ -646,7 +646,7 @@ def GenTests(api):
                       ]),
               }
           }),
-          experiments=['chromium_rts.rts'],
+          experiments=['chromium_rts.filter_file_analysis'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.cv(run_mode='FULL_RUN', top_level=True),
@@ -712,7 +712,7 @@ def GenTests(api):
                           ],),
               }
           }),
-          experiments=['chromium_rts.rts'],
+          experiments=['chromium_rts.filter_file_analysis'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.properties(

@@ -3,11 +3,60 @@
 # found in the LICENSE file.
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
+
+_TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
+_RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
+_DEFAULT_TARGET_CHANGE_RECALL = 0.95
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
-  """A module for interacting with rts."""
+  """A module for interacting with Regression Test Selection (RTS) for Chromium."""
 
-  def generate_filter_files(self, src_dir, build_dir, tests):
-    """Generates .filter files for the given tests."""
-    # TODO: Part of a chained CL currently in review process.
-    raise NotImplementedError('generate_filter_files is not implemented')
+  def _should_generate_filters(self) -> bool:
+    """Whether RTS filter file generation is enabled for the build."""
+    return (_TEST_RTS_MODEL_EXPERIMENT
+            in self.m.buildbucket.build.input.experiments)
+
+  def generate_filter_files(
+      self,
+      src_dir: Path,
+      build_dir: Path,
+  ) -> None:
+    """Generates RTS filter files if RTS is enabled."""
+
+    if not self._should_generate_filters():
+      return
+
+    filter_file_dir = build_dir / 'gen' / 'rts'
+    model_dir = self._fetch_chromium_rts_model()
+
+    exe_name = 'rts-chromium'
+    if self.m.platform.is_win:
+      exe_name += '.exe'
+    exec_path = model_dir / exe_name
+
+    cmd = [
+        exec_path,
+        'select',
+        '-checkout',
+        src_dir,
+        '-model-dir',
+        model_dir,
+        '-out',
+        filter_file_dir,
+        '-target-change-recall',
+        str(_DEFAULT_TARGET_CHANGE_RECALL),
+        '-change-ref',
+        'HEAD~',
+    ]
+    self.m.step('generate chromium-rts filter files', cmd)
+
+  def _fetch_chromium_rts_model(self) -> Path:
+    """Fetches the RTS model from CIPD."""
+    install_dir = self.m.path.cleanup_dir / 'rts-model'
+    platform = self.m.cipd.platform
+    package_name = _RTS_MODEL_CIPD_PREFIX + platform
+    ensure_file = self.m.cipd.EnsureFile()
+    ensure_file.add_package(package_name, 'latest')
+    self.m.cipd.ensure(install_dir, ensure_file, name='install RTS model')
+    return install_dir
