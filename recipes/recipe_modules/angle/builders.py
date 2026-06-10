@@ -51,18 +51,6 @@ def _create_tester_config(platform, target_bits, parent_builder):
 _SPEC = {
     'win-asan-test':
         _create_builder_config('win', 'Release', 64),
-    'win-msvc-compile':
-        _create_builder_config('win', 'Release', 64, is_clang=False),
-    'win-msvc-dbg-compile':
-        _create_builder_config('win', 'Debug', 64, is_clang=False),
-    'win-msvc-x86-compile':
-        _create_builder_config('win', 'Release', 32, is_clang=False),
-    'win-msvc-x86-dbg-compile':
-        _create_builder_config('win', 'Debug', 32, is_clang=False),
-    'winuwp-compile':
-        _create_builder_config('win', 'Release', 64, is_clang=False),
-    'winuwp-dbg-compile':
-        _create_builder_config('win', 'Debug', 64, is_clang=False),
     'win10-x64-swiftshader-asan':
         _create_tester_config('win', 64, 'win-asan-test'),
 }
