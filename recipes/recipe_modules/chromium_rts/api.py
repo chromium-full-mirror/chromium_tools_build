@@ -2,15 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import annotations
+
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
+
+from RECIPE_MODULES.build.chromium_tests.steps import Test
+
+from . import evaluation
 
 _TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
 _RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 _DEFAULT_TARGET_CHANGE_RECALL = 0.95
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
-  """A module for interacting with Regression Test Selection (RTS) for Chromium."""
+  """An interaction module with Regression Test Selection (RTS) for Chromium."""
 
   def _should_generate_filters(self) -> bool:
     """Whether RTS filter file generation is enabled for the build."""
@@ -60,3 +66,21 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     ensure_file.add_package(package_name, 'latest')
     self.m.cipd.ensure(install_dir, ensure_file, name='install RTS model')
     return install_dir
+
+  def evaluate_rts(
+      self,
+      build_dir: Path,
+      tests: list[Test],
+  ) -> None:
+    """RTS safety evaluation logic.
+
+    Evaluates the model's safety performance (test and builder recall)
+    by comparing filter files and RDB results.
+
+    Args:
+      build_dir: Path to the root build directory containing generated RTS
+        filter files.
+      tests: List of Test objects to evaluate against their ResultDB test
+        results.
+    """
+    evaluation.evaluate_rts(self, build_dir, tests)

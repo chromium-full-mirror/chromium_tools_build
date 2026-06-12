@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import annotations
-
 from recipe_engine import post_process
 
 DEPS = [
@@ -17,7 +15,8 @@ DEPS = [
 
 
 def RunSteps(api):
-  expected_generating = 'chromium_rts.filter_file_analysis' in api.buildbucket.build.input.experiments
+  expected_generating = ('chromium_rts.filter_file_analysis'
+                         in api.buildbucket.build.input.experiments)
   assert api.chromium_rts._should_generate_filters() == expected_generating
 
   api.chromium_rts.generate_filter_files(api.path.start_dir,

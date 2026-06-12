@@ -8,6 +8,8 @@ from __future__ import annotations
 DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
+    'recipe_engine/file',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/step',
