@@ -69,7 +69,7 @@ class ANGLETestsApi(recipe_test_api.RecipeTestApi):
                 toolchain='clang',
                 platform='linux',
                 test_mode='compile_and_test',
-                **kwargs):
+                **kwargs):  # pragma: no cover
     """Create test data for a try build.
 
     Adding this to a test will set properties and inputs in a manner

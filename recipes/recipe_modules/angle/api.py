@@ -142,7 +142,7 @@ class ANGLEApi(recipe_api.RecipeApi):
           build_dir,
           checkout_dir=checkout_dir)
 
-      if self.m.tryserver.is_tryserver:
+      if self.m.tryserver.is_tryserver:  # pragma: no cover
         affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
             relative_to='angle/', cwd=source_dir, report_via_property=True)
         test_targets, compile_targets = (

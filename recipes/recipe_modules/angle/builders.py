@@ -8,52 +8,7 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec)
 
 
-def _angle_spec(**kwargs):
-  kwargs.setdefault('chromium_config', 'angle_clang')
-  return builder_spec.BuilderSpec.create(**kwargs)
-
-
-def _create_builder_config(platform,
-                           config,
-                           target_bits,
-                           is_clang=True,
-                           perf_isolate_upload=False,
-                           gclient_config='angle'):
-  return _angle_spec(
-      chromium_config='angle_clang' if is_clang else 'angle_non_clang',
-      gclient_config=gclient_config,
-      simulation_platform=platform,
-      chromium_config_kwargs={
-          'BUILD_CONFIG': config,
-          'TARGET_BITS': target_bits,
-      },
-      perf_isolate_upload=perf_isolate_upload,
-  )
-
-
-def _create_tester_config(platform, target_bits, parent_builder):
-  is_experimental = '-exp' in parent_builder
-  return _angle_spec(
-      gclient_config='angle',
-      simulation_platform=platform,
-      chromium_config_kwargs={
-          # All testing is in Release.
-          'BUILD_CONFIG': 'Release',
-          'TARGET_BITS': target_bits,
-      },
-      execution_mode=builder_spec.TEST,
-      parent_buildername=parent_builder,
-      # Serialize tests on exp builders since they are short on resources
-      serialize_tests=is_experimental,
-  )
-
-
-_SPEC = {
-    'win-asan-test':
-        _create_builder_config('win', 'Release', 64),
-    'win10-x64-swiftshader-asan':
-        _create_tester_config('win', 64, 'win-asan-test'),
-}
+_SPEC = {}
 
 BUILDERS = builder_db.BuilderDatabase.create({
     'angle': _SPEC,

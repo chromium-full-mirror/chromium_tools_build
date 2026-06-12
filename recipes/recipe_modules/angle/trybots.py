@@ -9,20 +9,7 @@ from recipe_engine.engine_types import freeze
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 
 
-_SPEC = {
-    'win-asan-test':
-        try_spec.TrySpec.create(
-            mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='angle',
-                    buildername='win-asan-test',
-                    tester='win10-x64-swiftshader-asan',
-                ),
-            ],
-            analyze_names=['angle'],
-            retry_failed_shards=False,
-        ),
-}
+_SPEC = {}
 
 TRYBOTS = try_spec.TryDatabase.create({
     'angle': _SPEC,
