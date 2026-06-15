@@ -1,0 +1,20 @@
+// Copyright 2021 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.angle;
+
+message InputProperties {
+  // Indicate the platform we're using. Usually one of 'linux', 'mac',
+  // 'win', 'android', 'fuchsia', etc.
+  string platform = 1;
+
+  // Indicates the compiler toolchain. 'clang', 'msvc', or 'gcc'.
+  string toolchain = 2;
+
+  // Controls the behaviour of the recipe. Can be 'compile_and_test',
+  // 'compile_only', 'checkout_only', or 'trace_tests'.
+  string test_mode = 3;
+}
