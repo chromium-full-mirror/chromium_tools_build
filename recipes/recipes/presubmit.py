@@ -22,7 +22,7 @@ DEPS = [
     # The following recipe modules are not used here,
     # but apparently set spooky gclient configs,
     # which get used by this recipe through "api.gclient.set_config".
-    'angle',
+    'angle_v2',
     'v8',
     'webrtc',
 ]
@@ -138,7 +138,7 @@ def GenTests(api):
   )
 
   REPO_NAMES = [
-      'angle',
+      'angle_v2',  # Actually 'angle', but the recipe was reworked.
       'build',
       'build_internal',
       'catapult',

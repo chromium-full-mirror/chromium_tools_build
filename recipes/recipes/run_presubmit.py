@@ -28,7 +28,7 @@ DEPS = [
     # The following recipe modules are not used here,
     # but apparently set spooky gclient configs,
     # which get used by this recipe through "api.gclient.set_config".
-    'angle',
+    'angle_v2',
     'libyuv',
     'v8',
     'webrtc',
@@ -297,7 +297,7 @@ def GenTests(api):
   )
 
   REPOSITORIES = [
-      ('angle', 'https://chromium.googlesource.com/angle/angle'),
+      ('angle_v2', 'https://chromium.googlesource.com/angle/angle'),
       ('build', 'https://chromium.googlesource.com/chromium/tools/build'),
       ('catapult', 'https://chromium.googlesource.com/catapult'),
       ('chromium', 'https://chromium.googlesource.com/chromium/src'),
