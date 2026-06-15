@@ -70,7 +70,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       extra_ninja_args += ['-j', self.m.reclient.jobs]
     if step_name_suffix:
       step_name += step_name_suffix
-    timeout = 60 * 60 * 6  # 6h
+    timeout = 60 * 60 * 2  # 2h
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
