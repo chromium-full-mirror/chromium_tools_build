@@ -1664,19 +1664,16 @@ class ArchiveApi(recipe_api.RecipeApi):
     upload_results = {}
     for yaml_file in cipd_archive_data.yaml_files:
       pkg_def = build_dir / yaml_file
-      create_results = self.m.cipd.create_from_yaml(
+      create_from_yaml = self.m.cipd.create_from_yaml
+      if report_artifacts:
+        create_from_yaml = self.m.bcid_reporter.create_from_yaml
+      create_results = create_from_yaml(
           pkg_def=pkg_def,
           refs=pkg_refs,
           tags=tags,
           pkg_vars=pkg_vars,
           compression_level=compression_level,
           verification_timeout=verification_timeout)
-      # Report artifact if provenance is desired.
-      if report_artifacts:
-        # CIPD instance id is encoded hash of the artifact, hash will be
-        # extracted by the server if not reported.
-        self.m.bcid_reporter.report_cipd(
-            "", create_results[0], create_results[1])
       if cipd_archive_data.only_set_refs_on_tests_success:
         # Store info needed for setting refs through calling
         # generic_archive_after_tests.

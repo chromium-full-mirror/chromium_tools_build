@@ -111,15 +111,15 @@ def GenTests(api):
           major=91, step_name='Generic Archiving Steps.get version'),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               'cipd',
-              'create',
+              'pkg-register',
           ],
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'canary',
@@ -127,7 +127,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:1.2.3.4',
@@ -135,7 +135,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.build foo",
           [
               '-pkg-var',
               'targetarch:arm64',
@@ -173,7 +173,7 @@ def GenTests(api):
           major=91, step_name='Generic Archiving Steps.get version'),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'canary',
@@ -181,7 +181,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:1.2.3.4',
@@ -189,7 +189,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.build foo",
           [
               '-pkg-var',
               'targetarch:amd64',
@@ -270,7 +270,7 @@ def GenTests(api):
           }),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'legacy88',
@@ -278,7 +278,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:2.3.4.5',
@@ -364,7 +364,7 @@ def GenTests(api):
           major=89, step_name='Generic Archiving Steps.get version'),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:1.2.3.4',
@@ -372,7 +372,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.build foo",
           [
               '-pkg-var',
               'targetarch:arm32',
@@ -420,10 +420,10 @@ def GenTests(api):
       api.chromium.override_version(
           major=91, step_name='Generic Archiving Steps.get version'),
       api.post_process(post_process.MustRun,
-                       "Generic Archiving Steps.create foo"),
+                       "Generic Archiving Steps.register foo"),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'canary',
@@ -431,7 +431,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               '91',
@@ -439,7 +439,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:1.2.3.4',
@@ -447,7 +447,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.build foo",
           [
               '-pkg-var',
               'targetarch:arm64',
@@ -491,10 +491,10 @@ def GenTests(api):
       api.chromium.override_version(
           major=91, step_name='Generic Archiving Steps.get version'),
       api.post_process(post_process.MustRun,
-                       "Generic Archiving Steps.create foo"),
+                       "Generic Archiving Steps.register foo"),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'canary',
@@ -502,7 +502,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'm91_fuchsia_ready',
@@ -510,7 +510,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'canary-milestone:91',
@@ -518,7 +518,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:1.2.3.4',
@@ -526,7 +526,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.build foo",
           [
               '-pkg-var',
               'targetarch:arm64',
@@ -564,10 +564,10 @@ def GenTests(api):
       api.chromium.override_version(
           major=90, step_name='Generic Archiving Steps.get version'),
       api.post_process(post_process.MustRun,
-                       "Generic Archiving Steps.create foo"),
+                       "Generic Archiving Steps.register foo"),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-ref',
               'beta',
@@ -575,7 +575,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.register foo",
           [
               '-tag',
               'version:1.2.3.4',
@@ -583,7 +583,7 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo",
+          "Generic Archiving Steps.build foo",
           [
               '-pkg-var',
               'targetarch:arm64',
