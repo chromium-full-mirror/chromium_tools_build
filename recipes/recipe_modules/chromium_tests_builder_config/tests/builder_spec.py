@@ -105,6 +105,14 @@ def RunSteps(api):
         cf_archive_subdir_suffix='archive-subdir-suffix',
     )
   api.assertions.assertEqual(str(caught.exception), message)
+  # use_test_trigger_cas validations *********************************************
+  message = 'use_test_trigger_cas can only be True for test-only builders'
+  with api.assertions.assertRaises(AssertionError) as caught:
+    builder_spec.BuilderSpec.create(
+        execution_mode=builder_spec.COMPILE_AND_TEST,
+        use_test_trigger_cas=True,
+    )
+  api.assertions.assertEqual(str(caught.exception), message)
 
 
 def GenTests(api):

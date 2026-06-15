@@ -13,6 +13,8 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
 DEPS = [
     'chromium_tests',
     'angle_v2',
+    'recipe_engine/file',
+    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
@@ -41,6 +43,17 @@ _TEST_BUILDERS = builder_db.BuilderDatabase.create({
                 parent_builder_group='angle',
                 parent_buildername='linux-parent-builder',
                 execution_mode=builder_spec.TEST),
+        'linux-parent-builder-cas':
+            builder_spec.BuilderSpec.create(
+                gclient_config='angle_v2', chromium_config='angle_v2_base'),
+        'linux-child-tester-cas':
+            builder_spec.BuilderSpec.create(
+                gclient_config='angle_v2',
+                chromium_config='angle_v2_base',
+                parent_builder_group='angle',
+                parent_buildername='linux-parent-builder-cas',
+                execution_mode=builder_spec.TEST,
+                use_test_trigger_cas=True),
         'linux-clang':
             builder_spec.BuilderSpec.create(
                 gclient_config='angle_v2', chromium_config='angle_v2_clang'),
@@ -76,6 +89,17 @@ _TEST_SPECS = {
         },],
     },
     'linux-child-tester': {
+        'gtest_tests': [{
+            'test': 'angle_end2end_tests',
+            'swarming': {
+                'dimensions': {
+                    'os': 'Ubuntu',
+                    'pool': 'chromium.tests.gpu',
+                },
+            },
+        },],
+    },
+    'linux-child-tester-cas': {
         'gtest_tests': [{
             'test': 'angle_end2end_tests',
             'swarming': {
@@ -346,5 +370,44 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains, 'GLES 1.0 trace tests',
           '--out-dir=[CACHE]\\builder\\angle\\out_CaptureReplayTest'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'linux_parent_builder_cas',
+      api.platform('linux', 64),
+      api.angle_v2.ci_build(builder='linux-parent-builder-cas'),
+      api.angle_v2.builders(_TEST_BUILDERS),
+      api.chromium_tests.read_targets_spec('angle', _TEST_SPECS),
+      api.path.exists(api.path.cache_dir / 'builder' / 'angle' / 'out' /
+                      'e085-linux-parent-bu' / 'orchestrator_all.runtime_deps'),
+      api.step_data('archive test-trigger deps.read test-trigger deps file',
+                    api.file.read_text('fake-content')),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_check(lambda check, steps: check(
+          'infra/orchestrator:orchestrator_all' in steps['compile'].cmd)),
+      api.post_process(post_process.StepSuccess, "trigger"),
+      api.post_process(post_process.StepSuccess, 'Success'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'linux_child_tester_cas',
+      api.platform('linux', 64),
+      api.angle_v2.ci_build(builder='linux-child-tester-cas'),
+      api.angle_v2.builders(_TEST_BUILDERS),
+      api.chromium_tests.read_targets_spec('angle', _TEST_SPECS),
+      api.properties(
+          test_trigger_deps_digest='fake-digest/123',
+          parent_got_revision='fake-parent-revision',
+          swarm_hashes={
+              'angle_end2end_tests': 'ffffffffffffffffffffffffffffff/size',
+          },
+      ),
+      api.post_process(post_process.DoesNotRun, 'bot_update'),
+      api.post_process(post_process.MustRun, 'download test trigger CAS'),
+      api.post_process(post_process.StepSuccess,
+                       'angle_end2end_tests on Ubuntu'),
+      api.post_process(post_process.StepSuccess, 'Success'),
       api.post_process(post_process.DropExpectation),
   )

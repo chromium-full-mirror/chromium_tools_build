@@ -77,6 +77,10 @@ class BuilderSpec:
       assert self.cf_gs_bucket, (
           "'cf_gs_bucket' must be provided when 'cf_archive_build' is True")
 
+    if self.use_test_trigger_cas:
+      assert self.execution_mode == TEST, (
+          'use_test_trigger_cas can only be True for test-only builders')
+
   # The execution mode of the builder
   # COMPILE_AND_TEST - Compile targets and optionally run tests and/or trigger
   #     a tester
@@ -84,6 +88,10 @@ class BuilderSpec:
   #     COMPILE_AND_TEST execution mode
   execution_mode = attrib(
       enum([COMPILE_AND_TEST, TEST]), default=COMPILE_AND_TEST)
+
+  # If True, the tester will skip checkout and download a test trigger CAS
+  # archive containing the necessary specs and scripts instead.
+  use_test_trigger_cas = attrib(bool, default=False)
 
   # An optional group of the bot's parent builder - if parent_buildername is
   # provided and parent_builder_group is not, the parent's builder_group is the

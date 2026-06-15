@@ -990,6 +990,62 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'ci_bot_expose_trigger_properties_via_test_trigger_cas',
+      api.properties(
+          config='Release',
+          swarm_hashes={fake_test: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},
+      ),
+      api.path.exists(
+          api.path.cache_dir /
+          'builder/src/out/ceb4-fake-builder/orchestrator_all.runtime_deps'),
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group=fake_group,
+          builder=fake_builder,
+          builder_db=ctbc.BuilderDatabase.create({
+              fake_group: {
+                  fake_builder:
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  fake_triggered_builder:
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          parent_buildername=fake_builder,
+                          execution_mode=ctbc.TEST,
+                          use_test_trigger_cas=True,
+                      ),
+              }
+          })),
+      api.chromium_tests.read_targets_spec(
+          fake_group, {
+              fake_triggered_builder: {
+                  'isolated_scripts': [{
+                      'name': fake_test,
+                      'swarming': {},
+                  }],
+              }
+          }),
+      api.step_data(
+          'archive test-trigger deps.read test-trigger deps file',
+          api.file.read_text(
+              '../../testing/buildbot/*.json\n'
+              '../../testing/merge_scripts/merge_api.py\n'
+              '../../testing/merge_scripts/standard_gtest_merge.py')),
+      api.post_process(post_process.MustRun, 'isolate tests'),
+      api.post_process(post_process.MustRun,
+                       'archive command lines to RBE-CAS'),
+      api.post_process(PropertyExists, 'trigger_properties'),
+      api.post_check(lambda check, steps: check(
+          'infra/orchestrator:orchestrator_all' in steps['compile'].cmd)),
+      api.post_process(post_process.DoesNotRun, 'mark: before_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+
   def LogDoesNotEqual(check, step_odict, step, log, expected):
     check(step_odict[step].logs[log] != expected)
 

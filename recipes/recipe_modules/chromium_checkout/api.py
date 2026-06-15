@@ -350,10 +350,14 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       return None
 
     with self.m.step.nest('set rdb sources'):
-      if not all([
-          gitiles_commit.host, gitiles_commit.project, gitiles_commit.id,
-          gitiles_commit.ref, gitiles_commit.position
+      if not gitiles_commit or not all([
+          gitiles_commit.host,
+          gitiles_commit.project,
+          gitiles_commit.id,
+          gitiles_commit.ref,
+          gitiles_commit.position,
       ]):
+
         step_result = self.m.step.empty('missing gitiles commit info')
         # TODO(sshrimp): Remove excess debug info. The gitiles_commit might not
         # be set if it's not the primary checkout, however,

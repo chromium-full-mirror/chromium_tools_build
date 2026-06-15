@@ -29,6 +29,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
 from RECIPE_MODULES.build.filter import api as filter_api
 from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.build.chromium_checkout import checkout_result
 
 from . import generators, steps
 from . import targets_config as targets_config_module
@@ -51,7 +52,8 @@ REPOSITORY_MAPPING = {
 }
 
 TEST_TRIGGER_AND_COLLECT_DEPS_TARGET = 'infra/orchestrator:orchestrator_all'
-TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE = 'orchestrator_all.runtime_deps'
+TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE = (
+    'orchestrator_all.runtime_deps')
 
 SOURCE_CHECK_ID = 'checkout'
 WITHOUT_PATCH_SOURCE_CHECK_ID = 'checkout (without patch)'
@@ -87,6 +89,10 @@ class SwarmingExecutionInfo:
   # Should be renamed to 'command_line_cwd'
   command_lines_cwd = attrib(str, default='')
 
+  # The CAS digest to use for triggering tests instead of getting a checkout if
+  # enabled.
+  test_trigger_deps_digest = attrib(str, default='')
+
   def ensure_command_lines_archived(self, chromium_tests_api):
     """Ensures the command lines are archived to CAS.
 
@@ -119,12 +125,15 @@ class SwarmingExecutionInfo:
     the context of this object. Also, current code relies on the names, so
     it's tricky to rename them.
     """
-    return {
+    props = {
         'swarm_hashes': dict(self.digest_by_isolate_name),
         'swarming_command_lines_digest': self.command_lines_file_digest,
         'swarming_rts_command_lines_digest': self.rts_command_lines_file_digest,
         'swarming_command_lines_cwd': self.command_lines_cwd,
     }
+    if self.test_trigger_deps_digest:
+      props['test_trigger_deps_digest'] = self.test_trigger_deps_digest
+    return props
 
 
 @attrs()
@@ -141,7 +150,7 @@ class Task:
   test_suites = attrib(sequence[steps.AbstractTest])
 
   # Holds state on build properties. Used to pass state between methods.
-  update_result = attrib(bot_update.Result)
+  update_result = attrib(checkout_result.CheckoutResult)
 
   # The path to the directory containing built outputs.
   build_dir = attrib(Path)
@@ -434,7 +443,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       *,
       turboci_source_check_id: str = '',
       **kwargs,
-  ) -> tuple[bot_update.Result, Path, targets_config_module.TargetsConfig]:
+  ) -> tuple[checkout_result.CheckoutResult, Path,
+             targets_config_module.TargetsConfig]:
     """Perform the checkout to enable testing.
 
     Args:
@@ -444,47 +454,83 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     Returns:
       A tuple containing:
-      * The bot_update Result object describing the checkout.
+      * The CheckoutResult object describing the checkout.
       * The path to the build directory that was readied.
       * The configuration for the builder's targets.
     """
     checkout_dir = self.m.chromium_checkout.default_checkout_dir
-    if report_cache_state:
-      self.check_builder_cache(checkout_dir)
 
-    # The root_solution_revision input property can be used to checkout
-    # the root solution at a certain branch. This can be used when attempting
-    # to run a builder for a child repository on a certain branch,
-    # and the same branch needs to be checked out for the root solution
-    root_solution_revision = (root_solution_revision or
-                              self.m.properties.get('root_solution_revision'))
-    update_result = self.m.chromium_checkout.ensure_checkout(
-        clobber=builder_config.clobber,
-        set_output_commit=set_output_commit,
-        root_solution_revision=root_solution_revision,
-        turboci_check_id=turboci_source_check_id,
-        no_history=builder_config.no_history,
-        shallow=builder_config.shallow,
-        **kwargs)
-    source_dir = update_result.source_root.path
-    build_dir = self.m.chromium.default_build_dir(source_dir)
-    self.m.code_coverage.source_dir = source_dir
-    self.m.code_coverage.build_dir = build_dir
-    self.m.profiles.source_dir = source_dir
+    if builder_config.use_test_trigger_cas:
+      digest = self.m.properties.get('test_trigger_deps_digest')
+      if not digest:
+        raise self.m.step.StepFailure(
+            'use_test_trigger_cas is True but test_trigger_deps_digest '
+            'property is missing')
 
-    # Installs toolchains configured in the current bot, if any.
-    self.m.chromium.ensure_toolchains(checkout_dir)
+      # Clean checkout_dir to avoid stale files from previous builds.
+      self.m.file.rmtree('clean test trigger deps directory', checkout_dir)
+      self.m.file.ensure_directory('ensure test trigger deps directory',
+                                   checkout_dir)
 
-    # For some reason, we treat the runhooks step as special and support a
-    # suffix (automatically using 'without patch' for try builders), even though
-    # we don't add a suffix to bot_update. This is legacy behavior and who knows
-    # what queries depend on it.
-    runhooks_kwargs = {}
-    if runhooks_suffix:
-      runhooks_kwargs['name'] = f'runhooks ({runhooks_suffix})'
-    elif self.m.tryserver.is_tryserver:
-      runhooks_kwargs['name'] = 'runhooks (with patch)'
-    self.m.chromium.runhooks(source_dir, build_dir, **runhooks_kwargs)
+      # Determine source_dir from gclient config if available, default to 'src'.
+      solution_name = 'src'
+      if self.m.gclient.c and self.m.gclient.c.solutions:
+        solution_name = self.m.gclient.c.solutions[0].name
+      source_dir = checkout_dir / solution_name
+
+      self.m.chromium_checkout.set_paths(checkout_dir, source_dir)
+
+      self.m.cas.download('download test trigger CAS', digest, source_dir)
+
+      update_result = checkout_result.CasCheckoutResult(checkout_dir,
+                                                        source_dir,
+                                                        self.m.properties,
+                                                        solution_name)
+      build_dir = self.m.chromium.default_build_dir(source_dir)
+
+      self.m.code_coverage.source_dir = source_dir
+      self.m.code_coverage.build_dir = build_dir
+      self.m.profiles.source_dir = source_dir
+
+    else:
+      if report_cache_state:
+        self.check_builder_cache(checkout_dir)
+
+      # The root_solution_revision input property can be used to checkout
+      # the root solution at a certain branch. This can be used when attempting
+      # to run a builder for a child repository on a certain branch,
+      # and the same branch needs to be checked out for the root solution
+      root_solution_revision = (
+          root_solution_revision or
+          self.m.properties.get('root_solution_revision'))
+      real_result = self.m.chromium_checkout.ensure_checkout(
+          clobber=builder_config.clobber,
+          set_output_commit=set_output_commit,
+          root_solution_revision=root_solution_revision,
+          turboci_check_id=turboci_source_check_id,
+          no_history=builder_config.no_history,
+          shallow=builder_config.shallow,
+          **kwargs)
+      update_result = checkout_result.BotUpdateResultAdapter(real_result)
+      source_dir = update_result.source_root.path
+      build_dir = self.m.chromium.default_build_dir(source_dir)
+      self.m.code_coverage.source_dir = source_dir
+      self.m.code_coverage.build_dir = build_dir
+      self.m.profiles.source_dir = source_dir
+
+      # Installs toolchains configured in the current bot, if any.
+      self.m.chromium.ensure_toolchains(checkout_dir)
+
+      # For some reason, we treat the runhooks step as special and support a
+      # suffix (automatically using 'without patch' for try builders), even
+      # though we don't add a suffix to bot_update. This is legacy behavior and
+      # who knows what queries depend on it.
+      runhooks_kwargs = {}
+      if runhooks_suffix:
+        runhooks_kwargs['name'] = f'runhooks ({runhooks_suffix})'
+      elif self.m.tryserver.is_tryserver:
+        runhooks_kwargs['name'] = 'runhooks (with patch)'
+      self.m.chromium.runhooks(source_dir, build_dir, **runhooks_kwargs)
 
     targets_config = self.create_targets_config(
         builder_config,
@@ -704,6 +750,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         "targets_config argument %r was not a TargetsConfig" % targets_config
     execution_mode = override_execution_mode or builder_config.execution_mode
 
+    child_builder_ids = builder_config.builder_db.builder_graph.get(
+        builder_id, set())
+    any_child_use_test_trigger_cas = any(
+        builder_config.builder_db[child_id].use_test_trigger_cas
+        for child_id in child_builder_ids)
+    expose_to_properties = (
+        builder_config.expose_trigger_properties or
+        any_child_use_test_trigger_cas)
+
     checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
 
@@ -739,7 +794,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Compile the src side deps so it is ready to be uploaded to CAS.
     # This is only useful when uploading test isolate to be executed in
     # a different srcless builder.
-    if isolated_tests and builder_config.expose_trigger_properties:
+    if isolated_tests and expose_to_properties:
       compile_targets = sorted(
           set(compile_targets) | {TEST_TRIGGER_AND_COLLECT_DEPS_TARGET})
 
@@ -784,7 +839,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           isolated_tests,
           suffix,
           update_result.properties.get('got_revision_cp'),
-          additional_isolate_targets=additional_isolate_targets)
+          additional_isolate_targets=additional_isolate_targets,
+          expose_to_properties=expose_to_properties)
 
       if builder_config.perf_isolate_upload:
         instance = self.m.cas.instance
@@ -835,6 +891,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       *,
       swarm_hashes_property_name='',
       additional_isolate_targets=None,
+      expose_to_properties=False,
   ):
     """Uploads prepared isolated tests.
 
@@ -911,8 +968,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         tests,
         command_lines,
         self.m.path.relpath(build_dir, source_dir),
-        expose_to_properties=builder_config.expose_trigger_properties,
-        rts_command_lines=rts_command_lines)
+        expose_to_properties=expose_to_properties,
+        rts_command_lines=rts_command_lines,
+        builder_config=builder_config)
 
   def set_swarming_test_execution_info(self,
                                        source_dir: Path,
@@ -922,7 +980,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                        rel_cwd,
                                        *,
                                        expose_to_properties=False,
-                                       rts_command_lines=None):
+                                       rts_command_lines=None,
+                                       builder_config=None):
     """Sets the execution information for a list of swarming tests.
 
     Each test gets the command line in 'command_lines' corresponding to
@@ -969,9 +1028,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if expose_to_properties:
       execution_info = execution_info.ensure_command_lines_archived(self)
+      digest = self._archive_test_trigger_deps_digest(
+          source_dir, build_dir, builder_config=builder_config)
+      execution_info = attr.evolve(
+          execution_info, test_trigger_deps_digest=digest or '')
       trigger_properties = execution_info.as_trigger_prop()
-      trigger_properties['test_trigger_deps_digest'] = (
-          self._archive_test_trigger_deps_digest(source_dir, build_dir))
 
       step_result = self.m.step.empty('expose execution properties')
       step_result.presentation.properties[
@@ -2063,7 +2124,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           command_lines,
           rel_cwd,
           expose_to_properties=builder_config.expose_trigger_properties,
-          rts_command_lines=rts_command_lines)
+          rts_command_lines=rts_command_lines,
+          builder_config=builder_config)
 
   def archive_command_lines(self, command_lines):
     command_lines_file = self.m.path.cleanup_dir / 'command_lines.json'
@@ -2076,7 +2138,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self,
       source_dir: Path,
       build_dir: Path,
+      *,
+      builder_config=None,
   ):
+    """Archives an extra CAS isolate for builds that need it.
+
+    This handles both the CAS isolate used by orchestrators and the CAS isolate
+    used in normal parent/child builder setups if a child has opted in to the
+    test trigger CAS codepath.
+    """
     # Runtime files are listed relative to output dir, we upload to CAS relative
     # to checkout dir (src checkout folder) as those will be used in the srcless
     # builder as they were checked out. Note, it's possible that test-trigger
@@ -2110,6 +2180,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           dep_paths.update([str(p) for p in paths])
         else:
           dep_paths.add(str(file_path))
+
+      if builder_config:
+        targets_spec_dir = self.get_targets_spec_dir(source_dir, builder_config)
+        for f in builder_config.targets_spec_files.values():
+          dep_paths.add(str(targets_spec_dir / f))
 
       digest = self.m.cas.archive('archive test-trigger deps to RBE-CAS',
                                   base_dir, *dep_paths)

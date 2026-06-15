@@ -285,3 +285,64 @@ def GenTests(api):
       }),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'test_trigger_cas',
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          use_test_trigger_cas=True,
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.properties(
+          test_trigger_deps_digest='fake-digest/123',
+          parent_got_revision='fake-parent-revision',
+      ),
+      api.post_process(post_process.MustRun, 'download test trigger CAS'),
+      api.post_process(post_process.DoesNotRun, 'bot_update'),
+      api.post_process(post_process.DoesNotRun, 'gclient runhooks'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'test_trigger_cas_missing_digest',
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          use_test_trigger_cas=True,
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.properties(parent_got_revision='fake-parent-revision',),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )

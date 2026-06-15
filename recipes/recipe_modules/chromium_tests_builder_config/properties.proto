@@ -9,7 +9,7 @@ import "go.chromium.org/luci/buildbucket/proto/builder_common.proto";
 
 // The details configuring execution for a single builder
 //
-// Next ID: 21
+// Next ID: 22
 message BuilderSpec {
   // Required, the builder group that the builder is a part of
   //
@@ -200,6 +200,10 @@ message BuilderSpec {
       string archive_subdir = 2;
   }
   BisectArchive bisect_archive = 17;
+
+  // If true, the tester will skip checkout and download a test trigger CAS
+  // isolate.
+  bool use_test_trigger_cas = 21;
 }
 
 // A database of builder specs that can be used during a build
