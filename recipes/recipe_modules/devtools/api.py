@@ -96,7 +96,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def get_dimensions_for_platform(self):
     os_names = dict(
         linux='Ubuntu-22.04',
-        mac='Mac-15',
+        mac='Mac-26',
         win='Windows-10-19045',
     )
     cpu_dimensions = dict(

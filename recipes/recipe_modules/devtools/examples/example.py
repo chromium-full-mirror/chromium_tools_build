@@ -163,7 +163,7 @@ def GenTests(api):
       'mac arm64',
       try_build(),
       api.platform('mac', 64, 'arm'),
-      api.post_process(post_process.MustRun, 'Mac-15 arm64'),
+      api.post_process(post_process.MustRun, 'Mac-26 arm64'),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
   )
