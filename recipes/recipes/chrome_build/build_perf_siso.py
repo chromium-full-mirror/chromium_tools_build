@@ -49,6 +49,11 @@ def _get_builder_id(api):
 
 
 def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
+  # Do not run clean build for CI benchmarking since it's too slow for
+  # small -remote_jobs value.
+  if api.siso.project.startswith("rbe-chromium-trusted"):
+    return
+
   with api.step.nest('Clean builds'):
     # Build target: all
     _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
@@ -288,6 +293,27 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'ci',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+              ),
+              **builder).assemble()),
+      api.siso.properties(project="rbe-chromium-trusted"),
+      api.reclient.properties(),
+      api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.DoesNotRun,
+                       'Clean builds.Build all without remote cache'),
+      api.post_process(post_process.DoesNotRun,
+                       'Clean builds.Build all with remote cache'),
+      api.post_process(post_process.DropExpectation),
+  )
+
 
   yield api.test(
       'build_failure',
