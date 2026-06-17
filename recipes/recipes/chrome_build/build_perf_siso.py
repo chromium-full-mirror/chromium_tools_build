@@ -58,17 +58,6 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
     # Build target: all
     _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
 
-    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
-    # enabling clang modules on Windows.
-    if not api.platform.is_win:
-      # Builds without clang modules.
-      _run_clean_builds(
-          api,
-          source_dir,
-          build_dir,
-          target,
-          phase='no_clang_modules',
-          step_name_suffix=' with Siso disabling clang modules')
 
 
 def _incremental_build_with_one_hour_changes(
@@ -119,24 +108,6 @@ def _incremental_build_with_one_hour_changes(
         step_name_suffix=' at base revision (warmup)')
     _raise_raw_result_on_failure(api, raw_result)
 
-    ## Disabling clang modules
-    no_clang_modules_build_dir = default_build_dir.parent / 'no_clang_modules'
-
-    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
-    # enabling clang modules on Windows.
-    if not api.platform.is_win:
-      api.chromium_build_perf.recreate_build_dir(
-          source_dir,
-          no_clang_modules_build_dir,
-          phase='no_clang_modules',
-          remove_deps_cache=True)
-      raw_result = api.chromium_build_perf.build_with_siso(
-          source_dir,
-          no_clang_modules_build_dir,
-          target,
-          with_remote_cache=True,
-          step_name_suffix=' disabling clang modules at base revision (warmup)')
-      _raise_raw_result_on_failure(api, raw_result)
 
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
@@ -146,18 +117,6 @@ def _incremental_build_with_one_hour_changes(
         source_dir, default_build_dir, target, with_remote_cache=True)
     _raise_raw_result_on_failure(api, raw_result)
 
-    ## Disabling clang modules
-
-    # TODO(https://crbug.com/425537956): Add disabling clang modules build after
-    # enabling clang modules on Windows.
-    if not api.platform.is_win:
-      raw_result = api.chromium_build_perf.build_with_siso(
-          source_dir,
-          no_clang_modules_build_dir,
-          target,
-          with_remote_cache=True,
-          step_name_suffix=' disabling clang modules')
-      _raise_raw_result_on_failure(api, raw_result)
 
 
 
