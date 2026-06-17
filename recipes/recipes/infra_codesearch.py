@@ -41,6 +41,8 @@ def RunSteps(api):
   soln.name = 'infra_superproject'
   soln.url = 'https://chromium.googlesource.com/infra/infra_superproject.git'
   soln.revision = 'HEAD'
+  if internal:
+    soln.custom_vars['checkout_internal'] = True
   api.gclient.c = c
 
   with api.context(cwd=api.path.cache_dir):
