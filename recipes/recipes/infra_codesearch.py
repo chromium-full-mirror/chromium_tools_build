@@ -118,6 +118,8 @@ def RunSteps(api):
         'github.com/bazelbuild/remote-apis=github.com/bazelbuild/remote-apis@v0.0.0-20240926071355-6777112ef7de',
         '-replace',
         'cloud.google.com/go/kms/apiv1/kmspb=cloud.google.com/go/kms/apiv1/kmspb@v1.23.0',
+        '-replace',
+        'go.chromium.org/chromiumos/config/go@v0.0.0-20240309015314-b8a183866804=./infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go',
     ])
 
     api.step('generate go kzip', [
