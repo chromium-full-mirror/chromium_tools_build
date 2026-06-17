@@ -17,7 +17,7 @@ from PB.turboci.data.build.v1.build_check_options import (
     BuildCheckOptions,
     Product,
 )
-from PB.turboci.data.build.v1.build_check_results import BuildCheckResult
+from PB.turboci.data.build.v1.build_check_results import BuildCheckResults
 from PB.turboci.data.common.v1.display_message import DisplayMessage
 from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
 from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
@@ -315,7 +315,7 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
         state.
       reason: A description of the reason to finalize the check.
       raw_result: The result of the compile operation. If provided, a
-        BuildCheckResult will be attached to the build check containing the
+        BuildCheckResults will be attached to the build check containing the
         summary markdown if present.
     """
     assert build_check_id, 'build_check_id'
@@ -329,7 +329,7 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
         )
       realm_results.append((
           '$from_container',
-          BuildCheckResult(
+          BuildCheckResults(
               success=raw_result.status == common_pb.SUCCESS,
               display_message=display_message,
           ),

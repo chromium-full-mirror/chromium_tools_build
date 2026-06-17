@@ -22,7 +22,7 @@ from PB.turboci.data.build.v1.build_check_options import (
     BuildCheckOptions,
     Product,
 )
-from PB.turboci.data.build.v1.build_check_results import BuildCheckResult
+from PB.turboci.data.build.v1.build_check_results import BuildCheckResults
 from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
 from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
 from PB.turboci.data.chrome.build.v1.compile_targets_options import (
@@ -157,8 +157,8 @@ def GenTests(api):
     assert_(compile_targets_options == expected_compile_targets_options)
 
     # Verify the results on the build check
-    build_check_results = turboci.get_results(BuildCheckResult, build_check)
-    expected_build_check_results = [BuildCheckResult(success=True)]
+    build_check_results = turboci.get_results(BuildCheckResults, build_check)
+    expected_build_check_results = [BuildCheckResults(success=True)]
     assert_(build_check_results == expected_build_check_results)
 
     # analyze check verifications ##############################################
@@ -740,8 +740,8 @@ def GenTests(api):
     assert_(compile_targets_options == expected_compile_targets_options)
 
     # Verify the results on the without patch build check
-    build_check_results = turboci.get_results(BuildCheckResult, build_check)
-    expected_build_check_results = [BuildCheckResult(success=True)]
+    build_check_results = turboci.get_results(BuildCheckResults, build_check)
+    expected_build_check_results = [BuildCheckResults(success=True)]
     assert_(build_check_results == expected_build_check_results)
 
   yield api.test(
