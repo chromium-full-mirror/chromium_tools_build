@@ -22,6 +22,7 @@ DEPS = [
     'depot_tools/bot_update',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
@@ -405,6 +406,8 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(swarming_gtest=True),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -433,5 +436,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(swarming_gtest=True),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
       api.post_process(post_process.DropExpectation),
   )

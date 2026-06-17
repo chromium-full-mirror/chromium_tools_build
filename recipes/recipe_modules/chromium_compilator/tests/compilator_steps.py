@@ -64,6 +64,30 @@ def RunSteps(api, properties):
 
 
 def GenTests(api):
+  _TEST_BUILDERS = ctbc.BuilderDatabase.create({
+      'chromium.test': {
+          'chromium-rel':
+              ctbc.BuilderSpec.create(
+                  chromium_config='chromium',
+                  gclient_config='chromium',
+              ),
+      },
+  })
+
+  _TEST_TRYBOTS = ctbc.TryDatabase.create({
+      'tryserver.chromium.test': {
+          'rts-rel':
+              ctbc.TrySpec.create(
+                  mirrors=[
+                      ctbc.TryMirror.create(
+                          builder_group='chromium.test',
+                          buildername='chromium-rel',
+                          tester='chromium-rel',
+                      ),
+                  ],),
+      }
+  })
+
   def override_test_spec():
     return api.chromium_tests.read_targets_spec(
         'fake-group', {
@@ -489,7 +513,16 @@ def GenTests(api):
       api.path.exists(
           api.path.checkout_dir / 'foo.cc',
           api.path.checkout_dir / 'testing/buildbot/chromium.linux.json',
+          api.path.checkout_dir / 'out' / '666d-fake-compilator' / 'gen' /
+          'rts',
+          api.path.checkout_dir / 'out' / '666d-fake-compilator' / 'gen' /
+          'rts' / 'browser_tests.filter',
       ),
+      api.step_data(
+          'archive src-side dep paths.find generated RTS filter files',
+          api.file.glob_paths([
+              'browser_tests.filter',
+          ])),
       api.post_process(
           post_process.LogContains, 'archive src-side dep paths', 'dep paths', [
               '[CACHE]/builder/src/testing/merge_scripts/merge_api.py',
@@ -497,6 +530,7 @@ def GenTests(api):
               'standard_gtest_merge.py',
               '[CACHE]/builder/src/foo.cc',
               'testing/buildbot/chromium.linux.json',
+              '[CACHE]/builder/src/out/666d-fake-compilator/gen/rts/browser_tests.filter',
           ]),
       api.post_process(
           post_process.LogDoesNotContain,
@@ -664,7 +698,120 @@ def GenTests(api):
   )
 
 
+  yield api.test(
+      'compilator_rts_integration',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+          experiments=['chromium_rts.filter_file_analysis'],
+      ),
+      api.platform.name('linux'),
+      ctbc_properties(),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      override_test_spec(),
+      api.path.exists(
+          api.path.checkout_dir.joinpath('out', '666d-fake-compilator',
+                                         'browser_tests'),
+          api.path.checkout_dir / 'out' / '666d-fake-compilator' / 'gen' /
+          'rts',
+          api.path.checkout_dir / 'out' / '666d-fake-compilator' / 'gen' /
+          'rts' / 'browser_tests.filter',
+      ),
+      api.step_data(
+          'archive src-side dep paths.find generated RTS filter files',
+          api.file.glob_paths([
+              'browser_tests.filter',
+          ])),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(
+          post_process.LogContains, 'archive src-side dep paths', 'dep paths', [
+              '[CACHE]/builder/src/out/666d-fake-compilator/gen/rts/browser_tests.filter',
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
 
+  yield api.test(
+      'full run rts',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+          experiments=['chromium_rts.filter_file_analysis'],
+      ),
+      api.chromium_tests_builder_config.databases(_TEST_BUILDERS,
+                                                  _TEST_TRYBOTS),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_group='tryserver.chromium.test',
+                  builder_name='rts-rel'))),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'full run rts without_patch',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "FULL_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+          experiments=['chromium_rts.filter_file_analysis'],
+      ),
+      api.chromium_tests_builder_config.databases(_TEST_BUILDERS,
+                                                  _TEST_TRYBOTS),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_group='tryserver.chromium.test',
+                  builder_name='rts-rel'),
+              test_targets=['base_unittests'])),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.post_process(post_process.DoesNotRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'global_shutdown',

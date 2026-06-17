@@ -17,6 +17,7 @@ from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
+from RECIPE_MODULES.build.chromium_rts.api import TEST_RTS_MODEL_EXPERIMENT
 
 COMPILATOR_SWARMING_TASK_COLLECT_STEP = (
     'wait for compilator swarming task cleanup overhead')
@@ -45,6 +46,7 @@ class CompilatorOutputProps:
     src_side_deps_digest: CAS digest hash (str) for downloading src-side deps
     skipping_coverage: Whether coverage is being skipped. The compilator
       determines this by checking the len of affected eligible files.
+    build_dir: Name (str) of the build directory used by the compilator.
   """
 
   swarming_props = attrib(mapping[str, ...], default=None)
@@ -54,6 +56,7 @@ class CompilatorOutputProps:
   affected_files = attrib(sequence[str], default=None)
   src_side_deps_digest = attrib(str, default=None)
   skipping_coverage = attrib(bool, default=None)
+  build_dir = attrib(str, default=None)
 
 
 class ChromiumOrchestratorApi(recipe_api.RecipeApi):
@@ -263,6 +266,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         all_test_binaries_future.result()
         self.m.code_coverage.process_coverage_data(tests)
 
+      self.m.chromium_rts.evaluate_rts(
+          source_dir / 'out' / comp_output.build_dir, tests)
+
     # Let's check back on the compilator to see the results of the local
     # scripts/tests. The sub_build will only display steps relevant to those
     # local scripts/tests.
@@ -423,6 +429,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
   _EXPERIMENTS_TO_FORWARD = set((
       'chromium.enable_cleandead',
+      TEST_RTS_MODEL_EXPERIMENT,
       'luci.buildbucket.run_in_turboci',
       # TODO(crbug.com/442618066)
       'siso.keep_going_limited',
@@ -682,6 +689,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           affected_files=affected_files,
           src_side_deps_digest=src_side_deps_digest,
           skipping_coverage=output_props.get('skipping_coverage'),
+          build_dir=output_props.get('build_dir'),
       )
       return comp_output, None
 

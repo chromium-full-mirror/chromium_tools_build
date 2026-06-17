@@ -120,16 +120,12 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     if is_compile_phase:
       if not empty_props:
         output_json_obj = {
-            'got_angle_revision':
-                '18c36f8aa629231795c82831a2cf80e8f77f989a',
-            'got_revision':
-                '6eb925582a36cdba74ad60f01a19897866a92cca',
-            'got_revision_cp':
-                'refs/heads/main@{#984947}',
-            'got_v8_revision':
-                '7d776826a3c4ae0878f026c00beab82765fb4d23',
-            'src_side_deps_digest':
-                'ec4fc70b29359beb0490e/168',
+            'build_dir': 'Release',
+            'got_angle_revision': '18c36f8aa629231795c82831a2cf80e8f77f989a',
+            'got_revision': '6eb925582a36cdba74ad60f01a19897866a92cca',
+            'got_revision_cp': 'refs/heads/main@{#984947}',
+            'got_v8_revision': '7d776826a3c4ae0878f026c00beab82765fb4d23',
+            'src_side_deps_digest': 'ec4fc70b29359beb0490e/168',
             "gitiles_commit": {
                 "commitHash": "b740e9b724f3756c4ea0825eebf299e0a685225e",
                 "host": "chromium.googlesource.com",

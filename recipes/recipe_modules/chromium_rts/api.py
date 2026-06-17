@@ -11,7 +11,7 @@ from RECIPE_MODULES.build.chromium_tests.steps import Test
 
 from . import evaluation
 
-_TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
+TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
 _RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 _DEFAULT_TARGET_CHANGE_RECALL = 0.95
 
@@ -19,9 +19,13 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
   """An interaction module with Regression Test Selection (RTS) for Chromium."""
 
   def _should_generate_filters(self) -> bool:
-    """Whether RTS filter file generation is enabled for the build."""
-    return (_TEST_RTS_MODEL_EXPERIMENT
+    """Whether RTS filter file generation and evaluation should run."""
+    return (TEST_RTS_MODEL_EXPERIMENT
             in self.m.buildbucket.build.input.experiments)
+
+  def filter_file_dir(self, build_dir: Path) -> Path:
+    """Returns the path to the directory containing generated RTS filter files."""
+    return build_dir / 'gen' / 'rts'
 
   def generate_filter_files(
       self,
@@ -33,7 +37,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if not self._should_generate_filters():
       return
 
-    filter_file_dir = build_dir / 'gen' / 'rts'
+    filter_file_dir = self.filter_file_dir(build_dir)
     model_dir = self._fetch_chromium_rts_model()
 
     exe_name = 'rts-chromium'
@@ -83,4 +87,5 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       tests: List of Test objects to evaluate against their ResultDB test
         results.
     """
-    evaluation.evaluate_rts(self, build_dir, tests)
+    if self._should_generate_filters():
+      evaluation.evaluate_rts(self, build_dir, tests)

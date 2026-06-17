@@ -1351,6 +1351,7 @@ def GenTests(api: RecipeTestApi):
                   }],
               },
           }),
+      api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.DropExpectation),
   )
 

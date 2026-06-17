@@ -817,6 +817,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.tryserver.set_compile_failure_tryjob_result()
       return raw_result, None
 
+    self.m.chromium_rts.generate_filter_files(source_dir, build_dir)
+
     execution_info = None
 
     if isolated_tests:
@@ -944,11 +946,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # needs to use `siso isolate` command.
     use_siso_isolate = self.m.siso.enabled and self.m.siso.without_bytes
 
-
-    # If RTS is enabled, create .filter files with test names, and create
-    # command lines to filter tests as per those files.
-    rts_command_lines = None
-
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
@@ -969,7 +966,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         command_lines,
         self.m.path.relpath(build_dir, source_dir),
         expose_to_properties=expose_to_properties,
-        rts_command_lines=rts_command_lines,
         builder_config=builder_config)
 
   def set_swarming_test_execution_info(self,
@@ -1712,6 +1708,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if self.m.code_coverage.using_coverage:
         self.m.code_coverage.process_coverage_data(task.test_suites)
+
+      self.m.chromium_rts.evaluate_rts(task.build_dir, task.test_suites)
 
       # We explicitly do not want all trybots to upload profiles to GS. We
       # prevent this by ensuring most trybots wanting to run the PGO workflow

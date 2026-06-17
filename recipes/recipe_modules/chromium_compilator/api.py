@@ -267,6 +267,17 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
       dep_paths.update(
           str(targets_spec_dir / f)
           for f in orch_builder_config.targets_spec_files.values())
+
+      # Include generated RTS filter files to be transferred to Orchestrator
+      filter_file_dir = self.m.chromium_rts.filter_file_dir(build_dir)
+      if self.m.path.exists(filter_file_dir):
+        filter_files = self.m.file.glob_paths(
+            'find generated RTS filter files',
+            filter_file_dir,
+            '*.filter',
+        )
+        dep_paths.update(str(p) for p in filter_files)
+
       dep_paths = sorted(dep_paths)
 
       # We need the files relative to the checkout dir so they can get download
@@ -283,6 +294,7 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
       self.m.file.remove('rm %s' % isolate_file, isolate_file)
 
       nested_step.properties['src_side_deps_digest'] = digest
+      nested_step.properties['build_dir'] = self.m.path.basename(build_dir)
       nested_step.logs['dep paths'] = self.m.json.dumps(dep_paths, indent=2)
 
   def _get_src_side_dep_paths(self, source_dir: Path, build_dir: Path):

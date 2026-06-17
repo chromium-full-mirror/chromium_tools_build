@@ -68,7 +68,7 @@ def _evaluate_all_tests(
     tests: list[steps.Test],
 ) -> dict[str, SuiteSafetyDetails]:
   """Evaluates RTS performance across all given tests."""
-  filter_file_dir = build_dir / 'gen' / 'rts'
+  filter_file_dir = api.filter_file_dir(build_dir)
 
   evaluation_results: dict[str, SuiteSafetyDetails] = {}
   for test in tests:

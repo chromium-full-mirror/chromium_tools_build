@@ -679,8 +679,12 @@ def GenTests(api):
           post_process.LogContains,
           'trigger compilator (with patch)',
           'request',
-          ['$recipe_engine/cq', 'FULL_RUN'],
+          [
+              '$recipe_engine/cq', 'FULL_RUN',
+              'chromium_rts.filter_file_analysis'
+          ],
       ),
+      api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('INFRA_FAILURE'),
   )
