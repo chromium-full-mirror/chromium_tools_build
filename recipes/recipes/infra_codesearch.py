@@ -36,15 +36,18 @@ def RunSteps(api):
                                                      'go_extractor')
 
   internal = api.properties.get('internal', False)
-  checkout_dir = api.path.cache_dir / 'infra_superproject'
-  co = api.infra_checkout.checkout(
-      'infra_internal' if internal else 'infra',
-      patch_root='infra_internal' if internal else 'infra',
-      path=checkout_dir,
-      internal=internal,
-  )
+  c = api.gclient.make_config()
+  soln = c.solutions.add()
+  soln.name = 'infra_superproject'
+  soln.url = 'https://chromium.googlesource.com/infra/infra_superproject.git'
+  soln.revision = 'HEAD'
+  api.gclient.c = c
 
-  kzip_name = '%s.kzip' % co.bot_update_step.properties['got_revision']
+  with api.context(cwd=api.path.cache_dir):
+    result = api.bot_update.ensure_checkout()
+    kzip_name = '%s.kzip' % result.properties['got_revision']
+
+  checkout_dir = api.path.cache_dir / 'infra_superproject'
   kzip_loc = api.path.cache_dir / kzip_name
 
   # Hardcode the active Go modules inside the superproject. We do this because
@@ -60,6 +63,7 @@ def RunSteps(api):
   ]
   if internal:
     potential_go_mod_files += [
+        # Internal code won't be readable by public codesearch builders.
         'infra_internal/dep/bcid.git/go.mod',
         'infra_internal/dep/bcid.git/proto-public/go.mod',
         'infra_internal/go/src/infra_internal/go.mod',
@@ -110,6 +114,8 @@ def RunSteps(api):
         'github.com/bazelbuild/remote-apis-sdks=github.com/bazelbuild/remote-apis-sdks@v0.0.0-20251007172043-4cdfee7bdc2d',
         '-replace',
         'github.com/bazelbuild/remote-apis=github.com/bazelbuild/remote-apis@v0.0.0-20240926071355-6777112ef7de',
+        '-replace',
+        'cloud.google.com/go/kms/apiv1/kmspb=cloud.google.com/go/kms/apiv1/kmspb@v1.23.0',
     ])
 
     api.step('generate go kzip', [
@@ -145,12 +151,6 @@ def GenTests(api):
           'infra/go/src/go.chromium.org/luci/go.mod',
           api.path.cache_dir / 'infra_superproject' /
           'infra/go/src/infra/go.mod',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra_internal/dep/bcid.git/go.mod',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra_internal/dep/bcid.git/proto-public/go.mod',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra_internal/go/src/infra_internal/go.mod',
       ),
       api.step_data(
           'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
