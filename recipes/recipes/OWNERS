@@ -23,6 +23,7 @@ per-file chromium_integration.py=file:v8.expected/OWNERS
 per-file chromium_speed_*=file://recipes/recipe_modules/perf_dashboard/OWNERS
 per-file chromium_trybot.py=iannucci@chromium.org
 per-file emscripten_releases.py=file:emscripten_releases.expected/OWNERS
+per-file infra_codeserach.py=file:chromium_codesearch.expected/OWNERS
 per-file lkgr_finder.py=file:lkgr_finder.expected/OWNERS
 per-file nacl.py=bradnelson@chromium.org
 per-file nacl.py=dschuff@chromium.org
