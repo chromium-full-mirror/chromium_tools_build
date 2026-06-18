@@ -20,7 +20,7 @@ import platform
 import subprocess
 import tempfile
 import time
-from typing import Tuple
+from typing import Iterable, Iterator, NamedTuple, Tuple
 
 import diff_util
 
@@ -60,7 +60,7 @@ def _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_content):
 
   Args:
     deps_content (str): the content of a DEPS file. It is assumed to be trusted
-        and will be evaluated as python code.
+      and will be evaluated as python code.
 
   Returns:
     A list of file paths in descending order of the length of file paths.
@@ -109,6 +109,43 @@ def _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_content):
   return src_checkout_paths
 
 
+class GitLogEntry(NamedTuple):
+  commit: str
+  timestamp: int
+  path: str
+
+
+def _ParseGitLogStream(
+    git_log_output_stream: Iterable[str],) -> Iterator[GitLogEntry]:
+  """Parses git log stream and yields GitLogEntry tuples.
+
+  Expected input format:
+    COMMIT <hash> <timestamp>
+    file1
+    file2
+    COMMIT <hash> <timestamp>
+    file3
+  """
+  current_commit = None
+  current_timestamp = None
+  for line in git_log_output_stream:
+    line = line.strip()
+    if not line:
+      continue
+    if line.startswith('COMMIT '):
+      parts = line.split(' ')
+      if len(parts) >= 3:
+        current_commit = parts[1]
+        current_timestamp = int(parts[2])
+      else:
+        logging.warning('Unexpected COMMIT line format: %s', line)
+    else:
+      if current_commit and current_timestamp:
+        yield GitLogEntry(current_commit, current_timestamp, line)
+      else:
+        logging.warning('File path encountered before any COMMIT: %s', line)
+
+
 RevisionCacheKey = Tuple[str, str]
 LastModifiedInfo = Tuple[str, int]
 
@@ -120,6 +157,10 @@ class RevisionCache:
   purpose is to speed up populating coverage reports with revision information
   when `generate_coverage_metadata.py` is invoked more than once in a static
   checkout.
+
+  Additionally, the cache supports batch resolution (via `BatchRetrieve`) to
+  drastically reduce the number of spawned `git` processes on the first run
+  in a large checkout by fetching history for multiple files at once.
 
   The serialization format is CSV so that the cache can parse or format
   entries line-by-line.
@@ -139,9 +180,11 @@ class RevisionCache:
       self._dirty = False
       with open(self._path) as cache_path:
         reader = csv.reader(cache_path)
-        for (checkout_dir, path_in_checkout, revision, timestamp) in reader:
-          self._entries[checkout_dir,
-                        path_in_checkout] = (revision, int(timestamp))
+        for checkout_dir, path_in_checkout, revision, timestamp in reader:
+          self._entries[checkout_dir, path_in_checkout] = (
+              revision,
+              int(timestamp),
+          )
     except FileNotFoundError:
       logging.warning('Revision cache %s not found', self._path)
     except (OSError, csv.Error, ValueError):
@@ -173,7 +216,7 @@ class RevisionCache:
       args (tuple): A tuple <root_dir, checkout_dir, path> where
         * root_dir (str): System absolute path to the root checkout.
         * checkout_dir (str): Source absolute path to the root of a dependency
-                              checkout.
+          checkout.
         * path (str): Source absolute path to the file to retrieve the revision.
 
     Returns:
@@ -200,7 +243,8 @@ class RevisionCache:
       git_output = subprocess.check_output(
           [GIT, 'log', '-n', '1', '--pretty=format:%H:%ct', path_in_dep_repo],
           cwd=cwd,
-          text=True)
+          text=True,
+      )
 
       lines = git_output.splitlines()
       assert len(lines) == 1, 'More than one line output.'
@@ -214,6 +258,49 @@ class RevisionCache:
     revision, timestamp = self._entries[cache_key] = parts[0], int(parts[1])
     self._dirty = True
     return path, revision, timestamp
+
+  def BatchRetrieve(self, root_dir, checkout_dir, paths_in_checkout):
+    """Populates the cache by running git log on the checkout directory.
+
+    Args:
+      root_dir (str): System absolute path to the root checkout.
+      checkout_dir (str): Source absolute path to the root of a dependency
+        checkout.
+      paths_in_checkout (list): List of paths in checkout to resolve
+    """
+    assert checkout_dir.startswith('//'), ('%s is expected to start with //' %
+                                           checkout_dir)
+    cwd = os.path.join(root_dir, checkout_dir[2:])
+
+    paths_in_checkout_set = set(paths_in_checkout)
+    resolved_paths = set()
+
+    cmd = [
+        GIT,
+        'log',
+        '--name-only',
+        '--no-renames',
+        '--pretty=format:COMMIT %H %ct',
+        '--since=5 years ago',
+    ]
+    try:
+      process = subprocess.Popen(
+          cmd, cwd=cwd, stdout=subprocess.PIPE, text=True)
+
+      for commit, timestamp, path in _ParseGitLogStream(process.stdout):
+        if path in paths_in_checkout_set and path not in resolved_paths:
+          cache_key = (checkout_dir, path)
+          self._entries[cache_key] = (commit, timestamp)
+          self._dirty = True
+          resolved_paths.add(path)
+          if len(resolved_paths) == len(paths_in_checkout_set):
+            process.terminate()
+            break
+
+      process.wait()
+    except Exception as e:
+      logging.warning('Error during batched git log for %s: %s', checkout_dir,
+                      e)
 
 
 def _GetCommitedFilesForEachCheckout(root_dir, checkouts):
@@ -248,14 +335,13 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
     root_dir (str): System absolute path to the directory of the root checkout.
     deps_file_path (str): Relative path to the DEPS file in the root checkout.
     file_paths (list): The list of source absolute file paths to retrieve git
-                       revisions for.
+      revisions for.
 
   Returns:
     A dict that maps from file source absolute paths to tuples of two elements:
       1. Git hash of the commit when the file was most recently updated.
       2. Time stamp of the commit when the file was most recently updated.
   """
-  file_data = []
   timer = _Timer()
   timer.Start()
   with open(os.path.join(root_dir, deps_file_path), 'r') as f:
@@ -271,13 +357,14 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   timer.End('_GetCommitedFilesForEachCheckout')
 
   timer.Start()
+  files_by_checkout = collections.defaultdict(list)
   for path in file_paths:
     assert path.startswith('//'), '%s is expected to start with //' % path
     for checkout in checkouts:
       if path.startswith(checkout) and path in all_files.get(checkout, []):
-        file_data.append((root_dir, checkout, path))
+        files_by_checkout[checkout].append(path)
         break
-  timer.End('Finding correct checkout')
+  timer.End('Grouping files by checkout')
 
   timer.Start()
   root_revision = subprocess.check_output([GIT, 'rev-parse', 'HEAD'],
@@ -287,25 +374,54 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
                             f'{root_revision}.csv')
   cache = RevisionCache(cache_path)
   cache.TryLoad()
-  # Scale threads linearly with core count (approximately). Note that threads
-  # in all but the newest CPython implementations compete to acquire the Global
-  # Interpreter Lock (GIL) [0] when executing bytecode. However, because:
-  #   * A thread releases the GIL when blocked on I/O,
-  #   * ... and `RetrieveRevision()` is I/O-bound waiting for `git log`
-  #     subprocesses to join,
-  #
-  # ... a thread pool is still an effective way to parallelize
-  # `RetrieveRevision()`.
-  #
-  # [0]: https://docs.python.org/3/glossary.html#term-global-interpreter-lock
-  max_workers = max(5, multiprocessing.cpu_count() - 5)
+
+  # Phase 1: Batching
+  for checkout, paths in files_by_checkout.items():
+    uncached_paths = []
+    for path in paths:
+      path_in_dep_repo = path[len(checkout):]
+      if (checkout, path_in_dep_repo) not in cache._entries:
+        uncached_paths.append(path_in_dep_repo)
+
+    # Batching provides a speedup when we deal with more than ~1500 files
+    # This only runs in CI builders with coverage enabled
+    if len(uncached_paths) > 1500:
+      cache.BatchRetrieve(root_dir, checkout, uncached_paths)
+  timer.End('Phase 1: Batching')
+
+  timer.Start()
+  # Phase 2: Fallback / Individual
   revisions_by_path = {}
-  with ThreadPoolExecutor(max_workers=max_workers) as pool:
-    for result in pool.map(cache.RetrieveRevision, file_data):
-      if not result:
-        continue
-      path, git_hash, timestamp = result
-      revisions_by_path[path] = git_hash, timestamp
+  unresolved_file_data = []
+  for checkout, paths in files_by_checkout.items():
+    for path in paths:
+      path_in_dep_repo = path[len(checkout):]
+      cache_key = (checkout, path_in_dep_repo)
+      if entry := cache._entries.get(cache_key):
+        revisions_by_path[path] = entry
+      else:
+        unresolved_file_data.append((root_dir, checkout, path))
+
+  if unresolved_file_data:
+    # Scale threads linearly with core count (approximately). Note that all
+    # threads but the newest CPython implementations compete to acquire the
+    # Global Interpreter Lock (GIL) [0] when executing bytecode. However,
+    # because:
+    #   * A thread releases the GIL when blocked on I/O,
+    #   * ... and `RetrieveRevision()` is I/O-bound waiting for `git log`
+    #     subprocesses to join,
+    #
+    # ... a thread pool is still an effective way to parallelize
+    # `RetrieveRevision()`.
+    #
+    # [0]: https://docs.python.org/3/glossary.html#term-global-interpreter-lock
+    max_workers = max(5, multiprocessing.cpu_count() - 5)
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+      for result in pool.map(cache.RetrieveRevision, unresolved_file_data):
+        if not result:
+          continue
+        path, git_hash, timestamp = result
+        revisions_by_path[path] = git_hash, timestamp
   cache.Flush()
   timer.End('Multithreaded RetrieveRevision')
   return revisions_by_path
@@ -320,10 +436,10 @@ def AddGitRevisionsToCoverageFilesMetadata(files_coverage_data, src_path,
 
   Args:
     files_coverage_data (list): A list of File in coverage metadata format, and
-                                it is going to be mutated by this function.
+      it is going to be mutated by this function.
     src_path (str): Absolute path to the source root.
     deps_file_path (str): Relative path to the DEPS file that manages
-                          dependencies.
+      dependencies.
   """
   logging.info('Retrieving file git metadata...')
   start_time = time.time()
@@ -341,20 +457,22 @@ def AddGitRevisionsToCoverageFilesMetadata(files_coverage_data, src_path,
 
   minutes = (time.time() - start_time) / 60
   logging.info(
-      'Retrieving and filling in git metadata for %d files took %.0f '
-      'minutes', len(all_files), minutes)
+      'Retrieving and filling in git metadata for %d files took %.0f minutes',
+      len(all_files),
+      minutes,
+  )
 
 
 def GetUnmodifiedLinesSinceCommit(src_path, file_path, reference_commit):
-  """ Returns a list of lines unmodified since the reference_commit.
+  """Returns a list of lines unmodified since the reference_commit.
 
   This function does a git diff against the reference_commit and parses its
   output to find the unmodified lines.
 
   Args:
     src_path (str): Absolute path to the root of the checkout.
-    file_path (str): File path relative to the root of the checkout,
-                    without leading slashes
+    file_path (str): File path relative to the root of the checkout, without
+      leading slashes
     reference_commit (str): Hash of the reference commit
   """
   try:

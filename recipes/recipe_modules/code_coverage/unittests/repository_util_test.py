@@ -73,6 +73,68 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
     }
     self.assertDictEqual(expected_file_revisions, file_revisions)
 
+  @mock.patch('repository_util.subprocess.Popen', autospec=True)
+  @mock.patch('repository_util.subprocess.check_output', autospec=True)
+  def test_get_file_revisions_batching(self, mock_check_output, mock_popen):
+    files = ['//file%d.cc' % i for i in range(1501)]
+
+    def mock_check_output_side_effect(commands, cwd, text=None):
+      cwd = os.path.normpath(cwd)
+      if commands[:2] == ['git', 'ls-files']:
+        if cwd == '/src':
+          return '\n'.join(['file%d.cc' % i for i in range(1501)])
+        if cwd == '/src/third_party/repo':
+          return ''
+      if commands == ['git', 'rev-parse', 'HEAD']:
+        return '123abc'
+      assert False, 'Unexpected subprocess call: %s' % commands
+
+    mock_check_output.side_effect = mock_check_output_side_effect
+
+    mock_process = mock.Mock()
+    mock_popen.return_value = mock_process
+
+    log_output = []
+    for i in range(1501):
+      log_output.append('COMMIT hash%d 12345' % i)
+      log_output.append('file%d.cc' % i)
+
+    mock_process.stdout = iter(log_output)
+    mock_process.wait.return_value = 0
+
+    file_revisions = repository_util._GetFileRevisions('/src', 'DEPS', files)
+
+    self.assertEqual(len(file_revisions), 1501)
+    for i in range(1501):
+      self.assertEqual(file_revisions['//file%d.cc' % i], ('hash%d' % i, 12345))
+
+  @mock.patch('repository_util.subprocess.Popen', autospec=True)
+  @mock.patch('repository_util.subprocess.check_output', autospec=True)
+  def test_get_file_revisions_no_batching(self, mock_check_output, mock_popen):
+    files = ['//file%d.cc' % i for i in range(5)]
+
+    def mock_check_output_side_effect(commands, cwd, text=None):
+      cwd = os.path.normpath(cwd)
+      if commands[:2] == ['git', 'ls-files']:
+        if cwd == '/src':
+          return '\n'.join(['file%d.cc' % i for i in range(5)])
+        if cwd == '/src/third_party/repo':
+          return ''
+      if commands[:-1] == ['git', 'log', '-n', '1', '--pretty=format:%H:%ct']:
+        path = commands[-1]
+        i = int(path[4:-3])
+        return 'hash%d:12345' % i
+      if commands == ['git', 'rev-parse', 'HEAD']:
+        return '123abc'
+      assert False, 'Unexpected subprocess call'
+
+    mock_check_output.side_effect = mock_check_output_side_effect
+
+    file_revisions = repository_util._GetFileRevisions('/src', 'DEPS', files)
+
+    self.assertEqual(len(file_revisions), 5)
+    self.assertFalse(mock_popen.called)
+
   @mock.patch.object(repository_util, '_GetFileRevisions', autospec=True)
   def test_add_git_revisions_to_coverage_files_metadata(
       self, mock_get_file_revisions):
@@ -203,10 +265,122 @@ class RevisionCacheTest(fake_filesystem_unittest.TestCase):
         '//third_party/fake-submodule/,file2.cc,789def,2222\n',
     })
 
+  @mock.patch('subprocess.Popen')
+  def test_consistency_batch_vs_individual(self, mock_popen, mock_check_output):
+    files_data = [
+        ('//file1.cc', 'hash1', 12345),
+        ('//dir/file2.cc', 'hash2', 67890),
+    ]
+
+    # 1. Run BatchRetrieve
+    cache_batch = repository_util.RevisionCache(self.cache_path)
+    cache_batch.TryLoad()
+
+    mock_process = mock.Mock()
+    mock_popen.return_value = mock_process
+
+    # Simulating git log output for batch: newest first
+    log_output = [
+        'COMMIT hash2 67890\n',
+        'dir/file2.cc\n',
+        'COMMIT hash1 12345\n',
+        'file1.cc\n',
+    ]
+    mock_process.stdout = iter(log_output)
+    mock_process.wait.return_value = 0
+
+    paths_in_checkout = [f[0][2:] for f in files_data]
+    cache_batch.BatchRetrieve('/path/to/src', '//', paths_in_checkout)
+
+    # 2. Run RetrieveRevision (individual)
+    cache_indiv = repository_util.RevisionCache(self.cache_path)
+    cache_indiv.TryLoad()
+
+    def mock_check_output_side_effect(cmd, cwd, text=None):
+      path = cmd[-1]
+      if path == 'file1.cc':
+        return 'hash1:12345\n'
+      if path == 'dir/file2.cc':
+        return 'hash2:67890\n'
+      raise ValueError('Unexpected path: %s' % path)
+
+    mock_check_output.side_effect = mock_check_output_side_effect
+
+    for path, _, _ in files_data:
+      cache_indiv.RetrieveRevision(('/path/to/src', '//', path))
+
+    # 3. Compare cache entries
+    self.assertDictEqual(cache_batch._entries, cache_indiv._entries)
+
+    # Also assert they match the expected data
+    expected_entries = {
+        ('//', 'file1.cc'): ('hash1', 12345),
+        ('//', 'dir/file2.cc'): ('hash2', 67890),
+    }
+    self.assertDictEqual(expected_entries, cache_batch._entries)
+
   def verify_cache(self, expected_lines: Set[str]):
     # Tests should be insensitive to CSV line order.
     with open(self.cache_path) as cache_file:
       self.assertEqual(expected_lines, set(cache_file))
+
+
+class ParseGitLogStreamTest(unittest.TestCase):
+
+  def test_happy_path(self):
+    log_output = [
+        'COMMIT hash1 12345\n',
+        'file1.cc\n',
+        'file2.cc\n',
+        'COMMIT hash2 67890\n',
+        'file3.cc\n',
+    ]
+    expected = [
+        ('hash1', 12345, 'file1.cc'),
+        ('hash1', 12345, 'file2.cc'),
+        ('hash2', 67890, 'file3.cc'),
+    ]
+    self.assertEqual(
+        list(repository_util._ParseGitLogStream(log_output)), expected)
+
+  def test_empty_lines_ignored(self):
+    log_output = [
+        '\n',
+        'COMMIT hash1 12345\n',
+        '\n',
+        'file1.cc\n',
+        '\n',
+    ]
+    expected = [
+        ('hash1', 12345, 'file1.cc'),
+    ]
+    self.assertEqual(
+        list(repository_util._ParseGitLogStream(log_output)), expected)
+
+  def test_malformed_commit_skipped(self):
+    log_output = [
+        'COMMIT hash1\n',  # Malformed, missing timestamp
+        'file1.cc\n',
+        'COMMIT hash2 67890\n',
+        'file2.cc\n',
+    ]
+    expected = [
+        ('hash2', 67890, 'file2.cc'),
+    ]
+    self.assertEqual(
+        list(repository_util._ParseGitLogStream(log_output)), expected)
+
+  def test_file_before_commit_skipped(self):
+    log_output = [
+        'file1.cc\n',  # Before any COMMIT
+        'COMMIT hash1 12345\n',
+        'file2.cc\n',
+    ]
+    expected = [
+        ('hash1', 12345, 'file2.cc'),
+    ]
+    self.assertEqual(
+        list(repository_util._ParseGitLogStream(log_output)), expected)
 
 
 if __name__ == '__main__':
