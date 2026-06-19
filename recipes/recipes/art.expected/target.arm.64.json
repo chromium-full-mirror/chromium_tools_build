@@ -858,7 +858,8 @@
       "--verbose",
       "--debug",
       "--optimizing",
-      "--run-test-option=--Xcompiler-option=--instruction-set-features=-a53,crc,lse,fp16,-dotprod,-sve"
+      "--run-test-option=--Xcompiler-option=--instruction-set-variant=cortex-a35",
+      "--run-test-option=--Xcompiler-option=--instruction-set-features=runtime"
     ],
     "cwd": "[CACHE]/art",
     "env": {

@@ -92,7 +92,8 @@ def checkout_git(api, branch, repo_root):
       # sub-project commit (either as submodule or in .supermanifest).
       args = ["log", '--pretty=format:%H', f"-S{ref}", f"origin/{branch}"]
       for retry, delay in enumerate([0, 1, 2, 5, 10, 15]):
-        # If the CL was just submitted, the super-project entry might not exist yet.
+        # If the CL was just submitted, the super-project entry might not exist
+        # yet.
         if retry > 0:
           api.time.sleep(delay * 60)
           api.git("fetch")
@@ -514,9 +515,18 @@ def setup_target(api,
     if product == 'armv8':
       with api.context(env=test_env):
         defer(
-            api.step, 'test optimizing all-isa-features', testrunner_cmd + [
+            # All current test devices support "crc" and none needs Cortex-A53
+            # workarounds. Pass `--instruction-set-variant=cortex-a35` to
+            # disable Cortex-A53 workarounds and enable only the "crc". Pass
+            # `--instruction-set-features=runtime` (processed by `dex2oat`
+            # after the variant), to detect other features on the device.
+            api.step,
+            'test optimizing all-isa-features',
+            testrunner_cmd + [
                 '--optimizing', '--run-test-option=--Xcompiler-option=' +
-                '--instruction-set-features=-a53,crc,lse,fp16,-dotprod,-sve'
+                '--instruction-set-variant=cortex-a35',
+                '--run-test-option=--Xcompiler-option=' +
+                '--instruction-set-features=runtime'
             ])
       test_logging(api, 'test optimizing all-isa-features')
 
