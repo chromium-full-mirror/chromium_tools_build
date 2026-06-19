@@ -120,6 +120,10 @@ def RunSteps(api):
         'cloud.google.com/go/kms/apiv1/kmspb=cloud.google.com/go/kms/apiv1/kmspb@v1.23.0',
         '-replace',
         'go.chromium.org/chromiumos/config/go@v0.0.0-20240309015314-b8a183866804=./infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go',
+        '-replace',
+        'go.chromium.org/chromiumos/infra/proto/go@v0.0.0-20250623190020-bff867fc0474=./infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
+        '-replace',
+        'go.chromium.org/luci@v0.0.0-20260326213659-7c3f2951dea9=./infra/go/src/go.chromium.org/luci',
     ])
 
     api.step('generate go kzip', [
