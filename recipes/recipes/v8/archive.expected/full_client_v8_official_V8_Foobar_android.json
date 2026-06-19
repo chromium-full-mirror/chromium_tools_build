@@ -6,7 +6,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=21 use_siso=true use_remoteexec=true is_debug=false target_os=\"android\" target_cpu=\"arm64\""
+      "--args=dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=23 use_siso=true use_remoteexec=true is_debug=false target_os=\"android\" target_cpu=\"arm64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -180,7 +180,7 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "[CACHE]/builder/v8/out/build",
-      "--args=v8_static_library=true dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=21 use_siso=true use_remoteexec=true is_debug=false target_os=\"android\" target_cpu=\"arm64\""
+      "--args=v8_static_library=true dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=23 use_siso=true use_remoteexec=true is_debug=false target_os=\"android\" target_cpu=\"arm64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
