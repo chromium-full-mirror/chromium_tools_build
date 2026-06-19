@@ -21,12 +21,14 @@ class SuiteSafetyDetails(TypedDict):
   caught_failures_count: int
   missed_failures: list[str]
   test_recall_rate: float
+  rts_banned: bool
 
 
 def evaluate_rts(
     api: recipe_api.RecipeApi,
     build_dir: Path,
     tests: list[steps.Test],
+    banned_suites: set[str],
 ) -> None:
   """RTS safety evaluation logic.
 
@@ -44,16 +46,20 @@ def evaluate_rts(
 
   with api.m.step.nest(step_name) as presentation:
     try:
-      evaluation_results = _evaluate_all_tests(api, build_dir, tests)
+      evaluation_results, missing_filter_suites = _evaluate_all_tests(
+          api, build_dir, tests, banned_suites)
       if not evaluation_results:
-        presentation.step_text = (
-            'No RTS targets had generated filter files or test results.')
+        step_text = 'No RTS targets had generated filter files or test results.'
+        if missing_filter_suites:
+          step_text += ('\n\n**Missing RTS filter files for**: %s' %
+                        ', '.join(sorted(missing_filter_suites)))
+        presentation.step_text = step_text
         presentation.properties['rts_evaluation_status'] = 'SKIPPED'
         return
 
       summary_data = _calculate_overall_summary(evaluation_results)
       _present_evaluation_results(api, presentation, evaluation_results,
-                                  summary_data)
+                                  summary_data, missing_filter_suites)
       presentation.properties['rts_evaluation_status'] = 'SUCCESS'
     except Exception as e:
       presentation.step_text = (
@@ -66,19 +72,25 @@ def _evaluate_all_tests(
     api: recipe_api.RecipeApi,
     build_dir: Path,
     tests: list[steps.Test],
-) -> dict[str, SuiteSafetyDetails]:
+    banned_suites: set[str],
+) -> tuple[dict[str, SuiteSafetyDetails], list[str]]:
   """Evaluates RTS performance across all given tests."""
   filter_file_dir = api.filter_file_dir(build_dir)
 
   evaluation_results: dict[str, SuiteSafetyDetails] = {}
+  missing_filter_suites = []
   for test in tests:
     target_name = test.isolate_target or test.target_name
     filter_file_path = filter_file_dir / f'{target_name}.filter'
+    if not api.m.path.exists(filter_file_path):
+      missing_filter_suites.append(test.name)
+      continue
     skipped_tests = _get_skipped_tests(api, target_name, filter_file_path)
-    res = _evaluate_test_suite(test, skipped_tests)
+    is_banned = target_name in banned_suites
+    res = _evaluate_test_suite(test, skipped_tests, is_banned)
     if res:
       evaluation_results[test.name] = res
-  return evaluation_results
+  return evaluation_results, missing_filter_suites
 
 
 def _get_skipped_tests(
@@ -87,8 +99,6 @@ def _get_skipped_tests(
     filter_file_path: Path,
 ) -> set[str]:
   """Reads the skipped tests from the filter file."""
-  if not api.m.path.exists(filter_file_path):
-    return set()
   filter_content = api.m.file.read_text(
       'read %s filter file' % target_name,
       filter_file_path,
@@ -104,6 +114,7 @@ def _get_skipped_tests(
 def _evaluate_test_suite(
     test: steps.Test,
     skipped_tests: set[str],
+    is_banned: bool,
 ) -> SuiteSafetyDetails | None:
   """Evaluates RTS performance for a single test."""
   valid, actual_failures = test.deterministic_without_patch_failures()
@@ -133,6 +144,7 @@ def _evaluate_test_suite(
       'caught_failures_count': target_caught_failures,
       'missed_failures': missed_failures_list[:50],
       'test_recall_rate': target_test_recall,
+      'rts_banned': is_banned,
   }
 
 
@@ -170,6 +182,7 @@ def _present_evaluation_results(
     presentation: StepPresentation,
     evaluation_results: dict[str, SuiteSafetyDetails],
     summary_data: dict[str, bool | float | int],
+    missing_filter_suites: list[str],
 ) -> None:
   """Presents RTS evaluation results as a step and output properties."""
   total_skipped = summary_data['total_rts_skipped_tests']
@@ -196,6 +209,11 @@ def _present_evaluation_results(
 
   if total_skipped > 0:
     summary_lines.append('**Total Tests Skipped by RTS**: %d' % total_skipped)
+
+  if missing_filter_suites:
+    summary_lines.append('')
+    summary_lines.append('**Missing RTS filter files for**: %s' %
+                         ', '.join(sorted(missing_filter_suites)))
 
   presentation.step_text = '\n'.join(summary_lines)
   presentation.properties['rts_safety_summary'] = summary_data

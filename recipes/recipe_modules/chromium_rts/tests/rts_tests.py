@@ -79,3 +79,18 @@ def GenTests(api):
       ),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'rts_enabled_with_banned_suites',
+      api.chromium.try_build(
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
+      api.path.exists(
+          api.path.cleanup_dir.joinpath('gen', 'rts',
+                                        'blink_python_tests.filter'),
+          api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
+      ),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(post_process.DropExpectation),
+  )

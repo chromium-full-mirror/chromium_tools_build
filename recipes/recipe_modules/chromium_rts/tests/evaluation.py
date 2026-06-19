@@ -43,7 +43,11 @@ def RunSteps(api):
       per_suffix_failures=per_suffix_failures,
       invocation_names=['invocations/inv-1'] if has_rdb_results else [],
   ).get_test(api.chromium_tests)
-  test_list = [mock_test]
+
+  second_test = steps.MockTestSpec.create('SecondTest',).get_test(
+      api.chromium_tests)
+
+  test_list = [mock_test, second_test]
 
   if has_rdb_results:
     # Ensure 'with patch' is populated even if there are no failures
@@ -129,6 +133,7 @@ def GenTests(api):
                   'caught_failures_count': 0,
                   'missed_failures': ['TestName1'],
                   'test_recall_rate': 0.0,
+                  'rts_banned': False,
               }
           }),
       api.post_process(post_process.DropExpectation),
@@ -164,6 +169,7 @@ def GenTests(api):
                   'caught_failures_count': 1,
                   'missed_failures': [],
                   'test_recall_rate': 1.0,
+                  'rts_banned': False,
               }
           }),
       api.post_process(post_process.DropExpectation),
@@ -218,13 +224,14 @@ def GenTests(api):
           tests=['TestName1'],
       ),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
-      api.post_process(post_process.StepTextContains,
-                       'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 100.00% (1/1 caught)',
-                           '**Overall Builder Recall**: 100.00%',
-                       ]),
+      api.post_process(
+          post_process.StepTextContains, 'Evaluate chromium-rts safety', [
+              'No RTS targets had generated filter files or test results.',
+              '**Missing RTS filter files for**: MockTest',
+          ]),
       api.post_process(post_process.DropExpectation),
   )
+
 
   yield api.test(
       'missing_rdb_results',
@@ -317,6 +324,7 @@ def GenTests(api):
                   'caught_failures_count': 1,
                   'missed_failures': [],
                   'test_recall_rate': 1.0,
+                  'rts_banned': False,
               }
           }),
       api.post_process(post_process.DropExpectation),
@@ -458,5 +466,56 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.PropertyEquals, 'rts_evaluation_status',
                        'SKIPPED'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'banned_suite_evaluated',
+      api.chromium.try_build(
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
+      api.properties(
+          test_suite_name='blink_python_tests',
+          per_suffix_failures={'with patch': ['TestName1']},
+          tests=['TestName1'],
+      ),
+      api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' /
+                      'blink_python_tests.filter'),
+      api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
+      api.post_process(post_process.StepTextContains,
+                       'Evaluate chromium-rts safety', [
+                           '**Overall Test Recall**: 0.00% (0/1 caught)',
+                           '**Overall Builder Recall**: 0.00%',
+                       ]),
+      api.post_process(
+          post_process.PropertyEquals, 'rts_suite_safety_details', {
+              'blink_python_tests': {
+                  'test_suite': 'blink_python_tests',
+                  'rts_skipped_tests_count': 2,
+                  'unexpected_failures_count': 1,
+                  'caught_failures_count': 0,
+                  'missed_failures': ['TestName1'],
+                  'test_recall_rate': 0.0,
+                  'rts_banned': True,
+              }
+          }),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'evaluation_with_missing_filter_files',
+      api.chromium.try_build(
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
+      api.properties(per_suffix_failures={'with patch': ['TestName3']},),
+      api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' / 'MockTest.filter'),
+      api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
+      api.post_process(post_process.StepTextContains,
+                       'Evaluate chromium-rts safety', [
+                           '**Overall Test Recall**: 100.00% (1/1 caught)',
+                           '**Overall Builder Recall**: 100.00%',
+                           '**Total Tests Skipped by RTS**: 2',
+                           '**Missing RTS filter files for**: SecondTest',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )

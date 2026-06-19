@@ -24,7 +24,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
             in self.m.buildbucket.build.input.experiments)
 
   def filter_file_dir(self, build_dir: Path) -> Path:
-    """Returns the path to the directory containing generated RTS filter files."""
+    """Returns the path to the directory containing the RTS filter files."""
     return build_dir / 'gen' / 'rts'
 
   def generate_filter_files(
@@ -61,6 +61,20 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     ]
     self.m.step('generate chromium-rts filter files', cmd)
 
+  def banned_suites(self) -> set[str]:
+    """Loads and resolves the banned suites for the current builder."""
+    resource_path = self.resource('rts_banned_suites.json')
+    banned_suites_dict = self.m.file.read_json(
+        'read rts_banned_suites.json',
+        resource_path,
+        test_data={
+            '*': ['blink_python_tests'],
+        })
+    builder = self.m.buildbucket.builder_name
+    banned = set(banned_suites_dict.get('*', []))
+    banned.update(banned_suites_dict.get(builder, []))
+    return banned
+
   def _fetch_chromium_rts_model(self) -> Path:
     """Fetches the RTS model from CIPD."""
     install_dir = self.m.path.cleanup_dir / 'rts-model'
@@ -88,4 +102,5 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         results.
     """
     if self._should_generate_filters():
-      evaluation.evaluate_rts(self, build_dir, tests)
+      banned_suites = self.banned_suites()
+      evaluation.evaluate_rts(self, build_dir, tests, banned_suites)
