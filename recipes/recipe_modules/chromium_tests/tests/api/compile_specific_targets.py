@@ -64,6 +64,21 @@ BUILDERS = ctbc.BuilderDatabase.create({
                 execution_mode=builder_spec.COMPILE_AND_TEST,
                 simulation_platform='linux',
             ),
+        'Android Tester CAS':
+            ctbc.BuilderSpec.create(
+                chromium_config='main_builder',
+                gclient_config='chromium',
+                chromium_config_kwargs={
+                    'BUILD_CONFIG': 'Release',
+                    'TARGET_ARCH': 'arm',
+                    'TARGET_BITS': 32,
+                    'TARGET_PLATFORM': 'android',
+                },
+                android_config='base_config',
+                execution_mode=builder_spec.TEST,
+                parent_buildername='Cronet',
+                use_test_trigger_cas=True,
+            ),
         'chromium-rel':
             ctbc.BuilderSpec.create(
                 chromium_config='chromium',
@@ -328,7 +343,23 @@ def GenTests(api):
           '-b',
           'Cronet',
       ]),
+      api.post_process(post_process.MustRun, 'tree truth steps'),
       api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'android_test_trigger_cas',
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake.group',
+          builder='Android Tester CAS',
+          builder_db=BUILDERS),
+      api.properties(
+          test_trigger_deps_digest='fake-digest/123',
+          parent_got_revision='fake-parent-revision',
+      ),
+      api.post_process(post_process.DoesNotRun, 'tree truth steps'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -764,7 +764,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if self.m.chromium.c.TARGET_PLATFORM == 'android':
       self.m.chromium_android.clean_local_files(source_dir)
-      self.m.chromium_android.run_tree_truth(update_result)
+      # The underlying script call here relies on a git checkout, which is not
+      # present if using the test trigger CAS codepath.
+      if not builder_config.use_test_trigger_cas:
+        self.m.chromium_android.run_tree_truth(update_result)
 
     if execution_mode != ctbc.COMPILE_AND_TEST:
       return None, None
