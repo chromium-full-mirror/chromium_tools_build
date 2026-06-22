@@ -1105,6 +1105,55 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'ci_triggered_tester_use_test_trigger_cas',
+      api.properties(
+          config='Release',
+          swarm_hashes={fake_test: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},
+          test_trigger_deps_digest='fake-digest/123',
+          parent_got_revision='fake-parent-revision',
+      ),
+      api.platform('linux', 64),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group=fake_group,
+          builder=fake_triggered_builder,
+          builder_db=ctbc.BuilderDatabase.create({
+              fake_group: {
+                  fake_builder:
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  fake_triggered_builder:
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          parent_buildername=fake_builder,
+                          execution_mode=ctbc.TEST,
+                          use_test_trigger_cas=True,
+                      ),
+              }
+          })),
+      api.chromium_tests.read_targets_spec(
+          fake_group, {
+              fake_triggered_builder: {
+                  'isolated_scripts': [{
+                      'name': fake_test,
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      }
+                  }],
+              }
+          }),
+      api.post_process(post_process.DoesNotRun, 'bot_update'),
+      api.post_process(post_process.MustRun, 'download test trigger CAS'),
+      api.post_process(post_process.StepCommandContains, 'fake_test',
+                       ['--build-properties']),
+      api.post_process(post_process.DropExpectation),
+  )
+
   # TODO(crbug.com/1174938): Remove this special case after
   # crbug.com/1166761 is fixed.
   yield api.test(

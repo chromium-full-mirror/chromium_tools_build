@@ -486,6 +486,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                                         source_dir,
                                                         self.m.properties,
                                                         solution_name)
+      self.m.chromium.set_build_properties(update_result.properties)
       build_dir = self.m.chromium.default_build_dir(source_dir)
 
       self.m.code_coverage.source_dir = source_dir
