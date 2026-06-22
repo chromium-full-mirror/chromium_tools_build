@@ -85,6 +85,14 @@ def RunSteps(api):
   go_version = '1.24.5'
   for mod_file in go_mod_files:
     mod_text = api.file.read_text('read %s' % mod_file, mod_file)
+    # Exclude the conflicting standalone version of grpc/stats/opentelemetry.
+    # We do this dynamically in all workspace go.mod files so that the Go module
+    # resolver completely excludes the standalone module and resolves the import
+    # using the package integrated inside the main google.golang.org/grpc module.
+    mod_text += '\nexclude google.golang.org/grpc/stats/opentelemetry v0.0.0-20240907200651-3ffb98b2c93a\n'
+    api.file.write_text('exclude stats/opentelemetry in %s' % mod_file,
+                        mod_file, mod_text)
+
     match = MODULE_RE.search(mod_text)
     if not match:
       raise api.step.StepFailure('Did not detect Modules for %s' % mod_file)
@@ -124,8 +132,6 @@ def RunSteps(api):
         'go.chromium.org/chromiumos/infra/proto/go@v0.0.0-20250623190020-bff867fc0474=./infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
         '-replace',
         'go.chromium.org/luci@v0.0.0-20260326213659-7c3f2951dea9=./infra/go/src/go.chromium.org/luci',
-        '-replace',
-        'google.golang.org/grpc/stats/opentelemetry=google.golang.org/grpc@v1.81.1',
     ])
 
     api.step('generate go kzip', [
