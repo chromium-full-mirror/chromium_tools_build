@@ -130,24 +130,24 @@ wheel: <
   version: "version:3.6.0"
 >
 wheel: <
-  name: "experimental/pasthana_at_chromium.org/infra/python/wheels/hdbscan/${vpython_platform}"
-  version: "version:1.0.0"
+  name: "infra/python/wheels/hdbscan/${vpython_platform}"
+  version: "version:0.8.40"
 >
 wheel: <
-  name: "experimental/pasthana_at_chromium.org/infra/python/wheels/umap-learn-py2_py3"
-  version: "version:1.0.0"
+  name: "infra/python/wheels/umap-learn-py2_py3"
+  version: "version:0.5.9.post2"
 >
 wheel: <
-  name: "experimental/pasthana_at_chromium.org/infra/python/wheels/numba/${vpython_platform}"
-  version: "version:1.0.0"
+  name: "infra/python/wheels/numba/${vpython_platform}"
+  version: "version:0.62.1"
 >
 wheel: <
-  name: "experimental/pasthana_at_chromium.org/infra/python/wheels/llvmlite/${vpython_platform}"
-  version: "version:1.0.0"
+  name: "infra/python/wheels/llvmlite/${vpython_platform}"
+  version: "version:0.45.1"
 >
 wheel: <
-  name: "experimental/pasthana_at_chromium.org/infra/python/wheels/pynndescent-py2_py3"
-  version: "version:1.0.0"
+  name: "infra/python/wheels/pynndescent-py3"
+  version: "version:0.5.13"
 >
 wheel: <
   name: "infra/python/wheels/tqdm-py3"
