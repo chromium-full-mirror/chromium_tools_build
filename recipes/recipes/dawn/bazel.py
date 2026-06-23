@@ -9,9 +9,11 @@ DEPS = [
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/osx_sdk',
+    'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/path',
     'recipe_engine/platform',
+    'recipe_engine/properties',
     'recipe_engine/step',
 ]
 
@@ -36,10 +38,14 @@ def RunSteps(api):
   source_dir = update_result.source_root.path
   bazelisk = source_dir.joinpath('tools', 'bazelisk', 'bazelisk')
 
+  debug = api.properties.get('debug', True)
+  compilation_mode = 'dbg' if debug else 'opt'
+
   # Build Tint using tools/bazelisk.
   bazel_args = [
       bazelisk,
       'build',
+      '--compilation_mode=%s' % compilation_mode,
   ]
 
   # On Mac, use minimum necessary version that will enable C++20 APIs.
@@ -65,12 +71,35 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test(
-      'linux',
+      'linux_rel',
       api.platform('linux', 64),
+      api.buildbucket.ci_build(
+          project='dawn',
+          builder='dawn-linux-x64-bazel-rel',
+          git_repo='https://dawn.googlesource.com/dawn',
+      ),
+      api.properties(debug=False),
       api.post_process(post_process.StepSuccess, 'bazel build tint'),
   )
   yield api.test(
-      'mac',
+      'linux_dbg',
+      api.platform('linux', 64),
+      api.buildbucket.ci_build(
+          project='dawn',
+          builder='dawn-linux-x64-bazel-dbg',
+          git_repo='https://dawn.googlesource.com/dawn',
+      ),
+      api.properties(debug=True),
+      api.post_process(post_process.StepSuccess, 'bazel build tint'),
+  )
+  yield api.test(
+      'mac_rel',
       api.platform('mac', 64),
+      api.buildbucket.ci_build(
+          project='dawn',
+          builder='dawn-mac-arm64-bazel-rel',
+          git_repo='https://dawn.googlesource.com/dawn',
+      ),
+      api.properties(debug=False),
       api.post_process(post_process.StepSuccess, 'bazel build tint'),
   )
