@@ -66,8 +66,6 @@ def RunSteps(api):
   if internal:
     potential_go_mod_files += [
         # Internal code won't be readable by public codesearch builders.
-        'infra_internal/dep/bcid.git/go.mod',
-        'infra_internal/dep/bcid.git/proto-public/go.mod',
         'infra_internal/go/src/infra_internal/go.mod',
     ]
 
