@@ -206,21 +206,23 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     presentation = self.m.step.active_result.presentation
     presentation.logs.setdefault('stdout', []).append(message)
 
-  def configure_build(self,
-                      builder_config,
-                      test_only=False,
-                      report_target_platform=True):
+  def configure_build(
+      self,
+      builder_config: ctbc.BuilderConfig,
+      test_only: bool = False,
+      report_target_platform: bool = True,
+  ):
     """Configure the modules that will be used by chromium_tests code.
 
     Args:
-      builder_config - The BuilderConfig instance that defines the
+      builder_config: The BuilderConfig instance that defines the
         configuration to use for the various modules.
-      test_only - Whether or not the builder is just triggering tests.
+      test_only: Whether or not the builder is just triggering tests.
         If the builder is not performing compilation, then some
         inapplicable validation is disabled. By default, the compilation
         validation is skipped only if the builder config's
         execution_mode is TEST.
-      report_target_platform - Whether or not reporting the "target_platform"
+      report_target_platform: Whether or not reporting the "target_platform"
         to the build output properties.
     """
     # Configure chromium module
@@ -435,11 +437,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def prepare_checkout(
       self,
-      builder_config,
-      report_cache_state=True,
-      set_output_commit=True,
-      root_solution_revision=None,
-      runhooks_suffix=None,
+      builder_config: ctbc.BuilderConfig,
+      report_cache_state: bool = True,
+      set_output_commit: bool = True,
+      root_solution_revision: str | None = None,
+      runhooks_suffix: str | None = None,
       *,
       turboci_source_check_id: str = '',
       **kwargs,
@@ -448,9 +450,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """Perform the checkout to enable testing.
 
     Args:
-      runhooks_suffix: Suffix for gclient runhooks step name
+      builder_config: The configuration for the builder being executed.
+      report_cache_state: Whether to check and report the builder cache state.
+      set_output_commit: Whether to set the output commit in Buildbucket.
+      root_solution_revision: Revision to checkout for the root solution.
+      runhooks_suffix: Suffix for gclient runhooks step name.
       turboci_source_check_id: The ID of the TurboCI source check to
         create for the checkout.
+      **kwargs: Keyword arguments to forward to
+        `chromium_checkout.ensure_checkout`. Ignored if
+        `builder_config.use_test_trigger_cas` is True.
 
     Returns:
       A tuple containing:
@@ -2715,7 +2724,24 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return test_targets, compile_targets
 
-  def configure_swarming(self, precommit, task_output_stdout=None, **kwargs):
+  def configure_swarming(
+      self,
+      precommit: bool,
+      task_output_stdout: str | None = None,
+      **kwargs,
+  ):
+    """Configures default swarming dimensions and tags for chromium tests.
+
+    This is a wrapper around `chromium_swarming.configure_swarming` that also
+    allows configuring `task_output_stdout`.
+
+    Args:
+      precommit: Boolean flag to indicate whether the tests are running before
+        the changes are committed.
+      task_output_stdout: Optional path to redirect task stdout to.
+      **kwargs: Keyword arguments to forward to
+        `chromium_swarming.configure_swarming`.
+    """
     self.m.chromium_swarming.configure_swarming(precommit=precommit, **kwargs)
 
     if task_output_stdout:
