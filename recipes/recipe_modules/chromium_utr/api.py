@@ -298,11 +298,18 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     return build_path
 
   def get_gclient_config(self, source_dir: Path):
-    src_file = source_dir.parent / '.gclient'
-    if self.m.path.exists(src_file):
-      gclient_file_path = src_file
+    # Chromium's .gclient file is in the parent directory, but other repos that
+    # this may be used with such as Dawn have it directly in the checkout root.
+    src_file_source = source_dir / '.gclient'
+    src_file_parent = source_dir.parent / '.gclient'
+    if self.m.path.exists(src_file_source):
+      gclient_file_path = src_file_source
+    elif self.m.path.exists(src_file_parent):
+      gclient_file_path = src_file_parent
     else:
-      raise FileNotFoundError(f'.gclient file not found at {str(src_file)}')
+      raise FileNotFoundError(
+          f'.gclient file not found at {str(src_file_parent)} or '
+          f'{str(src_file_source)}')
     # TODO(https://crbug.com/327270127): Use some utility to get the current
     # .gclient config so we don't have to exec() the file
     gclient_text = self.m.file.read_text('read gclient', gclient_file_path)
@@ -319,15 +326,15 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     """
     mismatch_messages = []
     gclient_config = self.get_gclient_config(source_dir)
+    expected_url = self.m.gclient.c.solutions[0].url.rstrip('.git')
     solution = [
-        sol for sol in gclient_config.get('solutions', []) if sol.get(
-            'url', '') == 'https://chromium.googlesource.com/chromium/src.git'
+        sol for sol in gclient_config.get('solutions', [])
+        if sol.get('url', '').rstrip('.git') == expected_url
     ]
     if len(solution) != 1:
       return ('Caution: your .gclient file could not be validated. Exactly one '
-              'solution with \'url\' set to '
-              'https://chromium.googlesource.com/chromium/src.git'
-              ' must be set\n')
+              'solution with \'url\' set to the URL for the repo the UTR is '
+              'being used with must be set\n')
     solution = solution[0]
 
     current_custom_vars = solution.get('custom_vars', {})

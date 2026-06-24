@@ -19,6 +19,9 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'chromium_utr',
+    # Not used directly, but needed for UTR support for Dawn so that the configs
+    # from the recipe module are included.
+    'dawn',
     'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/platform',

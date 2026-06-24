@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import textwrap
+
 from recipe_engine import post_process
 
 from PB.recipe_modules.build.chromium_utr.request import Request
@@ -578,10 +580,38 @@ target_os=['os']
       api.post_process(
           post_process.SummaryMarkdown,
           'Caution: your .gclient file could not be validated. Exactly one '
-          'solution with \'url\' set to '
-          'https://chromium.googlesource.com/chromium/src.git must be set\n'),
+          'solution with \'url\' set to the URL for the repo the UTR is '
+          'being used with must be set\n'),
       api.post_process(post_process.StepCommandContains, 'read gclient',
                        ['[CACHE]/.gclient']),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'gclient_in_src',
+      boilerplate(bypass_gclient=False, target_spec=False),
+      api.path.exists(api.path.cache_dir.joinpath('src', '.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text(
+              textwrap.dedent("""\
+              solutions = [
+                {
+                  'custom_vars': {
+                    'rbe_instance': 'fake_instance',
+                  },
+                },
+              ]
+              target_os=['os']
+              """))),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Caution: your .gclient file could not be validated. Exactly one '
+          'solution with \'url\' set to the URL for the repo the UTR is '
+          'being used with must be set\n'),
+      api.post_process(post_process.StepCommandContains, 'read gclient',
+                       ['[CACHE]/src/.gclient']),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
