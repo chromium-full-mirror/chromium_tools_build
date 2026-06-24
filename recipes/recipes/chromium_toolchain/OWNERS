@@ -9,3 +9,5 @@ zequanwu@google.com
 
 # Infra member
 jwata@google.com
+
+per-file trusted_*=dlf@google.com
