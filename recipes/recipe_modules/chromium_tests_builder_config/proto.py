@@ -130,6 +130,8 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
             cf_gs_bucket=obj.clusterfuzz_archive.gs_bucket or None,
             cf_gs_acl=obj.clusterfuzz_archive.gs_acl or None,
             cf_archive_name=obj.clusterfuzz_archive.archive_name_prefix or None,
+            cf_archive_path=obj.clusterfuzz_archive.archive_path or None,
+            cf_use_archive_path=obj.clusterfuzz_archive.use_archive_path,
             cf_archive_subdir_suffix=obj.clusterfuzz_archive.archive_subdir or
             None,
             cf_archive_schema_version=obj.clusterfuzz_archive

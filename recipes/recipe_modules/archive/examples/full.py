@@ -96,41 +96,36 @@ def RunSteps(api):
 
   build_dir = api.path.start_dir.joinpath('src', 'out', 'Release')
 
+  common_kwargs = dict(
+      source_dir=source_dir,
+      update_properties=api.properties.get('update_properties'),
+      gs_bucket='chromium',
+      gs_acl=api.properties.get('gs_acl', ''),
+      archive_prefix=api.properties.get('archive_prefix', 'chrome-asan'),
+      archive_path=api.properties.get('archive_path'),
+      use_archive_path=api.properties.get('use_archive_path', False),
+      build_config=api.properties.get('build_config', 'Release'),
+      archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
+      revision_dir=api.properties.get('revision_dir'),
+      primary_project=api.properties.get('primary_project'),
+      bitness=api.properties.get('bitness'),
+      use_legacy=api.properties.get('use_legacy', True),
+      sortkey_datetime=api.properties.get('sortkey_datetime', None),
+  )
+
   if api.properties.get('archive_schema_version',
                         0) != 0 and not api.properties.get('paths_to_archive'):
     api.archive.clusterfuzz_archive_targets(
-        source_dir=source_dir,
+        **common_kwargs,
         archive_root=source_dir,
         archive_schema_version=api.properties.get('archive_schema_version', 0),
         build_dir=build_dir,
         compile_targets=api.properties.get('compile_targets', []),
-        update_properties=api.properties.get('update_properties'),
-        gs_bucket='chromium',
-        gs_acl=api.properties.get('gs_acl', ''),
-        archive_prefix='chrome-asan',
-        build_config=api.properties.get('build_config', 'Release'),
-        archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
-        revision_dir=api.properties.get('revision_dir'),
-        primary_project=api.properties.get('primary_project'),
-        bitness=api.properties.get('bitness'),
-        use_legacy=api.properties.get('use_legacy', True),
-        sortkey_datetime=api.properties.get('sortkey_datetime', None),
     )
   else:
     api.archive.clusterfuzz_archive(
-        source_dir=source_dir,
+        **common_kwargs,
         archive_root=build_dir,
-        update_properties=api.properties.get('update_properties'),
-        gs_bucket='chromium',
-        gs_acl=api.properties.get('gs_acl', ''),
-        archive_prefix='chrome-asan',
-        build_config=api.properties.get('build_config', 'Release'),
-        archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
-        revision_dir=api.properties.get('revision_dir'),
-        primary_project=api.properties.get('primary_project'),
-        bitness=api.properties.get('bitness'),
-        use_legacy=api.properties.get('use_legacy', True),
-        sortkey_datetime=api.properties.get('sortkey_datetime', None),
         paths_to_archive=api.properties.get('paths_to_archive', None),
     )
 
@@ -181,6 +176,51 @@ def GenTests(api):
                              api.json.output(['chrome'])),
       api.runtime(is_experimental=True),
   )
+
+  yield api.test(
+      'cf_archiving_verbatim',
+      api.platform('linux', 64),
+      api.properties(
+          update_properties=update_properties,
+          archive_path='bleep-bloop/foo-bar',
+          use_archive_path=True,
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archiving_assert_success',
+      api.platform('linux', 64),
+      api.properties(
+          update_properties=update_properties,
+          gs_acl='public-read',
+          archive_subdir_suffix='subdir',
+          archive_path='linux-release-subdir/chrome-asan-linux-release',
+          use_archive_path=False,
+      ),
+      api.override_step_data('filter archive_root',
+                             api.json.output(['chrome', 'icu.dat',
+                                              'lib.host'])),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archiving_assert_failure',
+      api.platform('linux', 64),
+      api.properties(
+          update_properties=update_properties,
+          gs_acl='public-read',
+          archive_subdir_suffix='subdir',
+          archive_path='wrong-path',
+          use_archive_path=False,
+      ),
+      api.override_step_data('filter archive_root',
+                             api.json.output(['chrome', 'icu.dat',
+                                              'lib.host'])),
+      api.expect_exception('AssertionError'),
+      api.post_process(post_process.DropExpectation),
+  )
+
 
   # Overwrite the build config and ensure it is used in the GS archive name.
   def check_gs_url_equals(check, steps, expected):

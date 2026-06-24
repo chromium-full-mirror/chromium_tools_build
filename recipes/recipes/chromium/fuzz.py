@@ -418,6 +418,8 @@ def RunSteps(api, properties):
             update_properties=update_result.properties,
             gs_bucket=properties.upload_bucket,
             archive_prefix=properties.archive_prefix or 'libfuzzer',
+            archive_path=properties.archive_path,
+            use_archive_path=properties.use_archive_path,
             build_config=api.chromium.c.build_config_fs,
             compile_targets=targets,
             build_dir=build_dir,
@@ -471,6 +473,8 @@ def RunSteps(api, properties):
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
           archive_prefix=properties.archive_prefix or 'libfuzzer',
+          archive_path=properties.archive_path,
+          use_archive_path=properties.use_archive_path,
           build_config=api.chromium.c.build_config_fs,
           archive_subdir_suffix=properties.upload_directory,
           gs_acl='public-read',
@@ -1142,4 +1146,104 @@ def GenTests(api):
       api.post_check(post_process.StepCommandDoesNotContain, 'compile',
                      ['Warning: is_asan is not defined']),
       api.post_process(post_process.DropExpectation),
+  )
+
+  def upload_test(name, *args, upload_path=''):
+    test_args = [
+        api.chromium_tests_builder_config.ci_build(
+            builder_group='chromium.fuzz',
+            builder='some-ci-bot',
+            builder_db=ctbc.BuilderDatabase.create({
+                'chromium.fuzz': {
+                    'some-ci-bot':
+                        ctbc.BuilderSpec.create(
+                            chromium_config='chromium',
+                            gclient_config='chromium',
+                        ),
+                },
+            })),
+        *args,
+        api.step_data(
+            'calculate all_fuzzers',
+            stdout=api.raw_io.output_text('//foo/bar:target1\n')),
+        api.step_data(
+            'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
+    ]
+    if upload_path:
+      test_args.append(
+          api.post_check(post_process.StepCommandContains, 'gsutil upload',
+                         [f'{upload_path}-170242.zip']))
+    test_args.append(api.post_process(post_process.DropExpectation))
+    return api.test(f'upload path {name}', *test_args)
+
+  yield upload_test(
+      'default',
+      api.platform.name('linux'),
+      api.properties(upload_bucket='bucket'),
+      upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
+  )
+
+  yield upload_test(
+      'prefix',
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='bucket',
+          archive_prefix='prefix',
+      ),
+      upload_path='gs://bucket/linux-release/prefix-linux-release',
+  )
+
+  yield upload_test(
+      'subdir',
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='bucket',
+          upload_directory='subdir',
+      ),
+      upload_path='gs://bucket/linux-release-subdir/libfuzzer-linux-release',
+  )
+
+  yield upload_test(
+      'mac',
+      api.platform.name('mac'),
+      api.properties(upload_bucket='bucket'),
+      upload_path='gs://bucket/mac-release/libfuzzer-mac-release',
+  )
+
+  yield upload_test(
+      'windows',
+      api.platform.name('win'),
+      api.properties(upload_bucket='bucket'),
+      upload_path='gs://bucket/win32-release/libfuzzer-win32-release',
+  )
+
+  yield upload_test(
+      'verbatim',
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='bucket',
+          archive_path='bleep-bloop/foo-bar',
+          use_archive_path=True,
+      ),
+      upload_path='gs://bucket/bleep-bloop/foo-bar',
+  )
+
+  yield upload_test(
+      'assert success',
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='bucket',
+          archive_path='linux-release/libfuzzer-linux-release',
+      ),
+      upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
+  )
+
+  yield upload_test(
+      'assert failure',
+      api.platform.name('linux'),
+      api.properties(
+          upload_bucket='bucket',
+          archive_path='wrong-path',
+      ),
+      api.expect_exception('AssertionError'),
   )

@@ -294,6 +294,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                           archive_prefix,
                           build_config,
                           *,
+                          archive_path: str | None = None,
+                          use_archive_path: bool = False,
                           paths_to_archive: list[str] | None = None,
                           archive_subdir_suffix='',
                           gs_acl=None,
@@ -333,6 +335,18 @@ class ArchiveApi(recipe_api.RecipeApi):
                          commit information)
       gs_bucket: Name of the google storage bucket to upload to
       archive_prefix: Prefix of the archive zip file
+      archive_path: Path prefix to use verbatim for the uploaded zip archive.
+                    If `use_archive_path` is true, this path is used verbatim.
+                    Otherwise, the derived path is checked to match this path.
+      use_archive_path: If True, use `archive_path` verbatim, with a `-$REV`
+                        suffix (or `-$DATETIME` suffix, see `sortkey_datetime`,
+                        and an optional `-experimental` suffix). `archive_path`
+                        in this case can contain slashes and is treated as the
+                        relative path from the bucket to the archive. In this
+                        case, the following arguments are ignored:
+                        `archive_prefix`, `build_config`,
+                        `archive_subdir_suffix`, `revision_dir`, `bitness`,
+                        `use_legacy`.
       build_config: Name of build config, e.g. release or debug. This is used
                     to qualify archive file names.
       paths_to_archive: Optional list of dependency paths to include in the
@@ -449,34 +463,49 @@ class ArchiveApi(recipe_api.RecipeApi):
 
       zip_file_list = filter_result.json.output
 
-    # Use the legacy platform name if specified as Clusterfuzz has some
-    # expectations on this (it only affects Windows, where it replace 'win'
-    # by 'win32').
-    if use_legacy:
-      platform_name = self.legacy_platform_name()
-      target_name = build_config
+    if use_archive_path:
+      assert archive_path, 'archive_path must be provided if use_archive_path is True'
+      zip_file_base_name = os.path.basename(archive_path)
+      subdir = os.path.dirname(archive_path)
     else:
-      # Always qualify platform with bitness on new bots. E.g. linux32 or win64.
-      platform_name = self.m.platform.name + str(bitness)
-      # Split off redundant _x64 suffix on windows. The bitness is part of the
-      # platform.
-      target_name = build_config.split('_')[0]
+      # Use the legacy platform name if specified as Clusterfuzz has some
+      # expectations on this (it only affects Windows, where it replace 'win'
+      # by 'win32').
+      if use_legacy:
+        platform_name = self.legacy_platform_name()
+        target_name = build_config
+      else:
+        platform_name = self.m.platform.name
+        # Always qualify platform with bitness on new bots. E.g. linux32 or win64.
+        platform_name += str(bitness)
+        # Split off redundant _x64 suffix on windows. The bitness is part of the
+        # platform.
+        target_name = build_config.split('_')[0]
 
-    pieces = [platform_name, target_name]
-    if archive_subdir_suffix:
-      pieces.append(archive_subdir_suffix)
-    subdir = '-'.join(pieces)
+      pieces = [platform_name, target_name]
+      if archive_subdir_suffix:
+        pieces.append(archive_subdir_suffix)
+      subdir = '-'.join(pieces)
 
-    # Components like v8 get a <name>-v8-component-<revision> infix.
-    component = ''
-    if revision_dir:
-      component = '-%s-component' % revision_dir
+      # Components like v8 get a <name>-v8-component-<revision> infix.
+      component = ''
+      if revision_dir:
+        component = '-%s-component' % revision_dir
 
-    zip_file_base_name = '%s-%s-%s%s-%s' % (
-        archive_prefix, platform_name, target_name, component, sortkey_path)
+      zip_file_base_name = '%s-%s-%s%s' % (archive_prefix, platform_name,
+                                           target_name, component)
+
+      if archive_path:
+        derived_path = f'{subdir}/{zip_file_base_name}'
+        assert derived_path == archive_path, (
+            f'Derived path \'{derived_path}\' does not match configured '
+            f'archive_path \'{archive_path}\'')
+
+    # `zip_file_base_name` is the file name minus the `.zip` extension, as
+    # expected by `zip_archive.py`.
+    zip_file_base_name += f'-{sortkey_path}'
     if self.m.runtime.is_experimental:
-      zip_file_base_name += ('-experimental')
-    zip_file_name = '%s.zip' % zip_file_base_name
+      zip_file_base_name += '-experimental'
 
     cmd = [
         'python3',
@@ -489,6 +518,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       cmd.extend(['--lzma-sdk-dir'] + lzma_sdk_args)
     self.m.step('zipping', cmd, infra_step=True, **kwargs)
 
+    zip_file_name = f'{zip_file_base_name}.zip'
     zip_file = staging_dir / zip_file_name
 
     if build_git_commit:

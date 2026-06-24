@@ -213,6 +213,8 @@ class _PropertiesAssembler:
         ('cf_gs_bucket', 'gs_bucket'),
         ('cf_gs_acl', 'gs_acl'),
         ('cf_archive_name', 'archive_name_prefix'),
+        ('cf_archive_path', 'archive_path'),
+        ('cf_use_archive_path', 'use_archive_path'),
         ('cf_archive_subdir_suffix', 'archive_subdir'),
         ('cf_archive_schema_version', 'archive_schema_version'),
     ):

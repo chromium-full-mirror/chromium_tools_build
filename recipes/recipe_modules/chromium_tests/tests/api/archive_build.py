@@ -136,3 +136,90 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'gsutil upload'),
       api.post_process(DropExpectation),
   )
+
+  yield api.test(
+      'cf_archive_build_verbatim',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          cf_archive_build=True,
+                          cf_archive_path='bleep-bloop/foo-bar',
+                          cf_use_archive_path=True,
+                          cf_gs_bucket='clusterfuzz-gs-bucket',
+                          cf_gs_acl='public-read',
+                      ),
+              },
+          })),
+      api.post_process(StepCommandContains, 'gsutil upload', [
+          'public-read',
+          ('[CLEANUP]/cs/'
+           'foo-bar-170242.zip'),
+          ('gs://clusterfuzz-gs-bucket/bleep-bloop/foo-bar-170242.zip'),
+      ]),
+      api.post_process(StepSuccess, 'gsutil upload'),
+      api.post_process(StepSuccess, 'foo-bar-170242.zip'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archive_build_assert_success',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          cf_archive_build=True,
+                          cf_archive_name='cf_archive_build_test',
+                          cf_archive_path='linux-release/cf_archive_build_test-linux-release',
+                          cf_use_archive_path=False,
+                          cf_gs_bucket='clusterfuzz-gs-bucket',
+                          cf_gs_acl='public-read',
+                      ),
+              },
+          })),
+      api.post_process(StepCommandContains, 'gsutil upload', [
+          'public-read',
+          ('[CLEANUP]/cs/'
+           'cf_archive_build_test-linux-release-170242.zip'),
+          ('gs://clusterfuzz-gs-bucket/linux-release/'
+           'cf_archive_build_test-linux-release-170242.zip'),
+      ]),
+      api.post_process(StepSuccess, 'gsutil upload'),
+      api.post_process(StepSuccess,
+                       'cf_archive_build_test-linux-release-170242.zip'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'cf_archive_build_assert_failure',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          cf_archive_build=True,
+                          cf_archive_name='cf_archive_build_test',
+                          cf_archive_path='wrong-path',
+                          cf_use_archive_path=False,
+                          cf_gs_bucket='clusterfuzz-gs-bucket',
+                          cf_gs_acl='public-read',
+                      ),
+              },
+          })),
+      api.expect_exception('AssertionError'),
+      api.post_process(DropExpectation),
+  )

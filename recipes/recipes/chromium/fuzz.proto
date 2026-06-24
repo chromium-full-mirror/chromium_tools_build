@@ -6,9 +6,18 @@ syntax = "proto3";
 
 package recipes.build.chromium.fuzz;
 
-// Next ID: 9
+// Next ID: 11
 message InputProperties {
   string archive_prefix = 1;
+
+  // Path prefix to use verbatim for the uploaded zip archive.
+  // If `use_archive_path` is true, this path is used verbatim.
+  // Otherwise, the derived path is checked to match this path.
+  string archive_path = 9;
+
+  // If true, use `archive_path` verbatim and skip path derivation.
+  bool use_archive_path = 10;
+
   bool v8_targets_only = 2;
   bool ios_targets_only = 3;
   string upload_bucket = 4;

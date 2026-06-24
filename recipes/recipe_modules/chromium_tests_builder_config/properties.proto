@@ -164,7 +164,7 @@ message BuilderSpec {
   // Details of an archive to be created containing artifacts for use by
   // clusterfuzz.
   //
-  // Next ID: 6
+  // Next ID: 8
   message ClusterfuzzArchive {
       // Required, the Google Storage bucket to upload the archive containing
       // artifacts for clusterfuzz
@@ -176,6 +176,12 @@ message BuilderSpec {
       // The name of the archive will begin with the prefix and include
       // additional details such as platform and target, among others.
       string archive_name_prefix = 3;
+      // Path prefix to use verbatim for the uploaded zip archive.
+      // If `use_archive_path` is true, this path is used verbatim.
+      // Otherwise, the derived path is checked to match this path.
+      string archive_path = 6;
+      // If true, use `archive_path` verbatim and skip path derivation.
+      bool use_archive_path = 7;
       // An additional subdirectory within the target/platform directory for
       // uploading the archive to
       string archive_subdir = 4;

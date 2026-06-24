@@ -56,7 +56,9 @@ class BuilderSpec:
     if not kwargs.get('cf_archive_build'):
       invalid_attrs = get_filtered_attrs('cf_gs_bucket', 'cf_archive_name',
                                          'cf_gs_acl',
-                                         'cf_archive_subdir_suffix')
+                                         'cf_archive_subdir_suffix',
+                                         'cf_archive_path',
+                                         'cf_use_archive_path')
       assert not invalid_attrs, (
           'The following fields are ignored unless '
           "'cf_archive_build' is set to True: {}".format(invalid_attrs))
@@ -180,6 +182,12 @@ class BuilderSpec:
   # Cannot be provided when cf_archive_build is not True
   # TODO(gbeaty) Rename this to cf_archive_prefix
   cf_archive_name = attrib(str, default=None)
+  # Path prefix to use verbatim for the uploaded zip archive.
+  # If `cf_use_archive_path` is true, this path is used verbatim.
+  # Otherwise, the derived path is checked to match this path.
+  cf_archive_path = attrib(str, default=None)
+  # If true, use `cf_archive_path` verbatim and skip path derivation.
+  cf_use_archive_path = attrib(bool, default=False)
   # Suffix to apply to the subdirectory within the bucket the archived is
   # uploaded to
   # Cannot be provided when cf_archive_build is not True
