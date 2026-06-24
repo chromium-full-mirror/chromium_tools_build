@@ -24,12 +24,6 @@ COMPILATOR_SWARMING_TASK_COLLECT_STEP = (
 
 BUILD_CANCELED_SUMMARY = 'Build was canceled.'
 
-RTS_SUMMARY = '''
-Tests were run with RTS. If failures are suspected to be caused by RTS skipped
-tests this can be disabled by adding this footer to your CL message:
-    Disable-Rts: True
-'''
-
 
 @attrs()
 class CompilatorOutputProps:
@@ -725,8 +719,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       List of Test objects with swarming info
     """
     swarming_digest = swarming_props['swarming_command_lines_digest']
-    swarming_rts_command_digest = swarming_props.get(
-        'swarming_rts_command_lines_digest')
     swarming_cwd = swarming_props['swarming_command_lines_cwd']
 
     swarm_hashes = dict(swarming_props['swarm_hashes'])
@@ -750,7 +742,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         tests,
         builder_config,
         swarming_command_lines_digest=swarming_digest,
-        swarming_rts_command_digest=swarming_rts_command_digest,
         swarming_command_lines_cwd=swarming_cwd)
     return tests
 

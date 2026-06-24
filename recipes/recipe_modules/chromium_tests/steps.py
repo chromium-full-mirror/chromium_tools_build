@@ -275,8 +275,6 @@ def _add_suffix(step_name, suffix):
 
 def _present_info_messages(presentation, test, messages):
   messages = list(messages)
-  if test.is_rts:
-    messages.append('Ran tests selected by RTS.')
   if test.spec.description:
     messages.append(test.spec.description)
   messages.append(presentation.step_text)
@@ -425,38 +423,6 @@ class AbstractTest(abc.ABC):
   def runs_on_skylab(self) -> bool:
     """Whether the test runs on skylab."""
     return self.locality == TestLocality.SKYLAB
-
-  @property
-  @abc.abstractmethod
-  def supports_rts(self) -> bool:
-    """Determine whether the test supports RTS.
-
-    Regression Test Selection (RTS) is a mode of operation where a subset of the
-    tests are run. This should be checked before trying to set is_rts to enable
-    RTS.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def is_rts(self) -> bool:
-    """Determine whether the test is currently running with RTS.
-
-    Regression Test Selection (RTS) is a mode of operation where a subset of the
-    tests are run. This property determines whether this mode is enabled or not.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @is_rts.setter
-  @abc.abstractmethod
-  def is_rts(self, value: bool) -> None:
-    """Set whether the test is currently running with RTS.
-
-    Regression Test Selection (RTS) is a mode of operation where a subset of the
-    tests are run. This property will enable running only the tests selected by
-    RTS.
-    """
-    raise NotImplementedError()  # pragma: no cover
 
   @property
   @abc.abstractmethod
@@ -890,10 +856,6 @@ class Test(AbstractTest):
     # inspecting JSON.
     self._failure_on_exit_suffix_map = {}
 
-    # Marks the test as using RTS. When enabled this suite will only run the
-    # tests chosen by RTS.
-    self._is_rts = False
-
     # Include the UTR instructions in the reproduction instruction to run this
     # test
     self._include_utr_instruction = False
@@ -962,24 +924,6 @@ class Test(AbstractTest):
     appropriate isolate target.
     """
     return None
-
-  @property
-  def supports_rts(self) -> bool:
-    """Determine whether the test supports RTS.
-
-    Test types that support RTS should override this.
-    """
-    return False
-
-  @property
-  def is_rts(self) -> bool:
-    return self._is_rts
-
-  @is_rts.setter
-  def is_rts(self, value: bool) -> None:
-    if value:
-      assert self.supports_rts
-    self._is_rts = value
 
   @property
   def retry_only_failed_tests(self) -> bool:
@@ -1138,16 +1082,6 @@ class AbstractSwarmingTest(AbstractTest):
   @raw_cmd.setter
   @abc.abstractmethod
   def raw_cmd(self, value: Iterable[str]) -> None:
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def rts_raw_cmd(self) -> Iterable[str]:
-    raise NotImplementedError()  # pragma: no cover
-
-  @rts_raw_cmd.setter
-  @abc.abstractmethod
-  def rts_raw_cmd(self, value: Iterable[str]) -> None:
     raise NotImplementedError()  # pragma: no cover
 
   @property
@@ -2270,7 +2204,6 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     self._tasks = {}
     self._raw_cmd = []
-    self._rts_raw_cmd = []
     self._relative_cwd = None
 
   def _dispatches_to_windows(self):
@@ -2300,14 +2233,6 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self._raw_cmd = value
 
   @property
-  def rts_raw_cmd(self) -> Iterable[str]:
-    return self._rts_raw_cmd
-
-  @rts_raw_cmd.setter
-  def rts_raw_cmd(self, value: Iterable[str]) -> None:
-    self._rts_raw_cmd = value
-
-  @property
   def relative_cwd(self) -> str:
     return self._relative_cwd
 
@@ -2318,10 +2243,6 @@ class SwarmingTest(Test, AbstractSwarmingTest):
   @property
   def shards(self) -> int:
     return self.spec.shards
-
-  @property
-  def supports_rts(self) -> bool:
-    return bool(self.rts_raw_cmd)
 
   def _add_instructions(self, suffix: str, include_utr_instruction: bool):
     """Gets the reproduction instructions to be attached to the invocation"""
@@ -2882,10 +2803,7 @@ class SwarmingGTestTest(SwarmingTest):
     if self.api.m.chromium.c.TARGET_PLATFORM != 'android':
       json_override = self.api.m.path.mkstemp()
 
-    if self.is_rts:
-      cmd = self.rts_raw_cmd
-    else:
-      cmd = self.raw_cmd
+    cmd = self.raw_cmd
     # gtests only support 1 test-launcher-filter-file. Remove the filter file
     # arg from the raw command and combine it after the test spec is consumed
     cmd_filters = [arg for arg in cmd if '--test-launcher-filter-file=' in arg]
@@ -3086,10 +3004,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
       include_utr_instruction: bool,
       is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
-    if self.is_rts:
-      cmd = self.rts_raw_cmd
-    else:
-      cmd = self.raw_cmd
+    cmd = self.raw_cmd
 
     task = self.api.m.chromium_swarming.isolated_script_task(
         raw_cmd=cmd,
@@ -3146,7 +3061,6 @@ class MockTestSpec(TestSpec):
   runs_on_swarming = attrib(bool, default=False)
   shards = attrib(int, default=1)
   invocation_names = attrib(sequence[str], default=[])
-  supports_rts = attrib(bool, default=False)
   option_flags = attrib(TestOptionFlags, default=_DEFAULT_OPTION_FLAGS)
   retry_only_failed_tests = attrib(bool, default=True)
 
@@ -3181,7 +3095,6 @@ class MockTest(AbstractSwarmingTest, Test):
     # Tasks for if the test is mocking a swarming test
     self._tasks_by_suffix = {}
     self._raw_cmd = []
-    self._rts_raw_cmd = []
     self._relative_cwd = None
 
   @property
@@ -3204,14 +3117,6 @@ class MockTest(AbstractSwarmingTest, Test):
   @raw_cmd.setter
   def raw_cmd(self, value: Iterable[str]) -> None:
     self._raw_cmd = value
-
-  @property
-  def rts_raw_cmd(self) -> Iterable[str]:
-    return self._rts_raw_cmd
-
-  @rts_raw_cmd.setter
-  def rts_raw_cmd(self, value: Iterable[str]) -> None:
-    self._rts_raw_cmd = value
 
   @property
   def relative_cwd(self) -> str:
@@ -3302,10 +3207,6 @@ class MockTest(AbstractSwarmingTest, Test):
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
     return self.spec.invocation_names
-
-  @property
-  def supports_rts(self) -> bool:
-    return self.spec.supports_rts
 
 
 @attrs()

@@ -1480,67 +1480,6 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "{}",
-      "[CLEANUP]\\command_lines.json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "write command lines (2)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@command_lines.json@{}@@@",
-      "@@@STEP_LOG_END@command_lines.json@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee\\cas",
-      "archive",
-      "-log-level",
-      "info",
-      "-cas-instance",
-      "projects/example-cas-server/instances/default_instance",
-      "-dump-digest",
-      "/path/to/tmp/",
-      "-paths-json",
-      "[[\"[CLEANUP]\", \"command_lines.json\"]]"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "archive command lines to RBE-CAS (2)",
-    "~followup_annotations": [
-      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
-    ]
-  },
-  {
-    "cmd": [
       "prpc",
       "call",
       "-format=json",
@@ -1561,7 +1500,7 @@
       }
     },
     "name": "trigger",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"win-child-tester\", \"project\": \"dawn\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"dawn\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"compile_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"dawn\", \"parent_buildername\": \"win-parent-builder\", \"parent_got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"parent_got_revision_cp\": \"refs/heads/main@{#120015}\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"swarm_hashes\": {\"dawn_end2end_tests\": \"[dummy hash for dawn_end2end_tests/dummy size]\"}, \"swarming_command_lines_cwd\": \"out\\\\583f-win-parent-buil\", \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"swarming_rts_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"}, \"ref\": \"refs/heads/main\", \"repo\": \"https://fake.org/dawn\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"tags\": [\"parent_buildername:win-parent-builder\", \"parent_buildnumber:571\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"win-parent-builder/571\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000003000000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"win-child-tester\", \"project\": \"dawn\"}], \"trigger\": {\"gitiles\": {\"properties\": {\"deps_revision_overrides\": {\"dawn\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"}, \"instruction_dependencies\": [{\"instruction_id\": \"bot_update_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"generate_build_files_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}, {\"instruction_id\": \"compile_repro_instructions\", \"invocation_id\": \"build-8945511751514863184\"}], \"parent_build_id\": \"8945511751514863184\", \"parent_builder_group\": \"dawn\", \"parent_buildername\": \"win-parent-builder\", \"parent_got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"parent_got_revision_cp\": \"refs/heads/main@{#120015}\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"swarm_hashes\": {\"dawn_end2end_tests\": \"[dummy hash for dawn_end2end_tests/dummy size]\"}, \"swarming_command_lines_cwd\": \"out\\\\583f-win-parent-buil\", \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"}, \"ref\": \"refs/heads/main\", \"repo\": \"https://fake.org/dawn\", \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"tags\": [\"parent_buildername:win-parent-builder\", \"parent_buildnumber:571\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"win-parent-builder/571\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000003000000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -1602,8 +1541,7 @@
       "@@@STEP_LOG_LINE@input@                            \"dawn_end2end_tests\": \"[dummy hash for dawn_end2end_tests/dummy size]\"@@@",
       "@@@STEP_LOG_LINE@input@                        },@@@",
       "@@@STEP_LOG_LINE@input@                        \"swarming_command_lines_cwd\": \"out\\\\583f-win-parent-buil\",@@@",
-      "@@@STEP_LOG_LINE@input@                        \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
-      "@@@STEP_LOG_LINE@input@                        \"swarming_rts_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"@@@",
+      "@@@STEP_LOG_LINE@input@                        \"swarming_command_lines_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"@@@",
       "@@@STEP_LOG_LINE@input@                    },@@@",
       "@@@STEP_LOG_LINE@input@                    \"ref\": \"refs/heads/main\",@@@",
       "@@@STEP_LOG_LINE@input@                    \"repo\": \"https://fake.org/dawn\",@@@",

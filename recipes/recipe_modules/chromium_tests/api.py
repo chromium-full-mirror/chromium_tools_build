@@ -74,15 +74,8 @@ class SwarmingExecutionInfo:
   # Should be renamed to 'command_lines_file_digest'
   command_lines_file_digest = attrib(str, default='')
 
-  # The CAS digest for a file which contains the command lines needed to execute
-  # tests selected by RTS.
-  rts_command_lines_file_digest = attrib(str, default='')
-
   # The mapping of isolate to command lines.
   command_lines = attrib(mapping[str, sequence], default={})
-
-  # The mapping of isolate to rts command lines.
-  rts_command_lines = attrib(mapping[str, sequence], default={})
 
   # The working directory to run the isolates in (usually something like
   # out/Release).
@@ -106,9 +99,7 @@ class SwarmingExecutionInfo:
     return attr.evolve(
         self,
         command_lines_file_digest=(chromium_tests_api.archive_command_lines(
-            self.command_lines)),
-        rts_command_lines_file_digest=chromium_tests_api.archive_command_lines(
-            self.rts_command_lines))
+            self.command_lines)))
 
   def as_trigger_prop(self):
     """Gets the set of properties needed to trigger a child build.
@@ -128,7 +119,6 @@ class SwarmingExecutionInfo:
     props = {
         'swarm_hashes': dict(self.digest_by_isolate_name),
         'swarming_command_lines_digest': self.command_lines_file_digest,
-        'swarming_rts_command_lines_digest': self.rts_command_lines_file_digest,
         'swarming_command_lines_cwd': self.command_lines_cwd,
     }
     if self.test_trigger_deps_digest:
@@ -989,7 +979,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                        rel_cwd,
                                        *,
                                        expose_to_properties=False,
-                                       rts_command_lines=None,
                                        builder_config=None):
     """Sets the execution information for a list of swarming tests.
 
@@ -1023,15 +1012,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           test.raw_cmd = command_line
           test.relative_cwd = rel_cwd
 
-        if rts_command_lines:
-          rts_command_line = rts_command_lines.get(test.target_name, [])
-          if rts_command_line:
-            test.rts_raw_cmd = rts_command_line
-
     execution_info = SwarmingExecutionInfo(
         digest_by_isolate_name=self.m.isolate.isolated_tests,
         command_lines=command_lines,
-        rts_command_lines=rts_command_lines,
         command_lines_cwd=rel_cwd,
     )
 
@@ -2100,7 +2083,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                        builder_config,
                                        *,
                                        swarming_command_lines_digest=None,
-                                       swarming_rts_command_digest=None,
                                        swarming_command_lines_cwd=None):
     """Download and set command lines for tests.
 
@@ -2119,17 +2101,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     digest = (
         swarming_command_lines_digest or
         self.m.properties.get('swarming_command_lines_digest'))
-    rts_digest = (
-        swarming_rts_command_digest or
-        self.m.properties.get('swarming_rts_command_digest'))
     rel_cwd = (
         swarming_command_lines_cwd or
         self.m.properties.get('swarming_command_lines_cwd'))
     if digest:
       command_lines = self._download_command_lines(digest)
-      rts_command_lines = {}
-      if rts_digest:
-        rts_command_lines = self._download_command_lines(rts_digest)
       self.set_swarming_test_execution_info(
           source_dir,
           build_dir,
@@ -2137,7 +2113,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           command_lines,
           rel_cwd,
           expose_to_properties=builder_config.expose_trigger_properties,
-          rts_command_lines=rts_command_lines,
           builder_config=builder_config)
 
   def archive_command_lines(self, command_lines):

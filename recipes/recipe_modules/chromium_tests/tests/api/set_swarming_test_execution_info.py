@@ -64,8 +64,6 @@ def GenTests(api):
   }
   fake_command_lines_digest = (
       'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0')
-  fake_rts_command_lines_digest = (
-      '1234567890123456789012345678901234567890123456789012345678901234/0')
   fake_command_lines = {
       fake_test: [
           './%s' % fake_test, '--fake-flag', '--fake-log-file',
@@ -74,12 +72,6 @@ def GenTests(api):
       webgl_fake_test: [
           './%s' % webgl_fake_test, '--fake-flag', '--fake-log-file',
           '$ISOLATED_OUTDIR/fake.log'
-      ],
-  }
-  fake_rts_command_lines = {
-      fake_test: [
-          './%s' % fake_test, '--fake-flag', '--fake-log-file',
-          '$ISOLATED_OUTDIR/fake.log', '--filter=test.filter'
       ],
   }
 
@@ -216,32 +208,6 @@ def GenTests(api):
       api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('read command lines',
                     api.file.read_json(fake_command_lines)),
-      api.post_process(
-          api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] fake_test',
-          lambda check, req: check(req[0].relative_cwd == 'out/Release_x64'),
-          lambda check, req: check(
-              is_subsequence(req[0].command, fake_command_lines[fake_test]))),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test_only_builder_gets_rts_command_lines_hash_from_trigger',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group=fake_group,
-          builder=fake_tester,
-          builder_db=fake_builder_db,
-      ),
-      api.properties(
-          swarm_hashes=fake_swarm_hashes,
-          swarming_command_lines_digest=fake_command_lines_digest,
-          swarming_rts_command_digest=fake_rts_command_lines_digest,
-          swarming_command_lines_cwd='out/Release_x64'),
-      api.chromium_tests.read_targets_spec(*fake_targets_spec),
-      api.step_data('read command lines',
-                    api.file.read_json(fake_command_lines)),
-      api.step_data('read command lines (2)',
-                    api.file.read_json(fake_rts_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
           'test_pre_run.[trigger] fake_test',

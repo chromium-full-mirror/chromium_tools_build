@@ -608,13 +608,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  fake_rts_command_lines = {
-      'browser_tests': [
-          './%s' % 'browser_tests', '--fake-without-patch-flag',
-          '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
-          '-filter=browser_tests.filter'
-      ]
-  }
   yield api.test(
       'rts_full_run',
       api.chromium.try_build(
@@ -665,8 +658,6 @@ def GenTests(api):
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
-      api.step_data('read command lines (2)',
-                    api.file.read_json(fake_rts_command_lines)),
       api.properties(
           **{
               '$build/chromium_orchestrator':

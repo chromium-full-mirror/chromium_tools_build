@@ -21,8 +21,6 @@ def RunSteps(api):
   @attrs()
   class FakeTestSpec(steps.TestSpec):
 
-    supports_rts = attrib(bool, default=False)
-
     @property
     def test_class(self):
       return FakeTest
@@ -35,10 +33,6 @@ def RunSteps(api):
 
     def compile_targets(self):
       return []  # pragma: no cover
-
-    @property
-    def supports_rts(self):
-      return self.spec.supports_rts
 
     def pre_run(self, suffix: str):
       pass  # pragma: no cover
@@ -101,19 +95,6 @@ def RunSteps(api):
 
   test.relative_cwd = 'fake-relative-cwd'
   api.assertions.assertEqual(test.relative_cwd, 'fake-relative-cwd')
-
-  for supports_rts in (True, False):
-    spec = WrapperSpec.create(
-        FakeTestSpec.create('fake-test', supports_rts=supports_rts))
-    test = spec.get_test(api.chromium_tests)
-    api.assertions.assertEqual(test.supports_rts, supports_rts)
-
-  for is_rts in (True, False):
-    spec = WrapperSpec.create(
-        FakeTestSpec.create('fake-test', supports_rts=True))
-    test = spec.get_test(api.chromium_tests)
-    test.is_rts = is_rts
-    api.assertions.assertEqual(test.is_rts, is_rts)
 
 def GenTests(api):
   yield api.test(
