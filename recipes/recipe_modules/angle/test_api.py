@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2026 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,8 +13,8 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
 class ANGLETestsApi(recipe_test_api.RecipeTestApi):
 
   @recipe_test_api.mod_test_data
-  @staticmethod
-  def builders(builders):
+  #@staticmethod
+  def builders(self, builders):
     """Override test builders for a test.
 
     Args:
@@ -24,8 +24,8 @@ class ANGLETestsApi(recipe_test_api.RecipeTestApi):
     return builders
 
   @recipe_test_api.mod_test_data
-  @staticmethod
-  def trybots(trybots):
+  #@staticmethod
+  def trybots(self, trybots):
     """Override test builders for a test.
 
     Args:
@@ -34,66 +34,27 @@ class ANGLETestsApi(recipe_test_api.RecipeTestApi):
     assert isinstance(trybots, try_spec.TryDatabase)
     return trybots
 
-  def ci_build(self,
-               toolchain='clang',
-               platform='linux',
-               test_mode='compile_and_test',
-               **kwargs):
-    """Create test data for a CI build.
+  def ci_build(self, **kwargs):
+    """Create test data for a CI build using the v2 codepath.
 
-    Adding this to a test will set properties and inputs in a manner
-    that is compatible with the chromium and
-    chromium_tests_builder_config modules for builds that would be
-    triggered by a scheduler poller with an associated gitiles commit
-    (or triggered by another builder that was triggered by a scheduler
-    poller).
-
-    All keyword arguments supported by chromium.generic_build are
-    supported, as well as the following additional keyword arguments:
-    * builder_db - Overrides the default builder database.
-    * try_db - Override the default try database. Can only be specified
-      if builder_db is also specified. If builder_db is specified and
-      try_db is not specified, an empty try database will be used as the
-      default try database.
+    Effectively a wrapper around chromium.ci_build with some extra checks and
+    default values.
     """
-    assert 'use_try_db' not in kwargs
-    kwargs.setdefault('builder', 'linux-builder')
-    kwargs.setdefault('builder_group', 'angle')
-    kwargs.setdefault('git_repo',
-                      'https://chromium.googlesource.com/angle/angle.git')
-    kwargs.setdefault('project', 'angle')
-    return self.m.chromium.ci_build(**kwargs) + self.m.properties(
-        toolchain=toolchain, platform=platform, test_mode=test_mode)
+    self._validate_kwargs_and_set_defaults(kwargs)
+    return self.m.chromium.ci_build(**kwargs)
 
-  def try_build(self,
-                toolchain='clang',
-                platform='linux',
-                test_mode='compile_and_test',
-                **kwargs):  # pragma: no cover
-    """Create test data for a try build.
+  def try_build(self, **kwargs):
+    """Create test data for a try build using the v2 codepath.
 
-    Adding this to a test will set properties and inputs in a manner
-    that is compatible with the chromium and
-    chromium_tests_builder_config modules for try builds with an
-    associated gerrit change.
-
-    All keyword arguments supported by chromium.generic_build are
-    supported, as well as the following additional keyword arguments:
-    * builder_db - Overrides the default builder database.
-    * try_db - Override the default try database. Can only be specified
-      if builder_db is also specified. If builder_db is specified and
-      try_db is not specified, an empty try database will be used as the
-      default try database.
+    Effectively a wrapper around chromium.try_build with some extra checks and
+    default values.
     """
-    assert 'use_try_db' not in kwargs
-    kwargs.setdefault('builder', 'linux-builder')
-    kwargs.setdefault('builder_group', 'angle')
-    kwargs.setdefault('git_repo',
-                      'https://chromium.googlesource.com/angle/angle.git')
-    kwargs.setdefault('project', 'angle')
-    return self.m.chromium.try_build(**kwargs) + self.m.properties(
-        toolchain=toolchain, platform=platform, test_mode=test_mode)
+    self._validate_kwargs_and_set_defaults(kwargs)
+    return self.m.chromium.try_build(**kwargs)
 
-  def override_commit_pos_data(self):
-    return self.override_step_data(
-        'get commit position', stdout=self.m.raw_io.output_text('1'))
+  def _validate_kwargs_and_set_defaults(self, kwargs):
+    assert 'use_try_db' not in kwargs
+    kwargs.setdefault('builder_group', 'angle')
+    kwargs.setdefault('project', 'angle')
+    kwargs.setdefault('git_repo',
+                      'https://chromium.googlesource.com/angle/angle/')

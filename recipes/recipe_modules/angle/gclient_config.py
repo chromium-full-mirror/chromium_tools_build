@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2026 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -33,5 +33,5 @@ def angle_android(c):
 
 
 @CONFIG_CTX(includes=['angle'])
-def angle_mesa(c):
-  c.solutions[0].custom_vars['checkout_angle_mesa'] = True
+def angle_nointernal(c):
+  c.solutions[0].custom_vars['checkout_angle_internal'] = False

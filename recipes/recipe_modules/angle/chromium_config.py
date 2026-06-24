@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2026 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,20 +16,7 @@ def angle_base(c):
   c.targets_spec_dir = 'infra/specs'
   c.analyze_config_path = 'infra/specs/trybot_analyze_config.json'
 
-  if c.HOST_PLATFORM == 'mac' and c.TARGET_PLATFORM != 'ios':
-    # Update via recipe logic in api.chromium.runhooks and mac_toolchains DEPS
-    # hook.
-    c.mac_toolchain.enabled = False
-
-  if c.TARGET_PLATFORM == 'mac':
-    c.env.FORCE_MAC_TOOLCHAIN = 1
-
 
 @CONFIG_CTX(includes=['angle_base', 'clang'])
 def angle_clang(c):
-  pass
-
-
-@CONFIG_CTX(includes=['angle_base', 'gcc'])
-def angle_non_clang(c):
   pass
