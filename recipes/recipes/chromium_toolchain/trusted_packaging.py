@@ -44,6 +44,16 @@ def RunSteps(api, properties):
     if properties.toolchain == InputProperties.CLANG:
       args.append("--clang")
 
+    if properties.trusted_build_instance:
+      args.extend(["--instance", properties.trusted_build_instance])
+    if properties.trusted_build_instance_pool:
+      args.extend(["--pool", properties.trusted_build_instance_pool])
+    if properties.trusted_build_instance_env:
+      args.extend(["--env", properties.trusted_build_instance_env])
+
+    if api.buildbucket.build.id:
+      args.extend(["--build_prefix", f"bb-{api.buildbucket.build.id}"])
+
     # TODO(dlf): Support rust
 
     # If we are in a CI build (not a try job), override the source commit.
@@ -73,8 +83,8 @@ def RunSteps(api, properties):
 
 def GenTests(api):
 
-  def gen_props(toolchain):
-    return api.properties(toolchain=toolchain)
+  def gen_props(toolchain, **kwargs):
+    return api.properties(toolchain=toolchain, **kwargs)
 
   yield api.test(
       'clang_success',
@@ -90,8 +100,9 @@ def GenTests(api):
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'package clang.request build'),
       api.post_process(post_process.StepCommandContains,
+                       'package clang.request build', ['--clang']),
+      api.post_process(post_process.StepCommandContains,
                        'package clang.request build', [
-                           '--clang',
                            '-chromium_src_commit',
                            'a' * 40,
                        ]),
@@ -182,5 +193,69 @@ def GenTests(api):
       ),
       gen_props(InputProperties.UNKNOWN),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'clang_with_tbi_properties',
+      api.platform.name('linux'),
+      api.buildbucket.ci_build(
+          project='chromium',
+          bucket='ci',
+          builder='trusted-packaging-linux-clang',
+          git_ref='refs/heads/main',
+          revision='a' * 40,
+      ),
+      gen_props(
+          InputProperties.CLANG,
+          trusted_build_instance='fake-instance',
+          trusted_build_instance_pool='fake-pool',
+          trusted_build_instance_env='fake-env',
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.MustRun, 'package clang.request build'),
+      api.post_process(post_process.StepCommandContains,
+                       'package clang.request build', ['--clang']),
+      api.post_process(post_process.StepCommandContains,
+                       'package clang.request build', [
+                           '--instance',
+                           'fake-instance',
+                           '--pool',
+                           'fake-pool',
+                           '--env',
+                           'fake-env',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'package clang.request build', [
+                           '--build_prefix',
+                           'bb-8945511751514863184',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'package clang.request build', [
+                           '-chromium_src_commit',
+                           'a' * 40,
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'clang_default_build_prefix',
+      api.platform.name('linux'),
+      api.buildbucket.ci_build(
+          project='chromium',
+          bucket='ci',
+          builder='trusted-packaging-linux-clang',
+          git_ref='refs/heads/main',
+          revision='a' * 40,
+          build_id=123456789,
+      ),
+      gen_props(InputProperties.CLANG),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.MustRun, 'package clang.request build'),
+      api.post_process(post_process.StepCommandContains,
+                       'package clang.request build', [
+                           '--build_prefix',
+                           'bb-123456789',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
