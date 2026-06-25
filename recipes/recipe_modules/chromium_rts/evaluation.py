@@ -51,7 +51,7 @@ def evaluate_rts(
       if not evaluation_results:
         step_text = 'No RTS targets had generated filter files or test results.'
         if missing_filter_suites:
-          step_text += ('\n\n**Missing RTS filter files for**: %s' %
+          step_text += ('\n\nMissing RTS filter files for: %s' %
                         ', '.join(sorted(missing_filter_suites)))
         presentation.step_text = step_text
         presentation.properties['rts_evaluation_status'] = 'SKIPPED'
@@ -196,23 +196,23 @@ def _present_evaluation_results(
     caught_failures = sum(res['caught_failures_count'] for res in results_list)
     summary_lines = [
         '### RTS Evaluation Summary',
-        '**Overall Test Recall**: %.2f%% (%d/%d caught)' %
+        'Overall Test Recall: %.2f%% (%d/%d caught)' %
         (test_recall_pct, caught_failures, actual_failures),
-        '**Overall Builder Recall**: %.2f%%' % builder_recall_pct,
+        'Overall Builder Recall: %.2f%%' % builder_recall_pct,
     ]
   else:
     summary_lines = [
         '### RTS Evaluation Summary',
-        '**Overall Test Recall**: 100.00% (0/0 caught)',
-        '**Overall Builder Recall**: 100.00%',
+        'Overall Test Recall: 100.00% (0/0 caught)',
+        'Overall Builder Recall: 100.00%',
     ]
 
   if total_skipped > 0:
-    summary_lines.append('**Total Tests Skipped by RTS**: %d' % total_skipped)
+    summary_lines.append('Total Tests Skipped by RTS: %d' % total_skipped)
 
   if missing_filter_suites:
     summary_lines.append('')
-    summary_lines.append('**Missing RTS filter files for**: %s' %
+    summary_lines.append('Missing RTS filter files for: %s' %
                          ', '.join(sorted(missing_filter_suites)))
 
   presentation.step_text = '\n'.join(summary_lines)

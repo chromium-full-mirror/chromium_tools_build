@@ -113,9 +113,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 0.00% (0/1 caught)',
-                           '**Overall Builder Recall**: 0.00%',
-                           '**Total Tests Skipped by RTS**: 2',
+                           'Overall Test Recall: 0.00% (0/1 caught)',
+                           'Overall Builder Recall: 0.00%',
+                           'Total Tests Skipped by RTS: 2',
                        ]),
       api.post_process(
           post_process.PropertyEquals, 'rts_safety_summary', {
@@ -149,9 +149,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 100.00% (1/1 caught)',
-                           '**Overall Builder Recall**: 100.00%',
-                           '**Total Tests Skipped by RTS**: 2',
+                           'Overall Test Recall: 100.00% (1/1 caught)',
+                           'Overall Builder Recall: 100.00%',
+                           'Total Tests Skipped by RTS: 2',
                        ]),
       api.post_process(
           post_process.PropertyEquals, 'rts_safety_summary', {
@@ -188,9 +188,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 100.00% (0/0 caught)',
-                           '**Overall Builder Recall**: 100.00%',
-                           '**Total Tests Skipped by RTS**: 2',
+                           'Overall Test Recall: 100.00% (0/0 caught)',
+                           'Overall Builder Recall: 100.00%',
+                           'Total Tests Skipped by RTS: 2',
                        ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -227,7 +227,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepTextContains, 'Evaluate chromium-rts safety', [
               'No RTS targets had generated filter files or test results.',
-              '**Missing RTS filter files for**: MockTest',
+              'Missing RTS filter files for: MockTest',
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -285,9 +285,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 0.00% (0/1 caught)',
-                           '**Overall Builder Recall**: 0.00%',
-                           '**Total Tests Skipped by RTS**: 2',
+                           'Overall Test Recall: 0.00% (0/1 caught)',
+                           'Overall Builder Recall: 0.00%',
+                           'Total Tests Skipped by RTS: 2',
                        ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -304,9 +304,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 100.00% (1/1 caught)',
-                           '**Overall Builder Recall**: 100.00%',
-                           '**Total Tests Skipped by RTS**: 1',
+                           'Overall Test Recall: 100.00% (1/1 caught)',
+                           'Overall Builder Recall: 100.00%',
+                           'Total Tests Skipped by RTS: 1',
                        ]),
       api.post_process(
           post_process.PropertyEquals, 'rts_safety_summary', {
@@ -395,7 +395,7 @@ def GenTests(api):
           post_process.StepTextContains,
           'Evaluate chromium-rts safety',
           [
-              '**Overall Test Recall**: 100.00% (0/0 caught)',
+              'Overall Test Recall: 100.00% (0/0 caught)',
           ],
       ),
       api.post_process(post_process.DropExpectation),
@@ -420,7 +420,7 @@ def GenTests(api):
           post_process.StepTextContains,
           'Evaluate chromium-rts safety',
           [
-              '**Overall Test Recall**: 0.00% (0/1 caught)',
+              'Overall Test Recall: 0.00% (0/1 caught)',
           ],
       ),
       api.post_process(post_process.DropExpectation),
@@ -445,7 +445,7 @@ def GenTests(api):
           post_process.StepTextContains,
           'Evaluate chromium-rts safety',
           [
-              '**Overall Test Recall**: 100.00% (0/0 caught)',
+              'Overall Test Recall: 100.00% (0/0 caught)',
           ],
       ),
       api.post_process(post_process.DropExpectation),
@@ -484,8 +484,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 0.00% (0/1 caught)',
-                           '**Overall Builder Recall**: 0.00%',
+                           'Overall Test Recall: 0.00% (0/1 caught)',
+                           'Overall Builder Recall: 0.00%',
                        ]),
       api.post_process(
           post_process.PropertyEquals, 'rts_suite_safety_details', {
@@ -512,10 +512,10 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
                        'Evaluate chromium-rts safety', [
-                           '**Overall Test Recall**: 100.00% (1/1 caught)',
-                           '**Overall Builder Recall**: 100.00%',
-                           '**Total Tests Skipped by RTS**: 2',
-                           '**Missing RTS filter files for**: SecondTest',
+                           'Overall Test Recall: 100.00% (1/1 caught)',
+                           'Overall Builder Recall: 100.00%',
+                           'Total Tests Skipped by RTS: 2',
+                           'Missing RTS filter files for: SecondTest',
                        ]),
       api.post_process(post_process.DropExpectation),
   )
