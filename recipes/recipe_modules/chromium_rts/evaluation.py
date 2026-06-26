@@ -195,14 +195,14 @@ def _present_evaluation_results(
         res['unexpected_failures_count'] for res in results_list)
     caught_failures = sum(res['caught_failures_count'] for res in results_list)
     summary_lines = [
-        '### RTS Evaluation Summary',
+        'RTS Evaluation Summary',
         'Overall Test Recall: %.2f%% (%d/%d caught)' %
         (test_recall_pct, caught_failures, actual_failures),
         'Overall Builder Recall: %.2f%%' % builder_recall_pct,
     ]
   else:
     summary_lines = [
-        '### RTS Evaluation Summary',
+        'RTS Evaluation Summary',
         'Overall Test Recall: 100.00% (0/0 caught)',
         'Overall Builder Recall: 100.00%',
     ]
