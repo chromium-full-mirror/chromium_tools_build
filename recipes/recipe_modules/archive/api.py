@@ -253,8 +253,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     if not compile_targets:
       raise ValueError("compile_targets must be provided and non-empty")
 
-    paths_to_archive = self._collect_runtime_deps(compile_targets, source_dir,
-                                                  build_dir, archive_root)
+    runtime_deps = self._collect_runtime_deps(compile_targets, source_dir,
+                                              build_dir, archive_root)
+    paths_to_archive = []
+    if not self.m.tryserver.is_tryserver:
+      # Trybots do not download remote-compiled binaries, so the files should
+      # not be zipped, otherwise we encounter "No such file" errors.
+      paths_to_archive.extend(runtime_deps)
     paths_to_archive.append(MANIFEST_FILENAME)
 
     manifest_dict = {

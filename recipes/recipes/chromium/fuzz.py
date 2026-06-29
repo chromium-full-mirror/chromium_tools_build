@@ -293,13 +293,8 @@ def RunSteps(api, properties):
         if raw_result.status != common_pb.SUCCESS:
           return raw_result
 
-    # Stop here if we're only running on a trybot.
-    if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
-      return raw_result
-
-    if not properties.collect_fuzz_coverage:
-      assert (properties.upload_directory is not None)
-      assert (properties.upload_bucket is not None)
+    if not properties.collect_fuzz_coverage and not api.tryserver.is_tryserver:
+      assert properties.upload_bucket, 'upload_bucket property is required'
 
     # Make sure 32 bit archives are distinguished from 64 bit ones.
     kwargs = {}
@@ -429,6 +424,9 @@ def RunSteps(api, properties):
             gs_acl='public-read',
             **kwargs,
         )
+        return
+
+      if api.tryserver.is_tryserver:
         return
 
       archive_root = build_dir

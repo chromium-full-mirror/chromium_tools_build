@@ -12,6 +12,8 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, LogEquals,
 
 DEPS = [
     'archive',
+    'depot_tools/tryserver',
+    'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/runtime',
@@ -223,5 +225,27 @@ def GenTests(api):
               'use_archive_path': False,
           },),
       api.expect_exception('AssertionError'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'tryserver',
+      api.properties(
+          clusterfuzz_archive_kwargs={
+              'compile_targets': ['target1', 'target2'],
+              'fuzz_targets': ['target1'],
+          },),
+      api.buildbucket.try_build(),
+      api.post_process(MustRun, 'collect runtime deps for compile targets'),
+      api.post_process(
+          MustRun,
+          'collect runtime deps for compile targets.read target1.runtime_deps'),
+      api.post_process(
+          MustRun,
+          'collect runtime deps for compile targets.read target2.runtime_deps'),
+      api.post_process(StepCommandContains, 'zipping', [
+          '--json-file-list',
+          json.dumps(['clusterfuzz_manifest.json']),
+      ]),
       api.post_process(DropExpectation),
   )
