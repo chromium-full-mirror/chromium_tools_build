@@ -34,6 +34,8 @@ SBOM_EXTENSION = '.spdx.json'
 # The name of the manifest file that will be written to the archive's build
 # directory to store metadata about the archive for use by ClusterFuzz.
 MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
+# File that stores the build arguments like GN args.
+ARGS_FILENAME = 'args.gn'
 
 class ArchiveApi(recipe_api.RecipeApi):
   """Chromium specific module for zipping, uploading and downloading build
@@ -197,12 +199,13 @@ class ArchiveApi(recipe_api.RecipeApi):
       with self.m.step.nest(
           'collect runtime deps for compile targets') as step_result:
         for target in compile_targets:
-          deps_file = build_dir / f'{target}.runtime_deps'
+          target_name = target.removesuffix('.exe')
+          deps_file = build_dir / f'{target_name}.runtime_deps'
           deps_content = self.m.file.read_text(
-              f'read {target}.runtime_deps',
+              f'read {target_name}.runtime_deps',
               deps_file,
               test_data=f'./{target}\n'
-              f'./{target}_dependency\n'
+              f'./{target_name}_dependency\n'
               '../../testing/data/fuzzer_seed.txt')
           deps = deps_content.splitlines()
           runtime_deps.update(
@@ -234,12 +237,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     targets.
 
     This handles the dependency discovery, archiving targets and dependencies,
-    and delegates to the main clusterfuzz_archive function.
+    adding needed files for ClusterFuzz, and delegates to the main
+    clusterfuzz_archive function.
 
     Args:
       compile_targets: List of compiled targets with .runtime_deps files. The
         output archive will contain all these targets' outputs, all their
-        runtime dependencies, the respective `.runtime_deps` files and nothing
+        runtime dependencies, the respective `.runtime_deps` files, and nothing
         more.
       build_dir: The absolute path to the build output directory.
       archive_schema_version: Optional int to set metadata in
@@ -255,12 +259,13 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     runtime_deps = self._collect_runtime_deps(compile_targets, source_dir,
                                               build_dir, archive_root)
-    paths_to_archive = []
+    args_file_path = build_dir / ARGS_FILENAME
+    args_file = self.m.path.relpath(args_file_path, archive_root)
+    paths_to_archive = [MANIFEST_FILENAME, args_file]
     if not self.m.tryserver.is_tryserver:
       # Trybots do not download remote-compiled binaries, so the files should
       # not be zipped, otherwise we encounter "No such file" errors.
       paths_to_archive.extend(runtime_deps)
-    paths_to_archive.append(MANIFEST_FILENAME)
 
     manifest_dict = {
         'archive_schema_version': archive_schema_version,

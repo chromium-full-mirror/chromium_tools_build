@@ -582,7 +582,7 @@ def GenTests(api):
         test += api.post_process(
             post_process.MustRun,
             'collect runtime deps for compile targets.'
-            'read fuzzer.exe.runtime_deps',
+            'read fuzzer.runtime_deps',
         )
         test += api.post_process(
             post_process.MustRun,
@@ -601,8 +601,8 @@ def GenTests(api):
         )
         expected_paths = '\n'.join([
             'out/1826-some-ci-bot/fuzzer.exe',
-            'out/1826-some-ci-bot/fuzzer.exe.runtime_deps',
-            'out/1826-some-ci-bot/fuzzer.exe_dependency',
+            'out/1826-some-ci-bot/fuzzer.runtime_deps',
+            'out/1826-some-ci-bot/fuzzer_dependency',
             'out/1826-some-ci-bot/target1',
             'out/1826-some-ci-bot/target1.runtime_deps',
             'out/1826-some-ci-bot/target1_dependency',
@@ -652,9 +652,11 @@ def GenTests(api):
         # targets in test are fuzzer.exe, target1, target2, target3
         # runtime_deps in test (filtered) are ../../path1, ../../path2,
         # ../../path4, ./path3
-        expected_paths = ('["out/1826-some-ci-bot/fuzzer.exe", '
-                          '"out/1826-some-ci-bot/fuzzer.exe.runtime_deps", '
-                          '"out/1826-some-ci-bot/fuzzer.exe_dependency", '
+        expected_paths = ('["clusterfuzz_manifest.json", '
+                          '"out/1826-some-ci-bot/args.gn", '
+                          '"out/1826-some-ci-bot/fuzzer.exe", '
+                          '"out/1826-some-ci-bot/fuzzer.runtime_deps", '
+                          '"out/1826-some-ci-bot/fuzzer_dependency", '
                           '"out/1826-some-ci-bot/target1", '
                           '"out/1826-some-ci-bot/target1.runtime_deps", '
                           '"out/1826-some-ci-bot/target1_dependency", '
@@ -664,8 +666,7 @@ def GenTests(api):
                           '"out/1826-some-ci-bot/target3", '
                           '"out/1826-some-ci-bot/target3.runtime_deps", '
                           '"out/1826-some-ci-bot/target3_dependency", '
-                          '"testing/data/fuzzer_seed.txt", '
-                          '"clusterfuzz_manifest.json"]')
+                          '"testing/data/fuzzer_seed.txt"]')
         test += api.post_process(
             post_process.StepCommandContains,
             'zipping',

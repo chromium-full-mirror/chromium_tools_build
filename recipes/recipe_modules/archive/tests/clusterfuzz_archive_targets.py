@@ -49,11 +49,12 @@ def RunSteps(api):
 
 def GenTests(api):
   expected_zip_paths = json.dumps([
+      'clusterfuzz_manifest.json',
+      'out/Release/args.gn',
       'out/Release/target1',
       'out/Release/target1.runtime_deps',
       'out/Release/target1_dependency',
       'testing/data/fuzzer_seed.txt',
-      'clusterfuzz_manifest.json',
   ])
 
   yield api.test(
@@ -129,6 +130,17 @@ def GenTests(api):
           },
                      sort_keys=True),
       ),
+      api.post_process(StepCommandContains, 'zipping', [
+          '--json-file-list',
+          json.dumps([
+              'clusterfuzz_manifest.json',
+              'args.gn',
+              '../../testing/data/fuzzer_seed.txt',
+              'target1',
+              'target1.runtime_deps',
+              'target1_dependency',
+          ]),
+      ]),
       api.post_process(DropExpectation),
   )
 
@@ -245,7 +257,21 @@ def GenTests(api):
           'collect runtime deps for compile targets.read target2.runtime_deps'),
       api.post_process(StepCommandContains, 'zipping', [
           '--json-file-list',
-          json.dumps(['clusterfuzz_manifest.json']),
+          json.dumps(['clusterfuzz_manifest.json', 'out/Release/args.gn']),
       ]),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'exe_target',
+      api.properties(
+          clusterfuzz_archive_kwargs={
+              'compile_targets': ['target1.exe'],
+              'fuzz_targets': ['target1.exe'],
+          },),
+      api.post_process(MustRun, 'collect runtime deps for compile targets'),
+      api.post_process(
+          MustRun,
+          'collect runtime deps for compile targets.read target1.runtime_deps'),
       api.post_process(DropExpectation),
   )

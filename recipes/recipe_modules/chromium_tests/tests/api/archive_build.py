@@ -97,10 +97,11 @@ def GenTests(api):
               './fuzzer_target\n../../testing/data/fuzzer_seed.txt\n'),
       ),
       api.post_process(StepCommandContains, 'zipping', [
-          '["out/ceb4-fake-builder/fuzzer_target", '
+          '["clusterfuzz_manifest.json", '
+          '"out/ceb4-fake-builder/args.gn", '
+          '"out/ceb4-fake-builder/fuzzer_target", '
           '"out/ceb4-fake-builder/fuzzer_target.runtime_deps", '
-          '"testing/data/fuzzer_seed.txt", '
-          '"clusterfuzz_manifest.json"]'
+          '"testing/data/fuzzer_seed.txt"]'
       ]),
       api.post_process(StepSuccess, 'gsutil upload'),
       api.post_process(DropExpectation),
