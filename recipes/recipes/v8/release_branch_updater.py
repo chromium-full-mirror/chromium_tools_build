@@ -118,10 +118,16 @@ class Channel:
 
 class MilestoneChannel(Channel):
 
+  def schedule_phase_matches(self, milestone):
+    """Match milestone to channel translating the rename of the beta channel
+    shortly before the release.
+    """
+    phase = milestone['schedule_phase']
+    return (phase == self.channel or
+            phase == 'stable_cut' and self.channel == 'beta')
+
   def _fetch_next_head(self):
-    milestones = [
-        m for m in self.milestones if m['schedule_phase'] == self.channel
-    ]
+    milestones = [m for m in self.milestones if self.schedule_phase_matches(m)]
     if not milestones:
       return None
 
@@ -232,6 +238,7 @@ def GenTests(api):
             f'{revision}\t{branch}\n', stream='stdout'))
 
   def test(name, config, *args):
+    beta_name = config.get('beta_name', 'beta')
     stable_revision = config.get('stable_revision', '7ea')
     channels = config.get('channels', [{
         "refname": "stable",
@@ -243,6 +250,7 @@ def GenTests(api):
 
     next_revisions_by_ref = {
         'stable': stable_revision,
+        'beta': config.get('beta_revision', '7eb'),
         'extended': '50da',
     }
 
@@ -252,7 +260,7 @@ def GenTests(api):
           api.url.json('Initialize.chromiumdash: Fetch recent milestones', [
               milestone(129, '6668'),
               milestone(128, '6613'),
-              milestone(130, '6723', channel='beta'),
+              milestone(130, '6723', channel=beta_name),
           ]))
 
     for channel in channels:
@@ -264,10 +272,13 @@ def GenTests(api):
 
       revision = next_revisions_by_ref.get(refname, 'c0ffee')
       if refname in {'stable', 'beta'}:
+        chromium_branch = '129'
+        if refname == 'beta' and beta_name == 'stable_cut':
+          chromium_branch = '6723'
         mocks.append(
             ls_remote(
                 f'Initialize.git: Fetch next head for refs/heads/{refname}',
-                'refs/heads/chromium/129', revision))
+                f'refs/heads/chromium/{chromium_branch}', revision))
 
       if refname == 'extended':
         mocks.append(
@@ -299,6 +310,22 @@ def GenTests(api):
         *args,
         api.post_process(post.DropExpectation),
     )
+
+  yield test(
+      'beta-stable-cut',
+      {
+          "channels": [{
+              "refname": "beta",
+              "source": "MILESTONES",
+              "channel": "beta",
+              "max_age_weeks": 9
+          }],
+          "beta_name": "stable_cut",
+      },
+      api.post_process(post.StepTextEquals, 'Verify beta',
+                       '⇧ Update head to 7eb.'),
+      api.post_process(post.MustRun, 'Update 1 channel(s).Update channel beta'),
+  )
 
   yield test(
       'new-revision-for-milestones-endpoint',
