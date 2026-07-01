@@ -258,6 +258,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       if (tests and self.m.code_coverage.using_coverage and
           not comp_output.skipping_coverage):
         all_test_binaries_future.result()
+        self._move_downloaded_binaries(build_dir)
         self.m.code_coverage.process_coverage_data(tests)
 
       self.m.chromium_rts.evaluate_rts(
@@ -774,3 +775,35 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium_swarming.report_stats()
     self.m.chromium_tests.summarize_test_failures(tests)
     self.m.chromium_tests.handle_invalid_test_suites(failing_test_suites)
+
+  def _move_downloaded_binaries(self, build_dir):
+    compilator_out_dir = build_dir / 'out'
+    if not self.m.path.exists(compilator_out_dir):
+      return
+
+    # In Siso without_bytes mode, compiled test binaries are isolated remotely in CAS
+    # with paths relative to out/<compilator_build_dir>/...
+    # Iterate through all subdirectories in compilator_out_dir and move their
+    # contents up into build_dir so downstream coverage scripts can find them.
+    subdirs = self.m.file.listdir('list out dir', compilator_out_dir)
+    conflicting_binaries = []
+    for comp_build_dir in subdirs:
+      if not self.m.path.isdir(comp_build_dir):
+        continue
+      files_to_move = self.m.file.listdir('list comp build dir', comp_build_dir)
+      for f in files_to_move:
+        dest = build_dir / self.m.path.basename(f)
+        if self.m.path.exists(dest):
+          conflicting_binaries.append(self.m.path.basename(f))
+          continue
+        self.m.file.move('move %s' % self.m.path.basename(f), f, dest)
+    self.m.file.rmtree('clean up out dir', compilator_out_dir)
+
+    if conflicting_binaries:
+      self.m.step.empty(
+          'unexpected conflicting binaries %s from compilator' %
+          ', '.join(sorted(conflicting_binaries)),
+          status='FAILURE',
+          step_text=('Files %s already exist in %s; skipped moving from out/.' %
+                     (', '.join(sorted(conflicting_binaries)), build_dir)),
+          raise_on_failure=False)

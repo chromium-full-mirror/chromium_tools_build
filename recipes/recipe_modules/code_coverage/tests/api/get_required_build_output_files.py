@@ -17,6 +17,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'profiles',
+    'siso',
     'recipe_engine/assertions',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -100,7 +101,23 @@ def GenTests(api):
               f'[CLEANUP]/out/Release/{jacoco_file}',
               ('[CLEANUP]/out/Release/chrome/browser/'
                'java__process_device.filter.jar'),
-          ]),
-      ),
+          ])),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'siso_without_bytes',
+      api.chromium.try_build(builder='linux-rel'),
+      api.siso.properties(
+          project='rbe-chromium-untrusted', output_local_strategy='minimum'),
+      api.properties(
+          expected_paths=[
+              api.path.cleanup_dir / 'out/Release/browser_tests',
+              api.path.cleanup_dir / 'out/Release/android_browsertests',
+              api.path.cleanup_dir.joinpath(
+                  'out/Release/binary_relative_paths_for_clang_code_coverage.json'
+              ),
+          ],
+          target_platform='linux'),
       api.post_process(post_process.DropExpectation),
   )

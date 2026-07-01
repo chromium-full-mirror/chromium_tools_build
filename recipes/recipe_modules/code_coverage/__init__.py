@@ -17,6 +17,7 @@ DEPS = [
     'depot_tools/tryserver',
     'infra/zip',
     'profiles',
+    'siso',
     'recipe_engine/archive',
     'recipe_engine/buildbucket',
     'recipe_engine/context',

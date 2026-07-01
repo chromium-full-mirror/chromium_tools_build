@@ -465,13 +465,12 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.filter '
-          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2)),
+          'binaries with valid data for %s binaries' % (_NUM_TESTS - 3)),
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
-      api.post_process(
-          post_process.MustRun,
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -617,7 +616,7 @@ def GenTests(api):
       ]),
       api.override_step_data(
           'process clang code coverage data for overall test coverage.filter '
-          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2)),
+          'binaries with valid data for %s binaries' % (_NUM_TESTS - 3)),
       api.post_process(
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.skip '
@@ -1162,6 +1161,33 @@ def GenTests(api):
   )
 
   yield api.test(
+      'iOS code coverage tryserver overall',
+      api.platform('mac', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='ios',
+                  gclient_apply_config=['use_clang_coverage'],
+                  chromium_config='chromium',
+                  chromium_apply_config=['mb', 'mac_toolchain'],
+                  chromium_config_kwargs={
+                      'TARGET_PLATFORM': 'ios',
+                  },
+              ),
+          ).assemble()),
+      api.code_coverage(
+          use_clang_coverage=True, coverage_test_types=['overall']),
+      api.properties(files_to_instrument=[
+          'some/path/to/file.cc',
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'raise failure for unsupported test type',
       api.chromium.generic_build(
           builder_group='fake-group', builder='fake-builder'),
@@ -1258,7 +1284,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'process clang code coverage data for overall test coverage.filter '
-          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2), [
+          'binaries with valid data for %s binaries' % (_NUM_TESTS - 3), [
               '[CACHE]\\builder\\src\\out\\0763-fake-try-builde\\content_shell.exe'
           ]),
       api.post_process(post_process.MustRun, (
@@ -1277,7 +1303,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.filter '
-          'binaries with valid data for %s binaries' % (_NUM_TESTS - 2)),
+          'binaries with valid data for %s binaries' % (_NUM_TESTS - 3)),
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),

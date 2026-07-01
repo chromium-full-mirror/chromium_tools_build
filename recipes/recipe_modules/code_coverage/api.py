@@ -283,10 +283,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     # binaries from scratch. It's needed here because at this time the file
     # may already exist in the build output cache.
     binary_paths = self.get_binaries(tests, may_use_binaries_list_file=False)
-    files = [
-        binary_path for binary_path in binary_paths
-        if self.m.path.exists(binary_path)
-    ]
+    if self.m.siso.enabled and self.m.siso.without_bytes:
+      files = binary_paths
+    else:
+      files = [
+          binary_path for binary_path in binary_paths
+          if self.m.path.exists(binary_path)
+      ]
 
     # Write the list of used binary paths to a json file. In
     # orchestrator/compilator structure, this file is passed from compilator
@@ -336,6 +339,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         step_test_data=lambda: self.m.json.test_api.output([]),
     )
     return step_result.json.output
+
+  def _is_gtest(self, t):
+    """Returns True if the test object represents a GTest executable."""
+    if 'GTest' in type(t).__name__:
+      return True
+    module_scheme = getattr(
+        getattr(t.spec, 'resultdb', None), 'module_scheme', None)
+    return module_scheme == 'gtest'
 
   def get_binaries(self,
                    tests,
@@ -434,7 +445,11 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['headless_shell_wpt', 'headless_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
-          ['.*', target],
+          [
+              'ios_web_view_inttests',
+              'ios_web_view_inttests' if self.platform == 'ios' else None
+          ],
+          ['.*', target if self._is_gtest(t) else None],
       ]
       for pattern, binary in patterns:
         if not re.match(pattern, target):

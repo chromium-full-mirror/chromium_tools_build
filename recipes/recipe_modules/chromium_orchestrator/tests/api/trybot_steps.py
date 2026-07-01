@@ -1279,6 +1279,15 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
           is_compile_phase=False),
+      api.path.dirs_exist(
+          api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
+                                        'out'),
+          api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
+                                        'out', '06ce-linux-rel-compi')),
+      api.step_data('list out dir',
+                    api.file.listdir(['06ce-linux-rel-compi', 'readme.txt'])),
+      api.step_data('list comp build dir',
+                    api.file.listdir(['wm_unittests', 'net_unittests'])),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
@@ -2032,5 +2041,46 @@ def GenTests(api):
           post_process.LogContains, 'trigger compilator (with patch)',
           'request',
           ['$build/chromium_tests_builder_config', '$build/code_coverage']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'compilator_file_conflict',
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.code_coverage(use_clang_coverage=True),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.path.dirs_exist(
+          api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
+                                        'out'),
+          api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
+                                        'out', '06ce-linux-rel-compi')),
+      api.step_data('list out dir',
+                    api.file.listdir(['06ce-linux-rel-compi', 'readme.txt'])),
+      api.step_data('list comp build dir',
+                    api.file.listdir(['browser_tests', 'net_unittests'])),
+      api.path.exists(
+          api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
+                                        'browser_tests')),
+      api.post_process(
+          post_process.MustRun,
+          'unexpected conflicting binaries browser_tests from compilator'),
       api.post_process(post_process.DropExpectation),
   )
