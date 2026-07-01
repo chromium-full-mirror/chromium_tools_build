@@ -425,8 +425,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       'chromium.enable_cleandead',
       TEST_RTS_MODEL_EXPERIMENT,
       'luci.buildbucket.run_in_turboci',
-      # TODO(crbug.com/442618066)
-      'siso.keep_going_limited',
+      # TODO(crbug.com/40280175)
+      'chromium_checkout.expand_submodules',
   ))
 
   def _trigger_compilator(self,
