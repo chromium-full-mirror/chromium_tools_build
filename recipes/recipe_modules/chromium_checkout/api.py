@@ -140,10 +140,20 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     with self.m.context(cwd=cwd):
       files = self.m.tryserver.get_files_affected_by_patch(
           patch_root,
-          report_files_via_property=(
-             'affected_files' if report_via_property else None
-          ),
-      )
+          report_files_via_property=('affected_files'
+                                     if report_via_property else None))
+      expand_submodules = ('chromium_checkout.expand_submodules'
+                           in self.m.buildbucket.build.input.experiments)
+      if expand_submodules:
+        # TODO(crbug.com/40609997): replace `files` above with the result of
+        # the `_with_submodules` function below, which in addition to returning
+        # affected files in the Chromium repo also diffs the contents of
+        # submodules when their gitlinks are modified.
+        self.m.tryserver.get_files_affected_by_patch_with_submodules(
+            patch_root,
+            report_files_via_property=('affected_files'
+                                       if report_via_property else None),
+        )
     return self.format_affected_file_paths(files, relative_to=relative_to)
 
   def format_affected_file_paths(self, files, relative_to=None):

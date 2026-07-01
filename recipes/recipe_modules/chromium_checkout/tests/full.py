@@ -30,6 +30,7 @@ PROPERTIES = {
     'set_output_commit': Property(kind=bool, default=True),
     'no_history': Property(kind=bool, default=False),
     'shallow': Property(kind=bool, default=False),
+    'report_via_property': Property(kind=bool, default=False),
 }
 
 
@@ -40,7 +41,8 @@ def revision_resolver(c):
   c.revisions['src-internal'] = gclient.RevisionFallbackChain('refs/heads/main')
 
 
-def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow):
+def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow,
+             report_via_property):
   with api.assertions.assertRaisesRegexp(ValueError, 'checkout_dir is not set'):
     _ = api.chromium_checkout.checkout_dir
   with api.assertions.assertRaisesRegexp(ValueError, 'source_dir is not set'):
@@ -58,8 +60,8 @@ def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow):
 
   api.step('details', [])
   api.step.active_result.presentation.logs['details'] = [
-    'affected_files: %r' % (
-        api.chromium_checkout.get_files_affected_by_patch(),),
+      'affected_files: %r' % (api.chromium_checkout.get_files_affected_by_patch(
+          report_via_property=report_via_property),),
   ]
 
   # Checking out again is fine if the checkout_dir and source_dir are the same
@@ -227,5 +229,17 @@ def GenTests(api):
       api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
       api.post_process(StepCommandContains, 'bot_update (without patch) - foo',
                        '--shallow'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'expand_submodules',
+      api.buildbucket.try_build(
+          experiments=['chromium_checkout.expand_submodules'],),
+      api.platform('linux', 64),
+      api.properties(report_via_property=True),
+      api.post_process(StepSuccess, 'git diff to analyze patch'),
+      api.post_process(StepSuccess,
+                       '[Experimental] git diff --raw to analyze patch'),
       api.post_process(DropExpectation),
   )
