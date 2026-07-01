@@ -1707,7 +1707,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if self.m.code_coverage.using_coverage:
         self.m.code_coverage.process_coverage_data(task.test_suites)
 
-      self.m.chromium_rts.evaluate_rts(task.build_dir, task.test_suites)
+      self.m.chromium_rts.start_evaluation(task.build_dir, task.test_suites)
 
       # We explicitly do not want all trybots to upload profiles to GS. We
       # prevent this by ensuring most trybots wanting to run the PGO workflow
@@ -2360,6 +2360,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     finally:
       if not self.m.runtime.in_global_shutdown:
         self.m.chromium_swarming.report_stats()
+        self.m.chromium_rts.wait_for_evaluation()
 
     # If this point is reached, it means the tests have passed and/or been
     # exonerated and we'll check for new flaky tests if enabled for the builder

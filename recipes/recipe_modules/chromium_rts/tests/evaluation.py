@@ -99,7 +99,18 @@ def RunSteps(api):
   if is_orchestrator:
     build_dir = api.path.cleanup_dir / 'out' / 'compilator_build'
 
-  api.chromium_rts.evaluate_rts(build_dir, test_list)
+  assert api.chromium_rts._evaluation_future is None
+  api.chromium_rts.start_evaluation(build_dir, test_list)
+  assert api.chromium_rts._evaluation_future is not None
+
+  # Subsequent call should be ignored.
+  old_future = api.chromium_rts._evaluation_future
+  api.chromium_rts.start_evaluation(build_dir, test_list)
+  assert api.chromium_rts._evaluation_future is old_future
+
+  api.chromium_rts.wait_for_evaluation()
+  assert api.chromium_rts._evaluation_future is None
+  api.chromium_rts.wait_for_evaluation()
 
 
 def GenTests(api):

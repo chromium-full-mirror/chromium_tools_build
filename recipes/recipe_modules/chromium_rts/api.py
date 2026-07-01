@@ -18,6 +18,10 @@ _DEFAULT_TARGET_CHANGE_RECALL = 0.95
 class ChromiumRtsApi(recipe_api.RecipeApi):
   """An interaction module with Regression Test Selection (RTS) for Chromium."""
 
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self._evaluation_future = None
+
   def _should_generate_filters(self) -> bool:
     """Whether RTS filter file generation and evaluation should run."""
     return (TEST_RTS_MODEL_EXPERIMENT
@@ -104,3 +108,23 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if self._should_generate_filters():
       banned_suites = self.banned_suites()
       evaluation.evaluate_rts(self, build_dir, tests, banned_suites)
+
+  def start_evaluation(
+      self,
+      build_dir: Path,
+      tests: list[Test],
+  ) -> None:
+    """Starts RTS safety evaluation in a background future."""
+    if self._evaluation_future is not None:
+      return
+    self._evaluation_future = self.m.futures.spawn_immediate(
+        self.evaluate_rts,
+        build_dir,
+        tests,
+    )
+
+  def wait_for_evaluation(self) -> None:
+    """Waits for background RTS safety evaluation to complete."""
+    if self._evaluation_future is not None:
+      self.m.futures.wait([self._evaluation_future])
+      self._evaluation_future = None
