@@ -12,8 +12,10 @@ from RECIPE_MODULES.build.chromium_tests.steps import Test
 from . import evaluation
 
 TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
+SKIP_TESTS_EXPERIMENT = 'chromium_rts.skip_tests'
 _RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 _DEFAULT_TARGET_CHANGE_RECALL = 0.95
+
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
   """An interaction module with Regression Test Selection (RTS) for Chromium."""
@@ -21,11 +23,21 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self._evaluation_future = None
+    self._banned_suites = None
+
+  def get_experiment_names(self) -> set[str]:
+    """Returns the set of RTS experiment names."""
+    return {TEST_RTS_MODEL_EXPERIMENT, SKIP_TESTS_EXPERIMENT}
 
   def _should_generate_filters(self) -> bool:
-    """Whether RTS filter file generation and evaluation should run."""
-    return (TEST_RTS_MODEL_EXPERIMENT
-            in self.m.buildbucket.build.input.experiments)
+    """Whether RTS filter file generation should run."""
+    experiments = self.m.buildbucket.build.input.experiments
+    return (TEST_RTS_MODEL_EXPERIMENT in experiments or
+            SKIP_TESTS_EXPERIMENT in experiments)
+
+  def _should_isolate_filter_files(self) -> bool:
+    """Whether generated RTS filter files should be isolated."""
+    return SKIP_TESTS_EXPERIMENT in self.m.buildbucket.build.input.experiments
 
   def filter_file_dir(self, build_dir: Path) -> Path:
     """Returns the path to the directory containing the RTS filter files."""
@@ -65,8 +77,11 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     ]
     self.m.step('generate chromium-rts filter files', cmd)
 
-  def banned_suites(self) -> set[str]:
+  def _get_banned_suites(self) -> set[str]:
     """Loads and resolves the banned suites for the current builder."""
+    if self._banned_suites is not None:
+      return self._banned_suites
+
     resource_path = self.resource('rts_banned_suites.json')
     banned_suites_dict = self.m.file.read_json(
         'read rts_banned_suites.json',
@@ -77,7 +92,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     builder = self.m.buildbucket.builder_name
     banned = set(banned_suites_dict.get('*', []))
     banned.update(banned_suites_dict.get(builder, []))
-    return banned
+    self._banned_suites = banned
+    return self._banned_suites
 
   def _fetch_chromium_rts_model(self) -> Path:
     """Fetches the RTS model from CIPD."""
@@ -105,9 +121,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       tests: List of Test objects to evaluate against their ResultDB test
         results.
     """
-    if self._should_generate_filters():
-      banned_suites = self.banned_suites()
-      evaluation.evaluate_rts(self, build_dir, tests, banned_suites)
+    if TEST_RTS_MODEL_EXPERIMENT in self.m.buildbucket.build.input.experiments:
+      evaluation.evaluate_rts(self, build_dir, tests, self._get_banned_suites())
 
   def start_evaluation(
       self,
@@ -128,3 +143,28 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if self._evaluation_future is not None:
       self.m.futures.wait([self._evaluation_future])
       self._evaluation_future = None
+
+  def isolate_filter_files(self, build_dir: Path, targets: list[str]) -> None:
+    """Adds generated RTS filter files to the corresponding isolate files."""
+    if not self._should_isolate_filter_files():
+      return
+
+    with self.m.step.nest('add RTS filter files to isolates'):
+      missing_isolates = []
+      for target in targets:
+        if target in self._get_banned_suites():
+          continue
+        filter_file = self.filter_file_dir(build_dir) / f'{target}.filter'
+        if self.m.path.exists(filter_file):
+          isolate_file = build_dir / f'{target}.isolate'
+          if self.m.path.exists(isolate_file):
+            self.m.isolate.add_files_to_isolate_file(
+                isolate_file, [f'gen/rts/{target}.filter'])
+          else:
+            missing_isolates.append(target)
+
+      if missing_isolates:
+        step_result = self.m.step.empty('missing isolate files')
+        step_result.presentation.step_text = (
+            'The following targets had RTS filter files generated but were '
+            'missing .isolate files: %s' % ', '.join(missing_isolates))

@@ -681,6 +681,69 @@ def GenTests(api):
   )
 
   yield api.test(
+      'rts_skip_tests_forwarded',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              }
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-group': {
+                  'fake-tester':
+                      ctbc.TrySpec.create(mirrors=[
+                          ctbc.TryMirror.create(
+                              builder_group='fake-group',
+                              buildername='fake-tester',
+                              tester='fake-tester',
+                          ),
+                      ]),
+              }
+          }),
+          experiments=['chromium_rts.skip_tests'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.cv(run_mode='FULL_RUN', top_level=True),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+          tests=['browser_tests', 'content_unittests']),
+      api.chromium_orchestrator.override_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.post_process(
+          post_process.LogContains,
+          'trigger compilator (with patch)',
+          'request',
+          ['$recipe_engine/cq', 'FULL_RUN', 'chromium_rts.skip_tests'],
+      ),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
       'rts_full_run_not_used',
       api.chromium_tests_builder_config.try_build(
           builder_group='fake-group',

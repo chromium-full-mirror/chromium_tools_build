@@ -8,6 +8,7 @@ DEPS = [
     'chromium',
     'chromium_rts',
     'recipe_engine/buildbucket',
+    'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -15,12 +16,22 @@ DEPS = [
 
 
 def RunSteps(api):
-  expected_shadow_mode = ('chromium_rts.filter_file_analysis'
-                          in api.buildbucket.build.input.experiments)
-  assert api.chromium_rts._should_generate_filters() == expected_shadow_mode
+  experiments = api.buildbucket.build.input.experiments
+  expected_generate = ('chromium_rts.filter_file_analysis' in experiments or
+                       'chromium_rts.skip_tests' in experiments)
+  assert api.chromium_rts._should_generate_filters() == expected_generate
+
+  expected_isolate = 'chromium_rts.skip_tests' in experiments
+  assert api.chromium_rts._should_isolate_filter_files() == expected_isolate
+
+  api.chromium_rts.get_experiment_names()
 
   api.chromium_rts.generate_filter_files(api.path.start_dir,
                                          api.path.cleanup_dir)
+  api.chromium_rts.isolate_filter_files(
+      api.path.cleanup_dir,
+      ['blink_python_tests', 'blink_web_tests'],
+  )
 
 
 def GenTests(api):
@@ -92,5 +103,46 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun,
                        'generate chromium-rts filter files'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_skip_tests_enabled',
+      api.chromium.try_build(
+          builder='linux-rel', experiments=['chromium_rts.skip_tests']),
+      api.path.exists(
+          api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
+          api.path.cleanup_dir.joinpath('blink_web_tests.isolate'),
+      ),
+      api.override_step_data(
+          'add RTS filter files to isolates.Read '
+          '[CLEANUP]/blink_web_tests.isolate',
+          api.file.read_json({'variables': {
+              'files': []
+          }}),
+      ),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_skip_tests_missing_isolate',
+      api.chromium.try_build(
+          builder='linux-rel', experiments=['chromium_rts.skip_tests']),
+      api.path.exists(
+          api.path.cleanup_dir.joinpath('gen', 'rts',
+                                        'blink_web_tests.filter'),),
+      api.post_process(
+          post_process.MustRun,
+          'add RTS filter files to isolates.missing isolate files'),
+      api.post_process(
+          post_process.StepSuccess,
+          'add RTS filter files to isolates.missing isolate files'),
+      api.post_process(
+          post_process.StepTextContains,
+          'add RTS filter files to isolates.missing isolate files',
+          ['blink_web_tests'],
+      ),
       api.post_process(post_process.DropExpectation),
   )

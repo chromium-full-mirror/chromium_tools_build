@@ -111,9 +111,11 @@ def RunSteps(api):
         api.chromium_tests.prepare_checkout(builder_config))
 
   tests = []
+  target_name = 'base_unittests'
   if api.properties.get('swarming_gtest'):
+    target_name = api.properties.get('test_target_name', 'base_unittests')
     tests.append(
-        steps.SwarmingGTestTestSpec.create('base_unittests').get_test(
+        steps.SwarmingGTestTestSpec.create(target_name).get_test(
             api.chromium_tests))
   return api.chromium_tests.compile_specific_targets(
       build_dir,
@@ -121,7 +123,7 @@ def RunSteps(api):
       builder_config,
       update_result,
       targets_config,
-      compile_targets=['base_unittests'],
+      compile_targets=[target_name],
       tests=tests,
       override_execution_mode=ctbc.COMPILE_AND_TEST)[0]
 
@@ -469,5 +471,99 @@ def GenTests(api):
       api.properties(swarming_gtest=True),
       api.post_process(post_process.MustRun,
                        'generate chromium-rts filter files'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_skip_tests_enabled',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium_rts.skip_tests'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarming_gtest=True),
+      api.path.exists(
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'd04d-rts-rel' /
+          'gen' / 'rts' / 'base_unittests.filter',
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'd04d-rts-rel' /
+          'base_unittests.isolate',
+      ),
+      api.override_step_data(
+          'add RTS filter files to isolates.Read [CACHE]/builder/src/out/d04d-rts-rel/base_unittests.isolate',
+          api.file.read_json({'variables': {
+              'files': []
+          }})),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(
+          post_process.MustRun,
+          'add RTS filter files to isolates.Read [CACHE]/builder/src/out/d04d-rts-rel/base_unittests.isolate'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'add RTS filter files to isolates.Write [CACHE]/builder/src/out/d04d-rts-rel/base_unittests.isolate'
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_skip_tests_banned',
+      api.properties(
+          **{
+              "$recipe_engine/cv": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium_rts.skip_tests'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(
+          swarming_gtest=True,
+          test_target_name='blink_python_tests',
+      ),
+      api.path.exists(
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'd04d-rts-rel' /
+          'gen' / 'rts' / 'blink_python_tests.filter',
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'd04d-rts-rel' /
+          'blink_python_tests.isolate',
+      ),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(post_process.MustRun,
+                       'add RTS filter files to isolates'),
+      api.post_process(
+          post_process.DoesNotRun,
+          'add RTS filter files to isolates.Read [CACHE]/builder/src/out/d04d-rts-rel/blink_python_tests.isolate'
+      ),
       api.post_process(post_process.DropExpectation),
   )

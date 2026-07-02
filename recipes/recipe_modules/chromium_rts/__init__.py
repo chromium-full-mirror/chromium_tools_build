@@ -6,6 +6,7 @@ from __future__ import annotations
 
 
 DEPS = [
+    'isolate',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/file',

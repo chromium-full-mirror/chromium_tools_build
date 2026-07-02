@@ -17,7 +17,6 @@ from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
-from RECIPE_MODULES.build.chromium_rts.api import TEST_RTS_MODEL_EXPERIMENT
 
 COMPILATOR_SWARMING_TASK_COLLECT_STEP = (
     'wait for compilator swarming task cleanup overhead')
@@ -422,22 +421,24 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium.apply_config('trybot_flavor')
     return builder_id, builder_config
 
-  _EXPERIMENTS_TO_FORWARD = set((
+  _EXPERIMENTS_TO_FORWARD = {
       'chromium.enable_cleandead',
-      TEST_RTS_MODEL_EXPERIMENT,
       'luci.buildbucket.run_in_turboci',
       # TODO(crbug.com/40280175)
       'chromium_checkout.expand_submodules',
-  ))
+  }
 
   def _trigger_compilator(self,
                           step_name,
                           compilator_properties,
                           can_outlive_parent=None):
+    experiments_to_forward = (
+        self._EXPERIMENTS_TO_FORWARD
+        | self.m.chromium_rts.get_experiment_names())
     experiments = {
         e: True
         for e in self.m.buildbucket.build.input.experiments
-        if e in self._EXPERIMENTS_TO_FORWARD
+        if e in experiments_to_forward
     }
 
     if self.m.led.launched_by_led:

@@ -949,6 +949,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # needs to use `siso isolate` command.
     use_siso_isolate = self.m.siso.enabled and self.m.siso.without_bytes
 
+    self.m.chromium_rts.isolate_filter_files(build_dir, targets)
+
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
