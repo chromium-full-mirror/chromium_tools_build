@@ -66,6 +66,8 @@ def RunSteps(api):
     env['CXX'] = str(clang_xx_path)
 
   with api.osx_sdk('mac'), api.context(cwd=source_dir, env=env):
+    # Always expunge state first to avoid stale toolchain cache issues (crbug.com/530610023).
+    api.step('bazel clean', [bazelisk, 'clean', '--expunge'])
     api.step('bazel build tint', bazel_args)
 
 

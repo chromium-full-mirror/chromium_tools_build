@@ -125,6 +125,31 @@
   {
     "cmd": [
       "[CACHE]/builder/dawn/tools/bazelisk/bazelisk",
+      "clean",
+      "--expunge"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "env": {
+      "CC": "[CACHE]/builder/dawn/third_party/llvm-build/Release+Asserts/bin/clang",
+      "CXX": "[CACHE]/builder/dawn/third_party/llvm-build/Release+Asserts/bin/clang++"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bazel clean"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/dawn/tools/bazelisk/bazelisk",
       "build",
       "--compilation_mode=opt",
       "//src/tint/..."
