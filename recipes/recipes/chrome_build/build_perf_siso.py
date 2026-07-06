@@ -54,8 +54,13 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
   if api.siso.project.startswith("rbe-chromium-trusted"):
     return
 
-  with api.step.nest('Clean builds'), api.context(
-      env={'SISO_EXPERIMENTS': 'fail-on-bad-deps'}):
+  env = {}
+  if api.buildbucket.builder_name == 'linux-build-perf-siso':
+    env['SISO_EXPERIMENTS'] = 'fail-on-bad-deps'
+  else:
+    env['SISO_EXPERIMENTS'] = 'check-deps'
+
+  with api.step.nest('Clean builds'), api.context(env=env):
     # Build target: all
     _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
 
@@ -206,14 +211,19 @@ def GenTests(api):
 
   yield api.test(
       'full_linux',
-      api.chromium.ci_build(**builder),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='linux-build-perf-siso',
+      ),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
               ),
-              **builder).assemble()),
+              builder_group='fake-group',
+              builder='linux-build-perf-siso',
+          ).assemble()),
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
@@ -244,6 +254,9 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.StepEnvContains,
+                       'Clean builds.Build all without remote cache',
+                       {'SISO_EXPERIMENTS': 'check-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 
