@@ -28,7 +28,7 @@ def RunSteps(api):
   src_cfg = api.gclient.make_config(CACHE_DIR=api.path.cache_dir / 'git')
   src_cfg.solutions.add()
   api.gclient.c = src_cfg
-  env = {}
+  env = dict(api.properties.get('ninja_env', {}))
   if api.siso.enabled:
     # for code coverage
     _ = api.siso.project
@@ -108,6 +108,18 @@ def GenTests(api):
       'experiments',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(experiments=['no-file-access-trace']),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'experiments_merged',
+      api.properties(
+          build_command=['ninja', '-C', 'out/Release'],
+          ninja_env={'SISO_EXPERIMENTS': 'fail-on-bad-deps'},
+      ),
+      api.siso.properties(experiments=['no-file-access-trace']),
+      api.post_process(
+          post_process.StepEnvContains, 'compile',
+          {'SISO_EXPERIMENTS': 'fail-on-bad-deps,no-file-access-trace'}),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(

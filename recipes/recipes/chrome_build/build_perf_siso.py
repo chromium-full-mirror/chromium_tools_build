@@ -54,7 +54,8 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
   if api.siso.project.startswith("rbe-chromium-trusted"):
     return
 
-  with api.step.nest('Clean builds'):
+  with api.step.nest('Clean builds'), api.context(
+      env={'SISO_EXPERIMENTS': 'fail-on-bad-deps'}):
     # Build target: all
     _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
 
@@ -216,6 +217,16 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.StepEnvContains,
+                       'Clean builds.Build all without remote cache',
+                       {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
+      api.post_process(post_process.StepEnvContains,
+                       'Clean builds.Build all with remote cache',
+                       {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
+      api.post_process(
+          post_process.StepEnvDoesNotContain,
+          'Incremental build with 1-hour of changes.Build all with remote cache',
+          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 

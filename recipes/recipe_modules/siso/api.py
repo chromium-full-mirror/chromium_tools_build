@@ -179,7 +179,7 @@ class SisoApi(recipe_api.RecipeApi):
           f"builder:{builder_id.project}/{builder_id.bucket}/{builder_id.builder}",
       ])
 
-    experiments = self._props.experiments or []
+    experiments = list(self._props.experiments or [])
     max_compile_failures = None
     if self._props.HasField('keep_going'):
       max_compile_failures = self._props.keep_going
@@ -274,8 +274,12 @@ class SisoApi(recipe_api.RecipeApi):
       cmd.extend(siso_args)
     cmd.extend(ninja_command[1:])
     env = ninja_env or {}
+    if 'SISO_EXPERIMENTS' in env:
+      for exp in env['SISO_EXPERIMENTS'].split(','):
+        if exp.strip():
+          experiments.append(exp.strip())
     if len(experiments) > 0:
-      env['SISO_EXPERIMENTS'] = ','.join(experiments)
+      env['SISO_EXPERIMENTS'] = ','.join(sorted(set(experiments)))
     if ninja_invocation_id:
       env['SISO_BUILD_ID'] = ninja_invocation_id
     if self._props.limits:

@@ -272,7 +272,8 @@ def _incremental_builds_with_patch(
 
 def _clean_builds(api, source_dir: Path, build_dir: Path, target):
   """Steps to run clean builds."""
-  with api.step.nest('Clean builds'):
+  with api.step.nest('Clean builds'), api.context(
+      env={'SISO_EXPERIMENTS': 'fail-on-bad-deps'}):
     # Ninja+Reclient builds.
     # b/498283357 - Stop Reclient workloads speculatively.
     # phase = 'ninja'
@@ -393,6 +394,18 @@ def GenTests(api):
       api.reclient.properties(),
       api.siso.properties(),
       _buildbucket_search_results(),
+      api.post_process(
+          post_process.StepEnvContains,
+          'Clean builds.Build chrome without remote cache with Siso in native mode',
+          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
+      api.post_process(
+          post_process.StepEnvContains,
+          'Clean builds.Build chrome with remote cache with Siso in native mode',
+          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
+      api.post_process(
+          post_process.StepEnvDoesNotContain,
+          'Incremental build with 1-day of changes.Build chrome with remote cache with Siso in native mode at current revision (warmup)',
+          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 
