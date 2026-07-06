@@ -272,13 +272,7 @@ def _incremental_builds_with_patch(
 
 def _clean_builds(api, source_dir: Path, build_dir: Path, target):
   """Steps to run clean builds."""
-  env = {}
-  if api.buildbucket.builder_name == 'linux-build-perf-developer':
-    env['SISO_EXPERIMENTS'] = 'fail-on-bad-deps'
-  else:
-    env['SISO_EXPERIMENTS'] = 'check-deps'
-
-  with api.step.nest('Clean builds'), api.context(env=env):
+  with api.step.nest('Clean builds'):
     # Ninja+Reclient builds.
     # b/498283357 - Stop Reclient workloads speculatively.
     # phase = 'ninja'
@@ -388,34 +382,17 @@ def GenTests(api):
 
   yield api.test(
       'full_linux',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='linux-build-perf-developer',
-      ),
+      api.chromium.ci_build(**builder),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
               ),
-              builder_group='fake-group',
-              builder='linux-build-perf-developer',
-          ).assemble()),
+              **builder).assemble()),
       api.reclient.properties(),
       api.siso.properties(),
       _buildbucket_search_results(),
-      api.post_process(
-          post_process.StepEnvContains,
-          'Clean builds.Build chrome without remote cache with Siso in native mode',
-          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
-      api.post_process(
-          post_process.StepEnvContains,
-          'Clean builds.Build chrome with remote cache with Siso in native mode',
-          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
-      api.post_process(
-          post_process.StepEnvDoesNotContain,
-          'Incremental build with 1-day of changes.Build chrome with remote cache with Siso in native mode at current revision (warmup)',
-          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -485,10 +462,6 @@ def GenTests(api):
       api.reclient.properties(),
       api.siso.properties(),
       _buildbucket_search_results(),
-      api.post_process(
-          post_process.StepEnvContains,
-          'Clean builds.Build chrome_public_apk without remote cache with Siso in native mode',
-          {'SISO_EXPERIMENTS': 'check-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 

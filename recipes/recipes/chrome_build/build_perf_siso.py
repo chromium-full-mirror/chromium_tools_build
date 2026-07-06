@@ -54,13 +54,7 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
   if api.siso.project.startswith("rbe-chromium-trusted"):
     return
 
-  env = {}
-  if api.buildbucket.builder_name == 'linux-build-perf-siso':
-    env['SISO_EXPERIMENTS'] = 'fail-on-bad-deps'
-  else:
-    env['SISO_EXPERIMENTS'] = 'check-deps'
-
-  with api.step.nest('Clean builds'), api.context(env=env):
+  with api.step.nest('Clean builds'):
     # Build target: all
     _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
 
@@ -211,32 +205,17 @@ def GenTests(api):
 
   yield api.test(
       'full_linux',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='linux-build-perf-siso',
-      ),
+      api.chromium.ci_build(**builder),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='chromium',
                   chromium_config='chromium',
               ),
-              builder_group='fake-group',
-              builder='linux-build-perf-siso',
-          ).assemble()),
+              **builder).assemble()),
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepEnvContains,
-                       'Clean builds.Build all without remote cache',
-                       {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
-      api.post_process(post_process.StepEnvContains,
-                       'Clean builds.Build all with remote cache',
-                       {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
-      api.post_process(
-          post_process.StepEnvDoesNotContain,
-          'Incremental build with 1-hour of changes.Build all with remote cache',
-          {'SISO_EXPERIMENTS': 'fail-on-bad-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -254,9 +233,6 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepEnvContains,
-                       'Clean builds.Build all without remote cache',
-                       {'SISO_EXPERIMENTS': 'check-deps'}),
       api.post_process(post_process.DropExpectation),
   )
 
