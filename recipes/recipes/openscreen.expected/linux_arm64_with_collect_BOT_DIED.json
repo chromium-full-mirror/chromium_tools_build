@@ -60,7 +60,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]\ntarget_cpu = ['arm64']",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'build_with_chromium': False}, 'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]\ntarget_cpu = ['arm64']",
       "--patch_root",
       "openscreen",
       "--revision_mapping_file",
@@ -179,6 +179,94 @@
       }
     },
     "name": "gclient runhooks"
+  },
+  {
+    "cmd": [],
+    "name": "download coverage scripts"
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_results.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_results.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_results.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_steps.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_steps.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_steps.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_lib.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_lib.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_lib.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -651,10 +739,11 @@
       "-task-output-stdout",
       "json",
       "-output-dir",
-      "[CLEANUP]/unit tests-swarming-output_tmp_1",
+      "[CLEANUP]/swarming-output_tmp_1",
       "-timeout",
       "30m",
-      "0"
+      "0",
+      "1"
     ],
     "cost": {
       "cpu": 100,
@@ -676,7 +765,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect unit tests",
+    "name": "collect swarming tests",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"0\": {@@@",
@@ -707,8 +796,7 @@
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@task stdout+stderr: openscreen_unittests@hello world!@@@",
       "@@@STEP_LOG_END@task stdout+stderr: openscreen_unittests@@@",
-      "@@@STEP_LINK@task cas outputs: openscreen_unittests@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@",
-      "@@@STEP_EXCEPTION@@@"
+      "@@@STEP_LINK@task cas outputs: openscreen_unittests@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
     ]
   },
   {

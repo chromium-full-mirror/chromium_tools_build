@@ -60,7 +60,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'build_with_chromium': False}, 'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]",
       "--patch_root",
       "openscreen",
       "--revision_mapping_file",
@@ -182,14 +182,95 @@
   },
   {
     "cmd": [],
-    "name": "initialize code coverage"
+    "name": "download coverage scripts"
   },
   {
-    "cmd": [],
-    "name": "initialize code coverage.instrumentation skipped for full repo coverage",
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_results.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_results.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_results.py",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_steps.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_steps.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_steps.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_lib.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_lib.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_lib.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "initialize code coverage"
   },
   {
     "cmd": [
@@ -198,7 +279,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_asan=true use_coverage=true"
+      "--args=is_asan=true use_clang_coverage=true"
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
@@ -332,7 +413,8 @@
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/default.profraw"
     },
     "luci_context": {
       "realm": {
@@ -394,13 +476,20 @@
   },
   {
     "cmd": [
+      "python3",
       "[START_DIR]/openscreen/build/code_coverage/merge_results.py",
+      "--output-json",
+      "/path/to/tmp/json",
       "--task-output-dir",
       "[START_DIR]/openscreen",
       "--profdata-dir",
       "[CLEANUP]/tmp_tmp_1/profdata",
       "--llvm-profdata",
       "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-profdata",
+      "--build-dir",
+      "[START_DIR]/openscreen/out/Default",
+      "--chromium-src-dir",
+      "[START_DIR]/openscreen",
       "--per-cl-coverage"
     ],
     "cwd": "[START_DIR]/openscreen",
@@ -421,14 +510,10 @@
     },
     "name": "run tests.calculate code coverage.process raw coverage data",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "run tests.calculate code coverage.coverage data successfully processed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@Expecting value: line 1 column 1 (char 0)@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
     ]
   },
   {
@@ -460,6 +545,13 @@
       }
     },
     "name": "run tests.calculate code coverage.copy processed coverage data",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "run tests.calculate code coverage.coverage data successfully processed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]

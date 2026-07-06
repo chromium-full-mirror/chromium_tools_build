@@ -60,7 +60,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'build_with_chromium': False}, 'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]",
       "--patch_root",
       "openscreen",
       "--revision_mapping_file",
@@ -179,6 +179,94 @@
       }
     },
     "name": "gclient runhooks"
+  },
+  {
+    "cmd": [],
+    "name": "download coverage scripts"
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_results.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_results.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_results.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_steps.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_steps.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_steps.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/tools/download-chromium-file.py",
+      "--revision",
+      "4a1c93eb7da3e438ea5cb677c783379a282ed75d",
+      "--path",
+      "testing/merge_scripts/code_coverage/merge_lib.py",
+      "--output",
+      "[START_DIR]/openscreen/build/code_coverage/merge_lib.py"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "download coverage scripts.download merge_lib.py",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
