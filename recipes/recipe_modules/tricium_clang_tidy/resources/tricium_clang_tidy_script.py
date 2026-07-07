@@ -11,6 +11,7 @@ please see the nicely commented blob near the end of the script. :)
 """
 
 # [VPYTHON:BEGIN]
+# python_version: "3.11"
 # wheel: <
 #    name: "infra/python/wheels/pyyaml-py3"
 #    version: "version:5.3.1"

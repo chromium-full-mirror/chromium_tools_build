@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 # [VPYTHON:BEGIN]
+# python_version: "3.11"
 # wheel: <
 #    name: "infra/python/wheels/pyyaml-py3"
 #    version: "version:5.3.1"
