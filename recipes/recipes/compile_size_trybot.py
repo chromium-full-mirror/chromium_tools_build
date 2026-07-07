@@ -40,6 +40,8 @@ def RunSteps(api, properties):
       after_dir,
       results_path,
       staging_dir,
+      affected_files=None,
+      **kwargs,
   ):
     diff_script = (
         source_dir / 'tools/clang/scripts/compiler_inputs_size_diff.py')

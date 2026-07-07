@@ -360,6 +360,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
             with_results_dir,
             size_results_path,
             staging_dir,
+            affected_files=affected_files,
         )
         expectation_success = self._check_expectations(
             expectations_with_patch_json, expectations_without_patch_json,
@@ -422,6 +423,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
                 with_results_dir,
                 size_results_path,
                 staging_dir,
+                affected_files=affected_files,
             )
 
             _, gerrit_plugin_details_arm64 = self._check_for_undocumented_increase(
@@ -666,6 +668,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       after_dir,
       results_path,
       staging_dir,
+      affected_files=None,
   ):
     checker_script = (
         source_dir / 'tools/binary_size/trybot_commit_size_checker.py')
@@ -680,6 +683,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
       cmd += ['--after-dir', after_dir]
       cmd += ['--results-path', results_path]
       cmd += ['--staging-dir', staging_dir]
+      if affected_files:
+        # Set a cap to prevent excessive length.
+        for f in affected_files[:20]:
+          cmd += ['--changed-file', f]
       self.m.step(name='Generate diffs', cmd=cmd)
 
   def _create_diffs_fuchsia(
@@ -693,6 +700,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       after_dir,
       results_path,
       staging_dir,
+      affected_files=None,
   ):
     checker_script = source_dir / 'build/fuchsia/binary_size_differ.py'
     with self.m.context(env={'PYTHONUNBUFFERED': '1'}):
