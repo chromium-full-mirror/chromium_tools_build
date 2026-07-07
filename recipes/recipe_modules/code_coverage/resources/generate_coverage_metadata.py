@@ -424,6 +424,12 @@ def _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir, binaries,
           exclusions=exclusions,
           arch=arch)
       logging.info('LLVM command = %s', ' '.join(args))
+      if os.path.exists(profdata_path):
+        logging.info('profdata file %s exists, size: %d bytes', profdata_path,
+                     os.path.getsize(profdata_path))
+      else:
+        logging.warning('profdata file %s does not exist', profdata_path)
+      logging.info('Target binaries count: %d', len(binaries))
       p = subprocess.Popen(args, stdout=f_out, stderr=f_error)
       llvm_cov_proc = None
       try:
@@ -444,15 +450,25 @@ def _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir, binaries,
   finally:
     # Wait for llvm in case the above code ran into uncaught exceptions.
     if p is not None:
-      if p.wait() != 0:
-        logging.error('Subprocess returned error %d', p.returncode)
-        with open(error_out_file) as error_f:
+      returncode = p.wait()
+      with open(error_out_file) as error_f:
+        stderr_content = error_f.read()
+
+      if returncode != 0:
+        logging.error('Subprocess returned error %d', returncode)
+        if stderr_content.strip():
           logging.error('--------dumping stderr from %s -----', error_out_file)
-          print(error_f.read())
-        sys.exit(p.returncode)
+          logging.error('%s', stderr_content)
+        sys.exit(returncode)
+      elif stderr_content.strip():
+        logging.info('-------- llvm-cov stderr output (exit 0) -----')
+        logging.info('%s', stderr_content.strip())
 
   logging.info('---------------------Processing metadata--------------------')
   if p and p.returncode == 0:
+    if os.path.exists(coverage_json_file):
+      logging.info('coverage_raw.json size: %d bytes',
+                   os.path.getsize(coverage_json_file))
     with open(coverage_json_file, 'r') as f:
       return json.load(f)
 
@@ -556,8 +572,15 @@ def _cleanup_coverage_data(src_path, llvm_raw_data):
   on format see _to_compressed_file_record().
   """
   cleaned_file_data = []
-  for datum in llvm_raw_data['data']:
-    for file_coverage_data in datum['files']:
+  raw_file_count = 0
+  skipped_out_count = 0
+  skipped_empty_segments_count = 0
+  sample_raw_filenames = []
+  for datum in llvm_raw_data.get('data', []):
+    for file_coverage_data in datum.get('files', []):
+      raw_file_count += 1
+      if len(sample_raw_filenames) < 5:
+        sample_raw_filenames.append(file_coverage_data.get('filename', ''))
       prefixes = [
           src_path,
           r'C:\botcode\w',  # crbug.com/1010267
@@ -574,15 +597,24 @@ def _cleanup_coverage_data(src_path, llvm_raw_data):
       # Do not generate coverage for out/ paths as it consists of automatically
       # generated code.
       if filename.startswith('out/'):
+        skipped_out_count += 1
         continue
       segments = file_coverage_data['segments']
       if not segments:
+        skipped_empty_segments_count += 1
         continue
       cleaned_file_data.append({
           'filename': filename,
           'segments': segments,
           'summary': file_coverage_data['summary']
       })
+  if sample_raw_filenames:
+    logging.info('Sample raw filenames from llvm-cov export (first %d): %s',
+                 len(sample_raw_filenames), sample_raw_filenames)
+  logging.info(
+      'Coverage data cleanup complete: total raw files=%d, retained=%d, '
+      'skipped out/=%d, skipped empty segments=%d', raw_file_count,
+      len(cleaned_file_data), skipped_out_count, skipped_empty_segments_count)
   return {
       'data': [{
           'files': cleaned_file_data
@@ -686,6 +718,10 @@ def _generate_metadata(src_path,
                coverage data.
   """
   logging.info('Generating coverage metadata ...')
+  logging.info(
+      'Metadata config: src_path=%s, exclusions=%s, '
+      'third_party_inclusion_subdirs=%s, arch=%s', src_path, exclusions,
+      third_party_inclusion_subdirs, arch)
   start_time = time.time()
   raw_data = ''
   if not is_fuzz_coverage:
@@ -719,12 +755,25 @@ def _generate_metadata(src_path,
   logging.info('Processing coverage data ...')
   start_time = time.time()
   files_coverage = []
+  total_files_evaluated = 0
+  third_party_skipped = 0
   for datum in data['data']:
     for file_data in datum['files']:
+      total_files_evaluated += 1
       record = _to_compressed_file_record(file_data, diff_mapping,
                                           third_party_inclusion_subdirs)
       if record:
         files_coverage.append(record)
+      else:
+        third_party_skipped += 1
+
+  logging.info(
+      'Processed coverage files: evaluated=%d, added=%d, '
+      'third_party skipped=%d', total_files_evaluated, len(files_coverage),
+      third_party_skipped)
+  if not files_coverage:
+    logging.warning(
+        'files_coverage is empty! No valid file coverage records produced.')
 
   per_directory_coverage = {}
   per_component_coverage = {}
