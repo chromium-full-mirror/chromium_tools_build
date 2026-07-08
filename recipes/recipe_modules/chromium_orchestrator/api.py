@@ -786,25 +786,28 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # with paths relative to out/<compilator_build_dir>/...
     # Iterate through all subdirectories in compilator_out_dir and move their
     # contents up into build_dir so downstream coverage scripts can find them.
-    subdirs = self.m.file.listdir('list out dir', compilator_out_dir)
-    conflicting_binaries = []
-    for comp_build_dir in subdirs:
-      if not self.m.path.isdir(comp_build_dir):
-        continue
-      files_to_move = self.m.file.listdir('list comp build dir', comp_build_dir)
-      for f in files_to_move:
-        dest = build_dir / self.m.path.basename(f)
-        if self.m.path.exists(dest):
-          conflicting_binaries.append(self.m.path.basename(f))
+    with self.m.step.nest('relocate downloaded CAS test binaries'):
+      subdirs = self.m.file.listdir('list out dir', compilator_out_dir)
+      conflicting_binaries = []
+      for comp_build_dir in subdirs:
+        if not self.m.path.isdir(comp_build_dir):
           continue
-        self.m.file.move('move %s' % self.m.path.basename(f), f, dest)
-    self.m.file.rmtree('clean up out dir', compilator_out_dir)
+        files_to_move = self.m.file.listdir('list comp build dir',
+                                            comp_build_dir)
+        for f in files_to_move:
+          dest = build_dir / self.m.path.basename(f)
+          if self.m.path.exists(dest):
+            conflicting_binaries.append(self.m.path.basename(f))
+            continue
+          self.m.file.move('move %s' % self.m.path.basename(f), f, dest)
+      self.m.file.rmtree('clean up out dir', compilator_out_dir)
 
-    if conflicting_binaries:
-      self.m.step.empty(
-          'unexpected conflicting binaries %s from compilator' %
-          ', '.join(sorted(conflicting_binaries)),
-          status='FAILURE',
-          step_text=('Files %s already exist in %s; skipped moving from out/.' %
-                     (', '.join(sorted(conflicting_binaries)), build_dir)),
-          raise_on_failure=False)
+      if conflicting_binaries:
+        self.m.step.empty(
+            'unexpected conflicting binaries %s from compilator' %
+            ', '.join(sorted(conflicting_binaries)),
+            status='FAILURE',
+            step_text=(
+                'Files %s already exist in %s; skipped moving from out/.' %
+                (', '.join(sorted(conflicting_binaries)), build_dir)),
+            raise_on_failure=False)

@@ -1347,9 +1347,9 @@ def GenTests(api):
                                         'out'),
           api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
                                         'out', '06ce-linux-rel-compi')),
-      api.step_data('list out dir',
+      api.step_data('relocate downloaded CAS test binaries.list out dir',
                     api.file.listdir(['06ce-linux-rel-compi', 'readme.txt'])),
-      api.step_data('list comp build dir',
+      api.step_data('relocate downloaded CAS test binaries.list comp build dir',
                     api.file.listdir(['wm_unittests', 'net_unittests'])),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
@@ -2135,15 +2135,16 @@ def GenTests(api):
                                         'out'),
           api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
                                         'out', '06ce-linux-rel-compi')),
-      api.step_data('list out dir',
+      api.step_data('relocate downloaded CAS test binaries.list out dir',
                     api.file.listdir(['06ce-linux-rel-compi', 'readme.txt'])),
-      api.step_data('list comp build dir',
+      api.step_data('relocate downloaded CAS test binaries.list comp build dir',
                     api.file.listdir(['browser_tests', 'net_unittests'])),
       api.path.exists(
           api.path.cleanup_dir.joinpath('src', 'out', 'd109-fake-orchestrat',
                                         'browser_tests')),
       api.post_process(
           post_process.MustRun,
-          'unexpected conflicting binaries browser_tests from compilator'),
+          'relocate downloaded CAS test binaries.unexpected conflicting binaries browser_tests from compilator'
+      ),
       api.post_process(post_process.DropExpectation),
   )
