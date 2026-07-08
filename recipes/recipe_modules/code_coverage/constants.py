@@ -58,7 +58,7 @@ class tools:
 TOOLS_TO_EXTENSIONS_MAP = {
     tools.CLANG: [
         '.mm', '.S', '.c', '.hh', '.cxx', '.hpp', '.cc', '.cpp', '.ipp', '.h',
-        '.m', '.hxx'
+        '.m', '.hxx', '.rs'
     ],
     tools.JACOCO: ['.java'],
     tools.V8: ['.js', '.ts']
