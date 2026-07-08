@@ -21,3 +21,11 @@ def dawn_wasm(c):
     if soln.name == 'dawn':
       soln.custom_vars['dawn_wasm'] = True
       break
+
+
+@CONFIG_CTX(includes=['dawn'])
+def checkout_litert_lm(c):
+  for soln in c.solutions:
+    if soln.name == 'dawn':
+      soln.custom_vars['checkout_litert_lm'] = True
+      break

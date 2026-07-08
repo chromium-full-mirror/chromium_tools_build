@@ -36,3 +36,8 @@ def GenTests(api):
       api.properties(apply_gclient_config='dawn_wasm'),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'checkout_litert_lm',
+      api.properties(apply_gclient_config='checkout_litert_lm'),
+      api.post_process(post_process.DropExpectation),
+  )
