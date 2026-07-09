@@ -33,6 +33,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
+    'recipe_engine/runtime',
     'recipe_engine/step',
 ]
 
@@ -239,7 +240,10 @@ def RunSteps(api, properties):
           sorted(no_clusterfuzz))
       api.step.active_result.presentation.logs['targets'] = targets
 
-      if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
+      should_analyze = (not api.runtime.is_experimental and
+                        api.tryserver.is_tryserver and
+                        not properties.collect_fuzz_coverage)
+      if should_analyze:
         # Filter out all targets that the patch doesn't affect.
         affected_files = api.chromium_checkout.get_files_affected_by_patch()
         test_targets, compile_targets = api.filter.analyze(
