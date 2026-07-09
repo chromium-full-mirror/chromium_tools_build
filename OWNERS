@@ -5,3 +5,5 @@
 # Folks primarily on the Chrome Browser Infra team.
 bpastene@chromium.org
 gatong@chromium.org
+
+per-file .vpython3=ovsienko@google.com
