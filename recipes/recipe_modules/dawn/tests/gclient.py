@@ -27,6 +27,11 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test(
+      'dawn_android',
+      api.properties(apply_gclient_config='dawn_android'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'dawn_node',
       api.properties(apply_gclient_config='dawn_node'),
       api.post_process(post_process.DropExpectation),

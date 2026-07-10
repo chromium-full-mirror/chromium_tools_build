@@ -8,6 +8,11 @@ from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 
 
 @CONFIG_CTX(includes=['dawn'])
+def dawn_android(c):
+  c.target_os.add('android')
+
+
+@CONFIG_CTX(includes=['dawn'])
 def dawn_node(c):
   for soln in c.solutions:
     if soln.name == 'dawn':
