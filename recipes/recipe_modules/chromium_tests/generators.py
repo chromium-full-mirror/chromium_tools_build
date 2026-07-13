@@ -376,6 +376,8 @@ class Generator:
     # its default_idempotent val.
     if 'idempotent' in swarming_spec:
       kwargs['idempotent'] = swarming_spec['idempotent']
+    if 'wait_for_capacity' in swarming_spec:
+      kwargs['wait_for_capacity'] = swarming_spec['wait_for_capacity']
 
     named_caches = swarming_spec.get('named_caches')
     if named_caches:

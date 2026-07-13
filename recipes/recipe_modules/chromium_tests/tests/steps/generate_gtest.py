@@ -432,3 +432,23 @@ def GenTests(api):
       api.post_process(NotIdempotent, 'test_pre_run.[trigger] base_unittests'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'swarming_wait_for_capacity',
+      ci_build(
+          test_spec={
+              'test': 'base_unittests',
+              'swarming': {
+                  'dimensions': {
+                      'os': 'Linux',
+                  },
+                  'wait_for_capacity': True,
+              },
+          }),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check(req[0].wait_for_capacity),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

@@ -2045,6 +2045,8 @@ class SwarmingTestSpec(TestSpec):
       idempotent. If not provided, the default logic used by the
       `chromium_swarming` recipe module will be used.
     * realm - The realm to run the Swarming task in.
+    * wait_for_capacity - Whether to wait for capacity to appear if *none* is
+      immediately present. Waits up to the expiration.
   """
   # pylint: disable=abstract-method
 
@@ -2066,6 +2068,7 @@ class SwarmingTestSpec(TestSpec):
   service_account = attrib(str, default=None)
   idempotent = attrib(bool, default=None)
   realm = attrib(str, default=None)
+  wait_for_capacity = attrib(bool, default=None)
 
   @classmethod
   def create(cls, name, **kwargs):
@@ -2663,6 +2666,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     if self.spec.server:
       task.server = self.spec.server
+
+    if self.spec.wait_for_capacity is not None:
+      task.wait_for_capacity = self.spec.wait_for_capacity
 
     if self.spec.realm:
       task_request = task_request.with_realm(self.spec.realm)
