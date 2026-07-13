@@ -25,6 +25,8 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
+    'recipe_engine/json',
+    'recipe_engine/raw_io',
 ]
 
 MODULE_RE = re.compile(r'^module\s+([^\s#]+)', re.MULTILINE)
@@ -132,11 +134,24 @@ def RunSteps(api):
         'go.chromium.org/luci@v0.0.0-20260326213659-7c3f2951dea9=./infra/go/src/go.chromium.org/luci',
     ])
 
+    vnames_config = [{
+        "pattern": "infra_internal/(.*)",
+        "vname": {
+            "corpus":
+                "chromium.googlesource.com/infra/infra_superproject//main",
+            "path":
+                "infra_internal/@1@"
+        }
+    }]
+    vnames_config_json = api.json.dumps(vnames_config)
+
     api.step('generate go kzip', [
         kythe_bin, '--corpus',
         'chromium.googlesource.com/infra/infra_superproject//main',
         '--use_default_corpus_for_stdlib=true',
-        '--use_default_corpus_for_deps=true', '--output', kzip_loc
+        '--use_default_corpus_for_deps=true', '--rules',
+        api.raw_io.input_text(vnames_config_json,
+                              suffix='.json'), '--output', kzip_loc
     ] + targets)
 
   api.gsutil.upload(
@@ -209,15 +224,23 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'ensure_installed (2)',
                        ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
       api.post_process(StepCommandContains, 'init go modules', [
-          'go', 'work', 'init',
+          'go',
+          'work',
+          'init',
           'infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go',
           'infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
-          'infra/go/src/go.chromium.org/luci', 'infra/go/src/infra',
+          'infra/go/src/go.chromium.org/luci',
+          'infra/go/src/infra',
+      ]),
+      api.post_process(StepCommandContains, 'generate go kzip', [
+          '--rules',
+          '[{"pattern": "infra_internal/(.*)", "vname": {"corpus": "chromium.googlesource.com/infra/infra_superproject//main", "path": "infra_internal/@1@"}}]',
       ]),
       api.post_process(StepCommandContains, 'generate go kzip', [
           'go.chromium.org/chromiumos/config/go/...',
           'go.chromium.org/chromiumos/infra/proto/go/...',
-          'go.chromium.org/luci/...', 'go.chromium.org/infra/...',
+          'go.chromium.org/luci/...',
+          'go.chromium.org/infra/...',
       ]),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
