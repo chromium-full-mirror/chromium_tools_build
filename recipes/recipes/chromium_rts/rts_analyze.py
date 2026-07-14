@@ -100,6 +100,10 @@ def RunSteps(api):
 
 def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
                            durations_dir, exec_path):
+  # Request 1 CPU core (1000 millicores) and 2 GiB RAM (2048 MiB) per step.
+  # On a 60-core c2-standard-60 VM (60,000 millicores, ~240 GiB RAM), the recipe
+  # engine's ResourceWaiter automatically throttles execution to at most 60
+  # concurrent processes (60,000 / 1,000 = 60).
   step_result = api.step(
       f'analyze {test_suite} on {builder}', [
           exec_path,
@@ -110,7 +114,8 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
           f'-testSuite={test_suite}',
           f'-log-furthest={LOGGED_REJECTIONS}',
       ],
-      stdout=api.raw_io.output_text())
+      stdout=api.raw_io.output_text(),
+      cost=api.step.ResourceCost(cpu=1000, memory=2048))
   match = re.search(r'(\d+\.\d+)%\s*\|\s*<?(\d+\.\d+)%', step_result.stdout)
   if not match:
     # No summary table implies something went wrong with the analysis
