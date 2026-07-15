@@ -724,7 +724,7 @@ def GenTests(api):
           tester='fake-tester',
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          tests=['browser_tests', 'content_unittests']),
+          tests=['browser_tests', 'content_unittests'], include_rts_props=True),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -739,6 +739,7 @@ def GenTests(api):
           'request',
           ['$recipe_engine/cq', 'FULL_RUN', 'chromium_rts.skip_tests'],
       ),
+      api.post_process(post_process.MustRun, 'download rts command lines'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('INFRA_FAILURE'),
   )

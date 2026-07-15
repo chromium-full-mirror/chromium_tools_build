@@ -19,6 +19,7 @@ DEPS = [
     'recipe_engine/commit_position',
     'recipe_engine/file',
     'recipe_engine/json',
+    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
@@ -73,6 +74,13 @@ def GenTests(api):
           './%s' % webgl_fake_test, '--fake-flag', '--fake-log-file',
           '$ISOLATED_OUTDIR/fake.log'
       ],
+  }
+  fake_rts_command_lines_digest = (
+      'rts-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0')
+  fake_rts_command_lines = {
+      fake_test:
+          fake_command_lines[fake_test] +
+          ['--test-launcher-filter-file=gen/rts/fake_test.filter'],
   }
 
   def is_subsequence(containing, contained):
@@ -472,5 +480,66 @@ def GenTests(api):
                   '${ISOLATED_OUTDIR}',
                   '--',
               ] + fake_command_lines[fake_test]))),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_active_skipping_builder',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group=fake_group,
+          builder=fake_builder,
+          builder_db=fake_builder_db,
+          experiments=['chromium_rts.skip_tests'],
+      ),
+      api.properties(swarm_hashes=fake_swarm_hashes),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
+      api.path.exists(
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'ceb4-fake-builder' /
+          'gen' / 'rts' / 'fake_test.filter',
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'ceb4-fake-builder' /
+          'fake_test.isolate',
+      ),
+      api.override_step_data(
+          'add RTS filter files to isolates.Read [CACHE]/builder/src/out/ceb4-fake-builder/fake_test.isolate',
+          api.file.read_json({'variables': {
+              'files': []
+          }})),
+      api.step_data('find command lines', api.json.output(fake_command_lines)),
+      api.step_data('archive command lines to RBE-CAS',
+                    api.raw_io.output_text(fake_command_lines_digest)),
+      api.step_data('archive rts command lines to RBE-CAS',
+                    api.raw_io.output_text(fake_rts_command_lines_digest)),
+      api.post_process(post_process.LogContains, 'trigger', 'input',
+                       [fake_command_lines_digest]),
+      api.post_process(post_process.LogContains, 'trigger', 'input',
+                       [fake_rts_command_lines_digest]),
+      api.post_process(post_process.LogContains, 'trigger', 'input', [
+          'swarming_command_lines_variant_digests',
+          fake_rts_command_lines_digest
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_active_skipping_tester',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group=fake_group,
+          builder=fake_tester,
+          builder_db=fake_builder_db,
+      ),
+      api.properties(
+          swarm_hashes=fake_swarm_hashes,
+          swarming_command_lines_digest=fake_command_lines_digest,
+          swarming_command_lines_variant_digests={
+              'rts': fake_rts_command_lines_digest
+          },
+          swarming_command_lines_cwd='out/Release_x64'),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
+      api.step_data('read command lines',
+                    api.file.read_json(fake_command_lines)),
+      api.step_data('read rts command lines',
+                    api.file.read_json(fake_rts_command_lines)),
+      api.post_process(post_process.MustRun, 'download rts command lines'),
+      api.post_process(post_process.MustRun, 'read rts command lines'),
       api.post_process(post_process.DropExpectation),
   )

@@ -277,6 +277,7 @@ def _present_info_messages(presentation, test, messages):
   messages = list(messages)
   if test.spec.description:
     messages.append(test.spec.description)
+  test.api.m.chromium_rts.append_test_step_text(test, messages)
   messages.append(presentation.step_text)
   presentation.step_text = '\n'.join(messages)
 
@@ -2809,7 +2810,11 @@ class SwarmingGTestTest(SwarmingTest):
     if self.api.m.chromium.c.TARGET_PLATFORM != 'android':
       json_override = self.api.m.path.mkstemp()
 
-    cmd = self.raw_cmd
+    # Create a shallow copy with list() to avoid mutating self.raw_cmd when
+    # stripping filter flags below. Mutating self.raw_cmd in-place permanently
+    # deletes the filter argument from the test object, causing retries to run
+    # without any filter applied.
+    cmd = list(self.raw_cmd)
     # gtests only support 1 test-launcher-filter-file. Remove the filter file
     # arg from the raw command and combine it after the test spec is consumed
     cmd_filters = [arg for arg in cmd if '--test-launcher-filter-file=' in arg]

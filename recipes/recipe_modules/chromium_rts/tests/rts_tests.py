@@ -11,7 +11,6 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
-    'recipe_engine/properties',
 ]
 
 
@@ -21,8 +20,8 @@ def RunSteps(api):
                        'chromium_rts.skip_tests' in experiments)
   assert api.chromium_rts._should_generate_filters() == expected_generate
 
-  expected_isolate = 'chromium_rts.skip_tests' in experiments
-  assert api.chromium_rts._should_isolate_filter_files() == expected_isolate
+  expected_skip = 'chromium_rts.skip_tests' in experiments
+  assert api.chromium_rts._should_skip_tests() == expected_skip
 
   api.chromium_rts.get_experiment_names()
 
@@ -32,6 +31,23 @@ def RunSteps(api):
       api.path.cleanup_dir,
       ['blink_python_tests', 'blink_web_tests'],
   )
+  api.chromium_rts.start_evaluation(api.path.cleanup_dir, [])
+  api.chromium_rts.wait_for_evaluation()
+
+  rts_command_lines = api.chromium_rts.get_rts_command_lines(
+      api.path.cleanup_dir, {
+          'blink_web_tests': ['/bin/run_tests', '--some-arg'],
+          'blink_python_tests': ['/bin/run_python_tests'],
+      })
+  if api.chromium_rts._should_skip_tests():
+    assert rts_command_lines == {
+        'blink_web_tests': [
+            '/bin/run_tests', '--some-arg',
+            '--test-launcher-filter-file=gen/rts/blink_web_tests.filter'
+        ]
+    }
+  else:
+    assert rts_command_lines == {}
 
 
 def GenTests(api):
@@ -112,6 +128,8 @@ def GenTests(api):
           builder='linux-rel', experiments=['chromium_rts.skip_tests']),
       api.path.exists(
           api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
+          api.path.cleanup_dir.joinpath('gen', 'rts',
+                                        'blink_python_tests.filter'),
           api.path.cleanup_dir.joinpath('blink_web_tests.isolate'),
       ),
       api.override_step_data(

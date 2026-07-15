@@ -86,6 +86,13 @@ class SwarmingExecutionInfo:
   # enabled.
   test_trigger_deps_digest = attrib(str, default='')
 
+  # The mapping of command line variants.
+  command_line_variants = attrib(
+      mapping[str, mapping[str, sequence]], default={})
+
+  # The mapping of CAS digests for the command line variants.
+  command_line_variant_digests = attrib(mapping[str, str], default={})
+
   def ensure_command_lines_archived(self, chromium_tests_api):
     """Ensures the command lines are archived to CAS.
 
@@ -96,10 +103,18 @@ class SwarmingExecutionInfo:
     if self.command_lines_file_digest:
       return self
 
+    variant_digests = dict(self.command_line_variant_digests)
+    for variant, command_lines in self.command_line_variants.items():
+      if variant not in variant_digests:
+        variant_digests[variant] = chromium_tests_api.archive_command_lines(
+            command_lines, suffix=variant)
+
     return attr.evolve(
         self,
         command_lines_file_digest=(chromium_tests_api.archive_command_lines(
-            self.command_lines)))
+            self.command_lines)),
+        command_line_variant_digests=variant_digests,
+    )
 
   def as_trigger_prop(self):
     """Gets the set of properties needed to trigger a child build.
@@ -121,6 +136,9 @@ class SwarmingExecutionInfo:
         'swarming_command_lines_digest': self.command_lines_file_digest,
         'swarming_command_lines_cwd': self.command_lines_cwd,
     }
+    if self.command_line_variant_digests:
+      props['swarming_command_lines_variant_digests'] = dict(
+          self.command_line_variant_digests)
     if self.test_trigger_deps_digest:
       props['test_trigger_deps_digest'] = self.test_trigger_deps_digest
     return props
@@ -964,6 +982,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         use_siso_isolate=use_siso_isolate)
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
+    rts_command_lines = self.m.chromium_rts.get_rts_command_lines(
+        build_dir, command_lines)
+    command_line_variants = {}
+    if rts_command_lines:
+      command_line_variants['rts'] = rts_command_lines
+
     return self.set_swarming_test_execution_info(
         source_dir,
         build_dir,
@@ -971,7 +995,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         command_lines,
         self.m.path.relpath(build_dir, source_dir),
         expose_to_properties=expose_to_properties,
-        builder_config=builder_config)
+        builder_config=builder_config,
+        command_line_variants=command_line_variants)
 
   def set_swarming_test_execution_info(self,
                                        source_dir: Path,
@@ -981,7 +1006,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                        rel_cwd,
                                        *,
                                        expose_to_properties=False,
-                                       builder_config=None):
+                                       builder_config=None,
+                                       command_line_variants=None):
     """Sets the execution information for a list of swarming tests.
 
     Each test gets the command line in 'command_lines' corresponding to
@@ -1014,10 +1040,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           test.raw_cmd = command_line
           test.relative_cwd = rel_cwd
 
+        self.m.chromium_rts.set_swarming_test_execution_info(
+            test, command_line_variants)
+
     execution_info = SwarmingExecutionInfo(
         digest_by_isolate_name=self.m.isolate.isolated_tests,
         command_lines=command_lines,
         command_lines_cwd=rel_cwd,
+        command_line_variants=command_line_variants or {},
     )
 
     if expose_to_properties:
@@ -2078,19 +2108,21 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       }
     return properties
 
-  def download_command_lines_for_tests(self,
-                                       source_dir: Path,
-                                       build_dir: Path,
-                                       tests,
-                                       builder_config,
-                                       *,
-                                       swarming_command_lines_digest=None,
-                                       swarming_command_lines_cwd=None):
+  def download_command_lines_for_tests(
+      self,
+      source_dir: Path,
+      build_dir: Path,
+      tests,
+      builder_config,
+      *,
+      swarming_command_lines_digest=None,
+      swarming_command_lines_cwd=None,
+      swarming_command_lines_variant_digests=None):
     """Download and set command lines for tests.
 
-    This method checks the 'swarming_command_lines_digest' and
-    'swarming_command_lines_cwd' input properties to find the appropriate digest
-    to download.
+    This method checks the 'swarming_command_lines_digest',
+    'swarming_command_lines_cwd', and 'swarming_command_lines_variant_digests'
+    input properties to find the appropriate digest to download.
 
     Args:
       source_dir: The path to the top-level repo.
@@ -2099,6 +2131,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_config: The currently configured builder.
       swarming_command_lines_digest: If set, the digest we should download.
       swarming_command_lines_cwd: If set, the cwd for command lines.
+      swarming_command_lines_variant_digests: If set, the variant digests to download.
     """
     digest = (
         swarming_command_lines_digest or
@@ -2106,8 +2139,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     rel_cwd = (
         swarming_command_lines_cwd or
         self.m.properties.get('swarming_command_lines_cwd'))
+    variant_digests = (
+        swarming_command_lines_variant_digests or
+        self.m.properties.get('swarming_command_lines_variant_digests', {}))
     if digest:
       command_lines = self._download_command_lines(digest)
+      command_line_variants = {}
+      for variant, variant_digest in variant_digests.items():
+        command_line_variants[variant] = self._download_command_lines(
+            variant_digest, suffix=variant)
       self.set_swarming_test_execution_info(
           source_dir,
           build_dir,
@@ -2115,13 +2155,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           command_lines,
           rel_cwd,
           expose_to_properties=builder_config.expose_trigger_properties,
-          builder_config=builder_config)
+          builder_config=builder_config,
+          command_line_variants=command_line_variants)
 
-  def archive_command_lines(self, command_lines):
-    command_lines_file = self.m.path.cleanup_dir / 'command_lines.json'
-    self.m.file.write_json('write command lines', command_lines_file,
+  def archive_command_lines(self, command_lines, suffix=''):
+    name = f'{suffix}_command_lines' if suffix else 'command_lines'
+    step_name = f'{suffix} command lines' if suffix else 'command lines'
+    command_lines_file = self.m.path.cleanup_dir / f'{name}.json'
+    self.m.file.write_json(f'write {step_name}', command_lines_file,
                            command_lines)
-    return self.m.cas.archive('archive command lines to RBE-CAS',
+    return self.m.cas.archive(f'archive {step_name} to RBE-CAS',
                               self.m.path.cleanup_dir, command_lines_file)
 
   def _archive_test_trigger_deps_digest(
@@ -2181,12 +2224,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       result.logs["collected test-trigger deps"] = [str(x) for x in dep_paths]
       return digest
 
-  def _download_command_lines(self, command_lines_digest):
-    self.m.cas.download('download command lines', command_lines_digest,
+  def _download_command_lines(self, command_lines_digest, suffix=''):
+    name = f'{suffix}_command_lines' if suffix else 'command_lines'
+    step_name = f'{suffix} command lines' if suffix else 'command lines'
+    self.m.cas.download(f'download {step_name}', command_lines_digest,
                         self.m.path.cleanup_dir)
-    command_lines_file = self.m.path.cleanup_dir / 'command_lines.json'
+    command_lines_file = self.m.path.cleanup_dir / f'{name}.json'
     return self.m.file.read_json(
-        'read command lines', command_lines_file, test_data={})
+        f'read {step_name}', command_lines_file, test_data={})
 
   def _get_valid_and_invalid_results(self, unrecoverable_test_suites):
     valid = []

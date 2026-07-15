@@ -24,6 +24,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     super().__init__(**kwargs)
     self._evaluation_future = None
     self._banned_suites = None
+    self._overwritten_tests: set[str] = set()
 
   def get_experiment_names(self) -> set[str]:
     """Returns the set of RTS experiment names."""
@@ -35,8 +36,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     return (TEST_RTS_MODEL_EXPERIMENT in experiments or
             SKIP_TESTS_EXPERIMENT in experiments)
 
-  def _should_isolate_filter_files(self) -> bool:
-    """Whether generated RTS filter files should be isolated."""
+  def _should_skip_tests(self) -> bool:
+    """Whether active test skipping is enabled using the RTS filter files."""
     return SKIP_TESTS_EXPERIMENT in self.m.buildbucket.build.input.experiments
 
   def filter_file_dir(self, build_dir: Path) -> Path:
@@ -49,7 +50,6 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       build_dir: Path,
   ) -> None:
     """Generates RTS filter files if RTS is enabled."""
-
     if not self._should_generate_filters():
       return
 
@@ -146,7 +146,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
 
   def isolate_filter_files(self, build_dir: Path, targets: list[str]) -> None:
     """Adds generated RTS filter files to the corresponding isolate files."""
-    if not self._should_isolate_filter_files():
+    if not self._should_skip_tests():
       return
 
     with self.m.step.nest('add RTS filter files to isolates'):
@@ -168,3 +168,47 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         step_result.presentation.step_text = (
             'The following targets had RTS filter files generated but were '
             'missing .isolate files: %s' % ', '.join(missing_isolates))
+
+  def get_rts_command_lines(
+      self,
+      build_dir: Path,
+      command_lines: dict[str, list[str]],
+  ) -> dict[str, list[str]]:
+    """Constructs RTS-modified command lines for the given targets. """
+    rts_command_lines = {}
+    if not self._should_skip_tests():
+      return rts_command_lines
+
+    for target, cmd in command_lines.items():
+      if target in self._get_banned_suites():
+        continue
+      filter_file = self.filter_file_dir(build_dir) / f'{target}.filter'
+      if self.m.path.exists(filter_file):
+        rts_cmd = list(cmd)
+        rts_cmd.append(f'--test-launcher-filter-file=gen/rts/{target}.filter')
+        rts_command_lines[target] = rts_cmd
+
+    return rts_command_lines
+
+  def set_swarming_test_execution_info(
+      self,
+      test: Test,
+      command_line_variants: dict[str, dict[str, list[str]]] | None,
+  ) -> None:
+    """Sets RTS command line on the given test if available."""
+    if not command_line_variants or 'rts' not in command_line_variants:
+      return
+    rts_command_line = command_line_variants['rts'].get(test.target_name, [])
+    if rts_command_line:
+      test.raw_cmd = rts_command_line
+      self._overwritten_tests.add(test.target_name)
+
+  def append_test_step_text(
+      self,
+      test: Test,
+      messages: list[str],
+  ) -> None:
+    """Appends RTS info message if the test's command was overwritten by RTS."""
+    if test.target_name in self._overwritten_tests:
+      messages.append(
+          'Ran tests selected by Regression Test Selection (RTS).\n')

@@ -721,6 +721,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       List of Test objects with swarming info
     """
     swarming_digest = swarming_props['swarming_command_lines_digest']
+    variant_digests = swarming_props.get(
+        'swarming_command_lines_variant_digests')
     swarming_cwd = swarming_props['swarming_command_lines_cwd']
 
     swarm_hashes = dict(swarming_props['swarm_hashes'])
@@ -744,7 +746,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         tests,
         builder_config,
         swarming_command_lines_digest=swarming_digest,
-        swarming_command_lines_cwd=swarming_cwd)
+        swarming_command_lines_cwd=swarming_cwd,
+        swarming_command_lines_variant_digests=variant_digests)
     return tests
 
   def process_skylab_props(

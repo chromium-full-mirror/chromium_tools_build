@@ -75,12 +75,12 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     return self.m.chromium_tests.read_targets_spec(
         builder_group, targets_spec, step_suffix=step_suffix)
 
-  def get_fake_swarming_trigger_properties(self, tests):
+  def get_fake_swarming_trigger_properties(self, tests, include_rts=False):
     input_hash = (
         '797e944dad5241e7fe111cfd01e45f02e2f4937dd34b248603e603d2948e174e/1298')
     swarm_hashes = {test: input_hash for test in tests}
     swarm_hashes[ALL_TEST_BINARIES_ISOLATE_NAME] = input_hash
-    return {
+    props = {
         'swarming_command_lines_digest':
             'e3b0c44298fc1c149afbfc8996fb92427ae41e4649b934ca495991b7852b855/0',
         'swarming_command_lines_cwd':
@@ -88,6 +88,12 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         'swarm_hashes':
             swarm_hashes,
     }
+    if include_rts:
+      props['swarming_command_lines_variant_digests'] = {
+          'rts':
+              'f3b0c44298fc1c149afbfc8996fb92427ae41e4649b934ca495991b7852b855/0'
+      }
+    return props
 
   def get_fake_skylab_trigger_properties(self, tests):
     return {
@@ -112,7 +118,8 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                   affected_files=None,
                                   skipping_coverage=None,
                                   include_swarming_props=True,
-                                  include_skylab_props=False):
+                                  include_skylab_props=False,
+                                  include_rts_props=False):
     tests = tests or ['browser_tests']
     output_json_obj = {}
     if is_compile_phase:
@@ -138,7 +145,8 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
           }
         if include_swarming_props:
           output_json_obj['swarming_trigger_properties'] = (
-              self.get_fake_swarming_trigger_properties(tests))
+              self.get_fake_swarming_trigger_properties(
+                  tests, include_rts=include_rts_props))
         if include_skylab_props:
           output_json_obj['skylab_trigger_properties'] = (
               self.get_fake_skylab_trigger_properties(['lacros_all_tast_tests'
@@ -175,7 +183,8 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                 skipping_coverage=None,
                                 empty_gitiles_commit=False,
                                 include_swarming_props=True,
-                                include_skylab_props=False):
+                                include_skylab_props=False,
+                                include_rts_props=False):
     output_json_obj = self.get_compilator_output_props(
         comp_build_id=comp_build_id,
         empty_props=empty_props,
@@ -187,6 +196,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         skipping_coverage=skipping_coverage,
         include_swarming_props=include_swarming_props,
         include_skylab_props=include_skylab_props,
+        include_rts_props=include_rts_props,
     )
 
     sub_build = build_pb2.Build(
