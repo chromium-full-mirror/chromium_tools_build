@@ -25,12 +25,13 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (invocation as
 
 
 # Skylab prioritizes tests by the Quota Scheduler account attached in the
-# request. We applied account "lacros", which has limited high priority
-# quota. It is supposed to grant to the production builders only.
-# For fyi builders, we use 'lacros_fyi' which only contains the free quota,
-# aka the lowest priority.
-QS_ACCOUNT_PROD = 'lacros'
-QS_ACCOUNT_FYI = 'lacros_fyi'
+# request:
+# - "chrome_cq" for non-parented try jobs and ci preuprev jobs.
+# - "chrome_fyi" for fyi builders (lowest priority).
+# - "chrome" for all others.
+QS_ACCOUNT_CQ = 'chrome_cq'
+QS_ACCOUNT_FYI = 'chrome_fyi'
+QS_ACCOUNT_PROD = 'chrome'
 CTP_BUILDER = 'cros_test_platform'
 CTP_BUILDER_DEV = 'cros_test_platform-dev'
 CROS_BUCKET = 'gs://chromeos-image-archive/'
@@ -176,6 +177,22 @@ class SkylabApi(recipe_api.RecipeApi):
         return 600
     return test_spec_timeout
 
+  def _get_qs_account(self) -> str:
+    """Determine the Quota Scheduler account to use."""
+    builder = self.m.buildbucket.build.builder
+    builder_name_lower = builder.builder.lower()
+
+    if 'fyi' in builder_name_lower:
+      return QS_ACCOUNT_FYI
+
+    if (builder.bucket == 'try' and not self.m.buildbucket.build.ancestor_ids):
+      return QS_ACCOUNT_CQ
+
+    if builder.bucket == 'ci' and 'preuprev' in builder_name_lower:
+      return QS_ACCOUNT_CQ
+
+    return QS_ACCOUNT_PROD
+
   def schedule_suite(self,
                      test,
                      suffix,
@@ -277,10 +294,7 @@ class SkylabApi(recipe_api.RecipeApi):
       timeout_sec = self.calculate_ctp_timeout(test.spec.timeout_sec)
       cmd.extend(['--timeout-mins', int(timeout_sec / 60)])
 
-      cmd.extend([
-          '--qs-account', QS_ACCOUNT_FYI
-          if 'fyi' in self.m.buildbucket.builder_name else QS_ACCOUNT_PROD
-      ])
+      cmd.extend(['--qs-account', self._get_qs_account()])
 
       resultdb = self.gen_rdb_config(test, cros_img)
       assert resultdb and resultdb.enable, ('Skylab tests should '

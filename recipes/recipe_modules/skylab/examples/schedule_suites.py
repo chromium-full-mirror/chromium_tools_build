@@ -499,7 +499,7 @@ def GenTests(api):
               '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
               '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-arc-t-release/R111-15300.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--qs-account', 'chrome'
           ]),
       # Multi-DUT
       api.post_process(
@@ -602,7 +602,7 @@ def GenTests(api):
               '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--secondary-boards', 'eve',
               '--secondary-images', 'eve-release/R88-13545.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              '--timeout-mins', '60', '--qs-account', 'chrome'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -734,7 +734,7 @@ def GenTests(api):
               'ctp-public-builder', '--public-builder-bucket', 'public-bucket',
               '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R118-15580.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--qs-account', 'chrome'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -763,7 +763,7 @@ def GenTests(api):
               '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
               '--bucket', 'chromiumos-image-archive', '--pool',
               'DUT_POOL_QUOTA', '--image', 'eve-public/R118-15580.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              '--timeout-mins', '60', '--qs-account', 'chrome'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -808,7 +808,7 @@ def GenTests(api):
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
               '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--qs-account', 'chrome'
           ]),
       api.post_process(
           post_process.StepCommandContains,
@@ -848,7 +848,7 @@ def GenTests(api):
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
               '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--qs-account', 'chrome'
           ]),
       api.post_process(
           post_process.StepCommandContains,
@@ -891,7 +891,7 @@ def GenTests(api):
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
               '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--qs-account', 'chrome'
           ]),
       api.post_process(
           post_process.StepCommandContains,
@@ -928,7 +928,7 @@ def GenTests(api):
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
               '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              '--qs-account', 'chrome'
           ]),
       api.post_process(
           post_process.StepCommandContains,
@@ -947,5 +947,48 @@ def GenTests(api):
               f'{LACROS_GCS_PATH}/skylab_runtime_deps.tar.zst',
               '--ash-chrome-build-output-dir', 'out/Release'
           ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'qs-account-fyi',
+      api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.ci_build(builder='fyi-builder',),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       ['--qs-account', 'chrome_fyi']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'qs-account-try-no-parent',
+      api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.try_build(builder='try-builder',),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       ['--qs-account', 'chrome_cq']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'qs-account-try-with-parent',
+      api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.try_build(
+          builder='try-builder',
+          ancestor_ids=[8945511751514863184],
+      ),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       ['--qs-account', 'chrome']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'qs-account-ci-preuprev',
+      api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.ci_build(builder='chromeos-preuprev-builder',),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       ['--qs-account', 'chrome_cq']),
       api.post_process(post_process.DropExpectation),
   )

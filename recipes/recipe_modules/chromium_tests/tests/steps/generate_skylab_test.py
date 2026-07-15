@@ -479,7 +479,7 @@ def GenTests(api):
                   'basic_EVE_TOT', passing_tests=['Test.One']))),
       api.post_process(post_process.StepCommandContains,
                        'test_pre_run.basic_EVE_TOT.schedule',
-                       ['--qs-account', 'lacros_fyi']),
+                       ['--qs-account', 'chrome_fyi']),
       api.post_process(post_process.DropExpectation),
   )
 
