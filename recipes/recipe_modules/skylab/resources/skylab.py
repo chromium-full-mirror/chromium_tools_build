@@ -468,7 +468,10 @@ def read_ctp_results(opts):
   # outer recipe will launch a CTP with 10 minutes timeout, making the builder
   # to timeout.
   for tr in child_builds.values():
-    if tr.get('output', {}).get('status') != 'CANCELED':
+    if tr.get('output', {}).get('status') not in (
+        'CANCELED',
+        'INFRA_FAILURE',
+    ):
       continue
     name = None
     for tr_tag in tr.get('tags', []):
