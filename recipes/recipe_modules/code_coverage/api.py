@@ -1086,6 +1086,16 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._merged_profdata_gs_paths.append(gs_path)
     return merged_profdata
 
+  def _get_arch_flag(self):
+    """Returns architecture flag for coverage based on builder config."""
+    arch = {
+        ('arm', 64): 'arm64',
+        ('intel', 64): 'x86_64',
+        ('arm', 32): 'armv7',
+        ('intel', 32): 'i386',
+    }.get((self.m.chromium.c.TARGET_ARCH, self.m.chromium.c.TARGET_BITS))
+    return ['--arch', arch] if arch else []
+
   # TODO(crbug.com/929769): Remove this method when the fix is landed upstream.
   def _get_binaries_with_valid_coverage_data_on_trybot(self, binaries,
                                                        profdata_path):
@@ -1127,8 +1137,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     cmd.extend(binaries)
 
-    if self.platform == 'ios':
-      cmd.extend(['--arch', 'x86_64'])
+    cmd.extend(self._get_arch_flag())
 
     step_result = self.m.step(
         'filter binaries with valid data for %s binaries' % len(binaries),
@@ -1170,8 +1179,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         for s in self._eligible_files_by_tool[constants.tools.CLANG]
     ])
 
-    if self.platform == 'ios':
-      cmd.extend(['--arch', 'x86_64'])
+    cmd.extend(self._get_arch_flag())
 
     self.m.step(
         ('generate html report for %s test coverage in %d tests' %
@@ -1451,8 +1459,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       if self._include_component_mapping:
         cmd.extend(['--dir-metadata-path', self._generate_dir_metadata()])
 
-    if self.platform == 'ios':
-      cmd.extend(['--arch', 'arm64'])
+    cmd.extend(self._get_arch_flag())
 
     try:
       self.m.step(
