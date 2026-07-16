@@ -29,6 +29,8 @@ class DevToolsTests(ABC):
     self.coverage = coverage
     self.env = {}
     self.extra_args = []
+    self.is_flake_exoneration = False
+    self.exoneration_tests = []
     # Used to accumulate results from the rerun and the original run
     self.results = Results()
 
@@ -63,11 +65,23 @@ class DevToolsTests(ABC):
   def prepare_filtered_rerun(self, test_names):
     had_node_unit_tests = NODE_UNIT_TESTS_OPTION in self.extra_args
     # TODO: we probably should not override extra args.
+
+    use_new_format = all(
+        re.match(r'^(.*\.[tj]s):(.*)$', name) for name in test_names)
+    self.is_flake_exoneration = True
+
     self.extra_args = [
-        '--grep',
-        self.test_names_to_grep_string(test_names),
         '--retries=5',
     ]
+    if use_new_format:
+      self.exoneration_tests = list(test_names)
+    else:
+      self.exoneration_tests = []
+      self.extra_args.extend([
+          '--grep',
+          self.test_names_to_grep_string(test_names),
+      ])
+
     if had_node_unit_tests:
       self.extra_args.append(NODE_UNIT_TESTS_OPTION)
     # TODO (liviurau): add it back after puppeteer bug fix
@@ -277,8 +291,13 @@ class ExonerableTests(DevToolsTests):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
       return [self.run_tests_command(self.owned_new_tests)]
-    is_flake_exoneration_attempt = FLAKE_EXONERATION_OPTION in self.extra_args
+    is_flake_exoneration_attempt = (
+        self.is_flake_exoneration or
+        FLAKE_EXONERATION_OPTION in self.extra_args)
     if is_flake_exoneration_attempt:
+      exoneration_tests = self.exoneration_tests
+      if exoneration_tests:
+        return [self.run_tests_command(exoneration_tests)]
       return [self.run_tests_command(self.test_src_folders)]
     return [
         self.run_tests_command(args + self.test_src_folders)
