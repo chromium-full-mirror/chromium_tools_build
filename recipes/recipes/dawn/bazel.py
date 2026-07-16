@@ -53,7 +53,12 @@ def RunSteps(api):
     bazel_args.append('--macos_minimum_os=12.0')
 
   # Build all bazel targets.
-  bazel_args.append('//src/tint/...')
+  bazel_args.extend([
+      '//src/tint/...',
+      '//src/utils/...',
+      '//test/tint/...',
+      '//:includes',
+  ])
 
   # On Linux, enforce using the hermetic Clang compiler.
   env = {}
@@ -66,9 +71,10 @@ def RunSteps(api):
     env['CXX'] = str(clang_xx_path)
 
   with api.osx_sdk('mac'), api.context(cwd=source_dir, env=env):
-    # Always expunge state first to avoid stale toolchain cache issues (crbug.com/530610023).
+    # Always expunge state first to avoid stale toolchain cache issues
+    # (crbug.com/530610023).
     api.step('bazel clean', [bazelisk, 'clean', '--expunge'])
-    api.step('bazel build tint', bazel_args)
+    api.step('bazel build all', bazel_args)
 
 
 def GenTests(api):
@@ -81,7 +87,7 @@ def GenTests(api):
           git_repo='https://dawn.googlesource.com/dawn',
       ),
       api.properties(debug=False),
-      api.post_process(post_process.StepSuccess, 'bazel build tint'),
+      api.post_process(post_process.StepSuccess, 'bazel build all'),
   )
   yield api.test(
       'linux_dbg',
@@ -92,7 +98,7 @@ def GenTests(api):
           git_repo='https://dawn.googlesource.com/dawn',
       ),
       api.properties(debug=True),
-      api.post_process(post_process.StepSuccess, 'bazel build tint'),
+      api.post_process(post_process.StepSuccess, 'bazel build all'),
   )
   yield api.test(
       'mac_rel',
@@ -103,5 +109,5 @@ def GenTests(api):
           git_repo='https://dawn.googlesource.com/dawn',
       ),
       api.properties(debug=False),
-      api.post_process(post_process.StepSuccess, 'bazel build tint'),
+      api.post_process(post_process.StepSuccess, 'bazel build all'),
   )

@@ -152,7 +152,10 @@
       "[CACHE]/builder/dawn/tools/bazelisk/bazelisk",
       "build",
       "--compilation_mode=opt",
-      "//src/tint/..."
+      "//src/tint/...",
+      "//src/utils/...",
+      "//test/tint/...",
+      "//:includes"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "env": {
@@ -171,7 +174,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bazel build tint"
+    "name": "bazel build all"
   },
   {
     "name": "$result"
