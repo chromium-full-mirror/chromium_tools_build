@@ -1159,7 +1159,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         '--test-results-summary-json',
         self.m.json.input(test_results_summary),
         '--build-number',
-        self.m.buildbucket.build.number,
+        self.m.buildbucket.build.number or self.m.buildbucket.build.id,
         '--builder-name',
         self.m.buildbucket.builder_name,
         '--gs-bucket',

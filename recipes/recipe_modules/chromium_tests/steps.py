@@ -1957,7 +1957,7 @@ def _archive_layout_test_results(api,
   results_dir = api.path.start_dir / 'layout-test-results'
 
   buildername = api.buildbucket.builder_full_name
-  buildnumber = api.buildbucket.build.number
+  buildnumber = api.buildbucket.build.number or api.buildbucket.build.id
 
   gcs_bucket = 'chromium-layout-test-archives'
   cmd = [
