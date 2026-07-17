@@ -1003,7 +1003,7 @@
       "-root",
       "[START_DIR]/packages",
       "-ensure-file",
-      "@Subdir kythe\ninfra/3pp/tools/kythe version:3@v0.0.73",
+      "@Subdir kythe\ninfra/3pp/tools/kythe version:3@v0.0.76",
       "-max-threads",
       "0",
       "-json-output",
