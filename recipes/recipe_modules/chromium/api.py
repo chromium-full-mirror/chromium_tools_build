@@ -657,11 +657,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
 
     with self.m.step.nest('check for compile warnings'):
-      step_text = 'No warnings found'
-      log_text = ''
-      status = self.m.step.SUCCESS
-      failure_summary = ''
-
       siso_output_path = build_dir / 'siso_output'
       if self.m.path.exists(siso_output_path):
         siso_output = self.m.file.read_text('read siso_output',
@@ -670,38 +665,55 @@ class ChromiumApi(recipe_api.RecipeApi):
         siso_output = ''
         step_text = str(siso_output_path) + ' does not exist'
 
-      # Regex matching a warning outputted by clang.
-      m = list(re.finditer(r'warning:.+\[-W.+\]', siso_output))
-      if m:
-        first_warning = m[0]
-        warning_count = len(m)
-
-        plural = 'warnings' if warning_count != 1 else 'warning'
-        step_text = (
-            f'Clang emitted {warning_count} {plural} during compilation. '
-            'See siso_output for full details.')
-        log_text = ('warning text (see siso_output for full details):\n' +
-                    first_warning.group(0))
-        status = self.m.step.FAILURE
-
-        # Extract the compiler output for the first warning for convenient
-        # display to the user. The relevant text blob in siso_output will start
-        # with 'build step:' and end with 'X warning(s) generated.'
-        end_match = re.search(r'warnings? generated.', siso_output)
-
-        # Find the _last_ instance of 'build step' preceding the warning text
-        start_matches = list(
-            re.finditer(r'build step:', siso_output[:first_warning.start()]))
-        start_match = start_matches[-1] if start_matches else None
-
-        if start_match and end_match:
-          output_blob = siso_output[start_match.start():end_match.end()]
-          failure_summary = step_text + '\n\n' + output_blob
-
-      # Strip ansi color codes from siso_output text, since they're hard to read
+      # Strip ansi color codes from siso_output, since they're hard to read and
+      # mess with our regexes
       ansi_color_regex = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
-      log_text = ansi_color_regex.sub('', log_text)
-      failure_summary = ansi_color_regex.sub('', failure_summary)
+      siso_output = ansi_color_regex.sub('', siso_output)
+
+      # Regex matching a warning outputted by clang or rustc.
+      m = re.finditer(r'warning:(.+)', siso_output)
+      # Filter out summary lines ("5 warnings emitted")
+      warnings = [
+          line for line in m
+          if not re.search(r'\d+ warnings? (emitted|generated)', line.group(0))
+      ]
+      if not warnings:
+        self.m.step.empty('scan siso_output for warnings', self.m.step.SUCCESS,
+                          'No warnings found', '')
+        return None
+
+      first_warning = warnings[0]
+      warning_count = len(warnings)
+
+      plural = 'warnings' if warning_count != 1 else 'warning'
+      step_text = (
+          f'Clang emitted {warning_count} {plural} during compilation. '
+          'See siso_output for full details.')
+      log_text = ('Sample warning text (see siso_output for full details):\n' +
+                  first_warning.group(0))
+      status = self.m.step.FAILURE
+
+      # Extract the compiler output for the first warning for convenient
+      # display to the user. The relevant text blob in siso_output will start
+      # and end with:
+      # - Clang: 'build step:' / 'X warning(s) generated.'
+      # - Rustc: `stdout:` / `X warning(s) emitted' (with no period)
+      end_match = re.search(r'warnings? (emitted|generated)', siso_output)
+
+      if end_match.group(1) == 'emitted':
+        target_re = r'stdout:'
+      else:
+        target_re = r'build step:'
+
+      # Find the _last_ instance of `target_re` preceding the warning text
+      start_matches = list(
+          re.finditer(target_re, siso_output[:first_warning.start()]))
+      start_match = start_matches[-1] if start_matches else None
+
+      failure_summary = 'Failed to extract warning text'
+      if start_match and end_match:
+        output_blob = siso_output[start_match.start():end_match.end()]
+        failure_summary = step_text + '\n\n' + output_blob
 
       if len(log_text) > 1024:
         log_text = log_text[:1024] + '...'
@@ -715,7 +727,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           log_text,
           raise_on_failure=False)
 
-      if m:
+      if warnings:
         return failure_summary
 
   @contextlib.contextmanager

@@ -322,6 +322,28 @@ def GenTests(api):
   )
 
   yield api.test(
+      'rust_warning_failure',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.chromium.properties(fail_build_on_clang_warnings=True),
+      api.path.exists(build_dir / 'siso_output'),
+      api.step_data(
+          'check for compile warnings.read siso_output',
+          api.file.read_text(
+              'stdout:\n'
+              'warning: type `bar` should have an upper camel case name\n'
+              '--> ../../mojo/public/rust/system/message.rs:37:8\n'
+              '...\n'
+              '= note: `#[warn(non_camel_case_types)]` '
+              '(part of `#[warn(nonstandard_style)]`) on by default\n'
+              '1 warning emitted')),
+      api.post_process(
+          post_process.StepFailure,
+          'check for compile warnings.scan siso_output for warnings'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'no_warnings_no_failure',
       api.chromium.generic_build(builder_group='test_group'),
       api.chromium.properties(fail_build_on_clang_warnings=True),
