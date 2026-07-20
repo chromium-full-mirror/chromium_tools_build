@@ -294,10 +294,15 @@ def GenTests(api):
           api.file.read_text('build step: foo\n'
                              '../../a/b/c.cc:1:2: warning: '
                              'something bad happened [-Wwarning]\n'
-                             '1 warning generated.')),
+                             '1 warning generated.\n'
+                             'extra text after clang summary\n')),
       api.post_process(
           post_process.StepFailure,
           'check for compile warnings.scan siso_output for warnings'),
+      api.post_process(
+          post_process.LogDoesNotContain,
+          'check for compile warnings.scan siso_output for warnings', 'stdout',
+          ['extra text after clang summary']),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -335,10 +340,45 @@ def GenTests(api):
               '...\n'
               '= note: `#[warn(non_camel_case_types)]` '
               '(part of `#[warn(nonstandard_style)]`) on by default\n'
-              '1 warning emitted')),
+              '1 warning emitted\n'
+              'extra text after rust summary\n')),
       api.post_process(
           post_process.StepFailure,
           'check for compile warnings.scan siso_output for warnings'),
+      api.post_process(
+          post_process.LogDoesNotContain,
+          'check for compile warnings.scan siso_output for warnings', 'stdout',
+          ['extra text after rust summary']),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'lld_warning',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.chromium.properties(fail_build_on_clang_warnings=True),
+      api.path.exists(build_dir / 'siso_output'),
+      api.step_data(
+          'check for compile warnings.read siso_output',
+          api.file.read_text(
+              'build step: clang_arm64_link "./clang_arm64/protoc-gen-js"\n'
+              'stderr:\n'
+              'warning: no debug symbols in executable (-arch arm64)\n'
+              'some extra unrelated log output after warning\n')),
+      api.post_process(
+          post_process.StepFailure,
+          'check for compile warnings.scan siso_output for warnings'),
+      api.post_process(
+          post_process.LogContains,
+          'check for compile warnings.scan siso_output for warnings', 'stdout',
+          [
+              'Sample warning text',
+              'warning: no debug symbols in executable (-arch arm64)'
+          ]),
+      api.post_process(
+          post_process.LogDoesNotContain,
+          'check for compile warnings.scan siso_output for warnings', 'stdout',
+          ['some extra unrelated log output after warning']),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

@@ -670,7 +670,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       ansi_color_regex = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
       siso_output = ansi_color_regex.sub('', siso_output)
 
-      # Regex matching a warning outputted by clang or rustc.
+      # Regex matching a warning outputted by clang, lld, or rustc.
       m = re.finditer(r'warning:(.+)', siso_output)
       # Filter out summary lines ("5 warnings emitted")
       warnings = [
@@ -693,17 +693,13 @@ class ChromiumApi(recipe_api.RecipeApi):
                   first_warning.group(0))
       status = self.m.step.FAILURE
 
-      # Extract the compiler output for the first warning for convenient
-      # display to the user. The relevant text blob in siso_output will start
-      # and end with:
-      # - Clang: 'build step:' / 'X warning(s) generated.'
-      # - Rustc: `stdout:` / `X warning(s) emitted' (with no period)
+      # Extract the output for the first warning for convenient display.
+      # The relevant text blob in siso_output will start with 'build step:',
+      # 'stdout:', or 'stderr:', and end with the summary line ('X warning(s)
+      # generated/emitted') if present, or first_warning.end() if absent.
       end_match = re.search(r'warnings? (emitted|generated)', siso_output)
 
-      if end_match.group(1) == 'emitted':
-        target_re = r'stdout:'
-      else:
-        target_re = r'build step:'
+      target_re = r'(?:build step:|stdout:|stderr:)'
 
       # Find the _last_ instance of `target_re` preceding the warning text
       start_matches = list(
@@ -711,8 +707,9 @@ class ChromiumApi(recipe_api.RecipeApi):
       start_match = start_matches[-1] if start_matches else None
 
       failure_summary = 'Failed to extract warning text'
-      if start_match and end_match:
-        output_blob = siso_output[start_match.start():end_match.end()]
+      if start_match:
+        end_pos = end_match.end() if end_match else first_warning.end()
+        output_blob = siso_output[start_match.start():end_pos]
         failure_summary = step_text + '\n\n' + output_blob
 
       if len(log_text) > 1024:
