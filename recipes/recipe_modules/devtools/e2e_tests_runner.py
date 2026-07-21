@@ -48,7 +48,7 @@ class E2ENonHostedTests(ExonerableTests):
     skipped_tests = self.skipped_tests_for_flake_detection()
     self.owned_new_tests = [
         test for test in test_names
-        if test.startswith('test/e2e_non_hosted') and test not in skipped_tests
+        if test.startswith('test/e2e') and test not in skipped_tests
     ]
     if not self.owned_new_tests:
       self.skip_deflaking_result = Results()
