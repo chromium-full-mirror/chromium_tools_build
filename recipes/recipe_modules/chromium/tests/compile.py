@@ -366,20 +366,9 @@ def GenTests(api):
               'warning: no debug symbols in executable (-arch arm64)\n'
               'some extra unrelated log output after warning\n')),
       api.post_process(
-          post_process.StepFailure,
+          post_process.StepSuccess,
           'check for compile warnings.scan siso_output for warnings'),
-      api.post_process(
-          post_process.LogContains,
-          'check for compile warnings.scan siso_output for warnings', 'stdout',
-          [
-              'Sample warning text',
-              'warning: no debug symbols in executable (-arch arm64)'
-          ]),
-      api.post_process(
-          post_process.LogDoesNotContain,
-          'check for compile warnings.scan siso_output for warnings', 'stdout',
-          ['some extra unrelated log output after warning']),
-      api.expect_status('FAILURE'),
+      api.expect_status('SUCCESS'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -670,14 +670,19 @@ class ChromiumApi(recipe_api.RecipeApi):
       ansi_color_regex = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
       siso_output = ansi_color_regex.sub('', siso_output)
 
-      # Regex matching a warning outputted by clang, lld, or rustc.
+      # Compiler output for warnings will include a summary line:
+      # - Clang: 'X warning(s) generated.'
+      # - Rustc: 'X warning(s) emitted'
+      end_match = re.search(r'warnings? (emitted|generated)', siso_output)
+
+      # Regex matching a warning outputted by clang or rustc.
       m = re.finditer(r'warning:(.+)', siso_output)
       # Filter out summary lines ("5 warnings emitted")
       warnings = [
           line for line in m
           if not re.search(r'\d+ warnings? (emitted|generated)', line.group(0))
       ]
-      if not warnings:
+      if not end_match or not warnings:
         self.m.step.empty('scan siso_output for warnings', self.m.step.SUCCESS,
                           'No warnings found', '')
         return None
@@ -694,12 +699,12 @@ class ChromiumApi(recipe_api.RecipeApi):
       status = self.m.step.FAILURE
 
       # Extract the output for the first warning for convenient display.
-      # The relevant text blob in siso_output will start with 'build step:',
-      # 'stdout:', or 'stderr:', and end with the summary line ('X warning(s)
-      # generated/emitted') if present, or first_warning.end() if absent.
-      end_match = re.search(r'warnings? (emitted|generated)', siso_output)
-
-      target_re = r'(?:build step:|stdout:|stderr:)'
+      # The relevant text blob in siso_output will start with 'build step:'
+      # or 'stdout:' and end with the summary line ('X warning(s) generated/emitted').
+      if end_match.group(1) == 'emitted':
+        target_re = r'stdout:'
+      else:
+        target_re = r'build step:'
 
       # Find the _last_ instance of `target_re` preceding the warning text
       start_matches = list(
@@ -708,8 +713,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
       failure_summary = 'Failed to extract warning text'
       if start_match:
-        end_pos = end_match.end() if end_match else first_warning.end()
-        output_blob = siso_output[start_match.start():end_pos]
+        output_blob = siso_output[start_match.start():end_match.end()]
         failure_summary = step_text + '\n\n' + output_blob
 
       if len(log_text) > 1024:
