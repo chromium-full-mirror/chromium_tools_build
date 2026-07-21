@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2026 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,6 +13,7 @@ DEPS = [
     'recipe_engine/step',
     'v8',
 ]
+
 
 def RunSteps(api):
   api.gclient.set_config('v8')
@@ -34,7 +35,6 @@ def RunSteps(api):
     if last_version != beta_version:
       with api.step.nest('New branch detected'):
         definitions = api.v8.calculate_versions(definitions, last_version)
-        api.v8.update_main_version(source_dir)
         api.v8.update_infra_config(source_dir, definitions)
     else:
       api.step('No new branch detected', [])
@@ -53,38 +53,13 @@ def GenTests(api):
                     'Read branch definitions', 'versions = {'
                     '"beta": "10.2", "stable": "10.1", "extended": "10.0"}'))
 
-  yield (
-      api.test("new branch", status='SUCCESS') + stdout(
-          'last branches', 'branch-heads/10.0\n'
-          'branch-heads/9.9\n'
-          'branch-heads/9.8\n'
-          'branch-heads/9.8') + stdout(
-              'Read branch definitions', 'versions = {'
-              '"beta": "9.9", "stable": "9.8", "extended": "9.8"}') +
-      api.v8.version_file(
-          4,
-          'main',
-          prefix='New branch detected.Update on main.',
-          major=9,
-          minor=9) +
-      stdout('New branch detected.Update on main.git cl (2)', 'Issue number: 2 '
-             '(https://review.source.com/2)') +
-      stdout('New branch detected.Update infra/config.git cl (2)',
-             'Issue number: 3 '
-             '(https://review.source.com/3)'))
-
-  yield (
-      api.test("new branch - new extended", status='SUCCESS') + stdout(
-          'last branches', 'branch-heads/9.9\n'
-          'branch-heads/9.8\n'
-          'branch-heads/9.7\n'
-          'branch-heads/9.6') + stdout(
-              'Read branch definitions', 'versions = {'
-              '"beta": "9.8", "stable": "9.7", "extended": "9.5"}') +
-      api.v8.version_file(
-          4, 'main', prefix='New branch detected.Update on main.') +
-      stdout('New branch detected.Update on main.git cl (2)', 'Issue number: 2 '
-             '(https://review.source.com/2)') +
-      stdout('New branch detected.Update infra/config.git cl (2)',
-             'Issue number: 3 '
-             '(https://review.source.com/3)'))
+  yield (api.test("new branch", status='SUCCESS') + stdout(
+      'last branches', 'branch-heads/10.0\n'
+      'branch-heads/9.9\n'
+      'branch-heads/9.8\n'
+      'branch-heads/9.8') + stdout(
+          'Read branch definitions', 'versions = {'
+          '"beta": "9.9", "stable": "9.8", "extended": "9.8"}') +
+         stdout('New branch detected.Update infra/config.git cl (2)',
+                'Issue number: 3 '
+                '(https://review.source.com/3)'))

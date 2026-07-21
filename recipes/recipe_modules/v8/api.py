@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import ast
+import astunparse
 import collections.abc
 import contextlib
 import re
@@ -23,6 +24,9 @@ from . import bisection
 
 MILO_HOST = 'luci-milo.appspot.com'
 V8_URL = 'https://chromium.googlesource.com/v8/v8'
+
+V8_CI_AUTOROLL_BUILDER = (
+    'v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com')
 
 COMMIT_TEMPLATE = '%s/+/%%s' % V8_URL
 
@@ -1551,3 +1555,74 @@ class V8Api(recipe_api.RecipeApi):
     (i.e. 102  to '10.2')
     """
     return '%s.%s' % divmod(version_number, 10)
+
+  def version_from_text(self, version_text):
+    version_components = version_text.split('.')
+    if len(version_components) < 2:  # pragma: no cover
+      return 0
+    major, minor = version_components[:2]
+    return int(major) * 10 + int(minor)
+
+  def infer_beta_version(self, definitions):
+    contents = ast.parse(definitions, mode='exec')
+    defined_versions = contents.body[0].value.values
+    return self.version_from_text(defined_versions[0].s)
+
+  def calculate_versions(self, definitions, last_version):
+    contents = ast.parse(definitions, mode='exec')
+    defined_versions = contents.body[0].value.values
+
+    beta_version = self.version_from_text(defined_versions[0].s)
+    stable_version = self.version_from_text(defined_versions[1].s)
+    extended_version = self.version_from_text(defined_versions[2].s)
+
+    if stable_version - extended_version >= 1:
+      extended_version = beta_version
+    stable_version = beta_version
+    beta_version = last_version
+
+    defined_versions[0].s = self.version_num2str(beta_version)
+    defined_versions[1].s = self.version_num2str(stable_version)
+    defined_versions[2].s = self.version_num2str(extended_version)
+
+    return astunparse.unparse(contents)
+
+  def update_infra_config(self, source_dir, definitions):
+    with self.m.step.nest('Update infra/config') as parent_step:
+      self.git_output('checkout', 'infra/config')
+      self.git_output('pull', ok_ret='any')
+      self.git_output('branch', '-D', 'branch_cut_update', ok_ret='any')
+      self.git_output('clean', '-ffd')
+      self.git_output('checkout', '-b', 'branch_cut_update')
+      self.git_output('branch', '--set-upstream-to=origin/infra/config')
+      definitions_path = source_dir / 'definitions.star'
+      self.m.file.write_text('Write branch definitions', definitions_path,
+                             definitions)
+      self.m.step('Lucicfg format', ['lucicfg', 'format'])
+      self.m.step('Lucicfg generate', ['lucicfg', 'main.star'])
+      self.git_output('commit', '-am', 'Branch cut')
+      self.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
+                      '--set-bot-commit', '--dry-run')
+      issue = self.get_cl_issue()
+      parent_step.links[issue] = issue
+
+  def update_main_version(self, source_dir):
+    with self.m.step.nest('Update on main') as parent_step:
+      branch_ref = 'main'
+      self.git_output('checkout', branch_ref)
+      version_at_branch_head = self.read_version_from_ref(
+          source_dir, "HEAD", branch_ref)
+      version_at_branch_head = version_at_branch_head.with_incremented_minor()
+      self.update_version_cl(
+          source_dir,
+          branch_ref,
+          version_at_branch_head,
+          push_account=V8_CI_AUTOROLL_BUILDER,
+          bot_commit=True,
+      )
+      issue = self.get_cl_issue()
+      parent_step.links[issue] = issue
+
+  def get_cl_issue(self):
+    issue = self.git_output('cl', 'issue')
+    return re.search('\((.*)\)', issue).group(1)
