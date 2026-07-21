@@ -1,6 +1,5 @@
-per-file angle.py=file:angle.expected/OWNERS
-per-file angle_chromium.py=file:angle.expected/OWNERS
-per-file angle_chromium_trybot.py=file:angle.expected/OWNERS
+per-file angle_chromium.py=file:angle/OWNERS
+per-file angle_chromium_trybot.py=file:angle/OWNERS
 per-file art.proto=file:art.expected/OWNERS
 per-file art.py=file:art.expected/OWNERS
 per-file binary_size_fuchsia_trybot.py=file:binary_size_fuchsia_trybot.expected/OWNERS
