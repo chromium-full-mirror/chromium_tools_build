@@ -16,4 +16,5 @@ message InputProperties {
   string trusted_build_instance = 2;
   string trusted_build_instance_pool = 3;
   string trusted_build_instance_env = 4;
+  string trusted_build_instance_project = 5;
 }

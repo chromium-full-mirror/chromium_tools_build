@@ -50,6 +50,8 @@ def RunSteps(api, properties):
       args.extend(["--pool", properties.trusted_build_instance_pool])
     if properties.trusted_build_instance_env:
       args.extend(["--env", properties.trusted_build_instance_env])
+    if properties.trusted_build_instance_project:
+      args.extend(["--project", properties.trusted_build_instance_project])
 
     if api.buildbucket.build.id:
       args.extend(["--build_prefix", f"bb-{api.buildbucket.build.id}"])
@@ -211,6 +213,7 @@ def GenTests(api):
           trusted_build_instance='fake-instance',
           trusted_build_instance_pool='fake-pool',
           trusted_build_instance_env='fake-env',
+          trusted_build_instance_project='fake-project',
       ),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'package clang.request build'),
@@ -218,12 +221,8 @@ def GenTests(api):
                        'package clang.request build', ['--clang']),
       api.post_process(post_process.StepCommandContains,
                        'package clang.request build', [
-                           '--instance',
-                           'fake-instance',
-                           '--pool',
-                           'fake-pool',
-                           '--env',
-                           'fake-env',
+                           '--instance', 'fake-instance', '--pool', 'fake-pool',
+                           '--env', 'fake-env', '--project', 'fake-project'
                        ]),
       api.post_process(post_process.StepCommandContains,
                        'package clang.request build', [
