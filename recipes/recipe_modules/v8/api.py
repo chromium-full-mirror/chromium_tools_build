@@ -991,6 +991,8 @@ class V8Api(recipe_api.RecipeApi):
           gs_bucket=clusterfuzz_archive.get('bucket'),
           gs_acl='public-read',
           archive_prefix=clusterfuzz_archive.get('name'),
+          archive_path=clusterfuzz_archive.get('archive_path'),
+          use_archive_path=clusterfuzz_archive.get('use_archive_path', False),
           **kwargs)
 
   def download_isolated_json(self, revision):

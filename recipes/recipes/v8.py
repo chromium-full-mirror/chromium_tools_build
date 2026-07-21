@@ -47,7 +47,7 @@ PROPERTIES = {
     'clobber_all': Property(default=False, kind=bool),
     # Additional configurations set for archiving builds to GS buckets for
     # clusterfuzz. The mapping consists of "name", "bucket" and optional
-    # "bitness".
+    # "bitness", "archive_path" and "use_archive_path".
     'clusterfuzz_archive': Property(default=None, kind=dict),
     # Optional coverage setting. Set to "llvm" to use.
     'coverage': Property(default=None, kind=str),
@@ -958,6 +958,105 @@ def GenTests(api):
           'name': 'd8_bar',
           'bucket': 'v8_clusterfoo',
           'bitness': 64,
+      },
+      default_targets=['v8_foobar'],
+  ) + api.post_process(
+      check_gs_url_equals, 'gs://v8_clusterfoo/linux64-release/'
+      'd8_bar-linux64-release-v8-component-50110.zip') +
+         api.post_process(MustRun, 'initialization.clobber') + api.post_process(
+             Filter(
+                 'build.compile',
+                 'create staging_dir',
+                 'filter archive_root',
+                 'zipping',
+                 'gsutil upload',
+             )))
+
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'clusterfuzz_archive_path',
+      clobber=True,
+      clusterfuzz_archive={
+          'name': 'd8_bar',
+          'bucket': 'v8_clusterfoo',
+          'bitness': 64,
+          'archive_path': 'linux64-release/d8_bar-linux64-release-v8-component',
+      },
+      default_targets=['v8_foobar'],
+  ) + api.post_process(
+      check_gs_url_equals, 'gs://v8_clusterfoo/linux64-release/'
+      'd8_bar-linux64-release-v8-component-50110.zip') +
+         api.post_process(MustRun, 'initialization.clobber') + api.post_process(
+             Filter(
+                 'build.compile',
+                 'create staging_dir',
+                 'filter archive_root',
+                 'zipping',
+                 'gsutil upload',
+             )))
+
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'clusterfuzz_archive_path_failure',
+      clobber=True,
+      clusterfuzz_archive={
+          'name': 'd8_bar',
+          'bucket': 'v8_clusterfoo',
+          'bitness': 64,
+          'archive_path': 'incorrect/archive/path',
+      },
+      default_targets=['v8_foobar'],
+  ) + api.expect_exception('AssertionError') +
+         api.post_process(DropExpectation))
+
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'clusterfuzz_archive_path_no_bitness',
+      clobber=True,
+      clusterfuzz_archive={
+          'name': 'd8_bar',
+          'bucket': 'v8_clusterfoo',
+          'archive_path': 'linux-release/d8_bar-linux-release-v8-component',
+      },
+      default_targets=['v8_foobar'],
+  ) + api.post_process(
+      check_gs_url_equals, 'gs://v8_clusterfoo/linux-release/'
+      'd8_bar-linux-release-v8-component-50110.zip') +
+         api.post_process(MustRun, 'initialization.clobber') + api.post_process(
+             Filter(
+                 'build.compile',
+                 'create staging_dir',
+                 'filter archive_root',
+                 'zipping',
+                 'gsutil upload',
+             )))
+
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'clusterfuzz_archive_path_no_bitness_failure',
+      clobber=True,
+      clusterfuzz_archive={
+          'name': 'd8_bar',
+          'bucket': 'v8_clusterfoo',
+          'archive_path': 'incorrect/archive/path',
+      },
+      default_targets=['v8_foobar'],
+  ) + api.expect_exception('AssertionError') +
+         api.post_process(DropExpectation))
+
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'clusterfuzz_use_archive_path',
+      clobber=True,
+      clusterfuzz_archive={
+          'bucket': 'v8_clusterfoo',
+          'archive_path': 'linux64-release/d8_bar-linux64-release-v8-component',
+          'use_archive_path': True,
       },
       default_targets=['v8_foobar'],
   ) + api.post_process(

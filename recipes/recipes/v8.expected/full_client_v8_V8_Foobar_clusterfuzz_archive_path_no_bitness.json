@@ -1,0 +1,174 @@
+[
+  {
+    "cmd": [
+      "[CACHE]/builder/v8/third_party/siso/siso",
+      "ninja",
+      "--project",
+      "test-rbe-project",
+      "--job_id",
+      "8945511751514863184",
+      "--remote_jobs",
+      "160",
+      "--enable_cloud_logging",
+      "--reapi_instance",
+      "default_instance",
+      "-failure_summary",
+      "/path/to/tmp/",
+      "-C",
+      "[CACHE]/builder/v8/out/build",
+      "v8_foobar"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "SISO_BUILD_ID": "00000000-0000-0000-0000-000000001337"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build.compile",
+    "tags": {
+      "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
+    },
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CLEANUP]/cs"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create staging_dir"
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::archive]/resources/filter_build_files.py",
+      "--dir",
+      "[CACHE]/builder/v8/out/build",
+      "--platform",
+      "linux",
+      "--output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "filter archive_root",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"file1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"file2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::archive]/resources/zip_archive.py",
+      "--output-dir",
+      "[CLEANUP]/cs",
+      "--archive-name",
+      "d8_bar-linux-release-v8-component-50110",
+      "--json-file-list",
+      "[\"file1\", \"file2\"]",
+      "--file-relative-dir",
+      "[CACHE]/builder/v8/out/build",
+      "--no-root-dir",
+      "--lzma-sdk-dir",
+      "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "zipping"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "--",
+      "-h",
+      "x-goog-meta-Cr-Commit-Position:refs/heads/main@{#50110}",
+      "-h",
+      "x-goog-meta-Cr-Commit-Position-Number:50110",
+      "-h",
+      "x-goog-meta-Cr-Git-Commit:deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+      "cp",
+      "-a",
+      "public-read",
+      "[CLEANUP]/cs/d8_bar-linux-release-v8-component-50110.zip",
+      "gs://v8_clusterfoo/linux-release/d8_bar-linux-release-v8-component-50110.zip"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/v8_clusterfoo/linux-release/d8_bar-linux-release-v8-component-50110.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125323.00000000-0000-0000-0000-00000000133a.gz\", \"gsutil upload\": \"gs://v8_clusterfoo/linux-release/d8_bar-linux-release-v8-component-50110.zip\"}@@@"
+    ]
+  }
+]
