@@ -249,7 +249,8 @@ class ExonerableTests(DevToolsTests):
     super().__init__(api, trigger, builder_config, coverage, step_name)
     # Used to indicate that no task was triggered; may contain a failure if the
     # reason for not triggering qualifies as such
-    self.skip_result = None
+    self.skip_exoneration_result = None
+    self.skip_deflaking_result = None
     self.owned_new_tests = []
     self.shard_count = shard_count
     self.shard_bias = 1
@@ -263,11 +264,11 @@ class ExonerableTests(DevToolsTests):
   def trigger_exoneration(self, test_names):
     owned_tests = test_names.get(self.test_type_tag)
     if not owned_tests:
-      self.skip_result = Results()
+      self.skip_exoneration_result = Results()
       return
     if len(owned_tests) > FLAKE_DETECTION_MAX_TESTS:
-      self.skip_result = Results()
-      self.skip_result.add_test_failure('Too many failures')
+      self.skip_exoneration_result = Results()
+      self.skip_exoneration_result.add_test_failure('Too many failures')
       self.api.step.empty(
           f'Too many tests to check for flakes {self.step_name}')
       return
@@ -276,8 +277,37 @@ class ExonerableTests(DevToolsTests):
     self.trigger('exoneration')
 
   def process_exoneration_results(self, test_names):
-    if self.skip_result:
-      self.results += self.skip_result
+    if self.skip_exoneration_result:
+      self.results += self.skip_exoneration_result
+      return
+    self.process_results()
+
+  def owns_test(self, test):
+    return any(test.startswith(folder) for folder in self.test_src_folders)
+
+  def skipped_tests_for_flake_detection(self):
+    return self.api.tryserver.get_footer(
+        FLAKE_DETECTION_SKIPPED_TESTS_FOOTER
+    ) if self.api.tryserver.is_tryserver else []
+
+  def trigger_flake_detection(self, test_names):
+    skipped_tests = self.skipped_tests_for_flake_detection()
+    self.owned_new_tests = [
+        test for test in test_names
+        if self.owns_test(test) and test not in skipped_tests
+    ]
+    if not self.owned_new_tests:
+      self.skip_deflaking_result = Results()
+      return
+
+    self.shard_count = 1
+    self.step_name += ' (flake detection)'
+    self.extra_args = [FLAKE_DETECTION_OPTION]
+    self.trigger('flake detection')
+
+  def process_flake_detection_results(self, test_names):
+    if self.skip_deflaking_result:
+      self.results += self.skip_deflaking_result
       return
     self.process_results()
 
@@ -290,7 +320,10 @@ class ExonerableTests(DevToolsTests):
   def commands(self):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
-      return [self.run_tests_command(self.owned_new_tests)]
+      return [
+          self.run_tests_command(args + self.owned_new_tests)
+          for args in self.sharding_args()
+      ]
     is_flake_exoneration_attempt = (
         self.is_flake_exoneration or
         FLAKE_EXONERATION_OPTION in self.extra_args)

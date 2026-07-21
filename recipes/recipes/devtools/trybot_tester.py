@@ -137,6 +137,7 @@ def GenTests(api):
       api.override_step_data(
           'Detect flakes in new tests.find new tests.git diff',
           stdout=api.raw_io.output_text('\n'.join([
+              'front_end/panels/timeline/timeline_test.ts',
               'test/e2e/helpers/datagrid-helpers.ts',
               'test/e2e/helpers/performance-helpers.ts',
               'test/e2e/helpers/sources-helpers.ts',
