@@ -1472,7 +1472,8 @@
       "main",
       "--progress",
       "--depth",
-      "1"
+      "1",
+      "--no-auto-gc"
     ],
     "cwd": "[CACHE]/generated",
     "env": {
