@@ -13,6 +13,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
@@ -64,6 +65,7 @@
       "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
       "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_suffixes": {
@@ -136,6 +138,7 @@
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_suffixes": {
@@ -164,7 +167,7 @@
       "-root",
       "[CACHE]/builder",
       "-ensure-file",
-      "@Subdir clang\nfuchsia/third_party/clang/linux-amd64 8ii0cvHxegwLJjXM6PekCWB7xzEnFsY7cc2G96VT0VsC",
+      "$ParanoidMode CheckIntegrity\n@Subdir clang\nfuchsia/third_party/clang/linux-amd64 8ii0cvHxegwLJjXM6PekCWB7xzEnFsY7cc2G96VT0VsC",
       "-max-threads",
       "0",
       "-json-output",
@@ -172,6 +175,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
@@ -209,7 +213,7 @@
       "-root",
       "[CACHE]/java",
       "-ensure-file",
-      "chromium/third_party/jdk BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C",
+      "$ParanoidMode CheckIntegrity\nchromium/third_party/jdk BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C",
       "-max-threads",
       "0",
       "-json-output",
@@ -217,6 +221,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
@@ -254,7 +259,7 @@
       "-root",
       "[CACHE]/android_sdk",
       "-ensure-file",
-      "chromium/third_party/android_sdk/public/build-tools/34.0.0 latest\nchromium/third_party/android_sdk/public/platform-tools latest\nchromium/third_party/android_sdk/public/platforms/android-34 latest\nchromium/third_party/android_sdk/public/cmdline-tools latest",
+      "$ParanoidMode CheckIntegrity\nchromium/third_party/android_sdk/public/build-tools/34.0.0 latest\nchromium/third_party/android_sdk/public/platform-tools latest\nchromium/third_party/android_sdk/public/platforms/android-34 latest\nchromium/third_party/android_sdk/public/cmdline-tools latest",
       "-max-threads",
       "0",
       "-json-output",
@@ -262,6 +267,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
@@ -311,6 +317,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "luci_context": {
@@ -335,7 +342,7 @@
       "-root",
       "[CACHE]/gradle",
       "-ensure-file",
-      "flutter/gradle version:8.9",
+      "$ParanoidMode CheckIntegrity\nflutter/gradle version:8.9",
       "-max-threads",
       "0",
       "-json-output",
@@ -343,6 +350,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "infra_step": true,
@@ -380,6 +388,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -413,6 +422,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -448,6 +458,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -482,6 +493,7 @@
     "cwd": "[CACHE]/uncached/dawn/tools/android",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -546,6 +558,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -587,6 +600,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -654,6 +668,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -695,6 +710,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -730,6 +746,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -767,6 +784,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -805,6 +823,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -842,6 +861,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -881,6 +901,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -945,6 +966,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -986,6 +1008,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -1053,6 +1076,7 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {
@@ -1094,6 +1118,7 @@
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",
+      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
       "JAVA_HOME": "[CACHE]/java"
     },
     "env_prefixes": {

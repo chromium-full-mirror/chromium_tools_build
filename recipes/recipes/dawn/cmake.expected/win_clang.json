@@ -156,7 +156,7 @@
       "-root",
       "[CACHE]\\builder",
       "-ensure-file",
-      "@Subdir clang\nfuchsia/third_party/clang/windows-amd64 yrliUGUdB_0T81Mf6FV-Oz-nF1lgdcEuaJF2MfNhI5EC",
+      "$ParanoidMode CheckIntegrity\n@Subdir clang\nfuchsia/third_party/clang/windows-amd64 yrliUGUdB_0T81Mf6FV-Oz-nF1lgdcEuaJF2MfNhI5EC",
       "-max-threads",
       "0",
       "-json-output",

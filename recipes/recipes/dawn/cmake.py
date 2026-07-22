@@ -36,6 +36,11 @@ PROPERTIES = InputProperties
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
+def _new_ensure_file(api):
+  return api.cipd.EnsureFile().with_paranoid_mode(
+      api.cipd.ParanoidMode.CHECK_INTEGRITY)
+
+
 def _checkout_steps(api):
   '''Checks out Dawn. After this, api.path.checkout_dir returns the dawn root.'''
   # Check out dawn into an un-cached directory in 'cache'. This seems weird,
@@ -74,7 +79,7 @@ def _install_android_deps(api):
   env_paths = []
 
   # Install Java 17
-  java_ensure_path = api.cipd.EnsureFile()
+  java_ensure_path = _new_ensure_file(api)
   java_install_path = api.path.cache_dir / 'java'
   java_ensure_path.add_package("chromium/third_party/jdk",
                                "BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C")
@@ -83,7 +88,7 @@ def _install_android_deps(api):
   env_paths.append(java_install_path / 'bin')
 
   # Install Android SDK
-  android_sdk_ensure_path = api.cipd.EnsureFile()
+  android_sdk_ensure_path = _new_ensure_file(api)
   android_sdk_install_path = api.path.cache_dir / 'android_sdk'
   android_sdk_packages = {
       'chromium/third_party/android_sdk/public/build-tools/34.0.0': 'latest',
@@ -104,7 +109,7 @@ def _install_android_deps(api):
       stdin=api.raw_io.input_text('y\n' * 100))
 
   # Install Gradle
-  gradle_ensure_path = api.cipd.EnsureFile()
+  gradle_ensure_path = _new_ensure_file(api)
   gradle_install_path = api.path.cache_dir / 'gradle'
   #TODO(b/347893657): Replace flutter/gradle with a custom gradle package for dawn
   gradle_ensure_path.add_package("flutter/gradle", "version:8.9")
@@ -122,7 +127,7 @@ def _install_clang(api):
   # Install binaries to named cache directory mentioned in luci builder
   # configurations. Data in this directory will be persistent and will be
   # available between builds.
-  ensure_file = api.cipd.EnsureFile()
+  ensure_file = _new_ensure_file(api)
   # CIPD packages and versions for clang.
   # See https://chrome-infra-packages.appspot.com/p/fuchsia/third_party/clang
   # Note: arm64 packages are also available
@@ -348,6 +353,7 @@ def RunSteps(api, properties):
   if api.platform.is_linux:
     env['ANDROID_HOME'] = api.path.cache_dir / 'android_sdk'
     env['JAVA_HOME'] = api.path.cache_dir / 'java'
+    env['GRADLE_USER_HOME'] = api.path.cleanup_dir / 'gradle_home'
 
   with api.context(env=env):
     update_result = _checkout_steps(api)
