@@ -115,7 +115,7 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
           f'-log-furthest={LOGGED_REJECTIONS}',
       ],
       stdout=api.raw_io.output_text(),
-      cost=api.step.ResourceCost(cpu=1000, memory=2048))
+      cost=api.step.ResourceCost(cpu=1000))
   match = re.search(r'(\d+\.\d+)%\s*\|\s*<?(\d+\.\d+)%', step_result.stdout)
   if not match:
     # No summary table implies something went wrong with the analysis
