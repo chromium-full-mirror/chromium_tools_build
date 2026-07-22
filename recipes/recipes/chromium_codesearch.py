@@ -402,6 +402,10 @@ def RunSteps(api, properties):
     final_index_pack_path = api.codesearch.run_kzip_merge(
         initial_index_pack_path, rust_index_pack_path)
 
+  # Early return if it's tryserver, don't upload and sync repo.
+  if api.tryserver.is_tryserver:
+    return
+
   # Upload the initial kythe index pack.
   api.codesearch.upload_kythe_index_pack(
       index_pack_kythe_path=final_index_pack_path,
