@@ -749,7 +749,7 @@ class V8Api(recipe_api.RecipeApi):
       )
       self.m.v8_tests.isolated_tests.update(self.m.isolate.isolated_tests)
 
-      if self.m.v8_tests.isolated_tests:
+      if self.m.v8_tests.isolated_tests and not self.m.tryserver.is_tryserver:
         self.upload_isolated_json()
 
   def target_bits(self, build_dir):
