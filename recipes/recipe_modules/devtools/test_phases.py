@@ -137,4 +137,7 @@ class FlakeDetectionPhase(TestRunPhase):
     git_changes = self.api.v8.git_output('diff', '--name-only', '--format=',
                                          '--diff-filter=d',
                                          '--cached').splitlines()
-    return [file for file in git_changes if file.endswith('test.ts')]
+    return [
+        file for file in git_changes
+        if file.endswith('test.ts') or file.endswith('test.api.ts')
+    ]

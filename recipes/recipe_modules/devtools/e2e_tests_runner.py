@@ -18,7 +18,7 @@ class E2ENonHostedTests(ExonerableTests):
         api, trigger, builder_config, False, step_name, shard_count=4)
 
   @property
-  def test_src_folders(self):
+  def test_patterns(self):
     return ['test/e2e_non_hosted']
 
   def owns_test(self, test):
