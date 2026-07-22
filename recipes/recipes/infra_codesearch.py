@@ -18,6 +18,7 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/gsutil',
     'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/golang',
@@ -154,9 +155,62 @@ def RunSteps(api):
                               suffix='.json'), '--output', kzip_loc
     ] + targets)
 
+  final_kzip_loc = kzip_loc
+
+  try:
+    extractor_out_dir = api.path.cleanup_dir / 'extractor_output'
+    api.file.ensure_directory('create extractor_output dir', extractor_out_dir)
+    extractor_script = api.codesearch.resource('python_extractor.py')
+
+    for target_dir in api.file.listdir(
+        'list checkout_dir',
+        checkout_dir,
+        test_data=['infra', '.git', 'README.md']):
+      if not api.path.isdir(target_dir) or api.path.basename(
+          target_dir).startswith('.'):
+        continue
+      dir_name = api.path.basename(target_dir)
+      out_json_path = extractor_out_dir / f'{dir_name}.json'
+      api.step(f'extract python metadata for {dir_name}', [
+          'vpython3',
+          extractor_script,
+          target_dir,
+          out_json_path,
+          '--corpus',
+          'chromium.googlesource.com/infra/infra_superproject//main',
+          '--root',
+          checkout_dir,
+      ])
+    json_files = api.file.glob_paths('list extractor json outputs',
+                                     extractor_out_dir, '*.json')
+
+    if json_files:
+      exec_path = api.cipd.ensure_tool("infra/tools/kzip_builder/${platform}",
+                                       "latest")
+      python_kzip_loc = api.path.cache_dir / f'python_{kzip_name}'
+
+      api.step(
+          'build python kzip',
+          [
+              exec_path,
+              '--output',
+              python_kzip_loc,
+              '--root',
+              checkout_dir,
+          ] + json_files,
+      )
+
+      final_kzip_loc = api.codesearch.run_kzip_merge(kzip_loc, python_kzip_loc)
+
+  except api.step.StepFailure as exc:
+    if api.step.active_result:
+      result = api.step.active_result
+      result.presentation.step_text = 'python kzip extraction failed, skipping'
+      result.presentation.logs['exception'] = str(exc).splitlines()
+
   api.gsutil.upload(
       name='upload kythe index pack',
-      source=kzip_loc,
+      source=final_kzip_loc,
       bucket='chrome-internal-codesearch' if internal else 'chrome-codesearch',
       dest='infra/%s' % kzip_name)
 
@@ -170,16 +224,19 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/infra/infra_superproject'
       ),
       api.platform('linux', 64),
-      api.path.exists(
+      api.path.dirs_exist(
           api.path.cache_dir / 'infra_superproject',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra/go/src/go.chromium.org/luci/go.mod',
-          api.path.cache_dir / 'infra_superproject' /
-          'infra/go/src/infra/go.mod',
+          api.path.cache_dir / 'infra_superproject/infra',
+          api.path.cache_dir / 'infra_superproject/.git',
+      ),
+      api.path.exists(
+          api.path.cache_dir /
+          'infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+          api.path.cache_dir /
+          'infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+          api.path.cache_dir /
+          'infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+          api.path.cache_dir / 'infra_superproject/infra/go/src/infra/go.mod',
       ),
       api.step_data(
           'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
@@ -221,6 +278,14 @@ def GenTests(api):
                 google.golang.org/b/bar
               )''')),
       ),
+      api.override_step_data(
+          'list checkout_dir',
+          api.file.listdir(['infra', '.git', 'README.md']),
+      ),
+      api.step_data(
+          'list extractor json outputs',
+          api.file.glob_paths(['infra.json']),
+      ),
       api.post_process(StepCommandContains, 'ensure_installed (2)',
                        ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
       api.post_process(StepCommandContains, 'init go modules', [
@@ -242,6 +307,93 @@ def GenTests(api):
           'go.chromium.org/luci/...',
           'go.chromium.org/infra/...',
       ]),
+      api.post_process(
+          StepCommandContains, 'extract python metadata for infra', [
+              '--corpus',
+              'chromium.googlesource.com/infra/infra_superproject//main',
+          ]),
+      api.post_process(StepCommandContains, 'build python kzip', [
+          '--output',
+          '[CACHE]/python_1b84187dd61ba677a120a2cfab0158f20c1d6c39.kzip',
+      ]),
+      api.post_process(StepCommandContains, 'merge kzips', [
+          'merge',
+          '--encoding',
+          'PROTO',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'python_extraction_failed',
+      api.buildbucket.try_build(
+          project='infra',
+          builder='generic tester',
+          git_repo='https://chromium.googlesource.com/infra/infra_superproject'
+      ),
+      api.platform('linux', 64),
+      api.path.dirs_exist(
+          api.path.cache_dir / 'infra_superproject',
+          api.path.cache_dir / 'infra_superproject/infra',
+      ),
+      api.path.exists(
+          api.path.cache_dir /
+          'infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+          api.path.cache_dir /
+          'infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+          api.path.cache_dir /
+          'infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+          api.path.cache_dir / 'infra_superproject/infra/go/src/infra/go.mod',
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/chromiumos/config/go
+              go 1.25.0
+              ''')),
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/chromiumos/infra/proto/go
+              go 1.25.0
+              ''')),
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/luci
+              go 1.26.2
+
+              tool (
+                google.golang.org/a/foo
+                google.golang.org/b/bar
+              )''')),
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/infra
+              go 1.25.9
+
+              tool (
+                google.golang.org/a/foo
+                google.golang.org/b/bar
+              )''')),
+      ),
+      api.override_step_data(
+          'list checkout_dir',
+          api.file.listdir(['infra']),
+      ),
+      api.step_data(
+          'extract python metadata for infra',
+          retcode=1,
+      ),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
