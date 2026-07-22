@@ -585,6 +585,16 @@ class V8Api(recipe_api.RecipeApi):
     return revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'
 
   def checkout(self, revision=None, **kwargs) -> bot_update.Result:
+    # Fail early if a trybot patch is being applied under an unauthorized service account.
+    if self.m.tryserver.gerrit_change:
+      service_account_email = self.m.buildbucket.swarming_task_service_account or ""
+      if 'try-builder' not in service_account_email:
+        raise self.m.step.InfraFailure(
+            f'Security check failed: Trybot patches can only be applied when '
+            f'running under a try-builder service account (containing "try-builder"), '
+            f'but the current service account is: {service_account_email or "None"}'
+        )
+
     # Set revision for bot_update.
     revision = self.get_revision(revision)
     solution = self.m.gclient.c.solutions[0]

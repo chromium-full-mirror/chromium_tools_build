@@ -279,14 +279,9 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       ])
 
     if builder_group.startswith('tryserver'):
-      test += self.m.properties(
-          category='cq',
-          master='tryserver.v8',
-          reason='CQ',
-          try_job_key='1234',
-      ) + self.m.buildbucket.try_build(
+      build_msg = self.m.buildbucket.try_build_message(
           project='v8',
-          revision='deadbeef'*5,
+          revision='deadbeef' * 5,
           builder=buildername,
           git_repo='https://chromium.googlesource.com/v8/v8',
           change_number=456789,
@@ -297,6 +292,15 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
           ),
           experiments=experiments,
       )
+      self.m.buildbucket.update_backend_service_account(
+          build_msg,
+          'v8-try-builder@chops-service-accounts.iam.gserviceaccount.com')
+      test += self.m.properties(
+          category='cq',
+          master='tryserver.v8',
+          reason='CQ',
+          try_job_key='1234',
+      ) + self.m.buildbucket.build(build_msg)
     else:
       test += self.m.buildbucket.ci_build(
           project='v8',

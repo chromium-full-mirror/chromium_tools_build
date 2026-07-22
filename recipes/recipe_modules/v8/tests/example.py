@@ -8,6 +8,7 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         LogContains, MustRun)
 
 DEPS = [
+    'builder_group',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/properties',
@@ -65,6 +66,22 @@ def GenTests(api):
              LogContains, 'generate_build_files', 'swarming-targets-file.txt',
              ['bot_default', 'perf', 'x19']) +
          api.post_process(DropExpectation))
+
+  unauthorized_build_msg = api.buildbucket.try_build_message(
+      project='v8',
+      revision='deadbeef' * 5,
+      builder='v8_foobar_rel',
+      git_repo='https://chromium.googlesource.com/v8/v8',
+      change_number=456789,
+      patch_set=12,
+  )
+  api.buildbucket.update_backend_service_account(
+      unauthorized_build_msg, 'malicious-account@google.com')
+
+  yield (api.test('unauthorized_service_account') +
+         api.builder_group.for_current('tryserver.v8') +
+         api.buildbucket.build(unauthorized_build_msg) +
+         api.expect_status('INFRA_FAILURE') + api.post_process(DropExpectation))
 
 
 def _job_exists(api, builder_name):

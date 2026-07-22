@@ -149,25 +149,25 @@ def RunSteps(api, custom_deps, default_targets, gclient_vars, target_arch,
 
 def GenTests(api):
   def test(name, builder_name='v8_foobar_compile_rel', status='SUCCESS'):
-    return (
-        api.test(name, status=status) +
-        api.builder_group.for_current('tryserver.v8') +
-        api.platform('linux', 64) +
-        api.buildbucket.try_build(
-            project='v8',
-            revision='deadbeef'*5,
-            builder=builder_name,
-            git_repo='https://chromium.googlesource.com/v8/v8',
-            change_number=456789,
-            patch_set=12,
-            tags=api.buildbucket.tags(
-                user_agent='cq',
-                buildset='patch/gerrit/chromium-review.googlesource.com/456789/12'
-            ),
-        ) +
-        api.v8.example_test_roots('test_checkout') +
-        api.v8.hide_infra_steps()
+    build_msg = api.buildbucket.try_build_message(
+        project='v8',
+        revision='deadbeef' * 5,
+        builder=builder_name,
+        git_repo='https://chromium.googlesource.com/v8/v8',
+        change_number=456789,
+        patch_set=12,
+        tags=api.buildbucket.tags(
+            user_agent='cq',
+            buildset='patch/gerrit/chromium-review.googlesource.com/456789/12'),
     )
+    api.buildbucket.update_backend_service_account(
+        build_msg,
+        'v8-try-builder@chops-service-accounts.iam.gserviceaccount.com')
+    return (api.test(name, status=status) +
+            api.builder_group.for_current('tryserver.v8') +
+            api.platform('linux', 64) + api.buildbucket.build(build_msg) +
+            api.v8.example_test_roots('test_checkout') +
+            api.v8.hide_infra_steps())
 
   test_spec = json.dumps({'tests': [{'name': 'v8testing'}]}, indent=2)
 
