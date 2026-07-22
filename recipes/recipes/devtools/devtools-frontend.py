@@ -15,7 +15,6 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
                                         MustRun, SummaryMarkdown)
 from PB.recipes.build.devtools.devtools_frontend import InputProperties
 
-from RECIPE_MODULES.build.devtools.api_tests_runner import ApiTests
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests

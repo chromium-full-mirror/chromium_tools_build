@@ -257,7 +257,7 @@ class ExonerableTests(DevToolsTests):
 
   @property
   @abstractmethod
-  def test_patterns(self):
+  def test_src_folders(self):
     pass
 
 
@@ -282,9 +282,8 @@ class ExonerableTests(DevToolsTests):
       return
     self.process_results()
 
-  @abstractmethod
-  def owns_test(self, test: str) -> bool:
-    pass
+  def owns_test(self, test):
+    return any(test.startswith(folder) for folder in self.test_src_folders)
 
   def skipped_tests_for_flake_detection(self):
     return self.api.tryserver.get_footer(
@@ -332,8 +331,8 @@ class ExonerableTests(DevToolsTests):
       exoneration_tests = self.exoneration_tests
       if exoneration_tests:
         return [self.run_tests_command(exoneration_tests)]
-      return [self.run_tests_command(self.test_patterns)]
+      return [self.run_tests_command(self.test_src_folders)]
     return [
-        self.run_tests_command(args + self.test_patterns)
+        self.run_tests_command(args + self.test_src_folders)
         for args in self.sharding_args()
     ]

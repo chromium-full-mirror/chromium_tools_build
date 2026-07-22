@@ -11,7 +11,6 @@ from google.protobuf import struct_pb2
 
 from PB.recipes.build.devtools.trybot_tester import InputProperties
 
-from RECIPE_MODULES.build.devtools.api_tests_runner import ApiTests
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase, FlakeDetectionPhase
