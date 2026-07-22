@@ -76,23 +76,28 @@ def RunSteps(api):
         api.tryserver.gerrit_patchset_number,
         int(api.time.time()),
     )
+    gs_path = f'bigsleep/{gs_dest}/{gs_filename}'
+    api.step.empty(
+        'dry run: gsutil upload',
+        step_text=f'Would have uploaded {snapshot_file} to gs://{gs_bucket}/{gs_path}',
+    )
   else:
     gs_dest = 'linux/x64/debug'
     revision_number = api.v8.revision_number
     assert revision_number, "Commit position number is required."
     gs_filename = f'v8-linux-x64-debug-{revision_number}.tgz'
+    gs_path = f'bigsleep/{gs_dest}/{gs_filename}'
 
-  api.gsutil.upload(
-      snapshot_file,
-      gs_bucket,
-      f'bigsleep/{gs_dest}/{gs_filename}',
-      args=['-a', 'public-read'],
-  )
+    api.gsutil.upload(
+        snapshot_file,
+        gs_bucket,
+        gs_path,
+        args=['-a', 'public-read'],
+    )
 
-  if not api.tryserver.is_tryserver:
     api.gsutil.copy(
         gs_bucket,
-        f'bigsleep/{gs_dest}/{gs_filename}',
+        gs_path,
         gs_bucket,
         f'bigsleep/{gs_dest}/latest.tgz',
         args=['-a', 'public-read'],
@@ -118,17 +123,15 @@ def GenTests(api):
       api.post_process(MustRun, 'gn', 'compile', 'create snapshot') +
       api.post_process(DropExpectation))
 
-  yield (
-      api.v8.test('tryserver.v8', 'v8_bigsleep_try', suffix='tryserver') +
-      api.step_data(
-          'bot_update',
-          api.bot_update.output_json(
-              first_sln='v8',
-              got_revision_mapping={'got_revision': 'v8'},
-              commit_positions=True,
-          )) +
-      api.v8.check_in_any_arg('gsutil upload', 'bigsleep/try/linux/x64/debug') +
-      api.post_process(DropExpectation))
+  yield (api.v8.test('tryserver.v8', 'v8_bigsleep_try', suffix='tryserver') +
+         api.step_data(
+             'bot_update',
+             api.bot_update.output_json(
+                 first_sln='v8',
+                 got_revision_mapping={'got_revision': 'v8'},
+                 commit_positions=True,
+             )) + api.post_process(MustRun, 'dry run: gsutil upload') +
+         api.post_process(DropExpectation))
 
   yield (api.v8.test('client.v8', 'v8_bigsleep', suffix='no_commit_position') +
          api.step_data(
