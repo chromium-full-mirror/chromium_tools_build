@@ -27,12 +27,21 @@ class UnitTests(ExonerableTests, GoldensCollector):
       self.extra_args.append(NODE_UNIT_TESTS_OPTION)
 
   @property
-  def test_src_folders(self):
-    return ['front_end', 'mcp', 'inspector_overlay']
+  def test_patterns(self):
+    return [
+        'front_end/**/*.test.ts',
+        'mcp/**/*.test.ts',
+        'inspector_overlay/**/*.test.ts',
+    ]
 
   @property
   def test_type_tag(self):
     return 'unit_tests'
+
+  def owns_test(self, test: str) -> bool:
+    folders = ('front_end/', 'mcp/', 'inspector_overlay/')
+    return (any(test.startswith(folder) for folder in folders) and
+            test.endswith('.test.ts') and not test.endswith('.test.api.ts'))
 
   def _post_collect(self):
     self.copy_golden_snapshots()
