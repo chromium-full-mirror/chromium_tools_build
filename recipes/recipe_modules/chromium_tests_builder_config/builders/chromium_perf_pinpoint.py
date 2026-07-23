@@ -205,6 +205,8 @@ _AddIsolatedTestSpec('android-pixel10-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 _AddIsolatedTestSpec('android-pixel10_webview-perf', 'android',
                      'android_arm64-builder-perf')
+_AddPinpointTestSpec('android-pixel10_webview-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
 
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',

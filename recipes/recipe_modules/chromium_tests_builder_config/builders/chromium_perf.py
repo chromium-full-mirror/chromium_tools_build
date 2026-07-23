@@ -178,6 +178,7 @@ _AddBuildSpec('android-desktop-arm-builder-perf', 'android', target_bits=64)
 # * android_arm64_high_end-builder-perf-pgo
 # * android-pixel4_webview-perf-pgo
 # * android-pixel6-perf-pgo
+# * android-pixel10_webview-perf-pgo
 
 _AddBuildSpec('win64-builder-perf', 'win')
 _AddBuildSpec('win64-builder-perf-pgo', 'win')
