@@ -341,6 +341,7 @@ def schedule_skylab_tests(opts):
           'ctpv2_request': json_format.MessageToDict(v2req),
       },
   }
+  bb_request_data['priority'] = 20
   if opts.parent_build_id:
     bb_request_data['tags'] = [{
         # "cros_test_platform" uses this tag to track the parent.
