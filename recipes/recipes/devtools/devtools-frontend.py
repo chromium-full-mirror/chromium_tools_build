@@ -85,6 +85,7 @@ def RunSteps(api, properties):
             coverage,
             'Unit Tests (node)',
             node_unit_tests=True),
+        ApiTests(api, trigger, builder_config, 'API Tests'),
         E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
         PerformanceTests(api, trigger, builder_config, 'Performance Tests'),
     ]
