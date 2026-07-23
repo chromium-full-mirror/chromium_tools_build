@@ -165,11 +165,11 @@ def RunSteps(api):
     for target_dir in api.file.listdir(
         'list checkout_dir',
         checkout_dir,
-        test_data=['infra', '.git', 'README.md']):
-      if not api.path.isdir(target_dir) or api.path.basename(
-          target_dir).startswith('.'):
-        continue
+        test_data=['infra', '.git', 'README.md', 'gcloud']):
       dir_name = api.path.basename(target_dir)
+      if not api.path.isdir(target_dir) or dir_name.startswith(
+          '.') or dir_name == 'gcloud':
+        continue
       out_json_path = extractor_out_dir / f'{dir_name}.json'
       api.step(f'extract python metadata for {dir_name}', [
           'vpython3',
