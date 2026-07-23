@@ -14,7 +14,7 @@ from PB.recipes.build.devtools.trybot_tester import InputProperties
 from RECIPE_MODULES.build.devtools.api_tests_runner import ApiTests
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
-from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase, FlakeDetectionPhase
+from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
 from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
@@ -36,6 +36,7 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/resultdb',
     'recipe_engine/step',
+    'recipe_engine/futures',
     'v8_orchestrator',
     'v8',
 ]
@@ -86,9 +87,7 @@ def RunSteps(api, properties):
   ]
   tests = [t for t in tests if not t.skip()]
 
-  FirstRunPhase(api).run_all(tests)
-  results = ExonerationPhase(api).run_all(tests)
-  results += FlakeDetectionPhase(api).run_all(tests)
+  results = run_test_pipelines(api, tests)
   return results.raw_result()
 
 def GenTests(api):
@@ -130,14 +129,14 @@ def GenTests(api):
       'basic',
       subbuild_data(default_output_properties),
       api.step_data(
-          'Detect flakes in new tests.Trigger Tests.parse description',
+          'find new tests.parse description',
           api.json.output({
               'Skip-Flake-Detection': [
                   'test/e2e_non_hosted/performance/skip_test.ts'
               ]
           })),
       api.override_step_data(
-          'Detect flakes in new tests.find new tests.git diff',
+          'find new tests.git diff',
           stdout=api.raw_io.output_text('\n'.join([
               'front_end/panels/timeline/timeline_test.ts',
               'test/e2e/helpers/datagrid-helpers.ts',
@@ -160,8 +159,8 @@ def GenTests(api):
   yield test(
       'compilator failed',
       subbuild_data({}, 'fail', common_pb.FAILURE),
-      api.post_process(DoesNotRunRE, 'Run tests.*'),
-      api.post_process(DoesNotRunRE, 'Flake exonaration attempt.*'),
+      api.post_process(DoesNotRunRE, 'Pipeline .*'),
+      api.post_process(DoesNotRunRE, 'find new tests.*'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )

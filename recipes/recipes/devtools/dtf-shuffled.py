@@ -9,7 +9,7 @@ from PB.recipes.build.devtools.dtf_shuffled import InputProperties
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, RepeatE2EShuffledTests
-from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase
+from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 
 DEPS = [
     'builder_group',
@@ -24,6 +24,10 @@ DEPS = [
     'recipe_engine/random',
     'recipe_engine/resultdb',
     'recipe_engine/step',
+    'recipe_engine/futures',
+    'recipe_engine/context',
+    'depot_tools/tryserver',
+    'v8',
 ]
 
 PROPERTIES = InputProperties
@@ -56,7 +60,7 @@ def RunSteps(api, properties):
                                'Repeat E2E Tests'),
     ]
 
-    results = FirstRunPhase(api).run_all(tests)
+    results = run_test_pipelines(api, tests)
 
     return results.raw_result()
 

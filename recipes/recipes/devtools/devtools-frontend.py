@@ -20,7 +20,7 @@ from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
-from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase, ExonerationPhase
+from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 
 
@@ -47,6 +47,8 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
     'recipe_engine/time',
+    'recipe_engine/futures',
+    'v8',
     'depot_tools/gsutil',
 ]
 
@@ -91,10 +93,9 @@ def RunSteps(api, properties):
     ]
     tests = [t for t in tests if not t.skip()]
 
-    FirstRunPhase(api).run_all(
-        tests, task_on_builder=lambda: run_lint_check(api, builder_config))
-
-    results = ExonerationPhase(api).run_all(tests)
+    lint_future = api.futures.spawn(run_lint_check, api, builder_config)
+    results = run_test_pipelines(api, tests)
+    lint_future.result()
 
     publish_coverage_points(api, skip=not coverage)
     publish_performance_benchmarks(api, skip=not properties.perf_benchmarks)
@@ -310,7 +311,8 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='devtools_frontend_linux_rel'),
       api.post_process(MustRun, 'archive'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
+      api.post_process(MustRun,
+                       'Pipeline E2E Tests.Run tests.Trigger E2E Tests'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -321,13 +323,16 @@ def GenTests(api):
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
       api.post_process(MustRun, 'archive'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Performance Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun,
+                       'Pipeline Unit Tests.Run tests.Trigger Unit Tests'),
+      api.post_process(MustRun,
+                       'Pipeline E2E Tests.Run tests.Trigger E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(
-          Filter().include_re('Run tests.Trigger Tests.*|.*\(Shard #\d*\).*')),
+          MustRun, 'Pipeline Performance Tests.Run tests.Performance Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
+      api.post_process(Filter().include_re(
+          '.*Pipeline.*\.Run tests\.Trigger.*|.*\(Shard #\d*\).*')),
       status='SUCCESS',
   )
 
@@ -401,15 +406,16 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
+          'Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.post_process(MustRun, 'archive'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun,
+                       'Pipeline E2E Tests.Run tests.Trigger E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Flake exonaration attempt.rdb query',
+          'Pipeline E2E Tests.rdb query for e2e_non_hosted_tests',
           test_result('e2e_non_hosted/file1: etest1/first ??',
                       'e2e_non_hosted_tests'),
           test_result('e2e_non_hosted/file2: etest2/second (to: escape)',
@@ -417,12 +423,12 @@ def GenTests(api):
       ),
       api.post_process(
           check_swarming_task_args,
-          ('Flake exonaration attempt.'
-           'Trigger Tests.Trigger E2E Tests (rerun).'
+          ('Pipeline E2E Tests.Flake exoneration attempt.'
+           'Trigger E2E Tests (rerun).'
            '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
           'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
       api.step_data(
-          'Flake exonaration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
+          'Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
           ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1),
       ),
@@ -438,15 +444,16 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
+          'Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.post_process(MustRun, 'archive'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun,
+                       'Pipeline E2E Tests.Run tests.Trigger E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Flake exonaration attempt.rdb query',
+          'Pipeline E2E Tests.rdb query for e2e_non_hosted_tests',
           test_result('e2e_non_hosted/file1: e/test/1', 'e2e_non_hosted_tests'),
           test_result('e2e_non_hosted/file2: e/test/2', 'e2e_non_hosted_tests'),
       ),
@@ -462,15 +469,16 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
+          'Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.post_process(MustRun, 'archive'),
-      api.post_process(MustRun, 'Run tests.Trigger Tests.Trigger E2E Tests'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun,
+                       'Pipeline E2E Tests.Run tests.Trigger E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Flake exonaration attempt.rdb query',
+          'Pipeline E2E Tests.rdb query for e2e_non_hosted_tests',
           *[
               test_result(f'e2e_non_hosted/file1: e/test/{i}',
                           'e2e_non_hosted_tests')
@@ -493,13 +501,13 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.Unit Tests.Unit Tests ' +
+          'Pipeline Unit Tests.Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(SummaryMarkdown,
                        'Infra Failure in Unit Tests (shard #0)'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       api.post_process(DropExpectation),
       status='INFRA_FAILURE',
   )
@@ -515,14 +523,15 @@ def GenTests(api):
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
       api.step_data(
-          'Run tests.Performance Tests.Performance Tests ' +
-          'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
+          'Pipeline Performance Tests.Run tests.Performance Tests.Performance Tests '
+          + 'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(SummaryMarkdown,
                        'Infra Failure in Performance Tests (shard #0)'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Performance Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(
+          MustRun, 'Pipeline Performance Tests.Run tests.Performance Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       api.post_process(DropExpectation),
       status='INFRA_FAILURE',
   )
@@ -537,22 +546,22 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.step_data(
-          'Run tests.Unit Tests.Unit Tests ' +
+          'Pipeline Unit Tests.Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(
           SummaryMarkdown,
           'Failure in Unit Tests (shard #0), Failure in Unit Tests (rerun) '
           '(shard #0)'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Flake exonaration attempt.rdb query',
+          'Pipeline Unit Tests.rdb query for unit_tests',
           test_result('unit1', 'unit_tests'),
           test_result('unit2', 'unit_tests'),
       ),
       api.step_data(
-          'Flake exonaration attempt.Unit Tests (rerun).Unit Tests (rerun) '
+          'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).Unit Tests (rerun) '
           'shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data),
       ),
@@ -563,12 +572,13 @@ def GenTests(api):
       'ci failed parallel builder on unit tests karma file copy',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.step_data('Run tests.Unit Tests.copy unit tests coverage data',
-                    api.file.errno('WinError 3')),
+      api.step_data(
+          'Pipeline Unit Tests.Run tests.Unit Tests.copy unit tests coverage data',
+          api.file.errno('WinError 3')),
       api.post_process(SummaryMarkdown,
                        'Failed in post collect for Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       api.post_process(DropExpectation),
       status='INFRA_FAILURE',
   )
@@ -578,14 +588,15 @@ def GenTests(api):
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
       api.step_data(
-          'Run tests.Performance Tests.Performance Tests ' +
-          'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
+          'Pipeline Performance Tests.Run tests.Performance Tests.Performance Tests '
+          + 'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(SummaryMarkdown,
                        'Failure in Performance Tests (shard #0)'),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Performance Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(
+          MustRun, 'Pipeline Performance Tests.Run tests.Performance Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
@@ -601,24 +612,25 @@ def GenTests(api):
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
       api.step_data(
-          'Run tests.Unit Tests.Unit Tests ' +
+          'Pipeline Unit Tests.Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.step_data(
-          'Run tests.Performance Tests.Performance Tests shards ' +
-          'results.Performance Tests (Shard #0) on Ubuntu-22.04',
+          'Pipeline Performance Tests.Run tests.Performance Tests.Performance Tests shards '
+          + 'results.Performance Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.step_data(
-          'Run tests.E2E Tests.E2E Tests shards results.' +
+          'Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.post_process(
           SummaryMarkdown,
           'Failure in Unit Tests (shard #0), Failure in E2E Tests (shard #0), Failure in Performance Tests (shard #0)'
       ),
-      api.post_process(MustRun, 'Run tests.Unit Tests'),
-      api.post_process(MustRun, 'Run tests.Performance Tests'),
-      api.post_process(MustRun, 'Run tests.E2E Tests'),
+      api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
+      api.post_process(
+          MustRun, 'Pipeline Performance Tests.Run tests.Performance Tests'),
+      api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )

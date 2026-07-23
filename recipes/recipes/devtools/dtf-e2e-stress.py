@@ -9,7 +9,7 @@ from PB.recipes.build.devtools.dtf_e2e_stress import InputProperties
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
 
-from RECIPE_MODULES.build.devtools.test_phases import FirstRunPhase
+from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 
 DEPS = [
     'builder_group',
@@ -31,6 +31,8 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/resultdb',
     'recipe_engine/step',
+    'recipe_engine/futures',
+    'v8',
 ]
 
 PROPERTIES = InputProperties
@@ -58,7 +60,7 @@ def RunSteps(api, properties):
     e2e_stressor = E2EStressTests(api, trigger, builder_config, 'E2E Tests',
                                   properties.runner_args)
 
-    results = FirstRunPhase(api).run_all([e2e_stressor])
+    results = run_test_pipelines(api, [e2e_stressor])
 
     return results.raw_result()
 
@@ -107,7 +109,7 @@ def GenTests(api):
       'e2e stress test default',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='e2e_stressor_linux'),
-      api.post_process(post_process.Filter().include_re(r'Run tests.*')),
+      api.post_process(post_process.Filter().include_re(r'.*Pipeline.*')),
       status='SUCCESS',
   )
 
@@ -116,6 +118,6 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='e2e_stressor_linux'),
       api.properties(runner_args='test123 --repeat=2'),
-      api.post_process(post_process.Filter().include_re(r'Run tests.*')),
+      api.post_process(post_process.Filter().include_re(r'.*Pipeline.*')),
       status='SUCCESS',
   )

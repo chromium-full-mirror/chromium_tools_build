@@ -4,140 +4,79 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from collections import defaultdict
 from .commons import Results
-
-class TestRunPhase(ABC):
-
-  def __init__(self, api):
-    self.api = api
-
-  def run_all(self, runners, task_on_builder=None):
-    """ Run all runners in the phase on swarming.
-    After triggering all runners, task_on_builder is called if provided to take
-    advantage of the builder's idle resources.
-    """
-    with self.api.step.nest(self.nesting_name()):
-      self.init_phase()
-      with self.api.step.nest('Trigger Tests'):
-        for r in runners:
-          self.trigger(r)
-      if task_on_builder:
-        task_on_builder()
-      for r in runners:
-        self.process_results(r)
-    return sum([t.results for t in runners], Results())
-
-  @abstractmethod
-  def nesting_name(self):
-    pass  # pragma: no cover
-
-  @abstractmethod
-  def trigger(self, runner):
-    pass  # pragma: no cover
-
-  @abstractmethod
-  def process_results(self, runner):
-    pass  # pragma: no cover
-
-  def init_phase(self):
-    pass
+from .test_runner_base import FLAKE_DETECTION_SKIPPED_TESTS_FOOTER
 
 
-class FirstRunPhase(TestRunPhase):
+def run_test_pipelines(api, runners):
+  """
+  Runs the full test execution pipeline for multiple runners concurrently.
+  For each runner, it triggers the initial run, waits for results, and then
+  proceeds to exoneration and flake detection if applicable.
+  """
+  with api.step.nest('find new tests') as presentation:
+    with api.context(cwd=api.devtools.source_dir):
+      git_changes = api.v8.git_output('diff', '--name-only', '--format=',
+                                      '--diff-filter=d',
+                                      '--cached').splitlines()
+      touched_tests = [
+          file for file in git_changes
+          if file.endswith('test.ts') or file.endswith('test.api.ts')
+      ]
+      presentation.logs['tests'] = touched_tests
+      if api.tryserver.is_tryserver:
+        skip_tests = api.tryserver.get_footer(
+            FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
+        touched_tests = [t for t in touched_tests if t not in skip_tests]
 
-  def nesting_name(self):
-    return 'Run tests'
-
-  def trigger(self, runner):
-    runner.trigger()
-
-  def process_results(self, runner):
-    runner.process_results()
-
-
-class ExonerationPhase(TestRunPhase):
-
-  def __init__(self, api):
-    super().__init__(api)
-    self.test_names = defaultdict(set)
-
-  def init_phase(self):
-    for test_id, test_type in self.unexpected_results():
-      self.test_names[test_type].add(test_id)
-
-  def unexpected_results(self):
-    proto_results = self.get_proto_results()
-    unique_bare_results = self.get_unique_result_values(proto_results)
-    return self.get_tests_with_only_failures(unique_bare_results)
-
-  def get_proto_results(self):
-    inv_id = self.api.resultdb.current_invocation.replace('invocations/', '')
-    response = self.api.resultdb.query(
+  def _get_failed_tests_for_runner(test_type_tag):
+    inv_id = api.resultdb.current_invocation.replace('invocations/', '')
+    response = api.resultdb.query(
         inv_ids=[inv_id],
         tr_fields=['testId', 'tags', 'expected'],
         limit=0,
-    )
-    return sum((res.test_results for res in response.values()), [])
+        step_name=f'rdb query for {test_type_tag}')
+    proto_results = sum((res.test_results for res in response.values()), [])
 
-  def get_unique_result_values(self, proto_results):
-    return set((r.test_id, get_test_type(r), r.expected) for r in proto_results)
-
-  def get_tests_with_only_failures(self, unique_bare_results):
     passing_tests = set()
     failing_tests = set()
-    for (test_id, test_type, expected) in unique_bare_results:
-      (passing_tests if expected else failing_tests).add((test_id, test_type))
-    tests_with_only_failures = list(failing_tests - passing_tests)
-    return tests_with_only_failures
+    for r in proto_results:
+      tag = next((t.value for t in r.tags if t.key == 'test_type'), None)
+      if tag == test_type_tag:
+        if r.expected:
+          passing_tests.add(r.test_id)
+        else:
+          failing_tests.add(r.test_id)
 
-  def nesting_name(self):
-    return 'Flake exonaration attempt'
+    return list(failing_tests - passing_tests)
 
-  def trigger(self, runner):
-    runner.trigger_exoneration(self.test_names)
+  def _run_pipeline(runner):
+    with api.step.nest(f'Pipeline {runner.step_name}'):
+      with api.step.nest('Run tests'):
+        runner.trigger()
+        runner.process_results()
 
-  def process_results(self, runner):
-    runner.process_exoneration_results(self.test_names)
+      if hasattr(runner, 'trigger_exoneration'):
+        failed_tests = _get_failed_tests_for_runner(runner.test_type_tag)
+        if failed_tests:
+          test_names = {runner.test_type_tag: failed_tests}
+          with api.step.nest('Flake exoneration attempt') as presentation:
+            runner.trigger_exoneration(test_names)
+            runner.process_exoneration_results(test_names)
+            if runner.results.task_failures:
+              presentation.step_text = 'Failed to exonerate some of the failing tests'
 
-  def run_all(self, runners, task_on_builder=None):
-    results = super().run_all(runners, task_on_builder)
-    if self.unexpected_results():
-      results.add_test_failure('Failed to exonerate some of the failing tests')
-    return results
+      if hasattr(runner, 'trigger_flake_detection'):
+        with api.step.nest('Detect flakes in new tests'):
+          runner.trigger_flake_detection(touched_tests)
+          runner.process_flake_detection_results(touched_tests)
 
+    return runner.results
 
-def get_test_type(result):
-  return next(t for t in result.tags if t.key == 'test_type').value
+  futures = [api.futures.spawn(_run_pipeline, r) for r in runners]
+  api.futures.wait(futures)
+  results = Results()
+  for future in futures:
+    results += future.result()
 
-
-class FlakeDetectionPhase(TestRunPhase):
-
-  def __init__(self, api):
-    super().__init__(api)
-    self.test_files = []
-
-  def init_phase(self):
-    with self.api.step.nest("find new tests") as presentation:
-      with self.api.context(cwd=self.api.devtools.source_dir):
-        self.test_files = self._find_touched_tests()
-        presentation.logs['tests'] = self.test_files
-
-  def nesting_name(self):
-    return 'Detect flakes in new tests'
-
-  def trigger(self, runner):
-    runner.trigger_flake_detection(self.test_files)
-
-  def process_results(self, runner):
-    runner.process_flake_detection_results(self.test_files)
-
-  def _find_touched_tests(self):
-    git_changes = self.api.v8.git_output('diff', '--name-only', '--format=',
-                                         '--diff-filter=d',
-                                         '--cached').splitlines()
-    return [
-        file for file in git_changes
-        if file.endswith('test.ts') or file.endswith('test.api.ts')
-    ]
+  return results

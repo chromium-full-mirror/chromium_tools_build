@@ -1,25 +1,25 @@
 [
   {
     "cmd": [],
-    "name": "Run tests"
+    "name": "Pipeline E2E Tests"
   },
   {
     "cmd": [],
-    "name": "Run tests.Trigger Tests",
+    "name": "Pipeline E2E Tests.Run tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.Full command",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.Full command",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@command@vpython3@@@",
@@ -38,7 +38,7 @@
   },
   {
     "cmd": [],
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.install infra/tools/luci/swarming",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.install infra/tools/luci/swarming",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
     ]
@@ -73,7 +73,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.install infra/tools/luci/swarming.ensure package directory",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.install infra/tools/luci/swarming.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@"
     ]
@@ -109,7 +109,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.install infra/tools/luci/swarming.ensure_installed",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.install infra/tools/luci/swarming.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -154,7 +154,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -301,7 +301,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations",
+    "name": "Pipeline E2E Tests.Run tests.resultdb.update_included_invocations",
     "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -318,16 +318,16 @@
   },
   {
     "cmd": [],
-    "name": "Run tests.E2E Tests",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Run tests.E2E Tests.E2E Tests shards results",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@3@@@"
     ]
   },
   {
@@ -377,9 +377,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_NEST_LEVEL@4@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Debug/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --repeat=2 test123```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -424,6 +424,48 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "query",
+      "-json",
+      "-n",
+      "0",
+      "-tr-fields",
+      "testId,tags,expected",
+      "build:8945511751514863184"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline E2E Tests.rdb query for e2e_non_hosted_tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Pipeline E2E Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   }
 ]

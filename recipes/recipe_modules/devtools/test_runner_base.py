@@ -286,17 +286,8 @@ class ExonerableTests(DevToolsTests):
   def owns_test(self, test: str) -> bool:
     pass
 
-  def skipped_tests_for_flake_detection(self):
-    return self.api.tryserver.get_footer(
-        FLAKE_DETECTION_SKIPPED_TESTS_FOOTER
-    ) if self.api.tryserver.is_tryserver else []
-
   def trigger_flake_detection(self, test_names):
-    skipped_tests = self.skipped_tests_for_flake_detection()
-    self.owned_new_tests = [
-        test for test in test_names
-        if self.owns_test(test) and test not in skipped_tests
-    ]
+    self.owned_new_tests = [test for test in test_names if self.owns_test(test)]
     if not self.owned_new_tests:
       self.skip_deflaking_result = Results()
       return
