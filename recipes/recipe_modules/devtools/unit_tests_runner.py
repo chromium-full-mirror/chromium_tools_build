@@ -22,6 +22,7 @@ class UnitTests(ExonerableTests, GoldensCollector):
                               step_name)
     self.coverage = coverage
     self.shard_bias = 2  # Use a bias to keep shards balanced
+    self.node_unit_tests = node_unit_tests
     if node_unit_tests:
       self.shard_count = 1  # we have very few tests right now so 1 shard is sufficient.
       self.extra_args.append(NODE_UNIT_TESTS_OPTION)
@@ -36,7 +37,7 @@ class UnitTests(ExonerableTests, GoldensCollector):
 
   @property
   def test_type_tag(self):
-    return 'unit_tests'
+    return 'node_unit_tests' if self.node_unit_tests else 'unit_tests'
 
   def owns_test(self, test: str) -> bool:
     folders = ('front_end/', 'mcp/', 'inspector_overlay/')

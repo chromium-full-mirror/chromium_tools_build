@@ -1310,7 +1310,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"Unit Tests (node) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Unit\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:Unit Tests (node) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--node-unit-tests\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=2\", \"front_end/**/*.test.ts\", \"mcp/**/*.test.ts\", \"inspector_overlay/**/*.test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"Unit Tests (node) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:Unit\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:Unit Tests (node) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:node_unit_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--node-unit-tests\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=2\", \"front_end/**/*.test.ts\", \"mcp/**/*.test.ts\", \"inspector_overlay/**/*.test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1387,7 +1387,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:unit_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:node_unit_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -1621,7 +1621,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline Unit Tests (node).rdb query for unit_tests",
+    "name": "Pipeline Unit Tests (node).rdb query for node_unit_tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"

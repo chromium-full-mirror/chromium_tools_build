@@ -569,6 +569,32 @@ def GenTests(api):
       status='FAILURE',
   )
   yield api.test(
+      'ci failed parallel builder on node unit tests',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.step_data(
+          'Pipeline Unit Tests (node).Run tests.Unit Tests (node).Unit Tests (node) '
+          + 'shards results.Unit Tests (node) (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(
+          SummaryMarkdown,
+          'Failure in Unit Tests (node) (shard #0), Failure in Unit Tests (node) (rerun) '
+          '(shard #0)'),
+      api.post_process(
+          MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
+      resultdb_query(
+          'Pipeline Unit Tests (node).rdb query for node_unit_tests',
+          test_result('node_unit1', 'node_unit_tests'),
+      ),
+      api.step_data(
+          'Pipeline Unit Tests (node).Flake exoneration attempt.Unit Tests (node) (rerun).'
+          'Unit Tests (node) (rerun) shards results.Unit Tests (node) (rerun) (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data),
+      ),
+      api.post_process(DropExpectation),
+      status='FAILURE',
+  )
+  yield api.test(
       'ci failed parallel builder on unit tests karma file copy',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),

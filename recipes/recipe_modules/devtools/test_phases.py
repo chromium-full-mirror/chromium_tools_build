@@ -61,6 +61,7 @@ def run_test_pipelines(api, runners):
         if failed_tests:
           test_names = {runner.test_type_tag: failed_tests}
           with api.step.nest('Flake exoneration attempt') as presentation:
+            presentation.logs['found tests'] = failed_tests
             runner.trigger_exoneration(test_names)
             runner.process_exoneration_results(test_names)
             if runner.results.task_failures:
