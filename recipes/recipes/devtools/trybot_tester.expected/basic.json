@@ -3194,38 +3194,6 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "test/e2e/performance/selector-stats-tracing_test.ts\ntest/e2e_non_hosted/performance/selector-stats-tracing_test.ts",
-      "[CLEANUP]/flake_tests_tmp_1"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.Trigger E2E Tests (non-hosted) (flake detection).write tests to file",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LOG_LINE@flake_tests_tmp_1@test/e2e/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@flake_tests_tmp_1@test/e2e_non_hosted/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_END@flake_tests_tmp_1@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.Trigger E2E Tests (non-hosted) (flake detection).Full command",
     "~followup_annotations": [
@@ -3243,7 +3211,8 @@
       "@@@STEP_LOG_LINE@command@--shard-count=1@@@",
       "@@@STEP_LOG_LINE@command@--shard-number=1@@@",
       "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
-      "@@@STEP_LOG_LINE@command@@[CLEANUP]/flake_tests_tmp_1@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e/performance/selector-stats-tracing_test.ts@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted/performance/selector-stats-tracing_test.ts@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -3254,7 +3223,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--repeat=10\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=1\", \"@[CLEANUP]/flake_tests_tmp_1\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--repeat=10\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=1\", \"test/e2e/performance/selector-stats-tracing_test.ts\", \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3351,7 +3320,8 @@
       "@@@STEP_LOG_LINE@json.input@              \"--shard-count=1\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-number=1\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"@[CLEANUP]/flake_tests_tmp_1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e/performance/selector-stats-tracing_test.ts\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted/performance/selector-stats-tracing_test.ts\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -3493,7 +3463,7 @@
     "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.E2E Tests (non-hosted) (flake detection).E2E Tests (non-hosted) (flake detection) shards results.E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --repeat=10 --shard-count=1 --shard-number=1 --shard-bias=1 @[CLEANUP]/flake_tests_tmp_1```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --repeat=10 --shard-count=1 --shard-number=1 --shard-bias=1 test/e2e/performance/selector-stats-tracing_test.ts test/e2e_non_hosted/performance/selector-stats-tracing_test.ts```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

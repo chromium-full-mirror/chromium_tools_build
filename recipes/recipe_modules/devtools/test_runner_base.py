@@ -315,11 +315,8 @@ class ExonerableTests(DevToolsTests):
   def commands(self):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
-      file_path = self.api.path.mkstemp(prefix='flake_tests')
-      self.api.file.write_text('write tests to file', file_path,
-                               '\n'.join(self.owned_new_tests))
       return [
-          self.run_tests_command(args + [f'@{file_path}'])
+          self.run_tests_command(args + self.owned_new_tests)
           for args in self.sharding_args()
       ]
     is_flake_exoneration_attempt = (
@@ -328,10 +325,7 @@ class ExonerableTests(DevToolsTests):
     if is_flake_exoneration_attempt:
       exoneration_tests = self.exoneration_tests
       if exoneration_tests:
-        file_path = self.api.path.mkstemp(prefix='exoneration_tests')
-        self.api.file.write_text('write tests to file', file_path,
-                                 '\n'.join(exoneration_tests))
-        return [self.run_tests_command([f'@{file_path}'])]
+        return [self.run_tests_command(exoneration_tests)]
       return [self.run_tests_command(self.test_patterns)]
     return [
         self.run_tests_command(args + self.test_patterns)
