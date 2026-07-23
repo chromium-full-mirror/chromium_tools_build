@@ -208,24 +208,35 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             '--token-path',
             self.m.raw_io.input_text(token),
         ]
+      project_checkout_path = self.m.gclient.get_gerrit_patch_root()
+      base_checkout_path = self.m.gclient.c.solutions[
+          0].name if self.m.gclient.c else 'src'
+      args = [
+          'python3',
+          self.resource('rebase_line_number_from_bot_to_gerrit.py'),
+          '--host',
+          gerrit_change.host,
+          '--project',
+          gerrit_change.project,
+          '--base-checkout-path',
+          base_checkout_path,
+          '--change',
+          gerrit_change.change,
+          '--patchset',
+          gerrit_change.patchset,
+          '--src-path',
+          self.source_dir,
+          '--output-file',
+          local_to_gerrit_diff_mapping_file,
+      ]
+      if project_checkout_path:
+        args += [
+            '--project-checkout-path',
+            project_checkout_path,
+        ]
       self.m.step(
           'generate line number mapping from bot to Gerrit',
-          [
-              'python3',
-              self.resource('rebase_line_number_from_bot_to_gerrit.py'),
-              '--host',
-              gerrit_change.host,
-              '--project',
-              gerrit_change.project,
-              '--change',
-              gerrit_change.change,
-              '--patchset',
-              gerrit_change.patchset,
-              '--src-path',
-              self.source_dir,
-              '--output-file',
-              local_to_gerrit_diff_mapping_file,
-          ] + maybe_auth_args + self._all_eligible_files(),
+          args + maybe_auth_args + self._all_eligible_files(),
           timeout=timeout_in_minutes * 60,
           stdout=self.m.json.output())
       self._bot_to_gerrit_mapping_file = local_to_gerrit_diff_mapping_file

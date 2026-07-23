@@ -153,5 +153,42 @@ class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):
         token_path=token_path)
 
 
+  @mock.patch.object(gerrit_util, 'fetch_files_content')
+  def test_rebase_line_number_with_subproject_prefix(
+      self, mocked_fetch_files_content):
+    file_on_gerrit_content = 'line 1\nline 2, changed by me\nline 3\n'
+    mocked_fetch_files_content.return_value = [file_on_gerrit_content]
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      os.makedirs(os.path.join(tmp_dir, 'clank', 'base', 'java'), exist_ok=True)
+      file_on_bot_path = os.path.join(tmp_dir, 'clank', 'base', 'java',
+                                      'Test.java')
+      with open(file_on_bot_path, 'wb') as f:
+        f.write(b'line 0, added by someone else\n'
+                b'line 1, changed by someone else\n'
+                b'line 2, changed by me\n')
+
+      file_to_line_num_mapping = (
+          rebase_line_number_from_bot_to_gerrit.rebase_line_number(
+              self.host,
+              'clank/internal/apps',
+              self.change,
+              self.patchset,
+              tmp_dir, ['clank/base/java/Test.java'],
+              project_checkout_path='src/clank',
+              base_checkout_path='src'))
+
+      self.assertEqual(
+          {'clank/base/java/Test.java': {
+              3: (2, 'line 2, changed by me')
+          }}, file_to_line_num_mapping)
+      mocked_fetch_files_content.assert_called_with(
+          self.host,
+          'clank/internal/apps',
+          self.change,
+          self.patchset, ['base/java/Test.java'],
+          token_path=None)
+
+
 if __name__ == '__main__':
   unittest.main()
