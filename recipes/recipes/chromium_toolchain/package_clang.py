@@ -23,6 +23,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/runtime',
     'recipe_engine/step',
 ]
@@ -161,10 +162,34 @@ def RunSteps(api, properties):
         if changes:
           change = changes[0]
         tbi_background = api.futures.spawn_immediate(_trigger_tbi, api, change)
-      api.step('package clang', [
-          'python3',
-          source_dir.joinpath('tools', 'clang', 'scripts', 'package.py')
-      ] + args)
+      try:
+        api.step('package clang', [
+            'python3',
+            source_dir.joinpath('tools', 'clang', 'scripts', 'package.py')
+        ] + args)
+      finally:
+        clang_crashreports_script = source_dir.joinpath(
+            'tools', 'clang', 'scripts', 'process_crashreports.py')
+        if api.path.exists(clang_crashreports_script):
+          source = 'package_clang-%s' % (api.buildbucket.builder_name)
+          if api.buildbucket.build.number:
+            source += '-%s' % api.buildbucket.build.number
+
+          crash_step = api.step(
+              'process clang crashes',
+              ['python3', clang_crashreports_script, '--source', source],
+              stdout=api.raw_io.output_text(),
+              step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+                  '    gs://chrome-clang-crash-reports/v1/2023/01/01/user-base.tgz\n'
+              ))
+          if crash_step and crash_step.stdout is not None:
+            crash_step.presentation.logs['stdout'] = crash_step.stdout
+            for line in crash_step.stdout.splitlines():
+              line = line.strip()
+              if line.startswith('gs://'):
+                url = line.replace('gs://', 'https://storage.cloud.google.com/')
+                filename = line.split('/')[-1]
+                crash_step.presentation.links[filename] = url
       # Cancel the background TBI job if package clang has finished, TBI for
       # the time being should be non blocking.
       if tbi_background:
@@ -234,6 +259,20 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'package_fail',
+      api.platform.name('linux'),
+      api.chromium.try_build(
+          builder_group='tryserver.chromium.linux',
+          builder='linux_upload_clang'),
+      api.step_data('package clang', retcode=1),
+      api.path.exists(
+          api.path.cache_dir /
+          'builder/src/tools/clang/scripts/process_crashreports.py'),
+      api.post_process(post_process.MustRun, 'process clang crashes'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
+  )
 
   yield api.test(
       'official',
