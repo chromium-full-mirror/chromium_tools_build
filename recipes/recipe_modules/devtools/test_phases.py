@@ -4,8 +4,11 @@
 
 from __future__ import annotations
 
+import fnmatch
+
 from .commons import Results
-from .test_runner_base import FLAKE_DETECTION_SKIPPED_TESTS_FOOTER
+from .test_runner_base import (FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
+                               FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
 
 
 def run_test_pipelines(api, runners):
@@ -27,7 +30,13 @@ def run_test_pipelines(api, runners):
       if api.tryserver.is_tryserver:
         skip_tests = api.tryserver.get_footer(
             FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
+        skip_patterns = api.tryserver.get_footer(
+            FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
         touched_tests = [t for t in touched_tests if t not in skip_tests]
+        for pattern in skip_patterns:
+          touched_tests = [
+              t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
+          ]
 
   def _get_failed_tests_for_runner(test_type_tag):
     inv_id = api.resultdb.current_invocation.replace('invocations/', '')
