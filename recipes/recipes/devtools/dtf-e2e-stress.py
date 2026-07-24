@@ -7,7 +7,7 @@ from recipe_engine import post_process
 from PB.recipes.build.devtools.dtf_e2e_stress import InputProperties
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests
 
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 
@@ -65,7 +65,7 @@ def RunSteps(api, properties):
     return results.raw_result()
 
 
-class E2EStressTests(E2ENonHostedTests):
+class E2EStressTests(E2ETests):
 
   def __init__(self, api, trigger, builder_config, step_name, runner_args):
     super().__init__(api, trigger, builder_config, step_name)

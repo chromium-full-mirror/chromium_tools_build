@@ -131,7 +131,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/e2e_stressor_linux/-1\", \"priority\": \"30\", \"realm\": \"devtools:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:e2e_stressor_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"gerrit:https://chromium-review.googlesource.com/c/91827/1\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.try:e2e_stressor_linux\", \"stepname:E2E Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:e2e_stressor_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"test/e2e\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/e2e_stressor_linux/-1\", \"priority\": \"30\", \"realm\": \"devtools:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:e2e_stressor_linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"gerrit:https://chromium-review.googlesource.com/c/91827/1\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.try:e2e_stressor_linux\", \"stepname:E2E Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:e2e_stressor_linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"test/e2e\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -214,7 +214,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_non_hosted_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -453,7 +453,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests.rdb query for e2e_non_hosted_tests",
+    "name": "Pipeline E2E Tests.rdb query for e2e_tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"

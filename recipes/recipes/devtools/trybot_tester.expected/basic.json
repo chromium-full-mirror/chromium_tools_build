@@ -444,7 +444,6 @@
       "@@@STEP_LOG_LINE@step.sub_build@    \"properties\": {@@@",
       "@@@STEP_LOG_LINE@step.sub_build@      \"compilator_properties\": {@@@",
       "@@@STEP_LOG_LINE@step.sub_build@        \"cas_digest\": \"1234567/890\",@@@",
-      "@@@STEP_LOG_LINE@step.sub_build@        \"e2e_non_hosted_test_list\": \"test11.ts\\ntest22.ts\\n\",@@@",
       "@@@STEP_LOG_LINE@step.sub_build@        \"e2e_test_list\": \"test1.ts\\ntest2.ts\\n\"@@@",
       "@@@STEP_LOG_LINE@step.sub_build@      }@@@",
       "@@@STEP_LOG_LINE@step.sub_build@    }@@@",
@@ -462,8 +461,8 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@tests@front_end/panels/timeline/timeline_test.ts@@@",
       "@@@STEP_LOG_LINE@tests@test/e2e/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@tests@test/e2e_non_hosted/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@tests@test/e2e_non_hosted/performance/skip_test.ts@@@",
+      "@@@STEP_LOG_LINE@tests@test/e2e/performance/selector-stats-tracing_test.ts@@@",
+      "@@@STEP_LOG_LINE@tests@test/e2e/performance/skip_test.ts@@@",
       "@@@STEP_LOG_END@tests@@@"
     ]
   },
@@ -499,12 +498,12 @@
       "@@@STEP_LOG_LINE@stdout@test/e2e/helpers/sources-helpers.ts@@@",
       "@@@STEP_LOG_LINE@stdout@test/e2e/helpers/visual-logging-helpers.ts@@@",
       "@@@STEP_LOG_LINE@stdout@test/e2e/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e_non_hosted/BUILD.gn@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e_non_hosted/performance/BUILD.gn@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e_non_hosted/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e_non_hosted/performance/skip_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e_non_hosted/shared/frontend-helper.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e_non_hosted/shared/page-wrapper.ts@@@",
+      "@@@STEP_LOG_LINE@stdout@test/e2e/BUILD.gn@@@",
+      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/BUILD.gn@@@",
+      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/selector-stats-tracing_test.ts@@@",
+      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/skip_test.ts@@@",
+      "@@@STEP_LOG_LINE@stdout@test/e2e/shared/frontend-helper.ts@@@",
+      "@@@STEP_LOG_LINE@stdout@test/e2e/shared/page-wrapper.ts@@@",
       "@@@STEP_LOG_LINE@stdout@test/shared/helper.ts@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
@@ -599,7 +598,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"Skip-Flake-Detection\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"test/e2e_non_hosted/performance/skip_test.ts\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"test/e2e/performance/skip_test.ts\"@@@",
       "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
@@ -731,25 +730,25 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted)"
+    "name": "Pipeline E2E Tests"
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests",
+    "name": "Pipeline E2E Tests.Run tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted)",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).Full command",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.Full command",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@command@vpython3@@@",
@@ -764,7 +763,7 @@
       "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
       "@@@STEP_LOG_LINE@command@--shard-number=1@@@",
       "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
-      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -1971,7 +1970,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=1\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=1\", \"--shard-bias=1\", \"test/e2e\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1988,14 +1987,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).[trigger] E2E Tests (non-hosted) (Shard #0) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -2010,7 +2009,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -2029,7 +2028,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (Shard #0) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -2048,7 +2047,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_non_hosted_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -2067,7 +2066,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-number=1\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -2107,12 +2106,12 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).Full command (2)",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.Full command (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@command@vpython3@@@",
@@ -2127,7 +2126,7 @@
       "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
       "@@@STEP_LOG_LINE@command@--shard-number=2@@@",
       "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
-      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -2138,7 +2137,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=2\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #1) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=2\", \"--shard-bias=1\", \"test/e2e\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2155,14 +2154,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).[trigger] E2E Tests (non-hosted) (Shard #1) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"5\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -2177,7 +2176,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -2196,7 +2195,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (Shard #1) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #1) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -2215,7 +2214,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_non_hosted_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -2234,7 +2233,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-number=2\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -2274,12 +2273,12 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #1)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=5@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).Full command (3)",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.Full command (3)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@command@vpython3@@@",
@@ -2294,7 +2293,7 @@
       "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
       "@@@STEP_LOG_LINE@command@--shard-number=3@@@",
       "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
-      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -2305,7 +2304,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=3\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #2) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=3\", \"--shard-bias=1\", \"test/e2e\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2322,14 +2321,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).[trigger] E2E Tests (non-hosted) (Shard #2) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"6\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -2344,7 +2343,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -2363,7 +2362,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (Shard #2) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #2) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -2382,7 +2381,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_non_hosted_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -2401,7 +2400,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-number=3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -2441,12 +2440,12 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #2)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=6@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).Full command (4)",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.Full command (4)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@command@vpython3@@@",
@@ -2461,7 +2460,7 @@
       "@@@STEP_LOG_LINE@command@--shard-count=4@@@",
       "@@@STEP_LOG_LINE@command@--shard-number=4@@@",
       "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
-      "@@@STEP_LOG_LINE@command@test/e2e_non_hosted@@@",
+      "@@@STEP_LOG_LINE@command@test/e2e@@@",
       "@@@STEP_LOG_END@command@@@"
     ]
   },
@@ -2472,7 +2471,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=4\", \"--shard-bias=1\", \"test/e2e_non_hosted\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (Shard #3) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=4\", \"--shard-number=4\", \"--shard-bias=1\", \"test/e2e\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2489,14 +2488,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.Trigger E2E Tests (non-hosted).[trigger] E2E Tests (non-hosted) (Shard #3) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"7\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -2511,7 +2510,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -2530,7 +2529,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (Shard #3) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #3) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -2549,7 +2548,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_non_hosted_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -2568,7 +2567,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"--shard-count=4\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-number=4\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test/e2e_non_hosted\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/e2e\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -2608,7 +2607,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #3)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=7@@@"
     ]
   },
   {
@@ -2632,7 +2631,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.resultdb.update_included_invocations",
+    "name": "Pipeline E2E Tests.Run tests.resultdb.update_included_invocations",
     "stdin": "{\"addInvocations\": [\"invocations/4\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2668,7 +2667,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.resultdb.update_included_invocations (2)",
+    "name": "Pipeline E2E Tests.Run tests.resultdb.update_included_invocations (2)",
     "stdin": "{\"addInvocations\": [\"invocations/5\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2704,7 +2703,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.resultdb.update_included_invocations (3)",
+    "name": "Pipeline E2E Tests.Run tests.resultdb.update_included_invocations (3)",
     "stdin": "{\"addInvocations\": [\"invocations/6\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2740,7 +2739,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.resultdb.update_included_invocations (4)",
+    "name": "Pipeline E2E Tests.Run tests.resultdb.update_included_invocations (4)",
     "stdin": "{\"addInvocations\": [\"invocations/7\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -2757,14 +2756,14 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.E2E Tests (non-hosted)",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
     ]
@@ -2815,10 +2814,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #0) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=1 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=1 --shard-bias=1 test/e2e```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2910,10 +2909,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #1) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=2 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=2 --shard-bias=1 test/e2e```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3005,10 +3004,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #2) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=3 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=3 --shard-bias=1 test/e2e```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3100,10 +3099,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Run tests.E2E Tests (non-hosted).E2E Tests (non-hosted) shards results.E2E Tests (non-hosted) (Shard #3) on ubuntu",
+    "name": "Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=4 --shard-bias=1 test/e2e_non_hosted```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --shard-count=4 --shard-number=4 --shard-bias=1 test/e2e```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -3173,7 +3172,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).rdb query for e2e_non_hosted_tests",
+    "name": "Pipeline E2E Tests.rdb query for e2e_tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -3181,27 +3180,27 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.Trigger E2E Tests (non-hosted) (flake detection)",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.Trigger E2E Tests (flake detection)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.Trigger E2E Tests (non-hosted) (flake detection).Full command",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.Trigger E2E Tests (flake detection).Full command",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@command@vpython3@@@",
       "@@@STEP_LOG_LINE@command@-c@@@",
       "@@@STEP_LOG_LINE@command@import base64, sys, subprocess, zlib; f = \"tests.txt\"; open(f, \"wb\").write(zlib.decompress(base64.b64decode(sys.argv[1]))); sys.exit(subprocess.call(sys.argv[2:] + [\"@\" + f]))@@@",
-      "@@@STEP_LOG_LINE@command@eJyVy8sJgEAMBcC7vawBGwpLfH7ATSR5/aMHG/A+QxQFC+RGbpGju0EKF4yRrdhZjdnt9F352pk18Tvq4XpEEeuP/gDilyxd@@@",
+      "@@@STEP_LOG_LINE@command@eJwrSS0u0U81StUvSC1Kyy/KTcxLTtUvTs1JTS7JL9ItLkksKdYtKUpMzsxLjy8BqtUrKeYqIV0PAAfZJ80=@@@",
       "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
       "@@@STEP_LOG_LINE@command@--output@@@",
       "@@@STEP_LOG_LINE@command@out/Release/gen/test/run.js@@@",
@@ -3223,7 +3222,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_non_hosted_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-c\", \"import base64, sys, subprocess, zlib; f = \\\"tests.txt\\\"; open(f, \\\"wb\\\").write(zlib.decompress(base64.b64decode(sys.argv[1]))); sys.exit(subprocess.call(sys.argv[2:] + [\\\"@\\\" + f]))\", \"eJyVy8sJgEAMBcC7vawBGwpLfH7ATSR5/aMHG/A+QxQFC+RGbpGju0EKF4yRrdhZjdnt9F352pk18Tvq4XpEEeuP/gDilyxd\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--repeat=10\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=1\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"E2E Tests (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\", \"priority\": \"30\", \"realm\": \"project:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:dtf_linux_rel\", \"data:1234567/890\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:E2E\", \"project:project\", \"shard_count:1\", \"shard_index:0\", \"spec_name:project.try:dtf_linux_rel\", \"stepname:E2E Tests (flake detection) (Shard #0) on ubuntu\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"1234567\", \"size_bytes\": \"890\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:flake detection\", \"-tag\", \"test_type:e2e_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:dtf_linux_rel\", \"--\", \"vpython3\", \"-c\", \"import base64, sys, subprocess, zlib; f = \\\"tests.txt\\\"; open(f, \\\"wb\\\").write(zlib.decompress(base64.b64decode(sys.argv[1]))); sys.exit(subprocess.call(sys.argv[2:] + [\\\"@\\\" + f]))\", \"eJwrSS0u0U81StUvSC1Kyy/KTcxLTtUvTs1JTS7JL9ItLkksKdYtKUpMzsxLjy8BqtUrKeYqIV0PAAfZJ80=\", \"third_party/node/node.py\", \"--output\", \"out/Release/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--repeat=10\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=1\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x64\"}, {\"key\": \"os\", \"value\": \"ubuntu\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -3240,14 +3239,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.Trigger E2E Tests (non-hosted) (flake detection).[trigger] E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.Trigger E2E Tests (flake detection).[trigger] E2E Tests (flake detection) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"8\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -3262,7 +3261,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"project:try\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -3281,7 +3280,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:project.try:dtf_linux_rel\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (flake detection) (Shard #0) on ubuntu\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -3300,7 +3299,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"run_phase:flake detection\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_non_hosted_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e_tests\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
@@ -3310,7 +3309,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-c\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"import base64, sys, subprocess, zlib; f = \\\"tests.txt\\\"; open(f, \\\"wb\\\").write(zlib.decompress(base64.b64decode(sys.argv[1]))); sys.exit(subprocess.call(sys.argv[2:] + [\\\"@\\\" + f]))\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"eJyVy8sJgEAMBcC7vawBGwpLfH7ATSR5/aMHG/A+QxQFC+RGbpGju0EKF4yRrdhZjdnt9F352pk18Tvq4XpEEeuP/gDilyxd\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"eJwrSS0u0U81StUvSC1Kyy/KTcxLTtUvTs1JTS7JL9ItLkksKdYtKUpMzsxLjy8BqtUrKeYqIV0PAAfZJ80=\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"out/Release/gen/test/run.js\",@@@",
@@ -3361,7 +3360,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: E2E Tests (non-hosted) (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=8@@@"
+      "@@@STEP_LINK@task UI: E2E Tests (flake detection) (Shard #0)/ubuntu/1234567/89/dtf_linux_rel/-1@https://example.swarmingserver.appspot.com/task?id=8@@@"
     ]
   },
   {
@@ -3385,7 +3384,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.resultdb.update_included_invocations",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.resultdb.update_included_invocations",
     "stdin": "{\"addInvocations\": [\"invocations/8\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -3402,14 +3401,14 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.E2E Tests (non-hosted) (flake detection)",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.E2E Tests (flake detection)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.E2E Tests (non-hosted) (flake detection).E2E Tests (non-hosted) (flake detection) shards results",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.E2E Tests (flake detection).E2E Tests (flake detection) shards results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
     ]
@@ -3460,10 +3459,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Pipeline E2E Tests (non-hosted).Detect flakes in new tests.E2E Tests (non-hosted) (flake detection).E2E Tests (non-hosted) (flake detection) shards results.E2E Tests (non-hosted) (flake detection) (Shard #0) on ubuntu",
+    "name": "Pipeline E2E Tests.Detect flakes in new tests.E2E Tests (flake detection).E2E Tests (flake detection) shards results.E2E Tests (flake detection) (Shard #0) on ubuntu",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@4@@@",
-      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -c \"import base64, sys, subprocess, zlib; f = \"tests.txt\"; open(f, \"wb\").write(zlib.decompress(base64.b64decode(sys.argv[1]))); sys.exit(subprocess.call(sys.argv[2:] + [\"@\" + f]))\" eJyVy8sJgEAMBcC7vawBGwpLfH7ATSR5/aMHG/A+QxQFC+RGbpGju0EKF4yRrdhZjdnt9F352pk18Tvq4XpEEeuP/gDilyxd third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --repeat=10 --shard-count=1 --shard-number=1 --shard-bias=1```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'ubuntu'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -c \"import base64, sys, subprocess, zlib; f = \"tests.txt\"; open(f, \"wb\").write(zlib.decompress(base64.b64decode(sys.argv[1]))); sys.exit(subprocess.call(sys.argv[2:] + [\"@\" + f]))\" eJwrSS0u0U81StUvSC1Kyy/KTcxLTtUvTs1JTS7JL9ItLkksKdYtKUpMzsxLjy8BqtUrKeYqIV0PAAfZJ80= third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=tmp --skip-ninja --verbose=2 --on-diff=throw --repeat=10 --shard-count=1 --shard-number=1 --shard-bias=1```<br/><br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

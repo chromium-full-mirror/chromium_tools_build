@@ -18,7 +18,7 @@ from PB.recipes.build.devtools.devtools_frontend import InputProperties
 from RECIPE_MODULES.build.devtools.api_tests_runner import ApiTests
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests
 from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
@@ -88,7 +88,7 @@ def RunSteps(api, properties):
             'Unit Tests (node)',
             node_unit_tests=True),
         ApiTests(api, trigger, builder_config, 'API Tests'),
-        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
+        E2ETests(api, trigger, builder_config, 'E2E Tests'),
         PerformanceTests(api, trigger, builder_config, 'Performance Tests'),
     ]
     tests = [t for t in tests if not t.skip()]
@@ -415,11 +415,9 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Pipeline E2E Tests.rdb query for e2e_non_hosted_tests',
-          test_result('e2e_non_hosted/file1: etest1/first ??',
-                      'e2e_non_hosted_tests'),
-          test_result('e2e_non_hosted/file2: etest2/second (to: escape)',
-                      'e2e_non_hosted_tests'),
+          'Pipeline E2E Tests.rdb query for e2e_tests',
+          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
+          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
       ),
       api.post_process(
           check_swarming_task_args,
@@ -453,9 +451,9 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Pipeline E2E Tests.rdb query for e2e_non_hosted_tests',
-          test_result('e2e_non_hosted/file1: e/test/1', 'e2e_non_hosted_tests'),
-          test_result('e2e_non_hosted/file2: e/test/2', 'e2e_non_hosted_tests'),
+          'Pipeline E2E Tests.rdb query for e2e_tests',
+          test_result('e2e/file1: e/test/1', 'e2e_tests'),
+          test_result('e2e/file2: e/test/2', 'e2e_tests'),
       ),
       api.post_process(
           SummaryMarkdown,
@@ -478,10 +476,9 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
-          'Pipeline E2E Tests.rdb query for e2e_non_hosted_tests',
+          'Pipeline E2E Tests.rdb query for e2e_tests',
           *[
-              test_result(f'e2e_non_hosted/file1: e/test/{i}',
-                          'e2e_non_hosted_tests')
+              test_result(f'e2e/file1: e/test/{i}', 'e2e_tests')
               for i in range(FLAKE_DETECTION_MAX_TESTS + 1)
           ],
       ),

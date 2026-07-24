@@ -11,7 +11,7 @@ from functools import cached_property
 import re
 
 
-class E2ENonHostedTests(ExonerableTests):
+class E2ETests(ExonerableTests):
 
   def __init__(self, api, trigger, builder_config, step_name):
     super().__init__(
@@ -19,7 +19,7 @@ class E2ENonHostedTests(ExonerableTests):
 
   @property
   def test_patterns(self):
-    return ['test/e2e_non_hosted']
+    return ['test/e2e']
 
   def owns_test(self, test):
     return test.startswith('test/e2e')
@@ -37,14 +37,14 @@ class E2ENonHostedTests(ExonerableTests):
 
   @property
   def grep_filter_pattern(self):
-    return r'^e2e(_non_hosted)?/[^:]*: '
+    return r'^e2e/[^:]*: '
 
   @property
   def test_type_tag(self):
-    return 'e2e_non_hosted_tests'
+    return 'e2e_tests'
 
 
-class RepeatE2EShuffledTests(E2ENonHostedTests):
+class RepeatE2EShuffledTests(E2ETests):
 
   def trigger_exoneration(self, test_names):
     pass

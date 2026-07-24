@@ -8,7 +8,7 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
 from PB.recipes.build.devtools.dtf_shuffled import InputProperties
 
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ENonHostedTests, RepeatE2EShuffledTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests, RepeatE2EShuffledTests
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 
 DEPS = [
@@ -55,7 +55,7 @@ def RunSteps(api, properties):
 
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
-        E2ENonHostedTests(api, trigger, builder_config, 'E2E Tests'),
+        E2ETests(api, trigger, builder_config, 'E2E Tests'),
         RepeatE2EShuffledTests(api, trigger, builder_config,
                                'Repeat E2E Tests'),
     ]
