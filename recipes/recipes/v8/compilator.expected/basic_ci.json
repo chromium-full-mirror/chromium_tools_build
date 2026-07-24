@@ -804,40 +804,6 @@
   },
   {
     "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "-a",
-      "public-read",
-      "{\"bot_default\": \"[dummy hash for bot_default/dummy size]\"}",
-      "gs://chromium-v8/isolated/client.v8/Random CI builder/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "build.gsutil upload",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8/isolated/client.v8/Random%20CI%20builder/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.json@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"build|gsutil upload\": \"gs://chromium-v8/isolated/client.v8/Random CI builder/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef.json\", \"build|gsutil upload ninja_log\": \"gs://chrome-goma-log/2012/05/14/fakevm999-m9/ninja_log.20120514-125321.00000000-0000-0000-0000-00000000133a.gz\"}@@@"
-    ]
-  },
-  {
-    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
