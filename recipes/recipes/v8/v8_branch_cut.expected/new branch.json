@@ -690,7 +690,7 @@
       "git",
       "commit",
       "-am",
-      "Branch cut"
+      "Update active branches"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

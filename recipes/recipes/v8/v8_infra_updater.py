@@ -11,6 +11,7 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/url',
     'v8',
 ]
 
@@ -21,20 +22,19 @@ def RunSteps(api):
 
   source_dir = update_result.source_root.path
   with api.context(cwd=source_dir), api.depot_tools.on_path():
-    branches = api.v8.latest_branches()
-    assert branches, "No branches found!"
-    last_version = branches[0]
-    api.step('Last branch %s' % api.v8.version_num2str(last_version), [])
+    active_branches = api.v8.get_active_branches()
+    assert active_branches, "No active branches found from ChromiumDash!"
 
     api.v8.git_output('checkout', 'infra/config')
     api.v8.git_output('pull')
 
     definitions = api.v8.git_output(
         'show', 'HEAD:definitions.star', name='Read branch definitions')
-    beta_version = api.v8.infer_beta_version(definitions)
-    if last_version != beta_version:
+
+    current_branches = api.v8.infer_active_branches(definitions)
+    if active_branches != current_branches:
       with api.step.nest('New branch detected'):
-        definitions = api.v8.calculate_versions(definitions, last_version)
+        definitions = api.v8.update_active_branches(active_branches)
         api.v8.update_infra_config(source_dir, definitions)
     else:
       api.step('No new branch detected', [])
@@ -42,24 +42,34 @@ def RunSteps(api):
 
 def GenTests(api):
 
+  def fake_milestones():
+    return api.url.json(
+        'GET https://chromiumdash.appspot.com/fetch_milestones?'
+        'num=0&only_active=true', [{
+            'milestone': 124,
+            'v8_branch': '12.4'
+        }, {
+            'milestone': 123,
+            'v8_branch': '12.3'
+        }, {
+            'milestone': 122,
+            'v8_branch': '12.2'
+        }, {
+            'milestone': 121,
+            'v8_branch': '12.1'
+        }])
+
   def stdout(step_name, text):
     return api.override_step_data(
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
-  yield (api.test("no new branch", status='SUCCESS') +
-         stdout('last branches', 'branch-heads/9.9\n'
-                'branch-heads/10.1\n'
-                'branch-heads/10.2') + stdout(
-                    'Read branch definitions', 'versions = {'
-                    '"beta": "10.2", "stable": "10.1", "extended": "10.0"}'))
+  yield (api.test("no new branch", status='SUCCESS') + fake_milestones() +
+         stdout('Read branch definitions', 'ACTIVE_BRANCHES = ['
+                '"12.4", "12.3", "12.2", "12.1"]'))
 
-  yield (api.test("new branch", status='SUCCESS') + stdout(
-      'last branches', 'branch-heads/10.0\n'
-      'branch-heads/9.9\n'
-      'branch-heads/9.8\n'
-      'branch-heads/9.8') + stdout(
-          'Read branch definitions', 'versions = {'
-          '"beta": "9.9", "stable": "9.8", "extended": "9.8"}') +
+  yield (api.test("new branch", status='SUCCESS') + fake_milestones() +
+         stdout('Read branch definitions', 'ACTIVE_BRANCHES = ['
+                '"12.3", "12.2", "12.1", "12.0"]') +
          stdout('New branch detected.Update infra/config.git cl (2)',
                 'Issue number: 3 '
                 '(https://review.source.com/3)'))

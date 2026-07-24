@@ -116,7 +116,7 @@ def RunSteps(api, max_gap_seconds, branch_cut_max_gap_seconds):
 
 def check_branch(api, branch, max_gap_seconds, now):
   chromium_branch = branch['chromium_branch']
-  v8_branch = branch['v8_branch'].replace('-lkgr', '')
+  v8_branch = branch['v8_branch']
 
   with api.step.nest(f'branch {v8_branch} ({chromium_branch})') as step:
     deps_file = download_chromium_deps(api, chromium_branch)
@@ -206,10 +206,10 @@ def GenTests(api):
         'GET https://chromiumdash.appspot.com/fetch_milestones?'
         'num=0&only_active=true', [{
             'chromium_branch': '5555',
-            'v8_branch': '10.3-lkgr'
+            'v8_branch': '10.3'
         }, {
             'chromium_branch': '6666',
-            'v8_branch': '11.4-lkgr'
+            'v8_branch': '11.4'
         }])
 
   def fake_commit():
@@ -315,7 +315,7 @@ def GenTests(api):
           'GET https://chromiumdash.appspot.com/fetch_milestones?'
           'num=0&only_active=true', [{
               'chromium_branch': '6666',
-              'v8_branch': '11.4-lkgr'
+              'v8_branch': '11.4'
           }]),
       api.step_data(
           'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
@@ -335,7 +335,7 @@ def GenTests(api):
           'GET https://chromiumdash.appspot.com/fetch_milestones?'
           'num=0&only_active=true', [{
               'chromium_branch': '6666',
-              'v8_branch': '11.4-lkgr'
+              'v8_branch': '11.4'
           }]),
       api.step_data(
           'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',

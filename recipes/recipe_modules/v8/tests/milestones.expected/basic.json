@@ -1,0 +1,34 @@
+[
+  {
+    "cmd": [],
+    "name": "Inferred branches: 15.1, 15.0"
+  },
+  {
+    "cmd": [],
+    "name": "Missing branches: 0"
+  },
+  {
+    "cmd": [],
+    "name": "Calculated versions",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@definitions@@@@",
+      "@@@STEP_LOG_LINE@definitions@versions = {'beta': '15.2', 'stable': '15.1', 'extended': '15.1'}@@@",
+      "@@@STEP_LOG_END@definitions@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "New definitions",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@definitions@# This file is auto-generated. Do not edit.@@@",
+      "@@@STEP_LOG_LINE@definitions@ACTIVE_BRANCHES = [@@@",
+      "@@@STEP_LOG_LINE@definitions@    \"15.2\",@@@",
+      "@@@STEP_LOG_LINE@definitions@    \"15.1\",@@@",
+      "@@@STEP_LOG_LINE@definitions@]@@@",
+      "@@@STEP_LOG_END@definitions@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]

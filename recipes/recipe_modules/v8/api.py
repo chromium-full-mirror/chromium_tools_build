@@ -1577,27 +1577,51 @@ class V8Api(recipe_api.RecipeApi):
     major, minor = version_components[:2]
     return int(major) * 10 + int(minor)
 
+  def get_active_branches(self):
+    milestones = self.m.chromiumdash.milestones(0, only_active=True)
+    return sorted([m['v8_branch'] for m in milestones], reverse=True)
+
+  def infer_active_branches(self, definitions):
+    contents = ast.parse(definitions, mode='exec')
+    for node in contents.body:
+      if isinstance(node, ast.Assign) and \
+         len(node.targets) == 1 and \
+         isinstance(node.targets[0], ast.Name) and \
+         node.targets[0].id == 'ACTIVE_BRANCHES':
+        return [elt.value for elt in node.value.elts]
+    return []
+
+  def update_active_branches(self, active_branches):
+    lines = [
+        "# This file is auto-generated. Do not edit.",
+        "ACTIVE_BRANCHES = [",
+    ]
+    for b in active_branches:
+      lines.append(f'    "{b}",')
+    lines.append("]")
+    return "\n".join(lines) + "\n"
+
   def infer_beta_version(self, definitions):
     contents = ast.parse(definitions, mode='exec')
     defined_versions = contents.body[0].value.values
-    return self.version_from_text(defined_versions[0].s)
+    return self.version_from_text(defined_versions[0].value)
 
   def calculate_versions(self, definitions, last_version):
     contents = ast.parse(definitions, mode='exec')
     defined_versions = contents.body[0].value.values
 
-    beta_version = self.version_from_text(defined_versions[0].s)
-    stable_version = self.version_from_text(defined_versions[1].s)
-    extended_version = self.version_from_text(defined_versions[2].s)
+    beta_version = self.version_from_text(defined_versions[0].value)
+    stable_version = self.version_from_text(defined_versions[1].value)
+    extended_version = self.version_from_text(defined_versions[2].value)
 
     if stable_version - extended_version >= 1:
       extended_version = beta_version
     stable_version = beta_version
     beta_version = last_version
 
-    defined_versions[0].s = self.version_num2str(beta_version)
-    defined_versions[1].s = self.version_num2str(stable_version)
-    defined_versions[2].s = self.version_num2str(extended_version)
+    defined_versions[0].value = self.version_num2str(beta_version)
+    defined_versions[1].value = self.version_num2str(stable_version)
+    defined_versions[2].value = self.version_num2str(extended_version)
 
     return astunparse.unparse(contents)
 
@@ -1614,7 +1638,7 @@ class V8Api(recipe_api.RecipeApi):
                              definitions)
       self.m.step('Lucicfg format', ['lucicfg', 'format'])
       self.m.step('Lucicfg generate', ['lucicfg', 'main.star'])
-      self.git_output('commit', '-am', 'Branch cut')
+      self.git_output('commit', '-am', 'Update active branches')
       self.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
                       '--set-bot-commit', '--dry-run')
       issue = self.get_cl_issue()

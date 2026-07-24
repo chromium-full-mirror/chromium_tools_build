@@ -96,11 +96,15 @@
   },
   {
     "cmd": [
-      "git",
-      "branch",
-      "-r",
-      "--list",
-      "branch-heads/*"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
+      "https://chromiumdash.appspot.com/fetch_milestones?num=0&only_active=true",
+      "--status-json",
+      "/path/to/tmp/json",
+      "--outfile",
+      "/path/to/tmp/json"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -111,18 +115,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
-    "infra_step": true,
-    "name": "last branches",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.9@@@",
-      "@@@STEP_LOG_LINE@stdout@branch-heads/10.1@@@",
-      "@@@STEP_LOG_LINE@stdout@branch-heads/10.2@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Last branch 10.2"
+    "name": "GET https://chromiumdash.appspot.com/fetch_milestones?num=0&only_active=true"
   },
   {
     "cmd": [
@@ -183,7 +176,7 @@
     "infra_step": true,
     "name": "Read branch definitions",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@versions = {\"beta\": \"10.2\", \"stable\": \"10.1\", \"extended\": \"10.0\"}@@@",
+      "@@@STEP_LOG_LINE@stdout@ACTIVE_BRANCHES = [\"12.4\", \"12.3\", \"12.2\", \"12.1\"]@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },

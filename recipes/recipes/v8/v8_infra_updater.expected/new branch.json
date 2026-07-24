@@ -96,11 +96,15 @@
   },
   {
     "cmd": [
-      "git",
-      "branch",
-      "-r",
-      "--list",
-      "branch-heads/*"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
+      "https://chromiumdash.appspot.com/fetch_milestones?num=0&only_active=true",
+      "--status-json",
+      "/path/to/tmp/json",
+      "--outfile",
+      "/path/to/tmp/json"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -111,19 +115,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
-    "infra_step": true,
-    "name": "last branches",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@branch-heads/10.0@@@",
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.9@@@",
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.8@@@",
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.8@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Last branch 10.0"
+    "name": "GET https://chromiumdash.appspot.com/fetch_milestones?num=0&only_active=true"
   },
   {
     "cmd": [
@@ -184,7 +176,7 @@
     "infra_step": true,
     "name": "Read branch definitions",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@versions = {\"beta\": \"9.9\", \"stable\": \"9.8\", \"extended\": \"9.8\"}@@@",
+      "@@@STEP_LOG_LINE@stdout@ACTIVE_BRANCHES = [\"12.3\", \"12.2\", \"12.1\", \"12.0\"]@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },
@@ -341,7 +333,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "\nversions = {'beta': '10.0', 'stable': '9.9', 'extended': '9.8'}\n",
+      "# This file is auto-generated. Do not edit.\nACTIVE_BRANCHES = [\n    \"12.4\",\n    \"12.3\",\n    \"12.2\",\n    \"12.1\",\n]\n",
       "[CACHE]/builder/v8/definitions.star"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -357,8 +349,13 @@
     "name": "New branch detected.Update infra/config.Write branch definitions",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@definitions.star@@@@",
-      "@@@STEP_LOG_LINE@definitions.star@versions = {'beta': '10.0', 'stable': '9.9', 'extended': '9.8'}@@@",
+      "@@@STEP_LOG_LINE@definitions.star@# This file is auto-generated. Do not edit.@@@",
+      "@@@STEP_LOG_LINE@definitions.star@ACTIVE_BRANCHES = [@@@",
+      "@@@STEP_LOG_LINE@definitions.star@    \"12.4\",@@@",
+      "@@@STEP_LOG_LINE@definitions.star@    \"12.3\",@@@",
+      "@@@STEP_LOG_LINE@definitions.star@    \"12.2\",@@@",
+      "@@@STEP_LOG_LINE@definitions.star@    \"12.1\",@@@",
+      "@@@STEP_LOG_LINE@definitions.star@]@@@",
       "@@@STEP_LOG_END@definitions.star@@@"
     ]
   },
@@ -405,7 +402,7 @@
       "git",
       "commit",
       "-am",
-      "Branch cut"
+      "Update active branches"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
