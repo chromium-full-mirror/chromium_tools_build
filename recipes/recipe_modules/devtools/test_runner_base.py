@@ -4,9 +4,7 @@
 
 from __future__ import annotations
 
-import base64
 import re
-import zlib
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
@@ -316,23 +314,10 @@ class ExonerableTests(DevToolsTests):
     ] for shard_number in range(self.shard_count)]
 
   def commands(self):
-
-    def wrap_with_response_file(tests_list, run_args):
-      tests_string = '\n'.join(tests_list)
-      compressed = zlib.compress(tests_string.encode('utf-8'))
-      b64_tests = base64.b64encode(compressed).decode('utf-8')
-      wrapper = [
-          'vpython3', '-c', 'import base64, sys, subprocess, zlib; '
-          'f = "tests.txt"; '
-          'open(f, "wb").write(zlib.decompress(base64.b64decode(sys.argv[1]))); '
-          'sys.exit(subprocess.call(sys.argv[2:] + ["@" + f]))', b64_tests
-      ]
-      return wrapper + self.run_tests_command(run_args)
-
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
       return [
-          wrap_with_response_file(self.owned_new_tests, args)
+          self.run_tests_command(args + self.owned_new_tests)
           for args in self.sharding_args()
       ]
     is_flake_exoneration_attempt = (
@@ -341,7 +326,7 @@ class ExonerableTests(DevToolsTests):
     if is_flake_exoneration_attempt:
       exoneration_tests = self.exoneration_tests
       if exoneration_tests:
-        return [wrap_with_response_file(exoneration_tests, [])]
+        return [self.run_tests_command(exoneration_tests)]
       return [self.run_tests_command(self.test_patterns)]
     return [
         self.run_tests_command(args + self.test_patterns)
