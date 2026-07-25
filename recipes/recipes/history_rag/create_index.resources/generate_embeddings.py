@@ -270,7 +270,7 @@ def main():
         file=sys.stderr)
     print(
         "Ensureyour input pickle file contains prepared documents with 'cleaned_message'.",
-        file=sysstderr)
+        file=sys.stderr)
     sys.exit(1)
 
   print(

@@ -1,0 +1,89 @@
+[MAIN]
+jobs=0
+
+[FORMAT]
+indent-string='  '
+
+[MESSAGES CONTROL]
+disable=
+    anomalous-backslash-in-string,
+    broad-exception-caught,
+    broad-exception-raised,
+    cell-var-from-loop,
+    consider-using-dict-items,
+    consider-using-enumerate,
+    # f-strings should generally be preferred since they are faster than other
+    # forms of string construction and often (but not always) easier to read.
+    # The performance difference is unlikely to matter unless many strings are
+    # being constructed in a tight loop, so addressing the many findings of
+    # this category is unlikely to provide much performance benefit and so
+    # shouldn't be a priority. It would be nice if we could enable this only
+    # for new lines...
+    consider-using-f-string,
+    consider-using-generator,
+    consider-using-in,
+    consider-using-with,
+    cyclic-import,
+    deprecated-method,
+    deprecated-module,
+    duplicate-code,
+    eval-used,
+    exec-used,
+    fixme,
+    format-string-without-interpolation,
+    function-redefined,
+    global-statement,
+    import-error,
+    # This will require adding many additional return statements and in turn
+    # will require test cases to be added/modified to get coverage on the new
+    # return statements
+    inconsistent-return-statements,
+    invalid-name,
+    # There are a number of long lines in the repo already, some of them in
+    # code that the formatter does not play nicely with. There is also a
+    # warning presubmit check that flags lines that are too long only in
+    # modified files, so it's not vital to have pylint cause errors for this.
+    line-too-long,
+    logging-not-lazy,
+    misplaced-bare-raise,
+    missing-class-docstring,
+    missing-final-newline,
+    missing-function-docstring,
+    missing-module-docstring,
+    no-name-in-module,
+    no-self-argument,
+    not-an-iterable,
+    possibly-used-before-assignment,
+    protected-access,
+    redefined-outer-name,
+    reimported,
+    return-in-finally,
+    singleton-comparison,
+    superfluous-parens,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-branches,
+    too-many-instance-attributes,
+    too-many-lines,
+    too-many-locals,
+    too-many-nested-blocks,
+    too-many-public-methods,
+    too-many-return-statements,
+    too-many-statements,
+    undefined-variable,
+    ungrouped-imports,
+    unnecessary-lambda-assignment,
+    unnecessary-negation,
+    unspecified-encoding,
+    unsupported-membership-test,
+    unused-argument,
+    unused-import,
+    # dict literals are more performant than using a dict call, but a little
+    # more noisy visually and the performance difference is unlikely to matter
+    # unless the dict is being constructed in a tight loop
+    use-dict-literal,
+    use-yield-from,
+    used-before-assignment,
+    useless-option-value,
+    wrong-import-order,
+    wrong-import-position,
