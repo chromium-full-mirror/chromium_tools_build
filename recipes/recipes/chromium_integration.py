@@ -29,8 +29,7 @@ DEPS = [
 def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
-  if builder_id.builder == 'V8 Blink Linux':
-    builder_config = attr.evolve(builder_config, retry_failed_shards=True)
+  builder_config = attr.evolve(builder_config, retry_failed_shards=True)
   with api.chromium.chromium_layout():
     return api.chromium_tests.integration_steps(builder_id, builder_config)
 
