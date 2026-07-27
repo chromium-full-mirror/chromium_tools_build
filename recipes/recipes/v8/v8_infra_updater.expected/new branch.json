@@ -429,7 +429,7 @@
       "git",
       "commit",
       "-am",
-      "Update active branches"
+      "[v8-infra-update] Update active branches"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -456,9 +456,7 @@
       "--bypass-hooks",
       "--send-mail",
       "--set-bot-commit",
-      "--dry-run",
-      "-t",
-      "v8-infra-update"
+      "--dry-run"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

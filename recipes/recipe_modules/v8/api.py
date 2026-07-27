@@ -1605,7 +1605,7 @@ class V8Api(recipe_api.RecipeApi):
     defined_versions = contents.body[0].value.values
     return self.version_from_text(defined_versions[0].value)
 
-  def update_infra_config(self, source_dir, definitions, hashtag=None):
+  def update_infra_config(self, source_dir, definitions, hashtag):
     with self.m.step.nest('Update infra/config') as parent_step:
       self.git_output('checkout', 'infra/config')
       self.git_output('pull', ok_ret='any')
@@ -1618,13 +1618,12 @@ class V8Api(recipe_api.RecipeApi):
                              definitions)
       self.m.step('Lucicfg format', ['lucicfg', 'format'])
       self.m.step('Lucicfg generate', ['lucicfg', 'main.star'])
-      self.git_output('commit', '-am', 'Update active branches')
+      commit_msg = f'[{hashtag}] Update active branches'
+      self.git_output('commit', '-am', commit_msg)
       upload_cmd = [
           'cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
           '--set-bot-commit', '--dry-run'
       ]
-      if hashtag:
-        upload_cmd.extend(['-t', hashtag])
       self.git_output(*upload_cmd)
       issue = self.get_cl_issue()
       parent_step.links[issue] = issue
