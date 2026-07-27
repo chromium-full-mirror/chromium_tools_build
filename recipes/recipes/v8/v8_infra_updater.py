@@ -8,6 +8,7 @@ DEPS = [
     'chromium',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
+    'depot_tools/gerrit',
     'depot_tools/git',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -17,10 +18,31 @@ DEPS = [
     'v8',
 ]
 
+HASHTAG = 'v8-infra-update'
+
 
 def RunSteps(api):
   api.gclient.set_config('v8')
   update_result = api.v8.checkout(with_branch_heads=True)
+
+  cls = api.gerrit.get_changes(
+      'https://chromium-review.googlesource.com',
+      query_params=[
+          ('status', 'open'),
+          ('hashtag', HASHTAG),
+      ],
+      limit=1,
+      step_test_data=api.gerrit.test_api.get_empty_changes_response_data,
+      name='Check for existing CLs',
+  )
+  if cls:
+    cl = cls[0]
+    cl_url = f"https://chromium-review.googlesource.com/c/{cl['_number']}"
+    step_result = api.step('Existing CL found', [])
+    step_result.presentation.status = api.step.FAILURE
+    step_result.presentation.links[cl_url] = cl_url
+    raise api.step.StepFailure(
+        f'Found open CL with hashtag {HASHTAG}: {cl_url}')
 
   source_dir = update_result.source_root.path
   with api.context(cwd=source_dir), api.depot_tools.on_path():
@@ -66,7 +88,7 @@ def RunSteps(api):
 
       with api.step.nest('New branch detected'):
         definitions = api.v8.update_active_branches(active_branches)
-        api.v8.update_infra_config(source_dir, definitions)
+        api.v8.update_infra_config(source_dir, definitions, hashtag=HASHTAG)
     else:
       api.step('No new branch detected', [])
 
@@ -167,3 +189,16 @@ def GenTests(api):
       api.post_process(post_process.SummaryMarkdown,
                        'Newest branch 12.4 was removed') +
       api.post_process(post_process.DropExpectation))
+
+  yield (api.test(
+      "existing cl found", status='FAILURE'
+  ) + api.override_step_data(
+      'gerrit Check for existing CLs',
+      api.gerrit.get_one_change_response_data(
+          change_number=123456,
+          patchset=1,
+      )
+  ) + api.post_process(
+      post_process.SummaryMarkdown,
+      'Found open CL with hashtag v8-infra-update: https://chromium-review.googlesource.com/c/123456'
+  ) + api.post_process(post_process.DropExpectation))
