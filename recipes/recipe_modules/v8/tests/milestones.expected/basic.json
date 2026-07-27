@@ -9,15 +9,6 @@
   },
   {
     "cmd": [],
-    "name": "Calculated versions",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@definitions@@@@",
-      "@@@STEP_LOG_LINE@definitions@versions = {'beta': '15.2', 'stable': '15.1', 'extended': '15.1'}@@@",
-      "@@@STEP_LOG_END@definitions@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "New definitions",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@definitions@# This file is auto-generated. Do not edit.@@@",

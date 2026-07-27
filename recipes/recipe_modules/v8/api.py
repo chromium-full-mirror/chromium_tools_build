@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import ast
-import astunparse
 import collections.abc
 import contextlib
 import re
@@ -1605,25 +1604,6 @@ class V8Api(recipe_api.RecipeApi):
     contents = ast.parse(definitions, mode='exec')
     defined_versions = contents.body[0].value.values
     return self.version_from_text(defined_versions[0].value)
-
-  def calculate_versions(self, definitions, last_version):
-    contents = ast.parse(definitions, mode='exec')
-    defined_versions = contents.body[0].value.values
-
-    beta_version = self.version_from_text(defined_versions[0].value)
-    stable_version = self.version_from_text(defined_versions[1].value)
-    extended_version = self.version_from_text(defined_versions[2].value)
-
-    if stable_version - extended_version >= 1:
-      extended_version = beta_version
-    stable_version = beta_version
-    beta_version = last_version
-
-    defined_versions[0].value = self.version_num2str(beta_version)
-    defined_versions[1].value = self.version_num2str(stable_version)
-    defined_versions[2].value = self.version_num2str(extended_version)
-
-    return astunparse.unparse(contents)
 
   def update_infra_config(self, source_dir, definitions, hashtag=None):
     with self.m.step.nest('Update infra/config') as parent_step:
