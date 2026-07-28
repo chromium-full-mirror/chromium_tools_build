@@ -29,7 +29,6 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
     'repro_instructions',
-    'swarming_client',
 ]
 
 PROPERTIES = properties_pb.InputProperties

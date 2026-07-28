@@ -82,7 +82,6 @@ class TasksToCollect:
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--swarming-server', required=True)
-  parser.add_argument('--swarming-py-path', required=True)
   parser.add_argument('--verbose', action='store_true')
   parser.add_argument('--output-json', required=True,
                       help='Where to output information about the results of '

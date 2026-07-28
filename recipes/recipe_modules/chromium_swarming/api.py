@@ -1585,8 +1585,6 @@ class SwarmingApi(recipe_api.RecipeApi):
         self.resource('wait_for_finished_task_set.py'),
         '--swarming-server',
         server or self.m.swarming.current_server,
-        '--swarming-py-path',
-        self.m.swarming_client.path.joinpath('swarming.py'),
         '--output-json',
         self.m.json.output(),
         '--input-json',
