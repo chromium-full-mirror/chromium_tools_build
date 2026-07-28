@@ -456,7 +456,7 @@
       "--bypass-hooks",
       "--send-mail",
       "--set-bot-commit",
-      "--auto-submit"
+      "--use-commit-queue"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

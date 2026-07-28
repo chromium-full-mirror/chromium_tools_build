@@ -1622,7 +1622,7 @@ class V8Api(recipe_api.RecipeApi):
       self.git_output('commit', '-am', commit_msg)
       upload_cmd = [
           'cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
-          '--set-bot-commit', '--auto-submit'
+          '--set-bot-commit', '--use-commit-queue'
       ]
       self.git_output(*upload_cmd)
       issue = self.get_cl_issue()
