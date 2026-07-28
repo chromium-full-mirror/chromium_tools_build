@@ -334,7 +334,6 @@ def maybe_increment_version(api, source_dir, ref, latest_version, new_version,
           ref,
           new_version,
           push_account=PUSH_ACCOUNT,
-          bot_commit=True,
           force_land=True)
       build_results.performed_actions.append("Version updated %s" % new_version)
 

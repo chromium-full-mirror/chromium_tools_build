@@ -96,6 +96,33 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--limit",
+      "1",
+      "-p",
+      "status=open",
+      "-p",
+      "hashtag=version-auto-update",
+      "--verbose"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "gerrit Check for existing CLs",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@[]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
       "git",
       "branch",
       "-r",
@@ -316,7 +343,7 @@
       "commit",
       "-a",
       "-m",
-      "Version 10.1.0",
+      "[version-auto-update] Version 10.1.0",
       "-m",
       "",
       "-m",
@@ -346,7 +373,8 @@
       "--bypass-hooks",
       "--send-mail",
       "--no-autocc",
-      "--set-bot-commit"
+      "--set-bot-commit",
+      "--use-commit-queue"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
