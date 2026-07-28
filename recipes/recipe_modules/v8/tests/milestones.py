@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'recipe_engine/assertions',
     'recipe_engine/step',
     'v8',
 ]
@@ -23,6 +24,11 @@ def RunSteps(api):
   new_definitions = api.v8.update_active_branches(["15.2", "15.1"])
   api.step('New definitions', [])
   api.step.active_result.presentation.logs['definitions'] = new_definitions
+
+  # Test major version increment in with_incremented_minor
+  v9_9 = api.v8.V8Version('9', '9', '1', '0')
+  v10_0 = v9_9.with_incremented_minor()
+  api.assertions.assertEqual(str(v10_0), '10.0.0')
 
 
 def GenTests(api):

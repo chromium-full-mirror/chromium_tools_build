@@ -25,15 +25,19 @@ def RunSteps(api):
     last_version = branches[0]
     api.step('Last branch %s' % api.v8.version_num2str(last_version), [])
 
-    api.v8.git_output('checkout', 'infra/config')
-    api.v8.git_output('pull')
+    main_version_obj = api.v8.read_version_from_ref(source_dir, 'main', 'main')
+    main_version = api.v8.version_from_text(str(main_version_obj))
 
-    definitions = api.v8.git_output(
-        'show', 'HEAD:definitions.star', name='Read branch definitions')
-    beta_version = api.v8.infer_beta_version(definitions)
-    if last_version != beta_version:
+    if main_version == last_version:
       with api.step.nest('New branch detected'):
-        api.v8.update_main_version(source_dir)
+        next_main_version_obj = main_version_obj.with_incremented_minor()
+        api.v8.update_version_cl(
+            source_dir,
+            'main',
+            next_main_version_obj,
+            push_account=api.v8.V8_CI_AUTOROLL_BUILDER,
+            bot_commit=True,
+        )
     else:
       api.step('No new branch detected', [])
 
@@ -45,25 +49,17 @@ def GenTests(api):
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
   yield (api.test("no new branch", status='SUCCESS') +
-         stdout('last branches', 'branch-heads/9.9\n'
+         stdout('last branches', 'branch-heads/10.2\n'
                 'branch-heads/10.1\n'
-                'branch-heads/10.2') + stdout(
-                    'Read branch definitions', 'versions = {'
-                    '"beta": "10.2", "stable": "10.1", "extended": "10.0"}'))
+                'branch-heads/10.0') +
+         api.v8.version_file(4, 'main', major=10, minor=3))
 
-  yield (
-      api.test("new branch", status='SUCCESS') + stdout(
-          'last branches', 'branch-heads/10.0\n'
-          'branch-heads/9.9\n'
-          'branch-heads/9.8\n'
-          'branch-heads/9.8') + stdout(
-              'Read branch definitions', 'versions = {'
-              '"beta": "9.9", "stable": "9.8", "extended": "9.8"}') +
-      api.v8.version_file(
-          4,
-          'main',
-          prefix='New branch detected.Update on main.',
-          major=9,
-          minor=9) +
-      stdout('New branch detected.Update on main.git cl (2)', 'Issue number: 2 '
-             '(https://review.source.com/2)'))
+  yield (api.test("new branch", status='SUCCESS') + stdout(
+      'last branches', 'branch-heads/10.0\n'
+      'branch-heads/9.9\n'
+      'branch-heads/9.8\n'
+      'branch-heads/9.8') + api.v8.version_file(4, 'main', major=10, minor=0) +
+         api.v8.version_file(
+             4, 'latest', prefix='New branch detected.', major=10, minor=0) +
+         stdout('New branch detected.git cl', 'Issue number: 2 '
+                '(https://review.source.com/2)'))

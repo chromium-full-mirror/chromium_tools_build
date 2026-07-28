@@ -128,49 +128,8 @@
   {
     "cmd": [
       "git",
-      "checkout",
-      "infra/config"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "git checkout",
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "pull"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "git pull",
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
       "show",
-      "HEAD:definitions.star"
+      "main:include/v8-version.h"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -182,66 +141,11 @@
       ]
     },
     "infra_step": true,
-    "name": "Read branch definitions",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@versions = {\"beta\": \"9.9\", \"stable\": \"9.8\", \"extended\": \"9.8\"}@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
+    "name": "Check main version file"
   },
   {
     "cmd": [],
     "name": "New branch detected"
-  },
-  {
-    "cmd": [],
-    "name": "New branch detected.Update on main",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@https://review.source.com/2@https://review.source.com/2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "checkout",
-      "main"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "New branch detected.Update on main.git checkout",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "show",
-      "HEAD:include/v8-version.h"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "New branch detected.Update on main.Check main version file",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
   },
   {
     "cmd": [
@@ -260,9 +164,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git branch",
+    "name": "New branch detected.git branch",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -281,9 +185,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git clean",
+    "name": "New branch detected.git clean",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -304,9 +208,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git new-branch",
+    "name": "New branch detected.git new-branch",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -326,9 +230,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git config user.name",
+    "name": "New branch detected.git config user.name",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -348,9 +252,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git config user.email",
+    "name": "New branch detected.git config user.email",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -369,9 +273,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.Check latest version file",
+    "name": "New branch detected.Check latest version file",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -382,7 +286,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "",
+      "\n#define V8_MAJOR_VERSION 10\n#define V8_MINOR_VERSION 1\n#define V8_BUILD_NUMBER 0\n#define V8_PATCH_LEVEL 0\n",
       "[CACHE]/builder/v8/include/v8-version.h"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -395,9 +299,14 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.Increment version",
+    "name": "New branch detected.Increment version",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_MAJOR_VERSION 10@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_MINOR_VERSION 1@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_BUILD_NUMBER 0@@@",
+      "@@@STEP_LOG_LINE@v8-version.h@#define V8_PATCH_LEVEL 0@@@",
       "@@@STEP_LOG_END@v8-version.h@@@"
     ]
   },
@@ -407,7 +316,7 @@
       "commit",
       "-a",
       "-m",
-      "Version 10.0.0",
+      "Version 10.1.0",
       "-m",
       "",
       "-m",
@@ -423,9 +332,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git commit",
+    "name": "New branch detected.git commit",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -449,32 +358,9 @@
       ]
     },
     "infra_step": true,
-    "name": "New branch detected.Update on main.git cl",
+    "name": "New branch detected.git cl",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "cl",
-      "issue"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "New branch detected.Update on main.git cl (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@stdout@Issue number: 2 (https://review.source.com/2)@@@",
-      "@@@STEP_LOG_END@stdout@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {

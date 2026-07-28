@@ -114,9 +114,9 @@
     "infra_step": true,
     "name": "last branches",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.9@@@",
-      "@@@STEP_LOG_LINE@stdout@branch-heads/10.1@@@",
       "@@@STEP_LOG_LINE@stdout@branch-heads/10.2@@@",
+      "@@@STEP_LOG_LINE@stdout@branch-heads/10.1@@@",
+      "@@@STEP_LOG_LINE@stdout@branch-heads/10.0@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },
@@ -127,49 +127,8 @@
   {
     "cmd": [
       "git",
-      "checkout",
-      "infra/config"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "git checkout",
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "pull"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "git pull",
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
       "show",
-      "HEAD:definitions.star"
+      "main:include/v8-version.h"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -181,11 +140,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Read branch definitions",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@versions = {\"beta\": \"10.2\", \"stable\": \"10.1\", \"extended\": \"10.0\"}@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
+    "name": "Check main version file"
   },
   {
     "cmd": [],

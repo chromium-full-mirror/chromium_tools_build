@@ -292,6 +292,7 @@ class LedTrigger(Trigger):
 
 class V8Api(recipe_api.RecipeApi):
   VERSION_FILE = 'include/v8-version.h'
+  V8Version = V8Version
 
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -302,6 +303,10 @@ class V8Api(recipe_api.RecipeApi):
     self.always_isolate_targets = properties.get('always_isolate_targets', [])
     self.recipe_result = RawResult(status=common_pb.SUCCESS)
     self._build_config = None
+
+  @property
+  def V8_CI_AUTOROLL_BUILDER(self):
+    return V8_CI_AUTOROLL_BUILDER
 
   @property
   def dry_run(self):
@@ -1600,11 +1605,6 @@ class V8Api(recipe_api.RecipeApi):
     lines.append("]")
     return "\n".join(lines) + "\n"
 
-  def infer_beta_version(self, definitions):
-    contents = ast.parse(definitions, mode='exec')
-    defined_versions = contents.body[0].value.values
-    return self.version_from_text(defined_versions[0].value)
-
   def update_infra_config(self, source_dir, definitions, hashtag):
     with self.m.step.nest('Update infra/config') as parent_step:
       self.git_output('checkout', 'infra/config')
@@ -1625,23 +1625,6 @@ class V8Api(recipe_api.RecipeApi):
           '--set-bot-commit', '--auto-submit'
       ]
       self.git_output(*upload_cmd)
-      issue = self.get_cl_issue()
-      parent_step.links[issue] = issue
-
-  def update_main_version(self, source_dir):
-    with self.m.step.nest('Update on main') as parent_step:
-      branch_ref = 'main'
-      self.git_output('checkout', branch_ref)
-      version_at_branch_head = self.read_version_from_ref(
-          source_dir, "HEAD", branch_ref)
-      version_at_branch_head = version_at_branch_head.with_incremented_minor()
-      self.update_version_cl(
-          source_dir,
-          branch_ref,
-          version_at_branch_head,
-          push_account=V8_CI_AUTOROLL_BUILDER,
-          bot_commit=True,
-      )
       issue = self.get_cl_issue()
       parent_step.links[issue] = issue
 
