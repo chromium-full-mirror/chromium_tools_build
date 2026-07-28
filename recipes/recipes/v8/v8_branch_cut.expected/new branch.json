@@ -155,6 +155,47 @@
   {
     "cmd": [
       "git",
+      "checkout",
+      "main"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "git checkout",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "pull"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "git pull",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
       "show",
       "main:include/v8-version.h"
     ],

@@ -50,6 +50,9 @@ def RunSteps(api):
     last_version = branches[0]
     api.step('Last branch %s' % api.v8.version_num2str(last_version), [])
 
+    api.v8.git_output('checkout', 'main')
+    api.v8.git_output('pull')
+
     main_version_obj = api.v8.read_version_from_ref(source_dir, 'main', 'main')
     main_version = api.v8.version_from_text(str(main_version_obj))
 
