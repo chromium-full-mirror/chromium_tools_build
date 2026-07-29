@@ -128,12 +128,20 @@ class TestOptionFlags:
   batch_limit_flag = attrib(str, default='')
 
   @classmethod
-  def create(cls, **kwargs):
-    filter_flag = kwargs.get('filter_flag')
-    filter_delimiter = kwargs.get('filter_delimiter')
+  def create(
+      cls,
+      filter_flag: str = '',
+      filter_delimiter: str = '',
+      **kwargs,
+  ):
+    """Create a TestOptionFlags instance."""
     if filter_flag and not filter_delimiter:
       raise ValueError("'filter_delimiter' must be set if 'filter_flag' is")
-    return cls(**kwargs)
+    return cls(
+        filter_flag=filter_flag,
+        filter_delimiter=filter_delimiter,
+        **kwargs,
+    )
 
 
 _DEFAULT_OPTION_FLAGS = TestOptionFlags.create()
@@ -189,6 +197,7 @@ class TestOptions:
 
   @classmethod
   def create(cls, **kwargs):
+    """Create a TestOptions instance."""
     return cls(**kwargs)
 
   def for_running(self, suffix, tests_to_retry):
@@ -734,6 +743,7 @@ class TestSpec(AbstractTestSpec):
     * name - The displayed name of the test.
     * target_name - The ninja build target for the test, a key in
       one of the gn_isolate_map.pyl files being used, e.g. "browser_tests".
+      If not set, defaults to the test's name.
     * full_test_target - A fully qualified Ninja target, e.g.
       "//chrome/test:browser_tests".
     * waterfall_builder_group - The matching waterfall builder group.
@@ -779,19 +789,18 @@ class TestSpec(AbstractTestSpec):
     return self._name
 
   @classmethod
-  def create(cls, name, **kwargs):
+  def create(cls, name: str, target_name: str | None = None, **kwargs):
     """Create a TestSpec.
 
-    Arguments:
-      * name - The name of the test. The returned spec will have this
-        value for name.
-      * kwargs - Additional keyword arguments that will be used to
-        initialize the attributes of the returned spec. If the
-        `target_name` keyword is not set, the `target_name` attribute of
-        the returned spec have the value of `name`.
+    Args:
+      name: The name of the test. The returned spec will have this value for
+        name.
+      target_name: The target name for the test. If not set, defaults to `name`.
+      **kwargs: Additional keyword arguments that will be used to initialize
+        the attributes of the returned spec.
     """
-    kwargs['target_name'] = kwargs.get('target_name') or name
-    return cls(name=name, **kwargs)
+    target_name = target_name or name
+    return cls(name=name, target_name=target_name, **kwargs)
 
   @property
   @abc.abstractmethod
@@ -1189,13 +1198,13 @@ class TestWrapperSpec(AbstractTestSpec):
   _test_spec = attrib(AbstractTestSpec)
 
   @classmethod
-  def create(cls, test_spec, **kwargs):
+  def create(cls, test_spec: AbstractTestSpec, **kwargs):
     """Create a TestWrapperSpec.
 
-    Arguments:
-      * test_spec - The spec for the wrapped test.
-      * kwargs - Additional keyword arguments that will be used to
-        initialize the attributes of the returned spec.
+    Args:
+      test_spec: The spec for the wrapped test.
+      **kwargs: Additional keyword arguments that will be used to initialize
+        the attributes of the returned spec.
     """
     return cls(test_spec, **kwargs)
 
@@ -2021,7 +2030,9 @@ class SwarmingTestSpec(TestSpec):
       dimensions specified in the value. The final slice will set the
       dimensions according to the `dimensions` attribute.
     * extra_suffix - An additional suffix applied to the test's step
-      name.
+      name. If not set, a value will be computed if the `'gpu'`
+      dimension is specified or if the `'os'` dimension is `'Android'`
+      and the `'device_type'` dimension is set.
     * hard_timeout - The execution timeout in seconds of the test's
       swarming tasks.
     * io_timeout - The maximum amount of time in seconds swarming will
@@ -2072,25 +2083,37 @@ class SwarmingTestSpec(TestSpec):
   wait_for_capacity = attrib(bool, default=None)
 
   @classmethod
-  def create(cls, name, **kwargs):
+  def create(
+      cls,
+      name: str,
+      target_name: str | None = None,
+      extra_suffix: str | None = None,
+      **kwargs,
+  ):
     """Create a SwarmingTestSpec.
 
-    Arguments:
-      * name - The name of the test.
-      * kwargs - Additional keyword arguments that will be used to
-        initialize the attributes of the returned spec. If the keyword
-        `extra_suffix` is not set, a value will be computed if the
-        `'gpu'` dimension is specified or if the `'os'` dimension is
-        `'Android'` and the `'device_type'` dimension is set.
+    Args:
+      name: The name of the test.
+      target_name: The target name for the test. If not set, defaults to `name`.
+      extra_suffix: Extra suffix for the test name. If not set, a value will be
+        computed if the `'gpu'` dimension is specified or if the `'os'`
+        dimension is `'Android'` and the `'device_type'` dimension is set.
+      **kwargs: Additional keyword arguments that will be used to initialize
+        the attributes of the returned spec.
     """
+
     dimensions = kwargs.get('dimensions', {})
-    extra_suffix = kwargs.pop('extra_suffix', None)
     if extra_suffix is None:
       if dimensions.get('gpu'):
         extra_suffix = cls._get_gpu_suffix(dimensions)
       elif dimensions.get('os') == 'Android' and dimensions.get('device_type'):
         extra_suffix = cls._get_android_suffix(dimensions)
-    return super().create(name, extra_suffix=extra_suffix, **kwargs)
+    return super().create(
+        name,
+        target_name=target_name,
+        extra_suffix=extra_suffix,
+        **kwargs,
+    )
 
   @property
   def name(self):
