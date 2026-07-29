@@ -394,9 +394,9 @@ def GenTests(api):
                            REQUESTS[0].spec.cros_model,
                            '--bucket',
                            REQUESTS[0].spec.bucket,
-                           '--public-builder',
+                           '--ctp-builder-name',
                            REQUESTS[0].spec.public_builder,
-                           '--public-builder-bucket',
+                           '--ctp-bucket',
                            REQUESTS[0].spec.public_builder_bucket,
                        ]),
       api.skylab.mock_wait_on_suites('find test runner build', 1),
@@ -497,7 +497,8 @@ def GenTests(api):
           BUILD_VARIANT_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'build_variant',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
+              '--ctp-builder-name', 'cros_test_platform', '--ctp-bucket',
+              'testplatform', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-arc-t-release/R111-15300.0.0', '--timeout-mins', '60',
               '--qs-account', 'chrome'
           ]),
@@ -537,6 +538,10 @@ def GenTests(api):
               '',
               '--board',
               'eve',
+              '--ctp-builder-name',
+              'cros_test_platform',
+              '--ctp-bucket',
+              'testplatform',
               '--pool',
               'DUT_POOL_QUOTA',
               '--image',
@@ -599,7 +604,8 @@ def GenTests(api):
           'schedule skylab test.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'multi_dut',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
+              '--ctp-builder-name', 'cros_test_platform', '--ctp-bucket',
+              'testplatform', '--pool', 'DUT_POOL_QUOTA', '--image',
               'eve-release/R88-13545.0.0', '--secondary-boards', 'eve',
               '--secondary-images', 'eve-release/R88-13545.0.0',
               '--timeout-mins', '60', '--qs-account', 'chrome'
@@ -689,6 +695,10 @@ def GenTests(api):
               '',
               '--board',
               'eve',
+              '--ctp-builder-name',
+              'cros_test_platform',
+              '--ctp-bucket',
+              'testplatform',
               '--pool',
               'DUT_POOL_QUOTA',
               '--image',
@@ -730,11 +740,10 @@ def GenTests(api):
           'schedule skylab test.' + LKGM_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'm88_ctp_with_retry_lkgm',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
-              '--bucket', 'chromeos-image-archive', '--public-builder',
-              'ctp-public-builder', '--public-builder-bucket', 'public-bucket',
-              '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-release/R118-15580.0.0', '--timeout-mins', '60',
-              '--qs-account', 'chrome'
+              '--bucket', 'chromeos-image-archive', '--ctp-builder-name',
+              'ctp-public-builder', '--ctp-bucket', 'public-bucket', '--pool',
+              'DUT_POOL_QUOTA', '--image', 'eve-release/R118-15580.0.0',
+              '--timeout-mins', '60', '--qs-account', 'chrome'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -761,7 +770,8 @@ def GenTests(api):
           [
               'request', '--chromium-suite-name', 'm88_ctp_with_retry_lkgm',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'eve',
-              '--bucket', 'chromiumos-image-archive', '--pool',
+              '--bucket', 'chromiumos-image-archive', '--ctp-builder-name',
+              'cros_test_platform', '--ctp-bucket', 'testplatform', '--pool',
               'DUT_POOL_QUOTA', '--image', 'eve-public/R118-15580.0.0',
               '--timeout-mins', '60', '--qs-account', 'chrome'
           ]),
@@ -806,8 +816,9 @@ def GenTests(api):
           'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
-              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--model', 'kano', '--ctp-builder-name', 'cros_test_platform',
+              '--ctp-bucket', 'testplatform', '--pool', 'DUT_POOL_QUOTA',
+              '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'chrome'
           ]),
       api.post_process(
@@ -846,8 +857,9 @@ def GenTests(api):
           'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
-              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--model', 'kano', '--ctp-builder-name', 'cros_test_platform',
+              '--ctp-bucket', 'testplatform', '--pool', 'DUT_POOL_QUOTA',
+              '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'chrome'
           ]),
       api.post_process(
@@ -889,8 +901,9 @@ def GenTests(api):
           'schedule skylab test.' + TFC_REQUESTS[0].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_chrome_all_tests',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
-              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--model', 'kano', '--ctp-builder-name', 'cros_test_platform',
+              '--ctp-bucket', 'testplatform', '--pool', 'DUT_POOL_QUOTA',
+              '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'chrome'
           ]),
       api.post_process(
@@ -926,8 +939,9 @@ def GenTests(api):
           'schedule skylab test.' + TFC_REQUESTS[1].name + '.schedule', [
               'request', '--chromium-suite-name', 'tfc_explicit_test_list',
               '--parent-build-id', '0', '--builder-name', '', '--board', 'brya',
-              '--model', 'kano', '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-release/R88-13545.0.0', '--timeout-mins', '60',
+              '--model', 'kano', '--ctp-builder-name', 'cros_test_platform',
+              '--ctp-bucket', 'testplatform', '--pool', 'DUT_POOL_QUOTA',
+              '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'chrome'
           ]),
       api.post_process(
@@ -990,5 +1004,84 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[0].name + '.schedule',
                        ['--qs-account', 'chrome_cq']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cros-test-platform-staging-ci-betty',
+      api.properties(requests=REQUESTS[1:2]),
+      api.buildbucket.ci_build(
+          builder='chromeos-betty-chrome-gtest', build_id=8900000000000000018),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[1].name + '.schedule',
+                       [
+                           '--ctp-builder-name', 'cros_test_platform-staging',
+                           '--ctp-bucket', 'testplatform'
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cros-test-platform-staging-ci-volteer',
+      api.properties(requests=REQUESTS[1:2]),
+      api.buildbucket.ci_build(
+          builder='chromeos-volteer-chrome-gtest',
+          build_id=8900000000000000018),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[1].name + '.schedule',
+                       [
+                           '--ctp-builder-name', 'cros_test_platform-staging',
+                           '--ctp-bucket', 'testplatform'
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cros-test-platform-staging-ci-other-builder',
+      api.properties(requests=REQUESTS[1:2]),
+      api.buildbucket.ci_build(
+          builder='ci-builder', build_id=8900000000000000018),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'schedule skylab test.' + REQUESTS[1].name + '.schedule',
+                       ['--ctp-builder-name', 'cros_test_platform-staging']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cros-test-platform-staging-try-shadow',
+      api.properties(requests=REQUESTS[1:2]),
+      api.buildbucket.try_build(builder='try-builder', bucket='try.shadow'),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[1].name + '.schedule',
+                       [
+                           '--ctp-builder-name', 'cros_test_platform-staging',
+                           '--ctp-bucket', 'testplatform'
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cros-test-platform-staging-ci-uprev',
+      api.properties(requests=REQUESTS[1:2]),
+      api.buildbucket.ci_build(
+          builder='chromeos-betty-preuprev-builder',
+          build_id=8900000000000000018),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'schedule skylab test.' + REQUESTS[1].name + '.schedule',
+                       ['--ctp-builder-name', 'cros_test_platform-staging']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'cros-test-platform-staging-public-prod-only',
+      api.properties(requests=REQUESTS[:1]),
+      api.buildbucket.ci_build(
+          builder='chromeos-betty-chrome-gtest', build_id=8900000000000000018),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       [
+                           '--ctp-builder-name', 'ctp-public-builder',
+                           '--ctp-bucket', 'public-bucket'
+                       ]),
       api.post_process(post_process.DropExpectation),
   )

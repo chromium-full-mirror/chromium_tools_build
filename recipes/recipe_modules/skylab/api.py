@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import attr
 import base64
+import hashlib
 import os
 import re
 
@@ -33,7 +34,7 @@ QS_ACCOUNT_CQ = 'chrome_cq'
 QS_ACCOUNT_FYI = 'chrome_fyi'
 QS_ACCOUNT_PROD = 'chrome'
 CTP_BUILDER = 'cros_test_platform'
-CTP_BUILDER_DEV = 'cros_test_platform-dev'
+CTP_BUILDER_STAGING = 'cros_test_platform-staging'
 CROS_BUCKET = 'gs://chromeos-image-archive/'
 
 # Prefix of args that indicates variable names of Tast '-var' flags.
@@ -193,6 +194,36 @@ class SkylabApi(recipe_api.RecipeApi):
 
     return QS_ACCOUNT_PROD
 
+  def _should_use_staging_ctp(self, test) -> bool:
+    """Determine if request should be routed to cros_test_platform-staging.
+
+    - Public requests are prod only (no public staging).
+    - try.shadow always goes to staging.
+    - ci/*uprev* always goes to prod.
+    - 10% of CI requests for betty/volteer builders go to staging,
+      deterministic per build ID. Other builders go to prod.
+    """
+    if test.spec.public_builder or test.spec.public_builder_bucket:
+      return False
+
+    builder = self.m.buildbucket.build.builder
+    bucket = builder.bucket
+    builder_name_lower = builder.builder.lower()
+
+    if bucket == 'try.shadow':
+      return True
+
+    if bucket == 'ci':
+      if 'uprev' in builder_name_lower:
+        return False
+      if 'betty' not in builder_name_lower and 'volteer' not in builder_name_lower:
+        return False
+      build_id_str = str(self.m.buildbucket.build.id)
+      h = hashlib.sha256(build_id_str.encode('utf-8')).hexdigest()
+      return int(h, 16) % 100 < 10
+
+    return False
+
   def schedule_suite(self,
                      test,
                      suffix,
@@ -243,9 +274,14 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.bucket:
         cmd.extend(['--bucket', test.spec.bucket])
 
-      if test.spec.public_builder and test.spec.public_builder_bucket:
-        cmd.extend(['--public-builder', test.spec.public_builder])
-        cmd.extend(['--public-builder-bucket', test.spec.public_builder_bucket])
+      target_builder = test.spec.public_builder or CTP_BUILDER
+      target_bucket = test.spec.public_builder_bucket or 'testplatform'
+      if self._should_use_staging_ctp(test):
+        target_builder = CTP_BUILDER_STAGING
+        target_bucket = 'testplatform'
+
+      cmd.extend(['--ctp-builder-name', target_builder])
+      cmd.extend(['--ctp-bucket', target_bucket])
 
       cmd.extend([
           '--pool',
@@ -433,8 +469,8 @@ class SkylabApi(recipe_api.RecipeApi):
           step_test_data=lambda: self.m.json.test_api.output({
               'builder': {
                   'project': 'chromeos',
-                  'bucket': 'testplatform',
-                  'builder': 'cros_test_platform',
+                  'bucket': target_bucket or 'testplatform',
+                  'builder': target_builder or CTP_BUILDER,
               },
               'properties': {
                   'ctpv2_request': {

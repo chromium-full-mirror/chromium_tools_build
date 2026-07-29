@@ -334,8 +334,8 @@ def schedule_skylab_tests(opts):
   bb_request_data = {
       'builder': {
           'project': 'chromeos',
-          'bucket': opts.public_builder_bucket or 'testplatform',
-          'builder': opts.public_builder or 'cros_test_platform',
+          'bucket': opts.ctp_bucket,
+          'builder': opts.ctp_builder_name,
       },
       'properties': {
           'ctpv2_request': json_format.MessageToDict(v2req),
@@ -543,15 +543,15 @@ def main(args):
       default='gs://chromeos-image-archive',
       help='GCS bucket to pass browser artifacts to Skylab.')
   subparser.add_argument(
-      '--public-builder',
+      '--ctp-builder-name',
       type=str,
-      default=None,
-      help='Buildbucket builder for public Skylab, aka Chromium CQ tests.')
+      default='cros_test_platform',
+      help='Buildbucket builder for CTP.')
   subparser.add_argument(
-      '--public-builder-bucket',
+      '--ctp-bucket',
       type=str,
-      default=None,
-      help='Buildbucket bucket for public Skylab, aka Chromium CQ tests.')
+      default='testplatform',
+      help='Buildbucket bucket for CTP.')
   subparser.add_argument(
       '--parent-build-id',
       type=str,
