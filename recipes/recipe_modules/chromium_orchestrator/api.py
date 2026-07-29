@@ -203,6 +203,14 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # outputed by the compilator
     tests = []
     if comp_output.swarming_props:
+      variant_digests = comp_output.swarming_props.get(
+          'swarming_command_lines_variant_digests')
+      if variant_digests:
+        step_res = self.m.step.empty(
+            'record swarming command lines variant digests')
+        step_res.presentation.properties[
+            'swarming_command_lines_variant_digests'] = thaw(variant_digests)
+
       tests = self.process_swarming_props(
           source_dir,
           build_dir,

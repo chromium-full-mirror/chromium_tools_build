@@ -982,11 +982,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         use_siso_isolate=use_siso_isolate)
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
-    rts_command_lines = self.m.chromium_rts.get_rts_command_lines(
+    command_line_variants = self.m.chromium_rts.get_command_line_variants(
         build_dir, command_lines)
-    command_line_variants = {}
-    if rts_command_lines:
-      command_line_variants['rts'] = rts_command_lines
 
     return self.set_swarming_test_execution_info(
         source_dir,

@@ -74,6 +74,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         str(_DEFAULT_TARGET_CHANGE_RECALL),
         '-change-ref',
         'HEAD~',
+        '-gen-inverse',
     ]
     self.m.step('generate chromium-rts filter files', cmd)
 
@@ -154,12 +155,22 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       for target in targets:
         if target in self._get_banned_suites():
           continue
+        filter_files_to_add = []
         filter_file = self.filter_file_dir(build_dir) / f'{target}.filter'
         if self.m.path.exists(filter_file):
+          filter_files_to_add.append(
+              self.m.path.relpath(filter_file, build_dir))
+        comp_filter_file = self.filter_file_dir(
+            build_dir) / f'{target}_inverted.filter'
+        if self.m.path.exists(comp_filter_file):
+          filter_files_to_add.append(
+              self.m.path.relpath(comp_filter_file, build_dir))
+
+        if filter_files_to_add:
           isolate_file = build_dir / f'{target}.isolate'
           if self.m.path.exists(isolate_file):
-            self.m.isolate.add_files_to_isolate_file(
-                isolate_file, [f'gen/rts/{target}.filter'])
+            self.m.isolate.add_files_to_isolate_file(isolate_file,
+                                                     filter_files_to_add)
           else:
             missing_isolates.append(target)
 
@@ -169,7 +180,25 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
             'The following targets had RTS filter files generated but were '
             'missing .isolate files: %s' % ', '.join(missing_isolates))
 
-  def get_rts_command_lines(
+  def get_command_line_variants(
+      self,
+      build_dir: Path,
+      command_lines: dict[str, list[str]],
+  ) -> dict[str, dict[str, list[str]]]:
+    """Constructs command line variants for the given targets."""
+    variants = {}
+    rts_command_lines = self._get_rts_command_lines(build_dir, command_lines)
+    if rts_command_lines:
+      variants['rts'] = rts_command_lines
+
+    rts_complement_command_lines = self._get_rts_complement_command_lines(
+        build_dir, command_lines)
+    if rts_complement_command_lines:
+      variants['rts_complement'] = rts_complement_command_lines
+
+    return variants
+
+  def _get_rts_command_lines(
       self,
       build_dir: Path,
       command_lines: dict[str, list[str]],
@@ -189,6 +218,30 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         rts_command_lines[target] = rts_cmd
 
     return rts_command_lines
+
+  def _get_rts_complement_command_lines(
+      self,
+      build_dir: Path,
+      command_lines: dict[str, list[str]],
+  ) -> dict[str, list[str]]:
+    """Constructs RTS complement command lines for the given targets. """
+    rts_complement_command_lines = {}
+    if not self._should_skip_tests():
+      return rts_complement_command_lines
+
+    for target, cmd in command_lines.items():
+      if target in self._get_banned_suites():
+        continue
+      filter_file = self.filter_file_dir(
+          build_dir) / f'{target}_inverted.filter'
+      if self.m.path.exists(filter_file):
+        rts_cmd = list(cmd)
+        rts_cmd.append(
+            f'--test-launcher-filter-file={self.m.path.relpath(filter_file, build_dir)}'
+        )
+        rts_complement_command_lines[target] = rts_cmd
+
+    return rts_complement_command_lines
 
   def set_swarming_test_execution_info(
       self,

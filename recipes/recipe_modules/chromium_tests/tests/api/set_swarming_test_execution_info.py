@@ -82,6 +82,14 @@ def GenTests(api):
           fake_command_lines[fake_test] +
           ['--test-launcher-filter-file=gen/rts/fake_test.filter'],
   }
+  fake_rts_complement_command_lines_digest = (
+      'rts_complement-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0'
+  )
+  fake_rts_complement_command_lines = {
+      fake_test:
+          fake_command_lines[fake_test] +
+          ['--test-launcher-filter-file=gen/rts/fake_test_inverted.filter'],
+  }
 
   def is_subsequence(containing, contained):
     result = False
@@ -497,6 +505,8 @@ def GenTests(api):
           api.path.cache_dir / 'builder' / 'src' / 'out' / 'ceb4-fake-builder' /
           'gen' / 'rts' / 'fake_test.filter',
           api.path.cache_dir / 'builder' / 'src' / 'out' / 'ceb4-fake-builder' /
+          'gen' / 'rts' / 'fake_test_inverted.filter',
+          api.path.cache_dir / 'builder' / 'src' / 'out' / 'ceb4-fake-builder' /
           'fake_test.isolate',
       ),
       api.override_step_data(
@@ -509,6 +519,9 @@ def GenTests(api):
                     api.raw_io.output_text(fake_command_lines_digest)),
       api.step_data('archive rts command lines to RBE-CAS',
                     api.raw_io.output_text(fake_rts_command_lines_digest)),
+      api.step_data(
+          'archive rts_complement command lines to RBE-CAS',
+          api.raw_io.output_text(fake_rts_complement_command_lines_digest)),
       api.post_process(post_process.LogContains, 'trigger', 'input',
                        [fake_command_lines_digest]),
       api.post_process(post_process.LogContains, 'trigger', 'input',
@@ -516,6 +529,10 @@ def GenTests(api):
       api.post_process(post_process.LogContains, 'trigger', 'input', [
           'swarming_command_lines_variant_digests',
           fake_rts_command_lines_digest
+      ]),
+      api.post_process(post_process.LogContains, 'trigger', 'input', [
+          'swarming_command_lines_variant_digests',
+          fake_rts_complement_command_lines_digest
       ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -531,7 +548,8 @@ def GenTests(api):
           swarm_hashes=fake_swarm_hashes,
           swarming_command_lines_digest=fake_command_lines_digest,
           swarming_command_lines_variant_digests={
-              'rts': fake_rts_command_lines_digest
+              'rts': fake_rts_command_lines_digest,
+              'rts_complement': fake_rts_complement_command_lines_digest,
           },
           swarming_command_lines_cwd='out/Release_x64'),
       api.chromium_tests.read_targets_spec(*fake_targets_spec),
@@ -539,7 +557,13 @@ def GenTests(api):
                     api.file.read_json(fake_command_lines)),
       api.step_data('read rts command lines',
                     api.file.read_json(fake_rts_command_lines)),
+      api.step_data('read rts_complement command lines',
+                    api.file.read_json(fake_rts_complement_command_lines)),
       api.post_process(post_process.MustRun, 'download rts command lines'),
       api.post_process(post_process.MustRun, 'read rts command lines'),
+      api.post_process(post_process.MustRun,
+                       'download rts_complement command lines'),
+      api.post_process(post_process.MustRun,
+                       'read rts_complement command lines'),
       api.post_process(post_process.DropExpectation),
   )

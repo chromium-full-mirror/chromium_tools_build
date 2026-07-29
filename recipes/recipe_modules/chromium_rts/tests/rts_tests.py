@@ -34,20 +34,28 @@ def RunSteps(api):
   api.chromium_rts.start_evaluation(api.path.cleanup_dir, [])
   api.chromium_rts.wait_for_evaluation()
 
-  rts_command_lines = api.chromium_rts.get_rts_command_lines(
+  command_line_variants = api.chromium_rts.get_command_line_variants(
       api.path.cleanup_dir, {
           'blink_web_tests': ['/bin/run_tests', '--some-arg'],
           'blink_python_tests': ['/bin/run_python_tests'],
       })
   if api.chromium_rts._should_skip_tests():
-    assert rts_command_lines == {
-        'blink_web_tests': [
-            '/bin/run_tests', '--some-arg',
-            '--test-launcher-filter-file=gen/rts/blink_web_tests.filter'
-        ]
+    assert command_line_variants == {
+        'rts': {
+            'blink_web_tests': [
+                '/bin/run_tests', '--some-arg',
+                '--test-launcher-filter-file=gen/rts/blink_web_tests.filter'
+            ]
+        },
+        'rts_complement': {
+            'blink_web_tests': [
+                '/bin/run_tests', '--some-arg',
+                '--test-launcher-filter-file=gen/rts/blink_web_tests_inverted.filter'
+            ]
+        }
     }
   else:
-    assert rts_command_lines == {}
+    assert command_line_variants == {}
 
 
 def GenTests(api):
@@ -129,7 +137,11 @@ def GenTests(api):
       api.path.exists(
           api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
           api.path.cleanup_dir.joinpath('gen', 'rts',
+                                        'blink_web_tests_inverted.filter'),
+          api.path.cleanup_dir.joinpath('gen', 'rts',
                                         'blink_python_tests.filter'),
+          api.path.cleanup_dir.joinpath('gen', 'rts',
+                                        'blink_python_tests_inverted.filter'),
           api.path.cleanup_dir.joinpath('blink_web_tests.isolate'),
       ),
       api.override_step_data(
@@ -149,8 +161,10 @@ def GenTests(api):
       api.chromium.try_build(
           builder='linux-rel', experiments=['chromium_rts.skip_tests']),
       api.path.exists(
+          api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
           api.path.cleanup_dir.joinpath('gen', 'rts',
-                                        'blink_web_tests.filter'),),
+                                        'blink_web_tests_inverted.filter'),
+      ),
       api.post_process(
           post_process.MustRun,
           'add RTS filter files to isolates.missing isolate files'),
