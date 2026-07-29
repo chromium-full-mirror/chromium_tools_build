@@ -12,6 +12,7 @@ DEPS = [
     'depot_tools/osx_sdk',
     'presentation_utils',
     'recipe_engine/buildbucket',
+    "recipe_engine/cas",
     'recipe_engine/context',
     'recipe_engine/defer',
     'recipe_engine/file',
@@ -337,112 +338,141 @@ def RunSteps(api, android, check_pregenerated_files, check_stack, clang,
       api.step(
           'cmake', msvc_prefix + [cmake, '-GNinja'] +
           ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] + [src])
-    api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir, '-v'])
 
-    # Build the Rust crates.
-    cargo = 'cargo' + _GetHostExeSuffix(api.platform)
-    if config.rust:
-      with api.context(cwd=rust_dir):
-        api.step(
-            'cargo build',
-            msvc_prefix + [cargo, 'build', '--all-targets', '--keep-going'])
-        api.step(
-            'cargo build (all features)', msvc_prefix +
-            [cargo, 'build', '--all-targets', '--all-features', '--keep-going'])
+    try:
+      api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir, '-v'])
 
-    with api.defer.context() as defer:
-      if check_stack:
-        defer(api.step, 'check stack', [
-            'go', 'run',
-            src.joinpath('util', 'check_stack.go'),
-            build_dir.joinpath('bssl')
-        ])
-
-      with api.context(cwd=src):
-        defer(api.step, 'check filenames',
-              ['go', 'run',
-               src.joinpath('util', 'check_filenames.go')])
-
-      with api.context(cwd=src):
-        # Determine the list of Go tests to run.
-        go_tests_str = api.file.read_text('read go tests',
-                                          src.joinpath('util', 'go_tests.txt'))
-        go_tests = [t for t in go_tests_str.split('\n') if t]
-        defer(api.step, 'go tests', ['go', 'test', '-v'] + go_tests)
-
-      env = config.get_target_env(bot_utils, api.platform)
-
-      # Run the unit tests.
-      if config.run_unit_tests:
-        with api.context(cwd=src, env=env):
-          all_tests_args = []
-          if config.sde:
-            all_tests_args += ['-sde', '-sde-path', sde_path]
-          if config.android:
-            defer(api.step, 'unit tests', [
-                'go',
-                'run',
-                api.path.join('util', 'run_android_tests.go'),
-                '-build-dir',
-                build_dir,
-                '-adb',
-                adb_path,
-                '-suite',
-                'unit',
-                '-all-tests-args',
-                ' '.join(all_tests_args),
-            ])
-          else:
-            defer(
-                api.step,
-                'unit tests', msvc_prefix + [
-                    'go',
-                    'run',
-                    api.path.join('util', 'all_tests.go'),
-                ] + all_tests_args)
-
-      # Run the SSL tests.
-      if config.run_ssl_tests:
-        runner_args = ['-pipe']
-        if config.has_token('fuzz'):
-          runner_args += ['-fuzzer', '-shim-config', 'fuzzer_mode.json']
-        # Limit the number of workers on Android and Mac, to avoid flakiness.
-        # https://crbug.com/boringssl/192
-        # https://crbug.com/boringssl/199
-        if api.platform.is_mac or config.android:
-          runner_args += ['-num-workers', '1']
-        runner_args += config.runner_args
-        if config.android:
-          with api.context(cwd=src, env=env):
-            defer(api.step, 'ssl tests', [
-                'go',
-                'run',
-                api.path.join('util', 'run_android_tests.go'),
-                '-build-dir',
-                build_dir,
-                '-adb',
-                adb_path,
-                '-suite',
-                'ssl',
-                '-runner-args',
-                ' '.join(runner_args),
-            ])
-        else:
-          with api.context(cwd=runner_dir, env=env):
-            defer(api.step, 'ssl tests',
-                  msvc_prefix + ['go', 'test'] + runner_args)
-
-      # Run the Rust tests.
-      if config.rust and config.run_unit_tests:
+      # Build the Rust crates.
+      cargo = 'cargo' + _GetHostExeSuffix(api.platform)
+      if config.rust:
         with api.context(cwd=rust_dir):
-          defer(
-              api.step, 'rust tests',
-              msvc_prefix + [cargo, 'test', '--all-targets', '--no-fail-fast'])
-          defer(
-              api.step, 'rust tests (all features)', msvc_prefix + [
-                  cargo, 'test', '--all-targets', '--all-features',
-                  '--no-fail-fast'
+          api.step(
+              'cargo build',
+              msvc_prefix + [cargo, 'build', '--all-targets', '--keep-going'])
+          api.step(
+              'cargo build (all features)', msvc_prefix + [
+                  cargo, 'build', '--all-targets', '--all-features',
+                  '--keep-going'
               ])
+
+      with api.defer.context() as defer:
+        if check_stack:
+          defer(api.step, 'check stack', [
+              'go', 'run',
+              src.joinpath('util', 'check_stack.go'),
+              build_dir.joinpath('bssl')
+          ])
+
+        with api.context(cwd=src):
+          defer(api.step, 'check filenames',
+                ['go', 'run',
+                 src.joinpath('util', 'check_filenames.go')])
+
+        with api.context(cwd=src):
+          # Determine the list of Go tests to run.
+          go_tests_str = api.file.read_text(
+              'read go tests', src.joinpath('util', 'go_tests.txt'))
+          go_tests = [t for t in go_tests_str.split('\n') if t]
+          defer(api.step, 'go tests', ['go', 'test', '-v'] + go_tests)
+
+        env = config.get_target_env(bot_utils, api.platform)
+
+        # Run the unit tests.
+        if config.run_unit_tests:
+          with api.context(cwd=src, env=env):
+            all_tests_args = []
+            if config.sde:
+              all_tests_args += ['-sde', '-sde-path', sde_path]
+            if config.android:
+              defer(api.step, 'unit tests', [
+                  'go',
+                  'run',
+                  api.path.join('util', 'run_android_tests.go'),
+                  '-build-dir',
+                  build_dir,
+                  '-adb',
+                  adb_path,
+                  '-suite',
+                  'unit',
+                  '-all-tests-args',
+                  ' '.join(all_tests_args),
+              ])
+            else:
+              defer(
+                  api.step, 'unit tests', msvc_prefix + [
+                      'go',
+                      'run',
+                      api.path.join('util', 'all_tests.go'),
+                  ] + all_tests_args)
+
+        # Run the SSL tests.
+        if config.run_ssl_tests:
+          runner_args = ['-pipe']
+          if config.has_token('fuzz'):
+            runner_args += ['-fuzzer', '-shim-config', 'fuzzer_mode.json']
+          # Limit the number of workers on Android and Mac, to avoid flakiness.
+          # https://crbug.com/boringssl/192
+          # https://crbug.com/boringssl/199
+          if api.platform.is_mac or config.android:
+            runner_args += ['-num-workers', '1']
+          runner_args += config.runner_args
+          if config.android:
+            with api.context(cwd=src, env=env):
+              defer(api.step, 'ssl tests', [
+                  'go',
+                  'run',
+                  api.path.join('util', 'run_android_tests.go'),
+                  '-build-dir',
+                  build_dir,
+                  '-adb',
+                  adb_path,
+                  '-suite',
+                  'ssl',
+                  '-runner-args',
+                  ' '.join(runner_args),
+              ])
+          else:
+            with api.context(cwd=runner_dir, env=env):
+              defer(api.step, 'ssl tests',
+                    msvc_prefix + ['go', 'test'] + runner_args)
+
+        # Run the Rust tests.
+        if config.rust and config.run_unit_tests:
+          with api.context(cwd=rust_dir):
+            defer(
+                api.step, 'rust tests', msvc_prefix +
+                [cargo, 'test', '--all-targets', '--no-fail-fast'])
+            defer(
+                api.step, 'rust tests (all features)', msvc_prefix + [
+                    cargo, 'test', '--all-targets', '--all-features',
+                    '--no-fail-fast'
+                ])
+    finally:
+      output_dir = api.path.mkdtemp('debug_artifacts')
+      patterns = [
+          "**/*.a",
+          "**/*.dll",
+          "**/*.dylib",
+          "**/*.exe",
+          "**/*.lib",
+          "**/*.so",
+          "**/*_bench",
+          "**/*_shim",
+          "**/*_test",
+          "**/bssl",
+          "**/generate_mldsa_certs",
+          "**/jitter_deltas",
+          "**/test_fips",
+      ]
+      for pattern in patterns:
+        paths = api.file.glob_paths("Locate debug artifact %s" % pattern,
+                                    build_dir, pattern)
+        for src_path in paths:  # pragma: no cover
+          rel_path = src_path.piece_after(build_dir)
+          dest_path = output_dir / api.path.basename(rel_path)
+          api.file.copy("Export debug artifact %s" % rel_path, src_path,
+                        dest_path)
+      api.cas.archive("Upload debug artifacts to CAS", output_dir)
 
 
 def _CIBuild(api, builder):
