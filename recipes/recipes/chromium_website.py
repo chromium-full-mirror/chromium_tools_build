@@ -92,7 +92,7 @@ def GenTests(api):
       api.step_data(
           'deploy',
           stdout=api.raw_io.output(
-              '\x1B[1mChannel URL:\x1B[22m https://chromium-website-cl123456-ps7.web.app [channel id]\n'
+              '\x1B[1mChannel URL:\x1B[22m https://chromium-website-staging-d9f4a-cl123456-ps7.web.app [channel id]\n'
           )),
       api.post_process(DropExpectation),
   )
