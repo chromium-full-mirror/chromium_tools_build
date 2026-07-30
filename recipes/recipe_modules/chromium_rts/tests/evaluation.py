@@ -31,6 +31,7 @@ def RunSteps(api):
   per_suffix_valid = api.properties.get('per_suffix_valid', {})
   per_suffix_failures = api.properties.get('per_suffix_failures', {})
   per_suffix_invalid = api.properties.get('per_suffix_invalid', {})
+  per_suffix_complete = api.properties.get('per_suffix_complete', {})
   tests = api.properties.get('tests', ['TestName1', 'TestName2', 'TestName3'])
   has_rdb_results = api.properties.get('has_rdb_results', True)
 
@@ -41,13 +42,16 @@ def RunSteps(api):
       failures=list(per_suffix_failures.get('with patch', [])),
       per_suffix_valid=per_suffix_valid,
       per_suffix_failures=per_suffix_failures,
+      per_suffix_complete=per_suffix_complete,
       invocation_names=['invocations/inv-1'] if has_rdb_results else [],
   ).get_test(api.chromium_tests)
 
   second_test = steps.MockTestSpec.create('SecondTest',).get_test(
       api.chromium_tests)
 
-  test_list = [mock_test, second_test]
+  test_list = [mock_test]
+  if api.properties.get('include_second_test', False):
+    test_list.append(second_test)
 
   if has_rdb_results:
     # Ensure 'with patch' is populated even if there are no failures
@@ -171,18 +175,8 @@ def GenTests(api):
               'builder_recall_rate': 1.0,
               'total_rts_skipped_tests': 2,
           }),
-      api.post_process(
-          post_process.PropertyEquals, 'rts_suite_safety_details', {
-              'MockTest': {
-                  'test_suite': 'MockTest',
-                  'rts_skipped_tests_count': 2,
-                  'unexpected_failures_count': 1,
-                  'caught_failures_count': 1,
-                  'missed_failures': [],
-                  'test_recall_rate': 1.0,
-                  'rts_banned': False,
-              }
-          }),
+      api.post_process(post_process.PropertiesDoNotContain,
+                       'rts_suite_safety_details'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -218,10 +212,12 @@ def GenTests(api):
           tests=['TestName1'],
       ),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
-      api.post_process(
-          post_process.StepTextContains, 'Evaluate chromium-rts safety', [
-              'No RTS targets had generated filter files or test results.',
-          ]),
+      api.post_process(post_process.StepTextContains,
+                       'Evaluate chromium-rts safety', [
+                           'Overall Test Recall: 100.00% (0/0 caught)',
+                           'Overall Builder Recall: 100.00%',
+                           'Missing RTS filter files for: NoRtsTest'
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -235,14 +231,14 @@ def GenTests(api):
           tests=['TestName1'],
       ),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
-      api.post_process(
-          post_process.StepTextContains, 'Evaluate chromium-rts safety', [
-              'No RTS targets had generated filter files or test results.',
-              'Missing RTS filter files for: MockTest',
-          ]),
+      api.post_process(post_process.StepTextContains,
+                       'Evaluate chromium-rts safety', [
+                           'Overall Test Recall: 100.00% (1/1 caught)',
+                           'Overall Builder Recall: 100.00%',
+                           'Missing RTS filter files for: MockTest',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
-
 
   yield api.test(
       'missing_rdb_results',
@@ -255,10 +251,11 @@ def GenTests(api):
       ),
       api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' / 'MockTest.filter'),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
-      api.post_process(
-          post_process.StepTextContains, 'Evaluate chromium-rts safety', [
-              'No RTS targets had generated filter files or test results.',
-          ]),
+      api.post_process(post_process.StepTextContains,
+                       'Evaluate chromium-rts safety', [
+                           'Overall Test Recall: 100.00% (0/0 caught)',
+                           'Overall Builder Recall: 100.00%',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -275,10 +272,11 @@ def GenTests(api):
       ),
       api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' / 'MockTest.filter'),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
-      api.post_process(
-          post_process.StepTextContains, 'Evaluate chromium-rts safety', [
-              'No RTS targets had generated filter files or test results.',
-          ]),
+      api.post_process(post_process.StepTextContains,
+                       'Evaluate chromium-rts safety', [
+                           'Overall Test Recall: 100.00% (0/0 caught)',
+                           'Overall Builder Recall: 100.00%',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -326,18 +324,8 @@ def GenTests(api):
               'builder_recall_rate': 1.0,
               'total_rts_skipped_tests': 1,
           }),
-      api.post_process(
-          post_process.PropertyEquals, 'rts_suite_safety_details', {
-              'MockTest': {
-                  'test_suite': 'MockTest',
-                  'rts_skipped_tests_count': 1,
-                  'unexpected_failures_count': 1,
-                  'caught_failures_count': 1,
-                  'missed_failures': [],
-                  'test_recall_rate': 1.0,
-                  'rts_banned': False,
-              }
-          }),
+      api.post_process(post_process.PropertiesDoNotContain,
+                       'rts_suite_safety_details'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -476,7 +464,26 @@ def GenTests(api):
       api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' / 'MockTest.filter'),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.PropertyEquals, 'rts_evaluation_status',
+                       'SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'evaluation_incomplete_suite',
+      api.chromium.try_build(
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
+      api.properties(
+          per_suffix_failures={'with patch': []},
+          per_suffix_complete={'with patch': False},
+          tests=['TestName1'],
+      ),
+      api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' / 'MockTest.filter'),
+      api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
+      api.post_process(post_process.PropertyEquals, 'rts_evaluation_status',
                        'SKIPPED'),
+      api.post_process(post_process.PropertiesDoNotContain,
+                       'rts_suite_safety_details'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -518,7 +525,10 @@ def GenTests(api):
       api.chromium.try_build(
           builder='linux-rel',
           experiments=['chromium_rts.filter_file_analysis']),
-      api.properties(per_suffix_failures={'with patch': ['TestName3']},),
+      api.properties(
+          per_suffix_failures={'with patch': ['TestName3']},
+          include_second_test=True,
+      ),
       api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' / 'MockTest.filter'),
       api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
       api.post_process(post_process.StepTextContains,
