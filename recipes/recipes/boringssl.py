@@ -456,19 +456,21 @@ def RunSteps(api, android, check_pregenerated_files, check_stack, clang,
     finally:
       if upload_to_cas:
         output_dir = api.path.mkdtemp('debug_artifacts')
-        for pattern in upload_to_cas:
-          paths = api.file.glob_paths("Locate debug artifact %s" % pattern,
-                                      build_dir, pattern)
+        with api.step.nest('Collect debug artifacts'):
           parent_dirs = set()
-          for src_path in paths:
-            rel_path = src_path.relative_to(build_dir)
-            dest_path = output_dir / rel_path
-            parent_dir = api.path.dirname(dest_path)
-            if parent_dir not in parent_dirs:
-              api.file.ensure_directory('mkdir', parent_dir)
-              parent_dirs.add(parent_dir)
-            api.file.copy("Export debug artifact %s" % rel_path, src_path,
-                          dest_path)
+          for pattern in upload_to_cas:
+            paths = api.file.glob_paths("Locate %s" % pattern, build_dir,
+                                        pattern)
+            for src_path in paths:
+              rel_path = src_path.relative_to(build_dir)
+              dest_path = output_dir / rel_path
+              parent_dir = api.path.dirname(dest_path)
+              if parent_dir != output_dir and parent_dir not in parent_dirs:
+                parent_rel_path = parent_dir.relative_to(output_dir)
+                api.file.ensure_directory('mkdir %s' % parent_rel_path,
+                                          parent_dir)
+                parent_dirs.add(parent_dir)
+              api.file.copy("Export %s" % rel_path, src_path, dest_path)
         api.cas.archive("Upload debug artifacts to CAS", output_dir)
 
 
@@ -498,7 +500,7 @@ def GenTests(api):
           'boringssl/util/bot/llvm-build/lib/clang/99\n'))
 
   mock_debug_artifacts = api.step_data(
-      'Locate debug artifact **/*.a',
+      'Collect debug artifacts.Locate **/*.a',
       api.file.glob_paths([
           'libcrypto.a',
           'ssl/libssl.a',

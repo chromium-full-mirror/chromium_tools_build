@@ -654,6 +654,10 @@
     "name": "rust tests (all features)"
   },
   {
+    "cmd": [],
+    "name": "Collect debug artifacts"
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",
@@ -691,53 +695,13 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Locate debug artifact **/*.a",
+    "name": "Collect debug artifacts.Locate **/*.a",
     "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@glob@[CACHE]/builder/boringssl/build/libcrypto.a@@@",
       "@@@STEP_LOG_LINE@glob@[CACHE]/builder/boringssl/build/ssl/libssl.a@@@",
       "@@@STEP_LOG_END@glob@@@"
     ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CLEANUP]/debug_artifacts_tmp_1"
-    ],
-    "env": {
-      "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=boringssl/util/bot/llvm-build/lib/clang/99",
-      "BORINGSSL_BUILD_DIR": "[CACHE]/builder/boringssl/build",
-      "GOCACHE": "[CACHE]/gocache",
-      "GOFLAGS": "-mod=readonly",
-      "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/boringssl/util/bot/golang/bin",
-        "[CACHE]/builder/boringssl/util/bot/rust-toolchain/bin"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "boringssl:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "mkdir (2)"
   },
   {
     "cmd": [
@@ -777,7 +741,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Export debug artifact libcrypto.a"
+    "name": "Collect debug artifacts.Export libcrypto.a",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -818,7 +785,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "mkdir (3)"
+    "name": "Collect debug artifacts.mkdir ssl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -858,7 +828,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Export debug artifact ssl/libssl.a"
+    "name": "Collect debug artifacts.Export ssl/libssl.a",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
