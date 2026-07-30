@@ -65,8 +65,12 @@ def run_test_pipelines(api, runners):
         runner.trigger()
         runner.process_results()
 
+      failed_tests = _get_failed_tests_for_runner(runner.test_type_tag)
+      if failed_tests:
+        with api.step.nest('test re-run cmd') as presentation:
+          presentation.step_text = 'npm run test -- ' + ' '.join(failed_tests)
+
       if hasattr(runner, 'trigger_exoneration'):
-        failed_tests = _get_failed_tests_for_runner(runner.test_type_tag)
         if failed_tests:
           test_names = {runner.test_type_tag: failed_tests}
           with api.step.nest('Flake exoneration attempt') as presentation:
