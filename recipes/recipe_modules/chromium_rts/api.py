@@ -48,6 +48,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       self,
       src_dir: Path,
       build_dir: Path,
+      affected_files: list[str],
   ) -> None:
     """Generates RTS filter files if RTS is enabled."""
     if not self._should_generate_filters():
@@ -70,12 +71,15 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         model_dir,
         '-out',
         filter_file_dir,
+        '-changed-files-path',
+        self.m.raw_io.input_text('\n'.join(affected_files)),
         '-target-change-recall',
         str(_DEFAULT_TARGET_CHANGE_RECALL),
         '-change-ref',
         'HEAD~',
         '-gen-inverse',
     ]
+
     self.m.step('generate chromium-rts filter files', cmd)
 
   def _get_banned_suites(self) -> set[str]:

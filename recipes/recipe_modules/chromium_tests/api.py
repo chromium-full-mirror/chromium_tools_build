@@ -716,7 +716,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                mb_write_ide_json=False,
                                override_execution_mode=None,
                                isolate_output_files_for_coverage=False,
-                               include_utr_instruction=False):
+                               include_utr_instruction=False,
+                               affected_files=None):
     """Runs compile and related steps for given builder.
 
     Allows finer-grained control about exact compile targets used.
@@ -754,6 +755,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         binaries and other required code coverage output files to one hash.
       include_utr_instruction: Whether or not to include UTR reproduction
         instructions
+      affected_files: List of paths to files affected by the current change.
 
     Returns:
       A tuple of
@@ -838,7 +840,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.tryserver.set_compile_failure_tryjob_result()
       return raw_result, None
 
-    self.m.chromium_rts.generate_filter_files(source_dir, build_dir)
+    self.m.chromium_rts.generate_filter_files(
+        source_dir,
+        build_dir,
+        affected_files=affected_files if affected_files is not None else [])
 
     execution_info = None
 
@@ -2887,7 +2892,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           tests,
           override_execution_mode=ctbc.COMPILE_AND_TEST,
           isolate_output_files_for_coverage=isolate_output_files_for_coverage,
-          include_utr_instruction=True)
+          include_utr_instruction=True,
+          affected_files=affected_files)
 
       self.m.chromium_turboci.finalize_build_check(
           turboci_build_check_id, 'executed compile', raw_result=raw_result)

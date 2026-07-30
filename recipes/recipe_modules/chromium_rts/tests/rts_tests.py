@@ -11,6 +11,7 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
+    'recipe_engine/properties',
 ]
 
 
@@ -25,8 +26,11 @@ def RunSteps(api):
 
   api.chromium_rts.get_experiment_names()
 
-  api.chromium_rts.generate_filter_files(api.path.start_dir,
-                                         api.path.cleanup_dir)
+  api.chromium_rts.generate_filter_files(
+      api.path.start_dir,
+      api.path.cleanup_dir,
+      affected_files=api.properties.get('affected_files', []),
+  )
   api.chromium_rts.isolate_filter_files(
       api.path.cleanup_dir,
       ['blink_python_tests', 'blink_web_tests'],
@@ -175,6 +179,24 @@ def GenTests(api):
           post_process.StepTextContains,
           'add RTS filter files to isolates.missing isolate files',
           ['blink_web_tests'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts_enabled_with_affected_files',
+      api.properties(affected_files=['foo/bar.cc', 'baz.py']),
+      api.chromium.try_build(
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
+      api.post_process(post_process.MustRun,
+                       'generate chromium-rts filter files'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'generate chromium-rts filter files',
+          [
+              '-changed-files-path',
+          ],
       ),
       api.post_process(post_process.DropExpectation),
   )
