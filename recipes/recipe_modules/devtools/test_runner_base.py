@@ -126,7 +126,8 @@ class DevToolsTests(ABC):
         except self.api.step.StepFailure:
           new_results.add_infra_failure(
               f'Failed in post collect for {self.step_name}')
-    if self.results.exonerable() and new_results.can_exonerate():
+    if (self.is_flake_exoneration and self.results.exonerable() and
+        new_results.can_exonerate()):
       new_results.exonerated_failures = self.results.task_failures
       self.results.task_failures = []
     self.results += new_results
@@ -278,16 +279,20 @@ class ExonerableTests(DevToolsTests):
     self.trigger('exoneration')
 
   def process_exoneration_results(self, test_names):
-    if self.skip_exoneration_result:
-      self.results += self.skip_exoneration_result
-      return
-    self.process_results()
+    try:
+      if self.skip_exoneration_result:
+        self.results += self.skip_exoneration_result
+        return
+      self.process_results()
+    finally:
+      self.is_flake_exoneration = False
 
   @abstractmethod
   def owns_test(self, test: str) -> bool:
     pass
 
   def trigger_flake_detection(self, test_names):
+    self.is_flake_exoneration = False
     self.owned_new_tests = [test for test in test_names if self.owns_test(test)]
     if not self.owned_new_tests:
       self.skip_deflaking_result = Results()
