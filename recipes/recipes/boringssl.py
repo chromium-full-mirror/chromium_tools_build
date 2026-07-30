@@ -86,8 +86,8 @@ PROPERTIES = {
         Property(default=False, kind=bool, help='whether to run tests on SDE'),
     'upload_to_cas':
         Property(
-            default=False,
-            kind=set,
+            default=[],
+            kind=list,
             help='which files in the build directory to upload to CAS'),
 }
 
@@ -643,7 +643,7 @@ def GenTests(api):
             cmake_args={
                 "RUST_BINDINGS": rust_bindings_target_triple,
             },
-            upload_to_cas=set(['**/*.a']),
+            upload_to_cas=['**/*.a'],
             **addl_props),
         mock_clang_resource_dir,
         mock_go_tests,
