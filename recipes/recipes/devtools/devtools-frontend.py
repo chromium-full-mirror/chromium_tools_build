@@ -796,3 +796,92 @@ def GenTests(api):
       api.post_process(DropExpectation),
       status='FAILURE',
   )
+
+  yield api.test(
+      'ci failed parallel builder on API tests',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.step_data(
+          'Pipeline API Tests.Run tests.API Tests.API Tests ' +
+          'shards results.API Tests (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data1)),
+      api.post_process(
+          SummaryMarkdown,
+          'Failure in API Tests (shard #0), Failure in API Tests (rerun) '
+          '(shard #0)'),
+      api.post_process(MustRun, 'Pipeline API Tests.Run tests.API Tests'),
+      resultdb_query(
+          'Pipeline API Tests.rdb query for api_tests',
+          test_result('api1', 'api_tests'),
+      ),
+      api.step_data(
+          'Pipeline API Tests.Flake exoneration attempt.API Tests (rerun).API Tests (rerun) '
+          'shards results.API Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data1),
+      ),
+      api.post_process(DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'ci mac golden collector',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='dtf_mac_rel'),
+      api.platform('mac', 64, 'arm'),
+      api.path.exists(
+          api.path.cleanup_dir.joinpath('tmp_tmp_1/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_1/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_2/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_2/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_3/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_3/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_4/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_4/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_5/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_5/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_6/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_6/1/goldens'),
+      ),
+      api.post_process(
+          MustRun,
+          'Pipeline Unit Tests.Run tests.Unit Tests.copy golden snapshots'),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'ci flake detection execution',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.override_step_data(
+          'find new tests.git diff',
+          stdout=api.raw_io.output_text(
+              'front_end/foo.test.ts\ntest/e2e/bar_test.ts')),
+      api.post_process(
+          MustRun,
+          'Pipeline Unit Tests.Detect flakes in new tests.Trigger Unit Tests (flake detection)'
+      ),
+      api.post_process(
+          MustRun,
+          'Pipeline E2E Tests.Detect flakes in new tests.Trigger E2E Tests (flake detection)'
+      ),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'ci flake detection failure',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.override_step_data(
+          'find new tests.git diff',
+          stdout=api.raw_io.output_text('front_end/foo.test.ts')),
+      api.step_data(
+          'Pipeline Unit Tests.Detect flakes in new tests.Unit Tests (flake detection).'
+          'Unit Tests (flake detection) shards results.Unit Tests (flake detection) (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data1)),
+      api.post_process(SummaryMarkdown,
+                       'Failure in Unit Tests (flake detection) (shard #0)'),
+      api.post_process(DropExpectation),
+      status='FAILURE',
+  )
