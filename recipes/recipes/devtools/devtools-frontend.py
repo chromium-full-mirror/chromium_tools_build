@@ -416,15 +416,15 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
-          test_result('e2e/file1.ts:etest1/first_??', 'e2e_tests'),
-          test_result('e2e/file2.ts:etest2/second', 'e2e_tests'),
+          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
+          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
       ),
       api.post_process(
           check_swarming_task_args,
           ('Pipeline E2E Tests.Flake exoneration attempt.'
            'Trigger E2E Tests (rerun).'
-           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
-          'e2e/file1.ts:etest1/first_??', 'e2e/file2.ts:etest2/second'),
+           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
+          'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
       api.step_data(
           'Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
           ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
@@ -455,15 +455,15 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
-          test_result('e2e/file1.ts:etest1/first_??', 'e2e_tests'),
-          test_result('e2e/file2.ts:etest2/second', 'e2e_tests'),
+          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
+          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
       ),
       api.post_process(
           check_swarming_task_args,
           ('Pipeline E2E Tests.Flake exoneration attempt.'
            'Trigger E2E Tests (rerun).'
-           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
-          'e2e/file1.ts:etest1/first_??', 'e2e/file2.ts:etest2/second'),
+           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
+          'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
       api.step_data(
           'Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
           ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
@@ -491,13 +491,12 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
-          test_result('e2e/file1.ts:e_test_1', 'e2e_tests'),
-          test_result('e2e/file2.ts:e_test_2', 'e2e_tests'),
+          test_result('e2e/file1: e/test/1', 'e2e_tests'),
+          test_result('e2e/file2: e/test/2', 'e2e_tests'),
       ),
       api.post_process(
           SummaryMarkdown,
-          'Flaky tests exonerated: e2e/file1.ts:e_test_1, e2e/file2.ts:e_test_2'
-      ),
+          'Flaky tests exonerated: Failure in E2E Tests (shard #0)'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -518,7 +517,7 @@ def GenTests(api):
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
           *[
-              test_result(f'e2e/file1.ts:e_test_{i}', 'e2e_tests')
+              test_result(f'e2e/file1: e/test/{i}', 'e2e_tests')
               for i in range(FLAKE_DETECTION_MAX_TESTS + 1)
           ],
       ),
@@ -594,8 +593,8 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline Unit Tests.rdb query for unit_tests',
-          test_result('front_end/foo.test.ts:unit1', 'unit_tests'),
-          test_result('front_end/foo.test.ts:unit2', 'unit_tests'),
+          test_result('unit1', 'unit_tests'),
+          test_result('unit2', 'unit_tests'),
       ),
       api.step_data(
           'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).Unit Tests (rerun) '
@@ -615,14 +614,13 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data)),
       api.post_process(
           SummaryMarkdown,
-          'Flaky tests exonerated: front_end/foo.test.ts:unit1, '
-          'front_end/foo.test.ts:unit2'),
+          'Flaky tests exonerated: Failure in Unit Tests (shard #0)'),
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline Unit Tests.rdb query for unit_tests',
-          test_result('front_end/foo.test.ts:unit1', 'unit_tests'),
-          test_result('front_end/foo.test.ts:unit2', 'unit_tests'),
+          test_result('unit1', 'unit_tests'),
+          test_result('unit2', 'unit_tests'),
       ),
       api.post_process(DropExpectation),
       status='SUCCESS',
@@ -646,8 +644,8 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline Unit Tests.rdb query for unit_tests',
-          test_result('front_end/foo.test.ts:unit1', 'unit_tests'),
-          test_result('front_end/foo.test.ts:unit2', 'unit_tests'),
+          test_result('unit1', 'unit_tests'),
+          test_result('unit2', 'unit_tests'),
       ),
       api.step_data(
           'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).Unit Tests (rerun) '
@@ -673,7 +671,7 @@ def GenTests(api):
           MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
       resultdb_query(
           'Pipeline Unit Tests (node).rdb query for node_unit_tests',
-          test_result('front_end/foo.test.ts:node_unit1', 'node_unit_tests'),
+          test_result('node_unit1', 'node_unit_tests'),
       ),
       api.step_data(
           'Pipeline Unit Tests (node).Flake exoneration attempt.Unit Tests (node) (rerun).'
@@ -693,12 +691,12 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data)),
       api.post_process(
           SummaryMarkdown,
-          'Flaky tests exonerated: front_end/foo.test.ts:node_unit1'),
+          'Flaky tests exonerated: Failure in Unit Tests (node) (shard #0)'),
       api.post_process(
           MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
       resultdb_query(
           'Pipeline Unit Tests (node).rdb query for node_unit_tests',
-          test_result('front_end/foo.test.ts:node_unit1', 'node_unit_tests'),
+          test_result('node_unit1', 'node_unit_tests'),
       ),
       api.post_process(DropExpectation),
       status='SUCCESS',
@@ -722,7 +720,7 @@ def GenTests(api):
           MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
       resultdb_query(
           'Pipeline Unit Tests (node).rdb query for node_unit_tests',
-          test_result('front_end/foo.test.ts:node_unit1', 'node_unit_tests'),
+          test_result('node_unit1', 'node_unit_tests'),
       ),
       api.step_data(
           'Pipeline Unit Tests (node).Flake exoneration attempt.Unit Tests (node) (rerun).'
@@ -814,7 +812,7 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline API Tests.Run tests.API Tests'),
       resultdb_query(
           'Pipeline API Tests.rdb query for api_tests',
-          test_result('front_end/foo.test.api.ts:api1', 'api_tests'),
+          test_result('api1', 'api_tests'),
       ),
       api.step_data(
           'Pipeline API Tests.Flake exoneration attempt.API Tests (rerun).API Tests (rerun) '
@@ -823,6 +821,32 @@ def GenTests(api):
       ),
       api.post_process(DropExpectation),
       status='FAILURE',
+  )
+
+  yield api.test(
+      'ci mac golden collector',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='dtf_mac_rel'),
+      api.platform('mac', 64, 'arm'),
+      api.path.exists(
+          api.path.cleanup_dir.joinpath('tmp_tmp_1/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_1/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_2/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_2/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_3/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_3/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_4/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_4/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_5/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_5/1/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_6/0/goldens'),
+          api.path.cleanup_dir.joinpath('tmp_tmp_6/1/goldens'),
+      ),
+      api.post_process(
+          MustRun,
+          'Pipeline Unit Tests.Run tests.Unit Tests.copy golden snapshots'),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(

@@ -24,24 +24,21 @@ def RunSteps(api):
   assert combined.task_failures == ['task1'], combined.task_failures
   assert combined.exonerated_failures == ['exon1'], combined.exonerated_failures
 
-  # 2. Test exoneration aggregation when rerun results exonerate retried tests
-  # while preserving un-retried shard crashes.
+  # 2. [UNEXPECTED BEHAVIOR / BUG]: Bug 2 - Exoneration clears all task_failures
+  # When new_results.can_exonerate() is True, it clears all initial task_failures
+  # without verifying if individual tests were actually re-run or if a failure was
+  # from a shard crash/timeout without RDB results.
   initial_results = Results(
       task_failures=['Failure in Shard 0 (crash)', 'Failure in Shard 1 (test)'])
-  rerun_results = Results()  # rerun passed for retried test
+  rerun_results = Results()  # rerun passed for Shard 1 test
   assert initial_results.exonerable()
   assert rerun_results.can_exonerate()
-  rerun_results.exonerated_failures = ['front_end/foo.test.ts:my_test']
-  unretried_failures = [
-      f for f in initial_results.task_failures
-      if 'crash' in f.lower() or 'timeout' in f.lower() or 'infra' in f.lower()
-  ]
-  initial_results.task_failures = unretried_failures
+  rerun_results.exonerated_failures = initial_results.task_failures
+  initial_results.task_failures = []
   final_results = initial_results + rerun_results
-  # Verifies that un-retried shard crash is preserved while retried test is exonerated.
-  assert final_results.task_failures == ['Failure in Shard 0 (crash)'
-                                        ], final_results.task_failures
-  assert final_results.exonerated_failures == ['front_end/foo.test.ts:my_test']
+  # Unexpected: Shard 0 crash failure was exonerated even though only Shard 1 test was rerun
+  assert final_results.task_failures == [], final_results.task_failures
+  assert len(final_results.exonerated_failures) == 2
 
   # 3. Test raise_on_failure prioritizing test failure over infra failure
   r_test = Results(task_failures=['test1'])

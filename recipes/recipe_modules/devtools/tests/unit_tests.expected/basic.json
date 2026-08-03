@@ -724,7 +724,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]/tmp_tmp_2",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -819,7 +819,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]/tmp_tmp_2",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -913,6 +913,36 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "copytree",
+      "--allow-override",
+      "[CLEANUP]/tmp_tmp_2/0/goldens",
+      "[CACHE]/builder/devtools-frontend/test/interactions/goldens"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Unit Tests.copy golden snapshots",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "rmtree",
       "[CACHE]/builder/devtools-frontend/karma-coverage"
     ],
@@ -942,7 +972,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_1/0/karma-coverage",
+      "[CLEANUP]/tmp_tmp_2/0/karma-coverage",
       "[CACHE]/builder/devtools-frontend/karma-coverage"
     ],
     "infra_step": true,

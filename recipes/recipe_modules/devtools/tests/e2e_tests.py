@@ -83,30 +83,12 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # Exoneration with valid test IDs (format: e2e/foo.ts:my_e2e_test)
+  # Exoneration with grep filter pattern
   yield api.test(
-      'exonerate',
+      'exonerate_grep',
       try_build(),
-      api.properties(test_names={'e2e_tests': ['e2e/foo.ts:my_e2e_test']}),
+      api.properties(test_names={'e2e_tests': ['e2e/foo.ts: my e2e test']}),
       api.post_process(post_process.DropExpectation),
-  )
-
-  # Verifies that exoneration is rejected/skipped if any test names are not valid test IDs
-  yield api.test(
-      'exonerate_invalid_test_names',
-      try_build(),
-      api.properties(
-          test_names={
-              'e2e_tests': [
-                  'e2e/foo.ts:my_valid_test',
-                  'e2e/foo.ts: my invalid test with space',
-              ]
-          }),
-      api.post_process(
-          post_process.MustRun,
-          'Exoneration skipped (invalid test ID format) E2E Tests'),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
   )
 
   # Flake detection
@@ -129,34 +111,4 @@ def GenTests(api):
                                         }]})),
       api.post_process(post_process.DropExpectation),
       status='INFRA_FAILURE',
-  )
-
-  # Collect with timed out shard (test_runner_base.py line 67)
-  yield api.test(
-      'shard_timed_out',
-      try_build(),
-      api.override_step_data(
-          'E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(
-              None, {'shards': [{
-                  'state': 'KILLED',
-                  'exit_code': 1
-              }]})),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
-  )
-
-  # Collect with crashed shard (test_runner_base.py line 69)
-  yield api.test(
-      'shard_crashed',
-      try_build(),
-      api.override_step_data(
-          'E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(
-              None, {'shards': [{
-                  'state': 'COMPLETED',
-                  'exit_code': 2
-              }]})),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
   )

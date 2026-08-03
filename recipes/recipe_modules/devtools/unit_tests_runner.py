@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-from .test_runner_base import ExonerableTests, NODE_UNIT_TESTS_OPTION
+from .test_runner_base import ExonerableTests, GoldensCollector, NODE_UNIT_TESTS_OPTION
 
 
-class UnitTests(ExonerableTests):
+class UnitTests(ExonerableTests, GoldensCollector):
 
   def __init__(self,
                api,
@@ -16,8 +16,10 @@ class UnitTests(ExonerableTests):
                coverage,
                step_name,
                node_unit_tests=False):
-    super().__init__(
-        api, trigger, builder_config, coverage, step_name, shard_count=2)
+    ExonerableTests.__init__(
+        self, api, trigger, builder_config, coverage, step_name, shard_count=2)
+    GoldensCollector.__init__(self, api, trigger, builder_config, coverage,
+                              step_name)
     self.coverage = coverage
     self.shard_bias = 2  # Use a bias to keep shards balanced
     self.node_unit_tests = node_unit_tests
@@ -43,7 +45,8 @@ class UnitTests(ExonerableTests):
             test.endswith('.test.ts') and not test.endswith('.test.api.ts'))
 
   def _post_collect(self):
-    if self.coverage and not self.is_flake_exoneration:
+    self.copy_golden_snapshots()
+    if self.coverage:
       self.copy_coverage_data()
 
   def copy_coverage_data(self):

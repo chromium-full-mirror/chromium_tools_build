@@ -458,5 +458,12 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
+  },
+  {
+    "cmd": [],
+    "name": "Pipeline E2E Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   }
 ]
