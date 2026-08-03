@@ -37,22 +37,21 @@ def RunSteps(api):
         '--rm',
         '--name',
         'dummy',
+        '--security-opt',
+        'no-new-privileges',
         '-v',
         '%s:/usr/src/app' % fuzzer_dir,
         '-w',
         '/usr/src/app',
-        'node:23',
     ]
     with api.context(cwd=fuzzer_dir):
       api.docker.login(infra_step=True)
       api.docker(
-          *(docker_cmd + ['npm', 'install']),
-          step_name='npm install'
-      )
+          *(docker_cmd + ['node:23', 'npm', 'install']),
+          step_name='npm install')
       api.docker(
-          *(docker_cmd + ['npm', 'test']),
-          step_name='npm test'
-      )
+          *(docker_cmd + ['--network=none', 'node:23', 'npm', 'test']),
+          step_name='npm test')
 
 
 def GenTests(api):
