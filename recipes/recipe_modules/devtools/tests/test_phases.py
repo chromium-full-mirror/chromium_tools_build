@@ -104,8 +104,10 @@ def GenTests(api):
   yield api.test(
       'rdb_passing_test',
       try_build(),
-      rdb_query('Pipeline Unit Tests.rdb query for unit_tests',
-                test_result('unit1', 'unit_tests', expected=True)),
+      rdb_query(
+          'Pipeline Unit Tests.rdb query for unit_tests',
+          test_result(
+              'front_end/foo.test.ts:my_test', 'unit_tests', expected=True)),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -113,8 +115,10 @@ def GenTests(api):
   yield api.test(
       'exoneration_fails',
       try_build(),
-      rdb_query('Pipeline Unit Tests.rdb query for unit_tests',
-                test_result('unit1', 'unit_tests', expected=False)),
+      rdb_query(
+          'Pipeline Unit Tests.rdb query for unit_tests',
+          test_result(
+              'front_end/foo.test.ts:my_test', 'unit_tests', expected=False)),
       api.step_data(
           'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).'
           'Unit Tests (rerun) shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
@@ -127,16 +131,16 @@ def GenTests(api):
       status='FAILURE',
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug 1 - Unowned touched tests are silently dropped during Flake Detection.
-  # When git diff touches a test file that is not owned by any runner (e.g. `scripts/eslint_rules/tests/foo_test.ts`),
-  # `owns_test()` returns False for all runners, and flake detection is silently skipped without warning or error.
+  # Verifies that unowned touched tests emit a warning step during Flake Detection.
   yield api.test(
-      'bug_unowned_touched_test_silently_ignored',
+      'unowned_touched_test_warning',
       try_build(),
       api.override_step_data(
           'find new tests.git diff',
           stdout=api.raw_io.output_text(
               'scripts/eslint_rules/tests/foo_test.ts')),
+      api.post_process(post_process.MustRun,
+                       'Unowned touched test files skipped in Flake Detection'),
       api.post_process(
           post_process.DoesNotRun,
           'Pipeline Unit Tests.Detect flakes in new tests.Trigger Unit Tests (flake detection)'
@@ -144,16 +148,14 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Base class DevToolsTests defines no-op trigger_exoneration and trigger_flake_detection.
-  # In test_phases.py, `hasattr(runner, 'trigger_exoneration')` evaluates to True even for non-exonerable
-  # runners like PerformanceTests, creating a 'Flake exoneration attempt' step that calls no-op methods.
+  # Verifies that non-exonerable runners do not trigger exoneration steps.
   yield api.test(
-      'bug_non_exonerable_runner_hasattr_exoneration',
+      'non_exonerable_runner_no_exoneration',
       try_build(),
       rdb_query('Pipeline Performance Tests.rdb query for perf_tests',
                 test_result('perf1', 'perf_tests', expected=False)),
-      # Creates empty step because hasattr is True on DevToolsTests
-      api.post_process(post_process.MustRun,
+      # Verifies that PerformanceTests (non-exonerable) does not create an exoneration step
+      api.post_process(post_process.DoesNotRun,
                        'Pipeline Performance Tests.Flake exoneration attempt'),
       api.post_process(post_process.DropExpectation),
   )

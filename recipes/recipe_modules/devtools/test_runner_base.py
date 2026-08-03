@@ -14,7 +14,6 @@ NODE_UNIT_TESTS_OPTION = '--node-unit-tests'
 
 FLAKE_DETECTION_MAX_TESTS = 20
 FLAKE_DETECTION_OPTION = '--repeat=10'
-FLAKE_EXONERATION_OPTION = '--grep'
 FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
 FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER = 'Skip-Flake-Detection-Pattern'
 
@@ -59,48 +58,24 @@ class DevToolsTests(ABC):
           results.add_infra_failure(
               f'Infra Failure in {self.step_name} (shard #{i})')
         elif step.presentation.status != self.api.step.SUCCESS:
-          results.add_test_failure(f'Failure in {self.step_name} (shard #{i})')
+          failure_msg = f'Failure in {self.step_name} (shard #{i})'
+          shards = getattr(step.chromium_swarming, 'summary',
+                           {}).get('shards', [])
+          if shards and len(shards) > 0 and isinstance(shards[0], dict):
+            state = shards[0].get('state', '')
+            if state in ('TIMED_OUT', 'BOT_DIED', 'CANCELED', 'KILLED'):
+              failure_msg += f' ({state.lower()})'
+            elif shards[0].get('exit_code') not in (0, 1, None):
+              failure_msg += ' (crash)'
+          results.add_test_failure(failure_msg)
 
     return results
 
   def prepare_filtered_rerun(self, test_names):
-    had_node_unit_tests = NODE_UNIT_TESTS_OPTION in self.extra_args
-    # TODO: we probably should not override extra args.
-
-    use_new_format = all(
-        re.match(r'^(.*\.[tj]s):(\S+)$', name) for name in test_names)
     self.is_flake_exoneration = True
-
-    self.extra_args = [
-        '--retries=5',
-    ]
-    if use_new_format:
-      self.exoneration_tests = list(test_names)
-    else:
-      self.exoneration_tests = []
-      self.extra_args.extend([
-          '--grep',
-          self.test_names_to_grep_string(test_names),
-      ])
-
-    if had_node_unit_tests:
-      self.extra_args.append(NODE_UNIT_TESTS_OPTION)
-    # TODO (liviurau): add it back after puppeteer bug fix
-    # https://github.com/puppeteer/puppeteer/pull/13901
-    # self.env['DEBUG'] = 'puppeteer:*'
-
-  def test_names_to_grep_string(self, names):
-    # Keep sorted for stable test expectations.
-    return '|'.join(
-        sorted(self.test_name_to_grep_string(name) for name in names))
-
-  def test_name_to_grep_string(self, name):
-    # Escape JS regexp characters except slashes.
-    escaped = re.sub(r'([\-\\^$*+?.()|[\]{}])', r'\\\1', name)
-    # We need to deal with slashes separately. Test IDs contain slashes that
-    # are actual spaces in the test name, while some tests have slashes in
-    # their name.
-    return escaped.replace('/', '.')
+    if '--retries=5' not in self.extra_args:
+      self.extra_args.append('--retries=5')
+    self.exoneration_tests = list(test_names)
 
   def trigger(self, run_phase='default'):
     with self.api.step.nest(f'Trigger {self.step_name}'):
@@ -127,9 +102,19 @@ class DevToolsTests(ABC):
           new_results.add_infra_failure(
               f'Failed in post collect for {self.step_name}')
     if (self.is_flake_exoneration and self.results.exonerable() and
-        new_results.can_exonerate()):
-      new_results.exonerated_failures = self.results.task_failures
-      self.results.task_failures = []
+        new_results.can_exonerate() and self.exoneration_tests):
+      new_results.exonerated_failures = list(self.exoneration_tests)
+      unretried_failures = [
+          f for f in self.results.task_failures if any(w in f.lower()
+                                                       for w in ('crash',
+                                                                 'timeout',
+                                                                 'timed_out',
+                                                                 'bot_died',
+                                                                 'canceled',
+                                                                 'killed',
+                                                                 'infra'))
+      ]
+      self.results.task_failures = unretried_failures
     self.results += new_results
 
   def _post_collect(self):
@@ -222,23 +207,6 @@ class DevToolsTests(ABC):
     """
 
 
-class GoldensCollector(DevToolsTests):
-
-  def copy_golden_snapshots(self):
-    goldens_collector_builders = ["dtf_linux_rel", "dtf_mac_rel", "dtf_win_rel"]
-    if self.api.buildbucket.builder_name not in goldens_collector_builders:
-      return
-    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
-    golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
-    if not self.api.path.exists(golden_snapshots_dir):
-      return
-    self.api.file.copytree(
-        'copy golden snapshots',
-        golden_snapshots_dir,
-        self.api.path.join(self.api.devtools.source_dir, 'test', 'interactions',
-                           'goldens'),
-        allow_override=True)
-
 class ExonerableTests(DevToolsTests):
 
   def __init__(self,
@@ -274,6 +242,17 @@ class ExonerableTests(DevToolsTests):
       self.api.step.empty(
           f'Too many tests to check for flakes {self.step_name}')
       return
+    invalid_test_names = [
+        name for name in owned_tests
+        if not re.match(r'^(.*\.[tj]s):(\S+)$', name)
+    ]
+    if invalid_test_names:
+      self.skip_exoneration_result = Results()
+      self.skip_exoneration_result.add_test_failure(
+          'Exoneration failed: invalid test ID format')
+      self.api.step.empty(
+          f'Exoneration skipped (invalid test ID format) {self.step_name}')
+      return
     self.step_name += ' (rerun)'
     self.prepare_filtered_rerun(owned_tests)
     self.trigger('exoneration')
@@ -298,12 +277,10 @@ class ExonerableTests(DevToolsTests):
       self.skip_deflaking_result = Results()
       return
 
-    had_node_unit_tests = NODE_UNIT_TESTS_OPTION in self.extra_args
     self.shard_count = 1
     self.step_name += ' (flake detection)'
-    self.extra_args = [FLAKE_DETECTION_OPTION]
-    if had_node_unit_tests:
-      self.extra_args.append(NODE_UNIT_TESTS_OPTION)
+    if FLAKE_DETECTION_OPTION not in self.extra_args:
+      self.extra_args.append(FLAKE_DETECTION_OPTION)
     self.trigger('flake detection')
 
   def process_flake_detection_results(self, test_names):
@@ -325,14 +302,8 @@ class ExonerableTests(DevToolsTests):
           self.run_tests_command(args + self.owned_new_tests)
           for args in self.sharding_args()
       ]
-    is_flake_exoneration_attempt = (
-        self.is_flake_exoneration or
-        FLAKE_EXONERATION_OPTION in self.extra_args)
-    if is_flake_exoneration_attempt:
-      exoneration_tests = self.exoneration_tests
-      if exoneration_tests:
-        return [self.run_tests_command(exoneration_tests)]
-      return [self.run_tests_command(self.test_patterns)]
+    if self.is_flake_exoneration:
+      return [self.run_tests_command(self.exoneration_tests)]
     return [
         self.run_tests_command(args + self.test_patterns)
         for args in self.sharding_args()

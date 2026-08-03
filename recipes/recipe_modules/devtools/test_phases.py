@@ -7,8 +7,11 @@ from __future__ import annotations
 import fnmatch
 
 from .commons import Results
-from .test_runner_base import (FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
-                               FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
+from .test_runner_base import (
+    ExonerableTests,
+    FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
+    FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER,
+)
 
 
 def run_test_pipelines(api, runners):
@@ -38,6 +41,17 @@ def run_test_pipelines(api, runners):
               t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
           ]
 
+  if touched_tests:
+    unowned_tests = [
+        t for t in touched_tests if not any(
+            isinstance(r, ExonerableTests) and r.owns_test(t) for r in runners)
+    ]
+    if unowned_tests:
+      step_result = api.step.empty(
+          'Unowned touched test files skipped in Flake Detection')
+      step_result.presentation.status = api.step.WARNING
+      step_result.presentation.step_text = '<br>'.join(unowned_tests)
+
   def _get_failed_tests_for_runner(test_type_tag):
     inv_id = api.resultdb.current_invocation.replace('invocations/', '')
     response = api.resultdb.query(
@@ -57,7 +71,7 @@ def run_test_pipelines(api, runners):
         else:
           failing_tests.add(r.test_id)
 
-    return list(failing_tests - passing_tests)
+    return sorted(list(failing_tests - passing_tests))
 
   def _run_pipeline(runner):
     with api.step.nest(f'Pipeline {runner.step_name}'):
@@ -70,7 +84,7 @@ def run_test_pipelines(api, runners):
         with api.step.nest('test re-run cmd') as presentation:
           presentation.step_text = 'npm run test -- ' + ' '.join(failed_tests)
 
-      if hasattr(runner, 'trigger_exoneration'):
+      if isinstance(runner, ExonerableTests):
         if failed_tests:
           test_names = {runner.test_type_tag: failed_tests}
           with api.step.nest('Flake exoneration attempt') as presentation:
@@ -80,10 +94,10 @@ def run_test_pipelines(api, runners):
             if runner.results.task_failures:
               presentation.step_text = 'Failed to exonerate some of the failing tests'
 
-      if hasattr(runner, 'trigger_flake_detection'):
-        with api.step.nest('Detect flakes in new tests'):
-          runner.trigger_flake_detection(touched_tests)
-          runner.process_flake_detection_results(touched_tests)
+        if touched_tests:
+          with api.step.nest('Detect flakes in new tests'):
+            runner.trigger_flake_detection(touched_tests)
+            runner.process_flake_detection_results(touched_tests)
 
     return runner.results
 

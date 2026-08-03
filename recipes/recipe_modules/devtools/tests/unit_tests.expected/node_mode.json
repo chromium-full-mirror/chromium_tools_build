@@ -518,7 +518,7 @@
       "-o",
       "/path/to/tmp/json",
       "--task-output-dir",
-      "[CLEANUP]/tmp_tmp_2",
+      "[CLEANUP]/tmp_tmp_1",
       "--merge-script",
       "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
       "--merge-script-stdout-file",
@@ -641,7 +641,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copytree",
-      "[CLEANUP]/tmp_tmp_2/0/karma-coverage",
+      "[CLEANUP]/tmp_tmp_1/0/karma-coverage",
       "[CACHE]/builder/devtools-frontend/karma-coverage"
     ],
     "infra_step": true,

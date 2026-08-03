@@ -77,14 +77,6 @@ def GenTests(api):
   yield api.test(
       'basic',
       try_build(builder='dtf_linux_rel'),
-      api.path.exists(
-          api.path.cleanup_dir.joinpath('tmp_tmp_1/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_1/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_2/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_2/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_3/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_3/1/goldens'),
-      ),
   )
   yield api.test('node_mode', try_build(), api.properties(node_mode=True))
 
@@ -98,6 +90,13 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def check_exoneration_args(check, steps):
+    step = steps[
+        'Trigger Unit Tests (node) (rerun).[trigger] Unit Tests (node) (rerun) (Shard #0) on Ubuntu-22.04']
+    cmd_str = ' '.join(str(x) for x in step.cmd)
+    check('--node-unit-tests' in cmd_str)
+    check('--retries=5' in cmd_str)
+
   # Exoneration in node_mode (had_node_unit_tests)
   yield api.test(
       'exonerate_node',
@@ -106,6 +105,7 @@ def GenTests(api):
           node_mode=True,
           initial_failure=True,
           test_names={'node_unit_tests': ['front_end/foo.test.ts:test1']}),
+      api.post_process(check_exoneration_args),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -159,41 +159,29 @@ def GenTests(api):
       status='INFRA_FAILURE',
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug 3 - test_name_to_grep_string replaces slashes `/` with `.`
-  def check_grep_pattern(check, steps, step_name, expected_grep):
-    check(expected_grep in str(steps[step_name].cmd))
+  def check_flake_detection_args(check, steps):
+    step = steps[
+        'Trigger Unit Tests (node) (flake detection).[trigger] Unit Tests (node) (flake detection) (Shard #0) on Ubuntu-22.04']
+    cmd_str = ' '.join(str(x) for x in step.cmd)
+    check('--node-unit-tests' in cmd_str)
+    check('--repeat=10' in cmd_str)
 
+  # Verifies that flake detection appends to extra_args without dropping existing arguments.
   yield api.test(
-      'bug_test_name_to_grep_string_wildcard',
+      'flake_detection_preserves_extra_args',
       try_build(),
-      api.properties(
-          test_names={'unit_tests': ['front_end/foo/bar.test.ts: suite test']}),
-      api.post_process(
-          check_grep_pattern,
-          'Trigger Unit Tests (rerun).[trigger] Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
-          'front_end.foo.bar'),
+      api.properties(node_mode=True, touched_tests=['front_end/foo.test.ts']),
+      api.post_process(check_flake_detection_args),
       api.post_process(post_process.DropExpectation),
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug 4 - trigger_flake_detection overwrites self.extra_args
+  # Verifies that exoneration reruns preserve existing coverage data without overwriting.
   yield api.test(
-      'bug_flake_detection_drops_extra_args',
-      try_build(),
-      api.properties(touched_tests=['front_end/foo.test.ts']),
-      api.post_process(
-          post_process.MustRun,
-          'Trigger Unit Tests (flake detection).[trigger] Unit Tests (flake detection) (Shard #0) on Ubuntu-22.04'
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug in GoldensCollector / UnitTests coverage overwrite
-  yield api.test(
-      'bug_exoneration_overwrites_coverage',
+      'exoneration_preserves_coverage',
       try_build(),
       api.properties(test_names={'unit_tests': ['front_end/foo.test.ts:test']}),
       api.post_process(
-          post_process.MustRun,
+          post_process.DoesNotRun,
           'Unit Tests (rerun).remove coverage files if they exist'),
       api.post_process(post_process.DropExpectation),
   )
