@@ -77,14 +77,6 @@ def GenTests(api):
   yield api.test(
       'basic',
       try_build(builder='dtf_linux_rel'),
-      api.path.exists(
-          api.path.cleanup_dir.joinpath('tmp_tmp_1/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_1/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_2/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_2/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_3/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_3/1/goldens'),
-      ),
   )
   yield api.test('node_mode', try_build(), api.properties(node_mode=True))
 
@@ -187,7 +179,7 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug in GoldensCollector / UnitTests coverage overwrite
+  # [UNEXPECTED BEHAVIOR / BUG]: Bug in UnitTests coverage overwrite
   yield api.test(
       'bug_exoneration_overwrites_coverage',
       try_build(),

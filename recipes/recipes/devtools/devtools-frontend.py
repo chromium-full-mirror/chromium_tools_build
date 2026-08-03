@@ -824,32 +824,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'ci mac golden collector',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='dtf_mac_rel'),
-      api.platform('mac', 64, 'arm'),
-      api.path.exists(
-          api.path.cleanup_dir.joinpath('tmp_tmp_1/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_1/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_2/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_2/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_3/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_3/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_4/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_4/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_5/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_5/1/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_6/0/goldens'),
-          api.path.cleanup_dir.joinpath('tmp_tmp_6/1/goldens'),
-      ),
-      api.post_process(
-          MustRun,
-          'Pipeline Unit Tests.Run tests.Unit Tests.copy golden snapshots'),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
-  )
-
-  yield api.test(
       'ci flake detection execution',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
