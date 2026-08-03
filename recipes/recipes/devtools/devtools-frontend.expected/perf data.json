@@ -2503,13 +2503,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Pipeline Performance Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "rdb",
       "rpc",

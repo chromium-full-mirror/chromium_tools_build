@@ -144,16 +144,16 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Base class DevToolsTests defines no-op trigger_exoneration and trigger_flake_detection.
-  # In test_phases.py, `hasattr(runner, 'trigger_exoneration')` evaluates to True even for non-exonerable
-  # runners like PerformanceTests, creating a 'Flake exoneration attempt' step that calls no-op methods.
+  # Non-exonerable runners like PerformanceTests do not define trigger_exoneration or
+  # trigger_flake_detection, so they should not execute exoneration or flake detection steps.
   yield api.test(
       'bug_non_exonerable_runner_hasattr_exoneration',
       try_build(),
       rdb_query('Pipeline Performance Tests.rdb query for perf_tests',
                 test_result('perf1', 'perf_tests', expected=False)),
-      # Creates empty step because hasattr is True on DevToolsTests
-      api.post_process(post_process.MustRun,
+      api.post_process(post_process.DoesNotRun,
                        'Pipeline Performance Tests.Flake exoneration attempt'),
+      api.post_process(post_process.DoesNotRun,
+                       'Pipeline Performance Tests.Detect flakes in new tests'),
       api.post_process(post_process.DropExpectation),
   )
