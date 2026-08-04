@@ -80,7 +80,7 @@ def GenTests(api):
   )
   yield api.test('node_mode', try_build(), api.properties(node_mode=True))
 
-  # Exoneration with initial task failure and use_new_format=True
+  # Exoneration with initial task failure
   yield api.test(
       'exonerate_success',
       try_build(),
@@ -108,7 +108,8 @@ def GenTests(api):
       api.properties(test_names={'other_tag': ['test1']}),
       api.post_process(
           post_process.DoesNotRun,
-          'Trigger Unit Tests (rerun).[trigger] Unit Tests (rerun) (Shard #0) on Ubuntu-22.04'
+          ('Trigger Unit Tests (rerun).'
+           '[trigger] Unit Tests (rerun) (Shard #0) on Ubuntu-22.04'),
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -151,30 +152,16 @@ def GenTests(api):
       status='INFRA_FAILURE',
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug 3 - test_name_to_grep_string replaces slashes `/` with `.`
-  def check_grep_pattern(check, steps, step_name, expected_grep):
-    check(expected_grep in str(steps[step_name].cmd))
-
-  yield api.test(
-      'bug_test_name_to_grep_string_wildcard',
-      try_build(),
-      api.properties(
-          test_names={'unit_tests': ['front_end/foo/bar.test.ts: suite test']}),
-      api.post_process(
-          check_grep_pattern,
-          'Trigger Unit Tests (rerun).[trigger] Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
-          'front_end.foo.bar'),
-      api.post_process(post_process.DropExpectation),
-  )
-
   def check_flake_detection_args(check, steps):
-    step = steps[
-        'Trigger Unit Tests (node) (flake detection).[trigger] Unit Tests (node) (flake detection) (Shard #0) on Ubuntu-22.04']
+    step = steps[(
+        'Trigger Unit Tests (node) (flake detection).[trigger] '
+        'Unit Tests (node) (flake detection) (Shard #0) on Ubuntu-22.04')]
     cmd_str = ' '.join(str(x) for x in step.cmd)
     check('--node-unit-tests' in cmd_str)
     check('--repeat=10' in cmd_str)
 
-  # Verifies that flake detection appends to extra_args without dropping existing arguments.
+  # Verifies that flake detection appends to extra_args without dropping
+  # existing arguments.
   yield api.test(
       'flake_detection_preserves_extra_args',
       try_build(),

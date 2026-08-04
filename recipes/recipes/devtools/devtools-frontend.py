@@ -177,7 +177,8 @@ def publish_coverage_points(api, skip):
     try:
       dimensions = ["lines", "statements", "functions", "branches"]
 
-      report_file = api.devtools.source_dir / 'karma-coverage/coverage-summary.json'
+      report_file = (
+          api.devtools.source_dir / 'karma-coverage/coverage-summary.json')
 
       summary = api.file.read_json('Coverage summary', report_file)
       totals = summary['total']
@@ -201,8 +202,8 @@ def publish_coverage_points(api, skip):
       points = [
           _point(api, dim, summary['total'], commit_count) for dim in dimensions
       ]
-      #TODO(liviurau) find another way arroud 400 error "Invalid ID (revision) 1055;
-      #compared to previous ID 0, it was larger or smaller by too much."
+      #TODO(liviurau) find another way arroud 400 error "Invalid ID (revision)
+      # 1055; compared to previous ID 0, it was larger or smaller by too much."
       api.perf_dashboard.add_point(points, halt_on_failure=False)
     except Exception:
       api.step.empty('Coverage data not available')
@@ -416,18 +417,19 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
-          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
-          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
+          test_result('test/e2e/file1.test.ts:etest1', 'e2e_tests'),
+          test_result('test/e2e/file2.test.ts:etest2', 'e2e_tests'),
       ),
       api.post_process(
           check_swarming_task_args,
           ('Pipeline E2E Tests.Flake exoneration attempt.'
            'Trigger E2E Tests (rerun).'
-           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
-          'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
+           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
+          'test/e2e/file1.test.ts:etest1', 'test/e2e/file2.test.ts:etest2'),
       api.step_data(
-          'Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
-          ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).'
+           'E2E Tests (rerun) shards '
+           'results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data1),
       ),
       api.post_process(
@@ -438,7 +440,8 @@ def GenTests(api):
   )
 
   yield api.test(
-      'failed parallel builder on E2E with failed exoneration and passing flake detection',
+      ('failed parallel builder on E2E with failed exoneration and '
+       'passing flake detection'),
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.override_step_data(
@@ -455,18 +458,19 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
-          test_result('e2e/file1: etest1/first ??', 'e2e_tests'),
-          test_result('e2e/file2: etest2/second (to: escape)', 'e2e_tests'),
+          test_result('test/e2e/file1.test.ts:etest1', 'e2e_tests'),
+          test_result('test/e2e/file2.test.ts:etest2', 'e2e_tests'),
       ),
       api.post_process(
           check_swarming_task_args,
           ('Pipeline E2E Tests.Flake exoneration attempt.'
            'Trigger E2E Tests (rerun).'
-           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'), '--grep',
-          'etest1.first \\?\\?|etest2.second \\(to: escape\\)'),
+           '[trigger] E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
+          'test/e2e/file1.test.ts:etest1', 'test/e2e/file2.test.ts:etest2'),
       api.step_data(
-          'Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
-          ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline E2E Tests.Flake exoneration attempt.E2E Tests (rerun).'
+           'E2E Tests (rerun) shards '
+           'results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data1),
       ),
       api.post_process(
@@ -491,8 +495,8 @@ def GenTests(api):
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
-          test_result('e2e/file1: e/test/1', 'e2e_tests'),
-          test_result('e2e/file2: e/test/2', 'e2e_tests'),
+          test_result('test/e2e/file1.test.ts:test1', 'e2e_tests'),
+          test_result('test/e2e/file2.test.ts:test2', 'e2e_tests'),
       ),
       api.post_process(
           SummaryMarkdown,
@@ -517,7 +521,7 @@ def GenTests(api):
       resultdb_query(
           'Pipeline E2E Tests.rdb query for e2e_tests',
           *[
-              test_result(f'e2e/file1: e/test/{i}', 'e2e_tests')
+              test_result(f'test/e2e/file1.test.ts:test{i}', 'e2e_tests')
               for i in range(FLAKE_DETECTION_MAX_TESTS + 1)
           ],
       ),
@@ -558,10 +562,10 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
-      api.step_data(
-          'Pipeline Performance Tests.Run tests.Performance Tests.Performance Tests '
-          + 'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
+      api.step_data(('Pipeline Performance Tests.Run tests.Performance Tests.'
+                     'Performance Tests shards results.'
+                     'Performance Tests (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data)),
       api.post_process(SummaryMarkdown,
                        'Infra Failure in Performance Tests (shard #0)'),
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
@@ -597,8 +601,9 @@ def GenTests(api):
           test_result('unit2', 'unit_tests'),
       ),
       api.step_data(
-          'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).Unit Tests (rerun) '
-          'shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline Unit Tests.Flake exoneration attempt.'
+           'Unit Tests (rerun).Unit Tests (rerun) shards results.'
+           'Unit Tests (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data),
       ),
       api.post_process(DropExpectation),
@@ -626,7 +631,8 @@ def GenTests(api):
       status='SUCCESS',
   )
   yield api.test(
-      'ci failed parallel builder on unit tests with failed exoneration and passing flake detection',
+      ('ci failed parallel builder on unit tests with failed '
+       'exoneration and passing flake detection'),
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.override_step_data(
@@ -648,8 +654,9 @@ def GenTests(api):
           test_result('unit2', 'unit_tests'),
       ),
       api.step_data(
-          'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).Unit Tests (rerun) '
-          'shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline Unit Tests.Flake exoneration attempt.'
+           'Unit Tests (rerun).Unit Tests (rerun) shards results.'
+           'Unit Tests (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data),
       ),
       api.post_process(DropExpectation),
@@ -659,14 +666,13 @@ def GenTests(api):
       'ci failed parallel builder on node unit tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.step_data(
-          'Pipeline Unit Tests (node).Run tests.Unit Tests (node).Unit Tests (node) '
-          + 'shards results.Unit Tests (node) (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
+      api.step_data(('Pipeline Unit Tests (node).Run tests.Unit Tests (node).'
+                     'Unit Tests (node) shards results.'
+                     'Unit Tests (node) (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data)),
       api.post_process(
-          SummaryMarkdown,
-          'Failure in Unit Tests (node) (shard #0), Failure in Unit Tests (node) (rerun) '
-          '(shard #0)'),
+          SummaryMarkdown, 'Failure in Unit Tests (node) (shard #0), '
+          'Failure in Unit Tests (node) (rerun) (shard #0)'),
       api.post_process(
           MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
       resultdb_query(
@@ -674,8 +680,9 @@ def GenTests(api):
           test_result('node_unit1', 'node_unit_tests'),
       ),
       api.step_data(
-          'Pipeline Unit Tests (node).Flake exoneration attempt.Unit Tests (node) (rerun).'
-          'Unit Tests (node) (rerun) shards results.Unit Tests (node) (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline Unit Tests (node).Flake exoneration attempt.'
+           'Unit Tests (node) (rerun).Unit Tests (node) (rerun) shards '
+           'results.Unit Tests (node) (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data),
       ),
       api.post_process(DropExpectation),
@@ -685,10 +692,10 @@ def GenTests(api):
       'ci failed parallel builder on node unit tests with exonerated tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.step_data(
-          'Pipeline Unit Tests (node).Run tests.Unit Tests (node).Unit Tests (node) '
-          + 'shards results.Unit Tests (node) (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
+      api.step_data(('Pipeline Unit Tests (node).Run tests.Unit Tests (node).'
+                     'Unit Tests (node) shards results.'
+                     'Unit Tests (node) (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data)),
       api.post_process(
           SummaryMarkdown,
           'Flaky tests exonerated: Failure in Unit Tests (node) (shard #0)'),
@@ -702,20 +709,20 @@ def GenTests(api):
       status='SUCCESS',
   )
   yield api.test(
-      'ci failed parallel builder on node unit tests with failed exoneration and passing flake detection',
+      ('ci failed parallel builder on node unit tests with failed '
+       'exoneration and passing flake detection'),
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.override_step_data(
           'find new tests.git diff',
           stdout=api.raw_io.output_text('front_end/foo.test.ts')),
-      api.step_data(
-          'Pipeline Unit Tests (node).Run tests.Unit Tests (node).Unit Tests (node) '
-          + 'shards results.Unit Tests (node) (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
+      api.step_data(('Pipeline Unit Tests (node).Run tests.Unit Tests (node).'
+                     'Unit Tests (node) shards results.'
+                     'Unit Tests (node) (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data)),
       api.post_process(
-          SummaryMarkdown,
-          'Failure in Unit Tests (node) (shard #0), Failure in Unit Tests (node) (rerun) '
-          '(shard #0)'),
+          SummaryMarkdown, 'Failure in Unit Tests (node) (shard #0), '
+          'Failure in Unit Tests (node) (rerun) (shard #0)'),
       api.post_process(
           MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
       resultdb_query(
@@ -723,8 +730,9 @@ def GenTests(api):
           test_result('node_unit1', 'node_unit_tests'),
       ),
       api.step_data(
-          'Pipeline Unit Tests (node).Flake exoneration attempt.Unit Tests (node) (rerun).'
-          'Unit Tests (node) (rerun) shards results.Unit Tests (node) (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline Unit Tests (node).Flake exoneration attempt.'
+           'Unit Tests (node) (rerun).Unit Tests (node) (rerun) shards '
+           'results.Unit Tests (node) (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data),
       ),
       api.post_process(DropExpectation),
@@ -734,9 +742,9 @@ def GenTests(api):
       'ci failed parallel builder on unit tests karma file copy',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.step_data(
-          'Pipeline Unit Tests.Run tests.Unit Tests.copy unit tests coverage data',
-          api.file.errno('WinError 3')),
+      api.step_data(('Pipeline Unit Tests.Run tests.Unit Tests.'
+                     'copy unit tests coverage data'),
+                    api.file.errno('WinError 3')),
       api.post_process(SummaryMarkdown,
                        'Failed in post collect for Unit Tests'),
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
@@ -749,10 +757,10 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
       api.properties(perf_benchmarks=True),
-      api.step_data(
-          'Pipeline Performance Tests.Run tests.Performance Tests.Performance Tests '
-          + 'shards results.Performance Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
+      api.step_data(('Pipeline Performance Tests.Run tests.Performance Tests.'
+                     'Performance Tests shards results.'
+                     'Performance Tests (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data)),
       api.post_process(SummaryMarkdown,
                        'Failure in Performance Tests (shard #0)'),
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
@@ -777,17 +785,19 @@ def GenTests(api):
           'Pipeline Unit Tests.Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
-      api.step_data(
-          'Pipeline Performance Tests.Run tests.Performance Tests.Performance Tests shards '
-          + 'results.Performance Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data1)),
+      api.step_data(('Pipeline Performance Tests.Run tests.Performance Tests.'
+                     'Performance Tests shards results.'
+                     'Performance Tests (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data1)),
       api.step_data(
           'Pipeline E2E Tests.Run tests.E2E Tests.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.post_process(
           SummaryMarkdown,
-          'Failure in Unit Tests (shard #0), Failure in E2E Tests (shard #0), Failure in Performance Tests (shard #0)'
+          ('Failure in Unit Tests (shard #0), '
+           'Failure in E2E Tests (shard #0), '
+           'Failure in Performance Tests (shard #0)'),
       ),
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(
@@ -815,8 +825,9 @@ def GenTests(api):
           test_result('api1', 'api_tests'),
       ),
       api.step_data(
-          'Pipeline API Tests.Flake exoneration attempt.API Tests (rerun).API Tests (rerun) '
-          'shards results.API Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          ('Pipeline API Tests.Flake exoneration attempt.'
+           'API Tests (rerun).API Tests (rerun) shards results.'
+           'API Tests (rerun) (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None, data1),
       ),
       api.post_process(DropExpectation),
@@ -833,11 +844,13 @@ def GenTests(api):
               'front_end/foo.test.ts\ntest/e2e/bar_test.ts')),
       api.post_process(
           MustRun,
-          'Pipeline Unit Tests.Detect flakes in new tests.Trigger Unit Tests (flake detection)'
+          ('Pipeline Unit Tests.Detect flakes in new tests.'
+           'Trigger Unit Tests (flake detection)'),
       ),
       api.post_process(
           MustRun,
-          'Pipeline E2E Tests.Detect flakes in new tests.Trigger E2E Tests (flake detection)'
+          ('Pipeline E2E Tests.Detect flakes in new tests.'
+           'Trigger E2E Tests (flake detection)'),
       ),
       api.post_process(DropExpectation),
       status='SUCCESS',
@@ -850,10 +863,11 @@ def GenTests(api):
       api.override_step_data(
           'find new tests.git diff',
           stdout=api.raw_io.output_text('front_end/foo.test.ts')),
-      api.step_data(
-          'Pipeline Unit Tests.Detect flakes in new tests.Unit Tests (flake detection).'
-          'Unit Tests (flake detection) shards results.Unit Tests (flake detection) (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data1)),
+      api.step_data(('Pipeline Unit Tests.Detect flakes in new tests.'
+                     'Unit Tests (flake detection).'
+                     'Unit Tests (flake detection) shards results.'
+                     'Unit Tests (flake detection) (Shard #0) on Ubuntu-22.04'),
+                    api.chromium_swarming.summary(None, data1)),
       api.post_process(SummaryMarkdown,
                        'Failure in Unit Tests (flake detection) (shard #0)'),
       api.post_process(DropExpectation),

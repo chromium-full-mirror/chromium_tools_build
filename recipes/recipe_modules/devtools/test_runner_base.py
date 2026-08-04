@@ -4,8 +4,6 @@
 
 from __future__ import annotations
 
-import re
-
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from .commons import Results
@@ -14,7 +12,6 @@ NODE_UNIT_TESTS_OPTION = '--node-unit-tests'
 
 FLAKE_DETECTION_MAX_TESTS = 20
 FLAKE_DETECTION_OPTION = '--repeat=10'
-FLAKE_EXONERATION_OPTION = '--grep'
 FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
 FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER = 'Skip-Flake-Detection-Pattern'
 
@@ -67,40 +64,18 @@ class DevToolsTests(ABC):
     had_node_unit_tests = NODE_UNIT_TESTS_OPTION in self.extra_args
     # TODO: we probably should not override extra args.
 
-    use_new_format = all(
-        re.match(r'^(.*\.[tj]s):(\S+)$', name) for name in test_names)
     self.is_flake_exoneration = True
 
     self.extra_args = [
         '--retries=5',
     ]
-    if use_new_format:
-      self.exoneration_tests = list(test_names)
-    else:
-      self.exoneration_tests = []
-      self.extra_args.extend([
-          '--grep',
-          self.test_names_to_grep_string(test_names),
-      ])
+    self.exoneration_tests = list(test_names)
 
     if had_node_unit_tests:
       self.extra_args.append(NODE_UNIT_TESTS_OPTION)
     # TODO (liviurau): add it back after puppeteer bug fix
     # https://github.com/puppeteer/puppeteer/pull/13901
     # self.env['DEBUG'] = 'puppeteer:*'
-
-  def test_names_to_grep_string(self, names):
-    # Keep sorted for stable test expectations.
-    return '|'.join(
-        sorted(self.test_name_to_grep_string(name) for name in names))
-
-  def test_name_to_grep_string(self, name):
-    # Escape JS regexp characters except slashes.
-    escaped = re.sub(r'([\-\\^$*+?.()|[\]{}])', r'\\\1', name)
-    # We need to deal with slashes separately. Test IDs contain slashes that
-    # are actual spaces in the test name, while some tests have slashes in
-    # their name.
-    return escaped.replace('/', '.')
 
   def trigger(self, run_phase='default'):
     with self.api.step.nest(f'Trigger {self.step_name}'):
@@ -297,14 +272,8 @@ class ExonerableTests(DevToolsTests):
           self.run_tests_command(args + self.owned_new_tests)
           for args in self.sharding_args()
       ]
-    is_flake_exoneration_attempt = (
-        self.is_flake_exoneration or
-        FLAKE_EXONERATION_OPTION in self.extra_args)
-    if is_flake_exoneration_attempt:
-      exoneration_tests = self.exoneration_tests
-      if exoneration_tests:
-        return [self.run_tests_command(exoneration_tests)]
-      return [self.run_tests_command(self.test_patterns)]
+    if self.is_flake_exoneration:
+      return [self.run_tests_command(self.exoneration_tests)]
     return [
         self.run_tests_command(args + self.test_patterns)
         for args in self.sharding_args()

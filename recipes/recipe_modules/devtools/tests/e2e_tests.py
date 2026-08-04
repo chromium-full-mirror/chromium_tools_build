@@ -50,7 +50,7 @@ def RunSteps(api):
     runner.trigger_flake_detection(touched)
     runner.process_flake_detection_results(touched)
 
-  api.step.empty(str(runner.owns_test('test/e2e/foo.ts')))
+  api.step.empty(str(runner.owns_test('test/e2e/foo.test.ts')))
   return runner.results.raw_result()
 
 
@@ -71,7 +71,9 @@ def GenTests(api):
       try_build(),
       api.properties(
           repeat_shuffled=True,
-          test_names={'shuffled_repeat_e2e_tests': ['test1']}),
+          test_names={
+              'shuffled_repeat_e2e_tests': ['test/e2e/foo.test.ts:test1']
+          }),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -83,11 +85,12 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # Exoneration with grep filter pattern
+  # Exoneration
   yield api.test(
-      'exonerate_grep',
+      'exonerate',
       try_build(),
-      api.properties(test_names={'e2e_tests': ['e2e/foo.ts: my e2e test']}),
+      api.properties(
+          test_names={'e2e_tests': ['test/e2e/foo.test.ts:my_test']}),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -95,7 +98,7 @@ def GenTests(api):
   yield api.test(
       'flake_detection',
       try_build(),
-      api.properties(touched_tests=['test/e2e/foo.ts1']),
+      api.properties(touched_tests=['test/e2e/foo.test.ts']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -104,7 +107,8 @@ def GenTests(api):
       'shard_invalid',
       try_build(),
       api.override_step_data(
-          'E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04',
+          ('E2E Tests.E2E Tests shards results.'
+           'E2E Tests (Shard #0) on Ubuntu-22.04'),
           api.chromium_swarming.summary(None,
                                         {'shards': [{
                                             'state': 'TIMED_OUT'
