@@ -261,12 +261,10 @@ class ExonerableTests(DevToolsTests):
       self.skip_deflaking_result = Results()
       return
 
-    had_node_unit_tests = NODE_UNIT_TESTS_OPTION in self.extra_args
     self.shard_count = 1
     self.step_name += ' (flake detection)'
-    self.extra_args = [FLAKE_DETECTION_OPTION]
-    if had_node_unit_tests:
-      self.extra_args.append(NODE_UNIT_TESTS_OPTION)
+    if FLAKE_DETECTION_OPTION not in self.extra_args:
+      self.extra_args.append(FLAKE_DETECTION_OPTION)
     self.trigger('flake detection')
 
   def process_flake_detection_results(self, test_names):

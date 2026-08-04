@@ -167,15 +167,19 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug 4 - trigger_flake_detection overwrites self.extra_args
+  def check_flake_detection_args(check, steps):
+    step = steps[
+        'Trigger Unit Tests (node) (flake detection).[trigger] Unit Tests (node) (flake detection) (Shard #0) on Ubuntu-22.04']
+    cmd_str = ' '.join(str(x) for x in step.cmd)
+    check('--node-unit-tests' in cmd_str)
+    check('--repeat=10' in cmd_str)
+
+  # Verifies that flake detection appends to extra_args without dropping existing arguments.
   yield api.test(
-      'bug_flake_detection_drops_extra_args',
+      'flake_detection_preserves_extra_args',
       try_build(),
-      api.properties(touched_tests=['front_end/foo.test.ts']),
-      api.post_process(
-          post_process.MustRun,
-          'Trigger Unit Tests (flake detection).[trigger] Unit Tests (flake detection) (Shard #0) on Ubuntu-22.04'
-      ),
+      api.properties(node_mode=True, touched_tests=['front_end/foo.test.ts']),
+      api.post_process(check_flake_detection_args),
       api.post_process(post_process.DropExpectation),
   )
 
