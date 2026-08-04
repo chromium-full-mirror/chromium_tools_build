@@ -18,9 +18,9 @@
 # Read more about `vpython` and how to modify this file here:
 #   https://chromium.googlesource.com/infra/infra/+/main/doc/users/vpython.md
 
-python_version: "3.8"
+python_version: "3.11"
 
 wheel: <
   name: "infra/python/wheels/numpy/${vpython_platform}"
-  version: "version:1.2x.supported.1"
+  version: "version:1.21.1+supported.1"
 >

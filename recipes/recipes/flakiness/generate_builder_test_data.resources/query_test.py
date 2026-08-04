@@ -115,8 +115,8 @@ class QueryTest(unittest.TestCase):
 
     mock_client.query.assert_called_with(
         query.TEST_HISTORY_QUERY.format(builder, project, builder_bucket))
-    mock_client.extract_table.assert_called_with(mock.ANY, output_gs_path,
-                                                 mock.ANY)
+    mock_client.extract_table.assert_called_with(
+        mock.ANY, output_gs_path, job_config=mock.ANY)
 
 
 if __name__ == '__main__':
