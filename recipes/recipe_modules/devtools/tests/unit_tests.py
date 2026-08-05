@@ -170,13 +170,13 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug in UnitTests coverage overwrite
+  # Verifies that exoneration reruns preserve existing coverage data without overwriting.
   yield api.test(
-      'bug_exoneration_overwrites_coverage',
+      'exoneration_preserves_coverage',
       try_build(),
       api.properties(test_names={'unit_tests': ['front_end/foo.test.ts:test']}),
       api.post_process(
-          post_process.MustRun,
+          post_process.DoesNotRun,
           'Unit Tests (rerun).remove coverage files if they exist'),
       api.post_process(post_process.DropExpectation),
   )

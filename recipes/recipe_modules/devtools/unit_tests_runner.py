@@ -43,7 +43,7 @@ class UnitTests(ExonerableTests):
             test.endswith('.test.ts') and not test.endswith('.test.api.ts'))
 
   def _post_collect(self):
-    if self.coverage:
+    if self.coverage and not self.is_flake_exoneration:
       self.copy_coverage_data()
 
   def copy_coverage_data(self):
