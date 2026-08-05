@@ -403,8 +403,6 @@ def RunSteps(api, properties):
   if platform == 'webview':
     try:
       extractor_out_dir = api.path.mkstemp()
-      api.file.ensure_directory('create extractor_output dir',
-                                extractor_out_dir)
       extractor_script = api.codesearch.resource('python_extractor.py')
 
       out_json_path = extractor_out_dir / 'python_metadata.json'

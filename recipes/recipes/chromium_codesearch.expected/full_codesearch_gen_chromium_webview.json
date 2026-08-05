@@ -971,33 +971,6 @@
   {
     "cmd": [
       "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CLEANUP]/tmp_tmp_2"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "create extractor_output dir"
-  },
-  {
-    "cmd": [
-      "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/python_extractor.py",
       "[CACHE]/builder",
       "[CLEANUP]/tmp_tmp_2/python_metadata.json",
