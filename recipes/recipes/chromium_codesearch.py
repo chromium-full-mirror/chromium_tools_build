@@ -402,7 +402,7 @@ def RunSteps(api, properties):
   python_kzip_path = None
   if platform == 'webview':
     try:
-      extractor_out_dir = api.path.mkstemp()
+      extractor_out_dir = api.path.mkdtemp()
       extractor_script = api.codesearch.resource('python_extractor.py')
 
       out_json_path = extractor_out_dir / 'python_metadata.json'
