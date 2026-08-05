@@ -28,6 +28,7 @@ DEPS = [
     'depot_tools/gsutil',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
     'recipe_engine/commit_position',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -396,11 +397,50 @@ def RunSteps(api, properties):
         rust_index_pack_path = extract_minimal_rust_kzip(
             api, rust_index_pack_path)
 
-  # Merge the Rust index pack if it was successfully generated.
+  # Run Python extractor. Since it's universal, choose a platform with
+  # the most light-weight tasks.
+  python_kzip_path = None
+  if platform == 'webview':
+    try:
+      extractor_out_dir = api.path.mkstemp()
+      api.file.ensure_directory('create extractor_output dir',
+                                extractor_out_dir)
+      extractor_script = api.codesearch.resource('python_extractor.py')
+
+      out_json_path = extractor_out_dir / 'python_metadata.json'
+      api.step('extract python metadata', [
+          'vpython3',
+          extractor_script,
+          checkout_dir,
+          out_json_path,
+          '--corpus',
+          corpus,
+          '--root',
+          checkout_dir,
+      ])
+
+      exec_path = api.cipd.ensure_tool("infra/tools/kzip_builder/${platform}",
+                                       "latest")
+      python_kzip_path = extractor_out_dir / 'python_kzip.kzip'
+      api.step('build python kzip', [
+          exec_path, '--output', python_kzip_path, '--root', checkout_dir,
+          out_json_path
+      ])
+    except api.step.StepFailure as exc:
+      python_kzip_path = None
+      if api.step.active_result:
+        result = api.step.active_result
+        result.presentation.step_text = 'python kzip extraction failed, skipping'
+        result.presentation.logs['exception'] = str(exc).splitlines()
+
+  # Merge the index packs when available.
   final_index_pack_path = initial_index_pack_path
-  if rust_index_pack_path:
+  additional_kzips = [
+      kzip for kzip in (rust_index_pack_path, python_kzip_path) if kzip
+  ]
+  if additional_kzips:
     final_index_pack_path = api.codesearch.run_kzip_merge(
-        initial_index_pack_path, rust_index_pack_path)
+        initial_index_pack_path, *additional_kzips)
 
   # Early return if it's tryserver, don't upload and sync repo.
   if api.tryserver.is_tryserver:
@@ -754,6 +794,25 @@ def GenTests(api):
       api.chromium.generic_build(builder='codesearch-gen-chromium-android'),
       api.post_process(DoesNotRun,
                        'create minimal rust kzip.create minimal kzip'),
+      api.post_process(DoesNotRun, 'merge kzips'),
+      api.post_process(
+          StepCommandContains,
+          'gsutil upload kythe index pack',
+          # Non-merged original package_index output file.
+          ['[CLEANUP]/tmp_tmp_1']),
+      api.post_process(StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'python_kzip_ignore_extract_fail',
+      api.platform('linux', 64),
+      props('webview'),
+      api.chromium.generic_build(builder='codesearch-gen-chromium-webview'),
+      api.step_data('extract python metadata', retcode=1),
+      api.post_process(StepTextEquals, 'extract python metadata',
+                       'python kzip extraction failed, skipping'),
+      api.post_process(DoesNotRun, 'build python kzip'),
       api.post_process(DoesNotRun, 'merge kzips'),
       api.post_process(
           StepCommandContains,
