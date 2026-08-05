@@ -500,7 +500,8 @@ def GenTests(api):
       ),
       api.post_process(
           SummaryMarkdown,
-          'Flaky tests exonerated: Failure in E2E Tests (shard #0)'),
+          'Flaky tests exonerated: test/e2e/file1.test.ts:test1, '
+          'test/e2e/file2.test.ts:test2'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -617,9 +618,7 @@ def GenTests(api):
           'Pipeline Unit Tests.Run tests.Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
-      api.post_process(
-          SummaryMarkdown,
-          'Flaky tests exonerated: Failure in Unit Tests (shard #0)'),
+      api.post_process(SummaryMarkdown, 'Flaky tests exonerated: unit1, unit2'),
       api.post_process(MustRun, 'Pipeline Unit Tests.Run tests.Unit Tests'),
       api.post_process(MustRun, 'Pipeline E2E Tests.Run tests.E2E Tests'),
       resultdb_query(
@@ -696,9 +695,7 @@ def GenTests(api):
                      'Unit Tests (node) shards results.'
                      'Unit Tests (node) (Shard #0) on Ubuntu-22.04'),
                     api.chromium_swarming.summary(None, data)),
-      api.post_process(
-          SummaryMarkdown,
-          'Flaky tests exonerated: Failure in Unit Tests (node) (shard #0)'),
+      api.post_process(SummaryMarkdown, 'Flaky tests exonerated: node_unit1'),
       api.post_process(
           MustRun, 'Pipeline Unit Tests (node).Run tests.Unit Tests (node)'),
       resultdb_query(

@@ -69,7 +69,7 @@ class DevToolsTests(ABC):
     self.extra_args = [
         '--retries=5',
     ]
-    self.exoneration_tests = list(test_names)
+    self.exoneration_tests = sorted(test_names)
 
     if had_node_unit_tests:
       self.extra_args.append(NODE_UNIT_TESTS_OPTION)
@@ -102,8 +102,8 @@ class DevToolsTests(ABC):
           new_results.add_infra_failure(
               f'Failed in post collect for {self.step_name}')
     if (self.is_flake_exoneration and self.results.exonerable() and
-        new_results.can_exonerate()):
-      new_results.exonerated_failures = self.results.task_failures
+        new_results.can_exonerate() and self.exoneration_tests):
+      new_results.exonerated_failures = list(self.exoneration_tests)
       self.results.task_failures = []
     self.results += new_results
 
