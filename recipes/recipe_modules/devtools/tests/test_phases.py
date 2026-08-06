@@ -127,16 +127,24 @@ def GenTests(api):
       status='FAILURE',
   )
 
-  # [UNEXPECTED BEHAVIOR / BUG]: Bug 1 - Unowned touched tests are silently dropped during Flake Detection.
-  # When git diff touches a test file that is not owned by any runner (e.g. `scripts/eslint_rules/tests/foo_test.ts`),
-  # `owns_test()` returns False for all runners, and flake detection is silently skipped without warning or error.
+  # Unowned touched tests should produce a step warning and be logged in 'unowned tests'
   yield api.test(
-      'bug_unowned_touched_test_silently_ignored',
+      'unowned_touched_test_warns',
       try_build(),
       api.override_step_data(
           'find new tests.git diff',
           stdout=api.raw_io.output_text(
               'scripts/eslint_rules/tests/foo_test.ts')),
+      api.post_process(
+          post_process.StepWarning,
+          'find new tests',
+      ),
+      api.post_process(
+          post_process.LogContains,
+          'find new tests',
+          'unowned tests',
+          ['scripts/eslint_rules/tests/foo_test.ts'],
+      ),
       api.post_process(
           post_process.DoesNotRun,
           'Pipeline Unit Tests.Detect flakes in new tests.Trigger Unit Tests (flake detection)'

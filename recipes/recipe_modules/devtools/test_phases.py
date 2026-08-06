@@ -37,6 +37,16 @@ def run_test_pipelines(api, runners):
           touched_tests = [
               t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
           ]
+      unowned_tests = [
+          t for t in touched_tests if not any(
+              r.owns_test(t) for r in runners if hasattr(r, 'owns_test'))
+      ]
+      if unowned_tests:
+        presentation.logs['unowned tests'] = unowned_tests
+        presentation.status = api.step.WARNING
+        presentation.step_text = (
+            'The following touched tests are not owned by any runner: ' +
+            ', '.join(unowned_tests))
 
   def _get_failed_tests_for_runner(test_type_tag):
     inv_id = api.resultdb.current_invocation.replace('invocations/', '')
