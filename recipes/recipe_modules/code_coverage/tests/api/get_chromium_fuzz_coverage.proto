@@ -1,0 +1,12 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.code_coverage.tests.api.get_chromium_fuzz_coverage;
+
+message InputProperties {
+  repeated string targets = 1;
+  optional bool overall = 2;
+}

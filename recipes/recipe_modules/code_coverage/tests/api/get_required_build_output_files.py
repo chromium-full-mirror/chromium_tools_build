@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from PB.recipe_modules.build.code_coverage.tests.api.get_required_build_output_files import (
+    InputProperties,)
 
 from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build.chromium_tests import steps
@@ -27,14 +28,12 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-PROPERTIES = {
-    'expected_paths': Property(kind=list),
-    'target_platform': Property(kind=str)
-}
+PROPERTIES = InputProperties
 
 
-def RunSteps(api, expected_paths, target_platform):
-  api.chromium.set_config('chromium', TARGET_PLATFORM=target_platform)
+def RunSteps(api, properties: InputProperties):
+  api.chromium.set_config(
+      'chromium', TARGET_PLATFORM=properties.target_platform)
 
   tests = [
       steps.SwarmingGTestTestSpec.create('browser_tests').get_test(
@@ -48,8 +47,7 @@ def RunSteps(api, expected_paths, target_platform):
   file_paths = api.code_coverage.get_required_build_output_files(tests)
 
   str_file_paths = [str(f) for f in file_paths]
-  str_expected_paths = [str(f) for f in expected_paths]
-  api.assertions.assertCountEqual(str_file_paths, str_expected_paths)
+  api.assertions.assertCountEqual(str_file_paths, properties.expected_paths)
 
 
 def GenTests(api):
@@ -59,10 +57,8 @@ def GenTests(api):
       api.chromium.try_build(builder='linux-rel'),
       api.properties(
           expected_paths=[
-              api.path.cleanup_dir / 'out/Release/browser_tests',
-              api.path.cleanup_dir.joinpath(
-                  'out/Release/binary_relative_paths_for_clang_code_coverage.json'
-              ),
+              '[CLEANUP]/out/Release/browser_tests',
+              '[CLEANUP]/out/Release/binary_relative_paths_for_clang_code_coverage.json',
           ],
           target_platform='linux'),
       api.path.exists(api.path.cleanup_dir / 'out/Release/browser_tests'),
@@ -81,14 +77,10 @@ def GenTests(api):
       api.code_coverage(use_java_coverage=True),
       api.properties(
           expected_paths=[
-              api.path.cleanup_dir / android_test_path,
-              api.path.cleanup_dir.joinpath(
-                  'out/Release/binary_relative_paths_for_clang_code_coverage.json'
-              ),
-              api.path.cleanup_dir.joinpath(
-                  'out/Release/{}'.format(jacoco_file)),
-              api.path.cleanup_dir.joinpath('out/Release/{}'.format(
-                  'chrome/browser/java__process_device.filter.jar'))
+              f'[CLEANUP]/{android_test_path}',
+              '[CLEANUP]/out/Release/binary_relative_paths_for_clang_code_coverage.json',
+              f'[CLEANUP]/out/Release/{jacoco_file}',
+              '[CLEANUP]/out/Release/chrome/browser/java__process_device.filter.jar',
           ],
           target_platform='android'),
       api.path.exists(api.path.cleanup_dir / android_test_path),
@@ -112,11 +104,9 @@ def GenTests(api):
           project='rbe-chromium-untrusted', output_local_strategy='minimum'),
       api.properties(
           expected_paths=[
-              api.path.cleanup_dir / 'out/Release/browser_tests',
-              api.path.cleanup_dir / 'out/Release/android_browsertests',
-              api.path.cleanup_dir.joinpath(
-                  'out/Release/binary_relative_paths_for_clang_code_coverage.json'
-              ),
+              '[CLEANUP]/out/Release/browser_tests',
+              '[CLEANUP]/out/Release/android_browsertests',
+              '[CLEANUP]/out/Release/binary_relative_paths_for_clang_code_coverage.json',
           ],
           target_platform='linux'),
       api.post_process(post_process.DropExpectation),

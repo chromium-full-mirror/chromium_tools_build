@@ -1,0 +1,12 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.code_coverage.tests.api.get_required_build_output_files;
+
+message InputProperties {
+  repeated string expected_paths = 1;
+  string target_platform = 2;
+}

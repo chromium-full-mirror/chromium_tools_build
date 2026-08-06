@@ -6,7 +6,8 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 from recipe_engine.post_process import DropExpectation
-from recipe_engine.recipe_api import Property
+from PB.recipe_modules.build.code_coverage.tests.api.get_chromium_fuzz_coverage import (
+    InputProperties,)
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.code_coverage import constants
 
@@ -16,22 +17,24 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
 ]
-PROPERTIES = {
-    'targets': Property(kind=set),
-    'overall': Property(kind=bool, default=True),
-}
+PROPERTIES = InputProperties
 
 
-def RunSteps(api, targets: set[str], overall: bool):
-  api.code_coverage.get_chromium_fuzz_coverage(api.path.start_dir / 'checkout',
-                                               api.path.start_dir / 'build', '',
-                                               targets, overall)
+def RunSteps(api, properties: InputProperties):
+  overall = properties.overall if properties.HasField('overall') else True
+  api.code_coverage.get_chromium_fuzz_coverage(
+      api.path.start_dir / 'checkout',
+      api.path.start_dir / 'build',
+      '',
+      set(properties.targets),
+      overall,
+  )
 
 
 def GenTests(api):
   yield api.test(
       'overall',
-      api.properties(targets={'blink_unittest_fake_fuzzer', 'fake_fuzzer'}),
+      api.properties(targets=['blink_unittest_fake_fuzzer', 'fake_fuzzer']),
       api.step_data(
           'process fuzz coverage (overall).calculate gn refs',
           stdout=api.raw_io.output_text('\n'.join([
@@ -77,7 +80,7 @@ def GenTests(api):
       api.post_process(DropExpectation))
 
   yield api.test(
-      'per-target', api.properties(targets={'fake_fuzzer'}, overall=False),
+      'per-target', api.properties(targets=['fake_fuzzer'], overall=False),
       api.post_process(post_process.MustRun,
                        'process fuzz coverage (fake_fuzzer).chmod llvm file'),
       api.post_process(
@@ -97,7 +100,7 @@ def GenTests(api):
       api.post_process(DropExpectation))
 
   yield api.test(
-      'no-targets', api.properties(targets=set()),
+      'no-targets', api.properties(targets=[]),
       api.post_process(post_process.MustRun,
                        'no fuzz targets to generate coverage for'),
       api.post_process(DropExpectation))

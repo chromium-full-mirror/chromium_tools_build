@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from PB.recipe_modules.build.code_coverage.tests.api.get_binary_in_orchestrator_build import (
+    InputProperties,)
 
 from RECIPE_MODULES.build.code_coverage import constants
 
@@ -16,16 +17,17 @@ DEPS = [
     'recipe_engine/path',
 ]
 
-PROPERTIES = {'expected_binaries': Property(kind=list)}
+PROPERTIES = InputProperties
 
 
-def RunSteps(api, expected_binaries):
+def RunSteps(api, properties: InputProperties):
   api.code_coverage.build_dir = api.path.cleanup_dir
   binaries = sorted(
       list(
           api.code_coverage.get_binaries(['whatever'],
                                          may_use_binaries_list_file=True)))
-  api.assertions.assertCountEqual(binaries, expected_binaries)
+  api.assertions.assertCountEqual([str(b) for b in binaries],
+                                  properties.expected_binaries)
 
 
 def GenTests(api):
@@ -36,7 +38,7 @@ def GenTests(api):
           api.path.cleanup_dir.joinpath(
               constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME)),
       api.properties(expected_binaries=[
-          api.path.cleanup_dir / 'some_library',
+          '[CLEANUP]/some_library',
       ]),
       api.post_process(post_process.DropExpectation),
   )
