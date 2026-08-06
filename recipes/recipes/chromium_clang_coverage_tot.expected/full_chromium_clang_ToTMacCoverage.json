@@ -896,7 +896,8 @@
       "--coverage-tools-dir",
       "[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin",
       "-v",
-      "--no-compile"
+      "--no-compile",
+      "--no-component-view"
     ],
     "cwd": "[CACHE]/builder",
     "env_suffixes": {

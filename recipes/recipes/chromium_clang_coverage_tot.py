@@ -111,6 +111,7 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
 
   cmd.extend(['-v'])
   cmd.extend(['--no-compile'])
+  cmd.extend(['--no-component-view'])
   with api.depot_tools.on_path():
     api.chromium.compile(
         source_dir=source_dir, build_dir=build_dir, targets=SAMPLE_TARGETS)
