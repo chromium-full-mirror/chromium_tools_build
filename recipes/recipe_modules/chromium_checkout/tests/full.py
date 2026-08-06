@@ -59,9 +59,16 @@ def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow,
       shallow=shallow)
 
   api.step('details', [])
+  if api.properties.get('test_with_submodules'):
+    submodule_result = (
+        api.chromium_checkout.get_files_affected_by_patch_with_submodules(
+            report_via_property=report_via_property))
+    files = submodule_result.affected_files
+  else:
+    files = api.chromium_checkout.get_files_affected_by_patch(
+        report_via_property=report_via_property)
   api.step.active_result.presentation.logs['details'] = [
-      'affected_files: %r' % (api.chromium_checkout.get_files_affected_by_patch(
-          report_via_property=report_via_property),),
+      'affected_files: %r' % (files,),
   ]
 
   # Checking out again is fine if the checkout_dir and source_dir are the same
@@ -72,6 +79,17 @@ def GenTests(api):
       'full_ci',
       api.platform('linux', 64),
       api.buildbucket.generic_build(),
+      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'full_ci_submodules',
+      api.platform('linux', 64),
+      api.buildbucket.generic_build(),
+      api.properties(test_with_submodules=True),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -237,8 +255,7 @@ def GenTests(api):
       api.buildbucket.try_build(
           experiments=['chromium_checkout.expand_submodules'],),
       api.platform('linux', 64),
-      api.properties(report_via_property=True),
-      api.post_process(StepSuccess, 'git diff to analyze patch'),
+      api.properties(report_via_property=True, test_with_submodules=True),
       api.post_process(StepSuccess,
                        '[Experimental] git diff --raw to analyze patch'),
       api.post_process(DropExpectation),

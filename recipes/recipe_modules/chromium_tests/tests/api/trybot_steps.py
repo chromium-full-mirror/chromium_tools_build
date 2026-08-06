@@ -1855,3 +1855,84 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'expand_submodules_target_diffs',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['chromium_checkout.expand_submodules'],
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.filter.analyze_output(
+          status='Found dependency',
+          test_targets=['removed_test'],
+          compile_targets=['removed_compile'],
+      ),
+      api.override_step_data(
+          '[Experimental] analyze submodules.analyze',
+          api.json.output({
+              'status': 'Found dependency',
+              'test_targets': ['added_test'],
+              'compile_targets': ['added_compile'],
+          }),
+      ),
+      api.post_process(post_process.MustRun,
+                       '[Experimental] analyze submodules'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'expand_submodules_skip_deleted',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['chromium_checkout.expand_submodules'],
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.step_data(
+          '[Experimental] git diff --raw to analyze patch',
+          api.raw_io.stream_output(':160000 160000 1234567 0000000 D\tsub\n'),
+      ),
+      api.post_process(
+          post_process.StepTextEquals, '[Experimental] analyze submodules',
+          'skipping analyze:<br/>* deleted submodules detected: sub'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'expand_submodules_skip_nested',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['chromium_checkout.expand_submodules'],
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.path.files_exist(api.path.cache_dir / 'builder' / 'src' / 'sub' /
+                           '.git'),
+      api.step_data(
+          '[Experimental] git diff --raw to analyze patch',
+          api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+      ),
+      api.step_data(
+          '[Experimental] git diff submodules.sub',
+          api.raw_io.stream_output(
+              ':160000 160000 1234567 89abcdef M\tnested_sub\n'),
+      ),
+      api.post_process(
+          post_process.StepTextEquals, '[Experimental] analyze submodules',
+          'skipping analyze:<br/>* nested submodules detected: sub/nested_sub'),
+      api.post_process(post_process.DropExpectation),
+  )

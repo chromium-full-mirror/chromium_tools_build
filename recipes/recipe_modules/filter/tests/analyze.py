@@ -125,6 +125,21 @@ def GenTests(api):
   )
 
   yield api.test(
+      'ignored_exclusion_patterns',
+      api.platform('linux', 64),
+      api.filter.analyze_config(exclusions=['.*']),
+      api.properties(
+          analyze_kwargs={'ignored_exclusion_patterns': ['.*']},
+          affected_files=['file1'],
+          test_targets=['test1'],
+          compile_targets=['compile1'],
+      ),
+      api.post_check(post_process.StepCommandContains, 'analyze',
+                     [re.compile(r'.+/mb\.py')]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'ignored-exclusion',
       api.platform('linux', 64),
       api.filter.analyze_config(

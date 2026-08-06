@@ -13,6 +13,8 @@ from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.depot_tools import bot_update
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
+from RECIPE_MODULES.depot_tools.tryserver.api import SubmodulePathsResult
+
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb
@@ -142,19 +144,37 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           patch_root,
           report_files_via_property=('affected_files'
                                      if report_via_property else None))
-      expand_submodules = ('chromium_checkout.expand_submodules'
-                           in self.m.buildbucket.build.input.experiments)
-      if expand_submodules:
-        # TODO(crbug.com/40609997): replace `files` above with the result of
-        # the `_with_submodules` function below, which in addition to returning
-        # affected files in the Chromium repo also diffs the contents of
-        # submodules when their gitlinks are modified.
-        self.m.tryserver.get_files_affected_by_patch_with_submodules(
-            patch_root,
-            report_files_via_property=('affected_files'
-                                       if report_via_property else None),
-        )
     return self.format_affected_file_paths(files, relative_to=relative_to)
+
+  def get_files_affected_by_patch_with_submodules(self,
+                                                  relative_to=None,
+                                                  cwd=None,
+                                                  report_via_property=False):
+    """Returns SubmodulePathsResult containing POSIX paths of affected files and submodule metadata."""
+    if not self.m.tryserver.gerrit_change:
+      # There is no patch to begin with.
+      return SubmodulePathsResult()
+    patch_root = self.m.gclient.get_gerrit_patch_root()
+    assert patch_root, ('local path is not configured for %s' %
+                        self.m.tryserver.gerrit_change_repo_url)
+    cwd = cwd or self.checkout_dir / patch_root
+    with self.m.context(cwd=cwd):
+      submodule_paths_result = (
+          self.m.tryserver.get_files_affected_by_patch_with_submodules(
+              patch_root,
+              report_files_via_property=('affected_files'
+                                         if report_via_property else None),
+          ))
+    formatted_files = self.format_affected_file_paths(
+        list(submodule_paths_result.affected_files), relative_to=relative_to)
+    return SubmodulePathsResult(
+        affected_files=formatted_files,
+        unchecked_out_submodules=(
+            submodule_paths_result.unchecked_out_submodules),
+        deleted_submodules=submodule_paths_result.deleted_submodules,
+        new_submodules=submodule_paths_result.new_submodules,
+        nested_submodules=submodule_paths_result.nested_submodules,
+    )
 
   def format_affected_file_paths(self, files, relative_to=None):
     if relative_to is None:

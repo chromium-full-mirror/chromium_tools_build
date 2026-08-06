@@ -312,6 +312,7 @@ class FilterApi(recipe_api.RecipeApi):
       config_path: config_types.Path | None = None,
       additional_names: Collection[str] | None = None,
       additional_exclusions: Mapping[str, str] | None = None,
+      ignored_exclusion_patterns: Collection[str] | None = None,
       builder_id: chromium_types.BuilderId | None = None,
       mb_path: config_types.Path | None = None,
       mb_config_path: config_types.Path | None = None,
@@ -369,6 +370,8 @@ class FilterApi(recipe_api.RecipeApi):
       additional_exclusions: A mapping of additinal exclusion path strings
         to their sources. The string paths are to be compiled into regex
         and then added to the exclusions.
+      ignored_exclusion_patterns: A collection of exclusion regex patterns (e.g.
+        ['^DEPS$']) to ignore/bypass from the loaded config file.
       builder_id: The ID of the builder with the config to run MB
         against.
       mb_path: The path to the source directory containing the mb.py
@@ -394,6 +397,11 @@ class FilterApi(recipe_api.RecipeApi):
 
     exclusions_from_config, ignores = self._get_path_matchers(
         additional_names, config_path)
+    if ignored_exclusion_patterns:
+      ignored_set = set(ignored_exclusion_patterns)
+      exclusions_from_config = [
+          e for e in exclusions_from_config if e.pattern not in ignored_set
+      ]
     exclusions = {
         exclusion: 'analyze config file' for exclusion in exclusions_from_config
     }

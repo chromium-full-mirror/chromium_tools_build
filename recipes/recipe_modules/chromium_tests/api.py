@@ -2857,6 +2857,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         turboci_analyze_check_id=turboci_analyze_check_id,
     )
 
+    expand_submodules = ('chromium_checkout.expand_submodules'
+                         in self.m.buildbucket.build.input.experiments)
+    if expand_submodules:
+      self._experimental_submodule_analyze(
+          builder_id,
+          builder_config,
+          source_dir,
+          build_dir,
+          files_relative_to,
+          targets_config,
+          test_targets,
+          compile_targets,
+      )
+
     self.m.chromium_turboci.update_build_check_compile_targets(
         turboci_build_check_id,
         compile_targets,
@@ -2930,6 +2944,127 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         swarming_execution_info=execution_info,
     )
     return raw_result, task
+
+  def _experimental_submodule_analyze(
+      self,
+      builder_id: chromium_types.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      source_dir: Path,
+      build_dir: Path,
+      files_relative_to: Path | None,
+      targets_config: targets_config_module.TargetsConfig,
+      test_targets: Collection[str],
+      compile_targets: Collection[str],
+  ):
+    """Orchestrates the experimental submodule analyze step."""
+    submodule_paths_result = (
+        self.m.chromium_checkout.get_files_affected_by_patch_with_submodules(
+            report_via_property=False, relative_to=files_relative_to))
+
+    with self.m.step.nest('[Experimental] analyze submodules') as presentation:
+      if (submodule_paths_result.nested_submodules or
+          submodule_paths_result.deleted_submodules):
+        reasons = []
+        if submodule_paths_result.nested_submodules:
+          reasons.append('nested submodules detected: ' +
+                         ', '.join(submodule_paths_result.nested_submodules))
+        if submodule_paths_result.deleted_submodules:
+          reasons.append('deleted submodules detected: ' +
+                         ', '.join(submodule_paths_result.deleted_submodules))
+        presentation.step_text = 'skipping analyze:<br/>* ' + '<br/>* '.join(
+            reasons)
+        return
+
+      try:
+        exp_test_targets, exp_compile_targets = (
+            self._run_experimental_submodule_analyze(
+                builder_id,
+                builder_config,
+                source_dir,
+                build_dir,
+                submodule_paths_result.affected_files,
+                targets_config,
+            ))
+      except self.m.step.StepFailure as e:  # pragma: no cover
+        presentation.step_text = f'experimental analyze failed: {e}'
+        presentation.status = self.m.step.EXCEPTION
+        return
+
+      exp_test_targets_sorted = sorted(exp_test_targets)
+      exp_compile_targets_sorted = sorted(exp_compile_targets)
+
+      test_targets_added = sorted(
+          set(exp_test_targets_sorted) - set(test_targets))
+      test_targets_removed = sorted(
+          set(test_targets) - set(exp_test_targets_sorted))
+      compile_targets_added = sorted(
+          set(exp_compile_targets_sorted) - set(compile_targets))
+      compile_targets_removed = sorted(
+          set(compile_targets) - set(exp_compile_targets_sorted))
+
+      presentation.logs['test_targets'] = exp_test_targets_sorted
+      presentation.logs['compile_targets'] = exp_compile_targets_sorted
+      if test_targets_added:
+        presentation.logs['test_targets_added'] = test_targets_added
+      if test_targets_removed:
+        presentation.logs['test_targets_removed'] = test_targets_removed
+      if compile_targets_added:
+        presentation.logs['compile_targets_added'] = compile_targets_added
+      if compile_targets_removed:
+        presentation.logs['compile_targets_removed'] = compile_targets_removed
+
+      presentation.properties['experimental_submodule_analyze'] = {
+          'diff': {
+              'test_targets_added': test_targets_added,
+              'test_targets_removed': test_targets_removed,
+              'compile_targets_added': compile_targets_added,
+              'compile_targets_removed': compile_targets_removed,
+          },
+      }
+
+  def _run_experimental_submodule_analyze(
+      self,
+      builder_id: chromium_types.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      source_dir: Path,
+      build_dir: Path,
+      submodule_affected_files: Iterable[str],
+      targets_config: targets_config_module.TargetsConfig,
+  ) -> tuple[Collection[str], Collection[str]]:
+    """Runs filter.analyze for experimental submodule expansion.
+
+    This performs the same target and config setup that
+    determine_compilation_targets does prior to invoking filter.analyze, but
+    runs in isolation without updating production TurboCI check results or
+    build targets.
+    """
+    tests = (
+        targets_config.all_tests if not builder_config.is_compile_only else [])
+    compile_targets = targets_config.compile_targets
+    test_targets = sorted(set(self._all_compile_targets(tests)))
+    additional_compile_targets = sorted(
+        set(compile_targets) - set(test_targets))
+    analyze_names = [
+        'chromium',
+        *builder_config.analyze_names,
+        self.m.chromium.c.TARGET_PLATFORM,
+    ]
+    additional_exclusions = {
+        exclusion: 'builder config additional exclusions'
+        for exclusion in builder_config.additional_exclusions
+    }
+
+    return self.m.filter.analyze(
+        source_dir,
+        build_dir,
+        submodule_affected_files,
+        test_targets,
+        additional_compile_targets,
+        builder_id=builder_id,
+        additional_names=analyze_names,
+        additional_exclusions=additional_exclusions,
+        ignored_exclusion_patterns=['DEPS'],
+    )
 
   def get_first_tag(self, key):
     '''Returns the first buildbucket tag value for a given key
