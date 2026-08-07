@@ -9,27 +9,61 @@ from recipe_engine.post_process import (DropExpectation, StepCommandContains,
                                         StatusFailure, StatusSuccess)
 from packaging.version import parse
 
-DEPS = [
-    'chromium',
-    'infra/codesearch',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/golang',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.infra import codesearch
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    golang,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  codesearch: codesearch.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  golang: golang.API
+  gsutil: gsutil.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+
 
 MODULE_RE = re.compile(r'^module\s+([^\s#]+)', re.MULTILINE)
 GO_VERSION_RE = re.compile(r'^go (\d+\.\d+(?:\.\d+)?)$', re.MULTILINE)
 
-def RunSteps(api):
+
+def RunSteps(api: DEPS):
   kythe_bin = api.codesearch.ensure_kythe().joinpath('extractors',
                                                      'go_extractor')
   c = api.gclient.make_config()
@@ -86,7 +120,7 @@ def RunSteps(api):
       dest='build/%s' % kzip_name)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.buildbucket.try_build(

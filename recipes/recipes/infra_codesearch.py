@@ -9,32 +9,49 @@ from recipe_engine.post_process import (DropExpectation, StepCommandContains,
                                         StatusFailure, StatusSuccess)
 from packaging.version import parse
 
-DEPS = [
-    'chromium',
-    'infra/codesearch',
-    'infra/infra_checkout',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/golang',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/json',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+from RECIPE_MODULES.infra import codesearch, infra_checkout
+from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
+from RECIPE_MODULES.recipe_engine import (buildbucket, cipd, context, file,
+                                          golang, json, path, platform,
+                                          properties, raw_io, step)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  codesearch: codesearch.API
+  infra_checkout: infra_checkout.API
+  bot_update: bot_update.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  golang: golang.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+  json: json.API
+  raw_io: raw_io.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 MODULE_RE = re.compile(r'^module\s+([^\s#]+)', re.MULTILINE)
 GO_VERSION_RE = re.compile(r'^go (\d+\.\d+(?:\.\d+)?)$', re.MULTILINE)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   kythe_bin = api.codesearch.ensure_kythe().joinpath('extractors',
                                                      'go_extractor')
 
@@ -215,7 +232,7 @@ def RunSteps(api):
       dest='infra/%s' % kzip_name)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.buildbucket.try_build(
