@@ -15,6 +15,8 @@ DEPS = [
     'chromium',
     'chromium_tests',
     'angle',
+    'depot_tools/gclient',
+    'depot_tools/tryserver',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
@@ -23,6 +25,10 @@ DEPS = [
 
 def RunSteps(api):
   res = api.angle.try_steps()
+  if api.tryserver.is_tryserver:
+    expected_val = False if api.properties.get('no_extra_traces') else None
+    custom_vars = api.gclient.c.solutions[0].custom_vars
+    assert custom_vars.get('checkout_extra_traces') == expected_val
   if res:
     return res
   api.step('Success', ['echo', 'Success!'])
@@ -107,6 +113,7 @@ def GenTests(api):
   yield api.test(
       'try_linux_compile_and_test',
       api.platform('linux', 64),
+      api.properties(no_extra_traces=True),
       api.angle.try_build(builder='try-linux-compile-and-test'),
       api.angle.builders(_TEST_BUILDERS),
       api.angle.trybots(_TEST_TRYBOTS),

@@ -10,4 +10,7 @@ message InputProperties {
   // Whether to run the ANGLE trace tests as additional steps at the end of the
   // build.
   optional bool run_trace_tests = 1;
+
+  // Whether to skip downloading extra restricted traces.
+  optional bool no_extra_traces = 2;
 }

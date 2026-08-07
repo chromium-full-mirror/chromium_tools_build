@@ -49,8 +49,22 @@ class ANGLEApi(recipe_api.RecipeApi):
     self.m.tryserver.require_is_tryserver()
 
     builder_id, builder_config = self._get_builder_id_and_config()
-    chromium_results = self.m.chromium_tests.trybot_steps(
-        builder_id, builder_config, files_relative_to='angle/')
+
+    if self.m.properties.get('no_extra_traces'):
+      orig_configure_build = self.m.chromium_tests.configure_build
+
+      def patched_configure_build(builder_config):
+        orig_configure_build(builder_config)
+        self.m.gclient.apply_config('angle_no_extra_traces')
+
+      self.m.chromium_tests.configure_build = patched_configure_build
+
+    try:
+      chromium_results = self.m.chromium_tests.trybot_steps(
+          builder_id, builder_config, files_relative_to='angle/')
+    finally:
+      if self.m.properties.get('no_extra_traces'):
+        self.m.chromium_tests.configure_build = orig_configure_build
 
     # Skip trace tests if the rest of the build already failed.
     if not _raw_result_was_successful(chromium_results):

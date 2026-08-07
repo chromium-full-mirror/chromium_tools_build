@@ -11,6 +11,7 @@ DEPS = [
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/cipd',
     'recipe_engine/context',

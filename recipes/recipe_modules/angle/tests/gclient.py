@@ -36,3 +36,8 @@ def GenTests(api):
       api.properties(apply_gclient_config='angle_nointernal'),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'angle_no_extra_traces',
+      api.properties(apply_gclient_config='angle_no_extra_traces'),
+      api.post_process(post_process.DropExpectation),
+  )
