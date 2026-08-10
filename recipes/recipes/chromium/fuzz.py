@@ -226,12 +226,14 @@ def RunSteps(api, properties):
         # give `gn ls` the `//chrome:chrome_initial` label that actually
         # outputs the executable.
         #
-        # macOS uses app bundles to package chrome, so it isn't supported yet.
+        # macOS packages Chrome as an app bundle, so we give `gn ls` the
+        # `//chrome:chrome_app` label instead.
         #
         # [0]: https://gn.googlesource.com/gn/+/master/docs/reference.md#phony-rules
-        assert api.platform.is_win or api.platform.is_linux, (
-            f"{api.platform.name} doesn't support fuzz coverage yet")
-        all_fuzzers.add('//chrome:chrome_initial')
+        if api.platform.is_win or api.platform.is_linux:
+          all_fuzzers.add('//chrome:chrome_initial')
+        elif api.platform.is_mac:
+          all_fuzzers.add('//chrome:chrome_app')
       targets = sorted(all_fuzzers - no_clusterfuzz)
 
       api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
@@ -858,6 +860,27 @@ def GenTests(api):
               },
           })),
       api.platform.name('linux'),
+      generate_test(is_coverage=True),
+  )
+
+  yield api.test(
+      'mac-coverage',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'TARGET_PLATFORM': 'mac',
+                          },
+                      ),
+              },
+          })),
+      api.platform.name('mac'),
       generate_test(is_coverage=True),
   )
 
