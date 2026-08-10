@@ -2959,7 +2959,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """Orchestrates the experimental submodule analyze step."""
     submodule_paths_result = (
         self.m.chromium_checkout.get_files_affected_by_patch_with_submodules(
-            report_via_property=False, relative_to=files_relative_to))
+            report_via_property=True, relative_to=files_relative_to))
 
     with self.m.step.nest('[Experimental] analyze submodules') as presentation:
       if (submodule_paths_result.nested_submodules or
