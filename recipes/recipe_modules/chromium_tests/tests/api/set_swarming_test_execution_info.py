@@ -497,7 +497,7 @@ def GenTests(api):
           builder_group=fake_group,
           builder=fake_builder,
           builder_db=fake_builder_db,
-          experiments=['chromium_rts.skip_tests'],
+          experiments=['chromium_rts.filter_file_analysis'],
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
       api.chromium_tests.read_targets_spec(*fake_targets_spec),

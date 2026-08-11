@@ -4,9 +4,12 @@
 
 from recipe_engine import post_process
 
+from RECIPE_MODULES.build.chromium_tests.steps import MockTestSpec
+
 DEPS = [
     'chromium',
     'chromium_rts',
+    'chromium_tests',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/path',
@@ -17,12 +20,8 @@ DEPS = [
 
 def RunSteps(api):
   experiments = api.buildbucket.build.input.experiments
-  expected_generate = ('chromium_rts.filter_file_analysis' in experiments or
-                       'chromium_rts.skip_tests' in experiments)
+  expected_generate = 'chromium_rts.filter_file_analysis' in experiments
   assert api.chromium_rts._should_generate_filters() == expected_generate
-
-  expected_skip = 'chromium_rts.skip_tests' in experiments
-  assert api.chromium_rts._should_skip_tests() == expected_skip
 
   api.chromium_rts.get_experiment_names()
 
@@ -35,7 +34,10 @@ def RunSteps(api):
       api.path.cleanup_dir,
       ['blink_python_tests', 'blink_web_tests'],
   )
-  api.chromium_rts.start_evaluation(api.path.cleanup_dir, [])
+  mock_test = MockTestSpec.create(
+      name='blink_web_tests',
+      runs_on_swarming=True).get_test(api.chromium_tests)
+  api.chromium_rts.start_evaluation(api.path.cleanup_dir, [mock_test])
   api.chromium_rts.wait_for_evaluation()
 
   command_line_variants = api.chromium_rts.get_command_line_variants(
@@ -43,21 +45,26 @@ def RunSteps(api):
           'blink_web_tests': ['/bin/run_tests', '--some-arg'],
           'blink_python_tests': ['/bin/run_python_tests'],
       })
-  if api.chromium_rts._should_skip_tests():
-    assert command_line_variants == {
-        'rts': {
-            'blink_web_tests': [
-                '/bin/run_tests', '--some-arg',
-                '--test-launcher-filter-file=gen/rts/blink_web_tests.filter'
-            ]
-        },
-        'rts_complement': {
-            'blink_web_tests': [
-                '/bin/run_tests', '--some-arg',
-                '--test-launcher-filter-file=gen/rts/blink_web_tests_inverted.filter'
-            ]
-        }
-    }
+  if api.chromium_rts._should_generate_filters():
+    expected_variants = {}
+    if api.path.exists(
+        api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter')):
+      expected_variants['rts'] = {
+          'blink_web_tests': [
+              '/bin/run_tests', '--some-arg',
+              '--test-launcher-filter-file=gen/rts/blink_web_tests.filter'
+          ]
+      }
+    if api.path.exists(
+        api.path.cleanup_dir.joinpath('gen', 'rts',
+                                      'blink_web_tests_inverted.filter')):
+      expected_variants['rts_complement'] = {
+          'blink_web_tests': [
+              '/bin/run_tests', '--some-arg',
+              '--test-launcher-filter-file=gen/rts/blink_web_tests_inverted.filter'
+          ]
+      }
+    assert command_line_variants == expected_variants
   else:
     assert command_line_variants == {}
 
@@ -137,7 +144,8 @@ def GenTests(api):
   yield api.test(
       'rts_skip_tests_enabled',
       api.chromium.try_build(
-          builder='linux-rel', experiments=['chromium_rts.skip_tests']),
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
       api.path.exists(
           api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
           api.path.cleanup_dir.joinpath('gen', 'rts',
@@ -163,7 +171,8 @@ def GenTests(api):
   yield api.test(
       'rts_skip_tests_missing_isolate',
       api.chromium.try_build(
-          builder='linux-rel', experiments=['chromium_rts.skip_tests']),
+          builder='linux-rel',
+          experiments=['chromium_rts.filter_file_analysis']),
       api.path.exists(
           api.path.cleanup_dir.joinpath('gen', 'rts', 'blink_web_tests.filter'),
           api.path.cleanup_dir.joinpath('gen', 'rts',

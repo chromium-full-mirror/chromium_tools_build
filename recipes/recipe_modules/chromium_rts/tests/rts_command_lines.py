@@ -16,7 +16,11 @@ DEPS = [
 
 
 def RunSteps(api):
-  spec = MockTestSpec.create(name='blink_web_tests', runs_on_swarming=True)
+  spec = MockTestSpec.create(
+      name='blink_web_tests',
+      runs_on_swarming=True,
+      enable_rts_filtering=True,
+  )
   test = spec.get_test(api.chromium_tests)
   messages = []
   api.chromium_rts.append_test_step_text(test, messages)
@@ -32,6 +36,15 @@ def RunSteps(api):
       'Ran tests selected by Regression Test Selection (RTS).\n'
   ]
   api.chromium_rts.set_swarming_test_execution_info(test, None)
+
+  # Test non-allowlisted suite
+  spec2 = MockTestSpec.create(name='other_tests', runs_on_swarming=True)
+  test2 = spec2.get_test(api.chromium_tests)
+  api.chromium_rts.set_swarming_test_execution_info(
+      test2, {'rts': {
+          'other_tests': ['/bin/rts_cmd']
+      }})
+  assert test2.raw_cmd != ['/bin/rts_cmd']
 
 
 def GenTests(api):

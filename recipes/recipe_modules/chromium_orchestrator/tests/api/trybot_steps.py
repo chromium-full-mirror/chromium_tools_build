@@ -706,7 +706,7 @@ def GenTests(api):
                       ]),
               }
           }),
-          experiments=['chromium_rts.skip_tests'],
+          experiments=['chromium_rts.filter_file_analysis'],
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.cv(run_mode='FULL_RUN', top_level=True),
@@ -737,7 +737,10 @@ def GenTests(api):
           post_process.LogContains,
           'trigger compilator (with patch)',
           'request',
-          ['$recipe_engine/cq', 'FULL_RUN', 'chromium_rts.skip_tests'],
+          [
+              '$recipe_engine/cq', 'FULL_RUN',
+              'chromium_rts.filter_file_analysis'
+          ],
       ),
       api.post_process(post_process.MustRun, 'download rts command lines'),
       api.post_process(post_process.DropExpectation),

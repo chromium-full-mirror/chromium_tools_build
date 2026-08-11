@@ -461,6 +461,12 @@ class AbstractTest(abc.ABC):
     """Whether to retry only the failed tests, with patch."""
     raise NotImplementedError()  # pragma: no cover
 
+  @property
+  @abc.abstractmethod
+  def enable_rts_filtering(self) -> bool:
+    """Whether to skip tests via RTS for this test."""
+    raise NotImplementedError()  # pragma: no cover
+
   @test_options.setter
   @abc.abstractmethod
   def test_options(self, value: TestOptions) -> None:
@@ -773,6 +779,7 @@ class TestSpec(AbstractTestSpec):
   check_flakiness_for_new_tests = attrib(bool, default=True)
   results_handler_name = attrib(str, default=None)
   retry_only_failed_tests = attrib(bool, default=True)
+  enable_rts_filtering = attrib(bool, default=False)
 
   @property
   def name(self):
@@ -938,6 +945,10 @@ class Test(AbstractTest):
   @property
   def retry_only_failed_tests(self) -> bool:
     return self.spec.retry_only_failed_tests
+
+  @property
+  def enable_rts_filtering(self) -> bool:
+    return getattr(self.spec, 'enable_rts_filtering', False)
 
   @property
   def api(self):

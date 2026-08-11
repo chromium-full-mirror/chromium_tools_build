@@ -843,7 +843,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     self.m.chromium_rts.generate_filter_files(
         source_dir,
         build_dir,
-        affected_files=affected_files if affected_files is not None else [])
+        affected_files=affected_files if affected_files is not None else [],
+        tests=tests)
 
     execution_info = None
 
@@ -972,7 +973,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # needs to use `siso isolate` command.
     use_siso_isolate = self.m.siso.enabled and self.m.siso.without_bytes
 
-    self.m.chromium_rts.isolate_filter_files(build_dir, targets)
+    self.m.chromium_rts.isolate_filter_files(build_dir, targets, tests=tests)
 
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
@@ -988,7 +989,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
     command_line_variants = self.m.chromium_rts.get_command_line_variants(
-        build_dir, command_lines)
+        build_dir, command_lines, tests=tests)
 
     return self.set_swarming_test_execution_info(
         source_dir,

@@ -12,7 +12,6 @@ from RECIPE_MODULES.build.chromium_tests.steps import Test
 from . import evaluation
 
 TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
-SKIP_TESTS_EXPERIMENT = 'chromium_rts.skip_tests'
 _RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 _DEFAULT_TARGET_CHANGE_RECALL = 0.95
 
@@ -28,17 +27,14 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
 
   def get_experiment_names(self) -> set[str]:
     """Returns the set of RTS experiment names."""
-    return {TEST_RTS_MODEL_EXPERIMENT, SKIP_TESTS_EXPERIMENT}
+    return {TEST_RTS_MODEL_EXPERIMENT}
 
-  def _should_generate_filters(self) -> bool:
+  def _should_generate_filters(self, tests: list[Test] | None = None) -> bool:
     """Whether RTS filter file generation should run."""
     experiments = self.m.buildbucket.build.input.experiments
-    return (TEST_RTS_MODEL_EXPERIMENT in experiments or
-            SKIP_TESTS_EXPERIMENT in experiments)
-
-  def _should_skip_tests(self) -> bool:
-    """Whether active test skipping is enabled using the RTS filter files."""
-    return SKIP_TESTS_EXPERIMENT in self.m.buildbucket.build.input.experiments
+    return (TEST_RTS_MODEL_EXPERIMENT
+            in experiments) or (tests is not None and
+                                any(t.enable_rts_filtering for t in tests))
 
   def filter_file_dir(self, build_dir: Path) -> Path:
     """Returns the path to the directory containing the RTS filter files."""
@@ -49,9 +45,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       src_dir: Path,
       build_dir: Path,
       affected_files: list[str],
+      tests: list[Test] | None = None,
   ) -> None:
     """Generates RTS filter files if RTS is enabled."""
-    if not self._should_generate_filters():
+    if not self._should_generate_filters(tests):
       return
 
     filter_file_dir = self.filter_file_dir(build_dir)
@@ -127,7 +124,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         results.
     """
     if TEST_RTS_MODEL_EXPERIMENT in self.m.buildbucket.build.input.experiments:
-      evaluation.evaluate_rts(self, build_dir, tests, self._get_banned_suites())
+      # Exclude suites that are actively skipping tests from evaluation.
+      tests_to_evaluate = [t for t in tests if not t.enable_rts_filtering]
+      evaluation.evaluate_rts(self, build_dir, tests_to_evaluate,
+                              self._get_banned_suites())
 
   def start_evaluation(
       self,
@@ -149,9 +149,12 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       self.m.futures.wait([self._evaluation_future])
       self._evaluation_future = None
 
-  def isolate_filter_files(self, build_dir: Path, targets: list[str]) -> None:
+  def isolate_filter_files(self,
+                           build_dir: Path,
+                           targets: list[str],
+                           tests: list[Test] | None = None) -> None:
     """Adds generated RTS filter files to the corresponding isolate files."""
-    if not self._should_skip_tests():
+    if not self._should_generate_filters(tests):
       return
 
     with self.m.step.nest('add RTS filter files to isolates'):
@@ -188,15 +191,17 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       self,
       build_dir: Path,
       command_lines: dict[str, list[str]],
+      tests: list[Test] | None = None,
   ) -> dict[str, dict[str, list[str]]]:
     """Constructs command line variants for the given targets."""
     variants = {}
-    rts_command_lines = self._get_rts_command_lines(build_dir, command_lines)
+    rts_command_lines = self._get_rts_command_lines(build_dir, command_lines,
+                                                    tests)
     if rts_command_lines:
       variants['rts'] = rts_command_lines
 
     rts_complement_command_lines = self._get_rts_complement_command_lines(
-        build_dir, command_lines)
+        build_dir, command_lines, tests)
     if rts_complement_command_lines:
       variants['rts_complement'] = rts_complement_command_lines
 
@@ -206,10 +211,11 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       self,
       build_dir: Path,
       command_lines: dict[str, list[str]],
+      tests: list[Test] | None = None,
   ) -> dict[str, list[str]]:
     """Constructs RTS-modified command lines for the given targets. """
     rts_command_lines = {}
-    if not self._should_skip_tests():
+    if not self._should_generate_filters(tests):
       return rts_command_lines
 
     for target, cmd in command_lines.items():
@@ -227,10 +233,11 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       self,
       build_dir: Path,
       command_lines: dict[str, list[str]],
+      tests: list[Test] | None = None,
   ) -> dict[str, list[str]]:
     """Constructs RTS complement command lines for the given targets. """
     rts_complement_command_lines = {}
-    if not self._should_skip_tests():
+    if not self._should_generate_filters(tests):
       return rts_complement_command_lines
 
     for target, cmd in command_lines.items():
@@ -255,6 +262,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     """Sets RTS command line on the given test if available."""
     if not command_line_variants or 'rts' not in command_line_variants:
       return
+
+    if not test.enable_rts_filtering:
+      return
+
     rts_command_line = command_line_variants['rts'].get(test.target_name, [])
     if rts_command_line:
       test.raw_cmd = rts_command_line
