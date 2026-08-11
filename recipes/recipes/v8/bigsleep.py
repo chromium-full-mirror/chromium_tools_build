@@ -33,6 +33,7 @@ def RunSteps(api):
   api.v8.apply_bot_config(bot_config)
 
   gn_args = [
+      'is_asan=true',
       'is_component_build=false',
       'symbol_level=2',
       'target_os="linux"',
@@ -117,6 +118,7 @@ def GenTests(api):
       api.v8.check_in_any_arg('gsutil upload', 'v8-linux-x64-debug-50110.tgz') +
       api.v8.check_in_any_arg('gsutil copy',
                               'bigsleep/linux/x64/debug/latest.tgz') +
+      api.v8.check_in_any_arg('gn', 'is_asan=true') +
       api.v8.check_in_any_arg('gn', 'is_debug=true') +
       api.v8.check_in_any_arg('gn', 'target_cpu="x64"') +
       api.v8.check_in_any_arg('gn', '--export-compile-commands') +
