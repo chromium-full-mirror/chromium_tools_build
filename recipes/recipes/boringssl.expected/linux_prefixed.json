@@ -315,6 +315,40 @@
   },
   {
     "cmd": [
+      "go",
+      "run",
+      "[CACHE]/builder/boringssl/util/audit_symbols.go",
+      "-ignore-symbols-with",
+      "the_boringssl_prefix"
+    ],
+    "cwd": "[CACHE]/builder/boringssl/build",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check prefixed symbols"
+  },
+  {
+    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",

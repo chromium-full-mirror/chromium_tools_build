@@ -65,6 +65,12 @@ PROPERTIES = {
             default=False,
             kind=bool,
             help='whether to build with a BORINGSSL_PREFIX'),
+    'check_prefixed_symbols':
+        Property(
+            default=False,
+            kind=bool,
+            help='whether to check if BORINGSSL_PREFIX was actually applied; takes no effect without prefixed_symbols; will in the future be removed and prefixed_symbols will control checking too'
+        ),
     'runner_args':
         Property(
             default=[],
@@ -218,10 +224,10 @@ def _CleanupMSVC(api):
           ok_ret='any')
 
 
-def RunSteps(api, android, check_pregenerated_files, check_stack, clang,
-             cmake_args, gclient_vars, msvc_target, prefixed_symbols,
-             runner_args, run_ssl_tests, run_unit_tests, rust, sde,
-             upload_to_cas):
+def RunSteps(api, android, check_prefixed_symbols, check_pregenerated_files,
+             check_stack, clang, cmake_args, gclient_vars, msvc_target,
+             prefixed_symbols, runner_args, run_ssl_tests, run_unit_tests, rust,
+             sde, upload_to_cas):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
       android=android,
@@ -373,6 +379,14 @@ def RunSteps(api, android, check_pregenerated_files, check_stack, clang,
           defer(api.step, 'check filenames',
                 ['go', 'run',
                  src.joinpath('util', 'check_filenames.go')])
+
+        if prefixed_symbols and check_prefixed_symbols:
+          with api.context(cwd=build_dir):
+            defer(api.step, 'check prefixed symbols', [
+                'go', 'run',
+                src.joinpath('util', 'audit_symbols.go'),
+                '-ignore-symbols-with', BORINGSSL_PREFIX
+            ])
 
         with api.context(cwd=src):
           # Determine the list of Go tests to run.
@@ -537,6 +551,7 @@ def GenTests(api):
       }),
       ('linux_prefixed', api.platform('linux', 64), {
           "prefixed_symbols": True,
+          "check_prefixed_symbols": True,
       }),
   ]
   for (buildername, host_platform, props) in tests:
