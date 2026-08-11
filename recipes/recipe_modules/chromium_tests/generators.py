@@ -354,6 +354,8 @@ class Generator:
         'retry_only_failed_tests', True)
     kwargs['check_flakiness_for_new_tests'] = raw_test_spec.get(
         'check_flakiness_for_new_tests', True)
+    kwargs['enable_rts_filtering'] = raw_test_spec.get('enable_rts_filtering',
+                                                       False)
     kwargs['name'] = name
 
     swarming_spec = raw_test_spec.get('swarming', None)
