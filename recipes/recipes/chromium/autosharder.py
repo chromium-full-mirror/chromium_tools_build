@@ -143,9 +143,10 @@ class Sharding:
         (self.runtime * self.shard_count + overhead_change) /
         self.optimal_shard_count)
 
-    assert simulated_max_shard_duration <= target_runtime, (
-        f'Simulated runtime {simulated_max_shard_duration} is greater '
-        f'than the desired runtime {target_runtime}')
+    assert (simulated_max_shard_duration <= target_runtime or
+            math.isclose(simulated_max_shard_duration, target_runtime)), (
+                f'Simulated runtime {simulated_max_shard_duration} is greater '
+                f'than the desired runtime {target_runtime}')
 
   def _emit_cost_step(self, api: RecipeApi):
     # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
