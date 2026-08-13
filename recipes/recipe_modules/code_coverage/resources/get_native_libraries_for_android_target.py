@@ -45,10 +45,7 @@ def _parse_args(args):
 
 
 def _get_library_paths(chromium_output_dir, isolate_target):
-  """Gets all native library artifact paths for a target.
-
-  Always prefers the main library (stripped version) in the output directory,
-  which contains __llvm_covmap regardless of whether Mold or LLD was used.
+  """Gets all native libary artifacts' paths for a target.
 
   Args:
     chromium_output_dir: absolute path to the chromium output directory.
@@ -68,18 +65,9 @@ def _get_library_paths(chromium_output_dir, isolate_target):
       path.startswith('lib.unstripped/') and path.endswith('.so'))
 
   wanted_paths = [path for path in all_isolated_paths if is_wanted(path)]
-
-  resolved_paths = []
-  for lib_path in wanted_paths:
-    unstripped_full = os.path.join(chromium_output_dir, lib_path)
-    main_lib_rel = os.path.relpath(lib_path, 'lib.unstripped')
-    main_lib_full = os.path.join(chromium_output_dir, main_lib_rel)
-    if not os.path.exists(main_lib_full):
-      raise RuntimeError(
-          'Main library path %s does not exist for %s (unstripped debug file: %s)'
-          % (main_lib_full, isolate_target, unstripped_full))
-    resolved_paths.append(main_lib_full)
-  return resolved_paths
+  return [
+      os.path.join(chromium_output_dir, lib_path) for lib_path in wanted_paths
+  ]
 
 
 def main():

@@ -41,10 +41,7 @@ def _parse_args(args):
 
 
 def _get_all_paths(chromium_output_dir):
-  """Gets all binary artifact paths for coverage.
-
-  Resolves files found under lib.unstripped/exe.unstripped to the main binary
-  (stripped version) in the output directory, which contains __llvm_covmap.
+  """Gets all unstripped artifacts' paths.
 
   Args:
     chromium_output_dir: absolute path to the chromium output directory.
@@ -60,14 +57,7 @@ def _get_all_paths(chromium_output_dir):
   for search_dir in search_dirs:
     for dir_path, _, file_names in os.walk(search_dir):
       for file_name in file_names:
-        unstripped_path = os.path.join(dir_path, file_name)
-        rel_to_search = os.path.relpath(unstripped_path, search_dir)
-        main_binary_path = os.path.join(chromium_output_dir, rel_to_search)
-        if not os.path.exists(main_binary_path):
-          raise RuntimeError(
-              'Main binary path %s does not exist (unstripped debug file: %s)' %
-              (main_binary_path, unstripped_path))
-        paths.append(main_binary_path)
+        paths.append(os.path.join(dir_path, file_name))
   return paths
 
 

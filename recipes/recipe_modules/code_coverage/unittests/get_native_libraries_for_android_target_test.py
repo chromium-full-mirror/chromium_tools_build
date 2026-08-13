@@ -61,33 +61,25 @@ class GetNativeLibrariesForAndroidTargetTest(unittest.TestCase):
     }
   """
 
-  @mock.patch.object(os.path, 'exists', return_value=False)
-  def test_get_lib_paths_missing_library_raises(self, mock_exists):
+  def test_get_lib_paths(self):
+    expected_output = [
+        '/chromium/output/dir/lib.unstripped/'
+        'some_wanted_library_other_path_format.so',
+        '/chromium/output/dir/lib.unstripped/some_wanted_library.so',
+    ]
     with mock.patch('builtins.open',
-                    mock.mock_open(read_data=self.INPUT_WITH_WANTED_LIB)):
-      with self.assertRaises(RuntimeError):
-        get_native_libraries_for_android_target._get_library_paths(
-            '/chromium/output/dir', 'target')
-
-  def test_get_lib_paths_no_correct_libs(self):
-    expected_output = []
-    with mock.patch(
-        'builtins.open',
-        mock.mock_open(read_data=self.INPUT_WITHOUT_WANTED_LIB)) as m:
+                    mock.mock_open(read_data=self.INPUT_WITH_WANTED_LIB)) as m:
       actual_output = (
           get_native_libraries_for_android_target._get_library_paths(
               '/chromium/output/dir', 'target'))
     m.assert_called_once_with('/chromium/output/dir/target.isolate')
     self.assertListEqual(expected_output, actual_output)
 
-  @mock.patch.object(os.path, 'exists', return_value=True)
-  def test_get_lib_paths_main_library_exists(self, mock_exists):
-    expected_output = [
-        '/chromium/output/dir/some_wanted_library_other_path_format.so',
-        '/chromium/output/dir/some_wanted_library.so',
-    ]
-    with mock.patch('builtins.open',
-                    mock.mock_open(read_data=self.INPUT_WITH_WANTED_LIB)) as m:
+  def test_get_lib_paths_no_correct_libs(self):
+    expected_output = []
+    with mock.patch(
+        'builtins.open',
+        mock.mock_open(read_data=self.INPUT_WITHOUT_WANTED_LIB)) as m:
       actual_output = (
           get_native_libraries_for_android_target._get_library_paths(
               '/chromium/output/dir', 'target'))
