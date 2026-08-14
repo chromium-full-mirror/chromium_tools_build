@@ -188,9 +188,13 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
       }
       package_version = (
           packages_by_name.get(package.sdk_package_name, {}).get('version'))
+      refs = ['latest']
       if package_version:
         tags['version'] = package_version
-      api.cipd.create_from_yaml(cipd_yaml, tags=tags, refs=['latest'])
+        # Also publish a per-version ref so ${platform}/${os} DEPS pins resolve
+        # to a single instance (a version tag can match multiple instances).
+        refs.append('version_%s' % package_version)
+      api.cipd.create_from_yaml(cipd_yaml, tags=tags, refs=refs)
 
 
 
@@ -313,6 +317,10 @@ def GenTests(api):
           post_process.MustRun,
           'Process STABLE channel for linux x86_64.emulator.create emulator.yaml'
       ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Process STABLE channel for linux x86_64.emulator.create emulator.yaml',
+          ['-ref', 'version_29.0.11']),
       package_version_beta_steps(),
       api.post_process(
           post_process.MustRun,
