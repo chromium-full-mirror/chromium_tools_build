@@ -25,8 +25,9 @@ message InputProperties {
   bool collect_fuzz_coverage = 6;
   string fuzz_engine = 7;
   // Optional Version number to control how libfuzzer archives are formatted.
-  // 0 (Default): Legacy with src_root archiving where archive root is build dir
+  // 0: Legacy with src_root archiving where archive root is build dir
   // 1: New archive schema where archive root is source dir
-  // May be deprecated in the future, learn more: go/crfuzz-fixing-msan-builds
-  uint32 archive_schema_version = 8;
+  // If not set, fuzz.py will use its `DEFAULT_ARCHIVE_SCHEMA_VERSION` as
+  // the value of archive_schema_version.
+  optional uint32 archive_schema_version = 8;
 }

@@ -43,6 +43,12 @@ PROPERTIES = InputProperties
 # directory to store metadata about the archive for use by ClusterFuzz.
 MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
 
+# The archive schema version that builders without a specified version should
+# archive in.
+# 0: Archive root is at the build directory and contains `src_root` directory.
+# 1: Archive root is at the source directory.
+DEFAULT_ARCHIVE_SCHEMA_VERSION = 0
+
 
 def gn_refs(api, build_dir: Path, step_name, target, output_type='executable'):
   """Runs gn refs to calculate targets depending on target.
@@ -408,9 +414,14 @@ def RunSteps(api, properties):
       # Needed for tests
       api.path.mock_add_file('[CACHE]/builder/src/path2')
 
+      archive_schema_version = (
+          properties.archive_schema_version
+          if properties.HasField('archive_schema_version') else
+          DEFAULT_ARCHIVE_SCHEMA_VERSION)
+
       # Archive schema version >= 1 compiles runtime dependencies and archives
       # based on `.runtime_deps` files.
-      if properties.archive_schema_version != 0:
+      if archive_schema_version != 0:
         archive_root = source_dir
 
         api.archive.clusterfuzz_archive_targets(
@@ -424,7 +435,7 @@ def RunSteps(api, properties):
             build_config=api.chromium.c.build_config_fs,
             compile_targets=targets,
             build_dir=build_dir,
-            archive_schema_version=properties.archive_schema_version,
+            archive_schema_version=archive_schema_version,
             fuzz_targets=targets,
             archive_subdir_suffix=properties.upload_directory,
             gs_acl='public-read',
@@ -495,7 +506,7 @@ def GenTests(api):
       is_v8=False,
       coverage_metadata_failure=False,
       engine='libfuzzer',
-      archive_schema_version=0,
+      archive_schema_version=None,
       drop_expectation=True,
   ):
     test = api.properties(
@@ -505,8 +516,11 @@ def GenTests(api):
         ios_targets_only=is_ios,
         collect_fuzz_coverage=is_coverage,
         fuzz_engine=engine,
-        archive_schema_version=archive_schema_version,
     )
+    if archive_schema_version is not None:
+      test += api.properties(archive_schema_version=archive_schema_version)
+    else:
+      archive_schema_version = DEFAULT_ARCHIVE_SCHEMA_VERSION
     if engine != 'fuzzilli':
       targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n'
                                        'fuzzer.exe\n')
