@@ -175,7 +175,7 @@ class _TestRequest:
   command: str
 
 
-def _checkout_step(api, target_os, rust):
+def _checkout_step(api, target_os, rust, v8):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
@@ -189,6 +189,8 @@ def _checkout_step(api, target_os, rust):
       api.siso.enable_download_remoteexec_cfg_hook()
     if rust:
       api.gclient.c.solutions[0].custom_vars['checkout_rust'] = 'True'
+    if not v8:
+      api.gclient.c.solutions[0].custom_vars['checkout_v8'] = 'False'
     update_result = api.bot_update.ensure_checkout()
 
     api.gclient.runhooks()
@@ -972,7 +974,7 @@ def _gen_properties(api, **kwargs):
 def RunSteps(api, memory_tool, partition_alloc, skia, rust, xfa, v8, target_cpu,
              rel, run_skia_gold, brotli, component, skip_test, target_os,
              renderers, swarming, use_cxx23):
-  update_result = _checkout_step(api, target_os, rust)
+  update_result = _checkout_step(api, target_os, rust, v8)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
 
