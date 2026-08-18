@@ -34,6 +34,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       with_remote_cache=None,
       step_name_suffix=None,
       use_rbe=True,
+      siso_experiments=None,
       # TODO: Remove this flag.
       resource_usage_output_file=None):
     """Run a build.
@@ -45,8 +46,10 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           step_name_suffix: suffix of the step name.
           build_dir: Path to the built output directory.
           use_rbe: Whether to use remote build execution or not
-          resource_usage_output_file: File which if provided will record the resource usage
-                                     stats related to build step
+          siso_experiments: Siso experiments list to enable.
+          resource_usage_output_file: File which if provided will record the
+                                      resource usage stats related to build
+                                      step.
 
         Returns:
           A RawResult object with the compile step's status and failure message
@@ -58,6 +61,8 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     env = {}
     siso_args = []
     extra_ninja_args = []
+    if siso_experiments:
+      env['SISO_EXPERIMENTS'] = ','.join(siso_experiments)
     if not use_rbe:
       step_name += ' without remote execution'
     elif with_remote_cache:

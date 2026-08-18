@@ -42,6 +42,12 @@ def RunSteps(api):
       source_dir, build_dir, 'all', with_remote_cache=False)
   api.chromium_build_perf.build_with_siso(
       source_dir, build_dir, 'all', use_rbe=False)
+  api.chromium_build_perf.build_with_siso(
+      source_dir,
+      build_dir,
+      'all',
+      with_remote_cache=True,
+      siso_experiments=['fail-on-bad-deps'])
   api.chromium_build_perf.build_with_ninja(
       source_dir,
       build_dir,

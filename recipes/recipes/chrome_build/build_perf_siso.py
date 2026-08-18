@@ -161,6 +161,21 @@ def _run_clean_builds(api,
       step_name_suffix=step_name_suffix)
   _raise_raw_result_on_failure(api, raw_result)
 
+  # Enable fail-on-bad-deps as an additional step on Linux for continuous
+  # benchmarking before enabling by default. See https://crbug.com/547682173.
+  if api.platform.is_linux:
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, build_dir, phase=phase)
+    raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir,
+        build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=' with fail-on-bad-deps',
+        siso_experiments=['fail-on-bad-deps'])
+    _raise_raw_result_on_failure(api, raw_result)
+
+
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
