@@ -88,7 +88,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'custom_vars': {'checkout_skia': 'False', 'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
       "--patch_root",
       "pdfium",
       "--revision_mapping_file",
