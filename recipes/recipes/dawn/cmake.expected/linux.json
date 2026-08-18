@@ -1036,7 +1036,7 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "--parallel",
       "--target",
-      "tint_cmd_tint_cmd"
+      "tint_api"
     ],
     "env": {
       "ANDROID_HOME": "[CACHE]/android_sdk",

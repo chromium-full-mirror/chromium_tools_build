@@ -670,7 +670,7 @@
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "--parallel",
       "--target",
-      "tint_cmd_tint_cmd"
+      "tint_api"
     ],
     "env": {
       "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",

@@ -480,7 +480,7 @@ def RunSteps(api, properties):
           cmake_fixed_args,
           enable_readers_and_writers=False,
           build_fuzzers=False,  # Cannot build fuzzers without readers/writers enabled
-          targets=['tint_cmd_tint_cmd'])
+          targets=['tint_api'])
 
 
 def GenTests(api):
