@@ -103,6 +103,9 @@ _SWARMING_NAMED_CACHES = {
     'vpython_cache': _SWARMING_VPYTHON_PATH,
 }
 
+# Prefix for task invocations to remove before sending to ResultDB.
+_SWARMING_INVOCATION_PREFIX = 'invocations/'
+
 
 @dataclass
 class _DefaultOption:
@@ -568,11 +571,6 @@ class _Swarming:
     ]
     assert task_requests
 
-    # TODO(b/277799110): Replace with `str.removeprefix()`.
-    def removeprefix(s, prefix):
-      assert s.startswith(prefix)
-      return s[len(prefix):]
-
     # Trigger tasks and add the corresponding ResultDB invocation.
     invocations = []
     for task in self.api.swarming.trigger('trigger tasks', task_requests):
@@ -581,7 +579,9 @@ class _Swarming:
       assert not request.task
       request.task = task
 
-      invocations.append(removeprefix(task.invocation, 'invocations/'))
+      assert task.invocation.startswith(_SWARMING_INVOCATION_PREFIX)
+      invocations.append(
+          task.invocation.removeprefix(_SWARMING_INVOCATION_PREFIX))
 
     assert len(task_requests) == len(invocations)
     self.api.resultdb.include_invocations(invocations)

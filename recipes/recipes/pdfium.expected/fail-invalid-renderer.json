@@ -265,7 +265,7 @@
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 1002, in RunSteps",
       "    _run_tests(api, source_dir, memory_tool, v8, xfa, skia, out_dir,",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 371, in _run_tests",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 374, in _run_tests",
       "    test_runner = _TestRunner(api, source_root, memory_tool, resultdb, out_dir,",
       "                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 651, in __init__",
