@@ -73,42 +73,40 @@ class TaskCoordinator:
         f.result()
 
 
-def run_test_pipelines(api, runners):
+def run_test_pipelines(api, runners, affected_files=None):
   """
   Runs the full test execution pipeline for multiple runners concurrently.
   For each runner, it triggers the initial run, waits for results, and then
   proceeds to exoneration and flake detection if applicable.
   """
   with api.step.nest('find new tests') as presentation:
-    with api.context(cwd=api.devtools.source_dir):
-      git_changes = api.v8.git_output('diff', '--name-only', '--format=',
-                                      '--diff-filter=d',
-                                      '--cached').splitlines()
-      touched_tests = [
-          file for file in git_changes
-          if file.endswith('test.ts') or file.endswith('test.api.ts')
-      ]
-      presentation.logs['tests'] = touched_tests
-      if api.tryserver.is_tryserver:
-        skip_tests = api.tryserver.get_footer(
-            FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
-        skip_patterns = api.tryserver.get_footer(
-            FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
-        touched_tests = [t for t in touched_tests if t not in skip_tests]
-        for pattern in skip_patterns:
-          touched_tests = [
-              t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
-          ]
-      unowned_tests = [
-          t for t in touched_tests if not any(
-              r.owns_test(t) for r in runners if hasattr(r, 'owns_test'))
-      ]
-      if unowned_tests:
-        presentation.logs['unowned tests'] = unowned_tests
-        presentation.status = api.step.WARNING
-        presentation.step_text = (
-            'The following touched tests are not owned by any runner: ' +
-            ', '.join(unowned_tests))
+    if affected_files is None:
+      affected_files = api.devtools.get_affected_files()
+    touched_tests = [
+        file for file in affected_files
+        if file.endswith('test.ts') or file.endswith('test.api.ts')
+    ]
+    presentation.logs['tests'] = touched_tests
+    if api.tryserver.is_tryserver:
+      skip_tests = api.tryserver.get_footer(
+          FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
+      skip_patterns = api.tryserver.get_footer(
+          FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
+      touched_tests = [t for t in touched_tests if t not in skip_tests]
+      for pattern in skip_patterns:
+        touched_tests = [
+            t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
+        ]
+    unowned_tests = [
+        t for t in touched_tests
+        if not any(r.owns_test(t) for r in runners if hasattr(r, 'owns_test'))
+    ]
+    if unowned_tests:
+      presentation.logs['unowned tests'] = unowned_tests
+      presentation.status = api.step.WARNING
+      presentation.step_text = (
+          'The following touched tests are not owned by any runner: ' +
+          ', '.join(unowned_tests))
 
   def _get_failed_tests_for_runner(test_type_tag):
     inv_id = api.resultdb.current_invocation.replace('invocations/', '')

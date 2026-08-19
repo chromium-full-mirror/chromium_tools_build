@@ -257,3 +257,10 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def _git_clean(self, source_dir):
     with self.m.context(cwd=source_dir):
       self.m.git('clean', '-xf', '--', 'front_end')
+
+  def get_affected_files(self):
+    if not self.source_dir:
+      return []
+    with self.m.context(cwd=self.source_dir):
+      return self.m.v8.git_output('diff', '--name-only', '--format=',
+                                  '--diff-filter=d', '--cached').splitlines()

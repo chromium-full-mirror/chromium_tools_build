@@ -261,7 +261,6 @@
       "ALL_COMMITS",
       "--verbose"
     ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
@@ -313,7 +312,6 @@
       "--json",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/builder/devtools-frontend",
     "luci_context": {
       "realm": {
         "name": "devtools:try"
@@ -1210,63 +1208,6 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/2/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "rmtree",
-      "[CACHE]/builder/devtools-frontend/perf-data"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Performance Tests.Run tests.Performance Tests.remove perf data file if it exists",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copytree",
-      "[CLEANUP]/tmp_tmp_2/2/perf-data",
-      "[CACHE]/builder/devtools-frontend/perf-data"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Performance Tests.Run tests.Performance Tests.copy perf tests data",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
     ]
   },
   {

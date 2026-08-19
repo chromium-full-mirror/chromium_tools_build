@@ -36,7 +36,8 @@ class PerformanceTests(DevToolsTests):
 
 
   def _post_collect(self):
-    self.copy_perf_benchmarks_data()
+    if self.api.properties.get('perf_benchmarks', False):
+      self.copy_perf_benchmarks_data()
 
   def copy_perf_benchmarks_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]

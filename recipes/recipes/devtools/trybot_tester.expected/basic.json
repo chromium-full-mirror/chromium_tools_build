@@ -1,178 +1,5 @@
 [
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CLEANUP]/devtools-frontend"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure source dir"
-  },
-  {
-    "cmd": [
-      "git",
-      "init"
-    ],
-    "cwd": "[CLEANUP]/devtools-frontend",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git init"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "RECIPE_REPO[depot_tools]/gerrit_client.py",
-      "changes",
-      "--host",
-      "https://chromium-review.googlesource.com",
-      "--json_file",
-      "/path/to/tmp/json",
-      "--limit",
-      "1",
-      "-p",
-      "change=123456",
-      "-o",
-      "ALL_REVISIONS",
-      "-o",
-      "DOWNLOAD_COMMANDS",
-      "--verbose"
-    ],
-    "cwd": "[CLEANUP]/devtools-frontend",
-    "env": {
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "gerrit fetch current CL info",
-    "timeout": 480,
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@[@@@",
-      "@@@STEP_LOG_LINE@json.output@  {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"owner\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"name\": \"John Doe\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"7\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"refs/changes/56/123456/7\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@]@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "fetch",
-      "https://chromium.googlesource.com/project",
-      "refs/changes/56/123456/7",
-      "--depth=2"
-    ],
-    "cwd": "[CLEANUP]/devtools-frontend",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git fetch"
-  },
-  {
-    "cmd": [
-      "git",
-      "checkout",
-      "FETCH_HEAD"
-    ],
-    "cwd": "[CLEANUP]/devtools-frontend",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git checkout"
-  },
-  {
-    "cmd": [
-      "git",
-      "reset",
-      "--soft",
-      "HEAD~1"
-    ],
-    "cwd": "[CLEANUP]/devtools-frontend",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git reset"
-  },
-  {
     "cmd": [],
     "name": "initialization"
   },
@@ -409,8 +236,22 @@
       "@@@STEP_LOG_LINE@step.sub_build@  \"output\": {@@@",
       "@@@STEP_LOG_LINE@step.sub_build@    \"properties\": {@@@",
       "@@@STEP_LOG_LINE@step.sub_build@      \"compilator_properties\": {@@@",
-      "@@@STEP_LOG_LINE@step.sub_build@        \"cas_digest\": \"1234567/890\",@@@",
-      "@@@STEP_LOG_LINE@step.sub_build@        \"e2e_test_list\": \"test1.ts\\ntest2.ts\\n\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"affected_files\": [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"front_end/panels/timeline/timeline_test.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/helpers/datagrid-helpers.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/helpers/performance-helpers.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/helpers/sources-helpers.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/helpers/visual-logging-helpers.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/performance/selector-stats-tracing_test.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/BUILD.gn\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/performance/BUILD.gn\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/performance/selector-stats-tracing_test.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/performance/skip_test.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/shared/frontend-helper.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/e2e/shared/page-wrapper.ts\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"test/shared/helper.ts\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        ],@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"cas_digest\": \"1234567/890\"@@@",
       "@@@STEP_LOG_LINE@step.sub_build@      }@@@",
       "@@@STEP_LOG_LINE@step.sub_build@    }@@@",
       "@@@STEP_LOG_LINE@step.sub_build@  },@@@",
@@ -438,14 +279,26 @@
   },
   {
     "cmd": [
-      "git",
-      "diff",
-      "--name-only",
-      "--format=",
-      "--diff-filter=d",
-      "--cached"
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--limit",
+      "1",
+      "-p",
+      "change=123456",
+      "-o",
+      "ALL_REVISIONS",
+      "-o",
+      "DOWNLOAD_COMMANDS",
+      "--verbose"
     ],
-    "cwd": "[CLEANUP]/devtools-frontend",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -459,23 +312,25 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "find new tests.git diff",
+    "name": "find new tests.gerrit fetch current CL info",
+    "timeout": 480,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@stdout@front_end/panels/timeline/timeline_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/helpers/datagrid-helpers.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/helpers/performance-helpers.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/helpers/sources-helpers.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/helpers/visual-logging-helpers.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/BUILD.gn@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/BUILD.gn@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/selector-stats-tracing_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/performance/skip_test.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/shared/frontend-helper.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/e2e/shared/page-wrapper.ts@@@",
-      "@@@STEP_LOG_LINE@stdout@test/shared/helper.ts@@@",
-      "@@@STEP_LOG_END@stdout@@@"
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"owner\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"name\": \"John Doe\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"7\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"refs/changes/56/123456/7\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
@@ -497,7 +352,6 @@
       "ALL_COMMITS",
       "--verbose"
     ],
-    "cwd": "[CLEANUP]/devtools-frontend",
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
@@ -549,7 +403,6 @@
       "--json",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CLEANUP]/devtools-frontend",
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -4965,63 +4818,6 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/12/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=12@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "rmtree",
-      "[CLEANUP]/devtools-frontend/perf-data"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Performance Tests.Run tests.Performance Tests.remove perf data file if it exists",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copytree",
-      "[CLEANUP]/tmp_tmp_9/12/perf-data",
-      "[CLEANUP]/devtools-frontend/perf-data"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Performance Tests.Run tests.Performance Tests.copy perf tests data",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
     ]
   },
   {

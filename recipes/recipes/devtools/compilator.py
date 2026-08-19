@@ -69,8 +69,8 @@ def RunSteps(api, properties):
 
     emit_compilator_properties(
         api, {
-            'cas_digest':
-                api.devtools.archive_to_cas(),
+            'cas_digest': api.devtools.archive_to_cas(),
+            'affected_files': api.devtools.get_affected_files(),
         })
   finally:
     if api.runtime.in_global_shutdown:

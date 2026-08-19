@@ -459,14 +459,31 @@
     ]
   },
   {
+    "cmd": [
+      "git",
+      "diff",
+      "--name-only",
+      "--format=",
+      "--diff-filter=d",
+      "--cached"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "infra_step": true,
+    "name": "git diff",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "compilator properties",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@compilator_properties@{@@@",
+      "@@@STEP_LOG_LINE@compilator_properties@  \"affected_files\": [],@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"@@@",
       "@@@STEP_LOG_LINE@compilator_properties@}@@@",
       "@@@STEP_LOG_END@compilator_properties@@@",
-      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"}@@@"
+      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"affected_files\": [], \"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"}@@@"
     ]
   },
   {

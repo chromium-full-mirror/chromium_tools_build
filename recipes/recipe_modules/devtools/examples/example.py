@@ -24,6 +24,7 @@ PROPERTIES = InputProperties
 
 
 def RunSteps(api, properties):
+  assert api.devtools.get_affected_files() == []
   builder_config = properties.builder_config or 'Release'
   devtools_bundle = properties.devtools_bundle
   if 'devtools_bundle' not in api.properties:

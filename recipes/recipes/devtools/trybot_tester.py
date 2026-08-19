@@ -52,9 +52,6 @@ def RunSteps(api, properties):
   target_os = properties.target_os
   target_cpu = properties.target_cpu
 
-  api.devtools.configure(builder_config, properties.is_official_build,
-                         properties.devtools_skip_typecheck)
-  api.devtools.shallow_checkout(depth=2)
 
   comp_props, maybe_raw_result = api.v8_orchestrator.orchestrated_compilation(
       properties.compilator_name)
@@ -62,6 +59,8 @@ def RunSteps(api, properties):
     return maybe_raw_result
 
   cas_digest = comp_props['cas_digest']
+  affected_files = list(
+      comp_props['affected_files']) if 'affected_files' in comp_props else []
 
   trigger = SwarmingTrigger(
       api,
@@ -90,14 +89,29 @@ def RunSteps(api, properties):
   ]
   tests = [t for t in tests if not t.skip()]
 
-  results = run_test_pipelines(api, tests)
+  results = run_test_pipelines(api, tests, affected_files=affected_files)
   return results.raw_result()
 
 def GenTests(api):
+  test_files = [
+      'front_end/panels/timeline/timeline_test.ts',
+      'test/e2e/helpers/datagrid-helpers.ts',
+      'test/e2e/helpers/performance-helpers.ts',
+      'test/e2e/helpers/sources-helpers.ts',
+      'test/e2e/helpers/visual-logging-helpers.ts',
+      'test/e2e/performance/selector-stats-tracing_test.ts',
+      'test/e2e/BUILD.gn',
+      'test/e2e/performance/BUILD.gn',
+      'test/e2e/performance/selector-stats-tracing_test.ts',
+      'test/e2e/performance/skip_test.ts',
+      'test/e2e/shared/frontend-helper.ts',
+      'test/e2e/shared/page-wrapper.ts',
+      'test/shared/helper.ts',
+  ]
   default_output_properties = {
       "compilator_properties": {
           "cas_digest": '1234567/890',
-          "e2e_test_list": 'test1.ts\ntest2.ts\n',
+          "affected_files": test_files,
       },
   }
 
@@ -136,23 +150,6 @@ def GenTests(api):
           'find new tests.parse description',
           api.json.output(
               {'Skip-Flake-Detection': ['test/e2e/performance/skip_test.ts']})),
-      api.override_step_data(
-          'find new tests.git diff',
-          stdout=api.raw_io.output_text('\n'.join([
-              'front_end/panels/timeline/timeline_test.ts',
-              'test/e2e/helpers/datagrid-helpers.ts',
-              'test/e2e/helpers/performance-helpers.ts',
-              'test/e2e/helpers/sources-helpers.ts',
-              'test/e2e/helpers/visual-logging-helpers.ts',
-              'test/e2e/performance/selector-stats-tracing_test.ts',
-              'test/e2e/BUILD.gn',
-              'test/e2e/performance/BUILD.gn',
-              'test/e2e/performance/selector-stats-tracing_test.ts',
-              'test/e2e/performance/skip_test.ts',
-              'test/e2e/shared/frontend-helper.ts',
-              'test/e2e/shared/page-wrapper.ts',
-              'test/shared/helper.ts',
-          ]))),
       # Update this path when the order of swarming tasks changes.
       api.path.exists(api.path.cleanup_dir.joinpath('tmp_tmp_4/1/goldens')),
   )
