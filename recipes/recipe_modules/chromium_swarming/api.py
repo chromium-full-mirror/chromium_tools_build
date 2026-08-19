@@ -1515,6 +1515,9 @@ class SwarmingApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
         **kwargs)
 
+    if self.m.runtime.in_global_shutdown:
+      return step_result, False
+
     has_valid_results = self._handle_summary_json(task, step_result)
 
     test_suite_name = task.test_suite_name

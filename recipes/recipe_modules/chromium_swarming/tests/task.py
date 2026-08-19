@@ -9,6 +9,7 @@ DEPS = [
     'chromium_swarming',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/runtime',
     'recipe_engine/swarming',
 ]
 
@@ -41,8 +42,7 @@ def RunSteps(api):
   if api.properties.get('containment_type'):
     task.containment_type = api.properties['containment_type']
   api.chromium_swarming.trigger_task(task)
-  kwargs = {}
-  api.chromium_swarming.collect_task(task, **kwargs)
+  api.chromium_swarming.collect_task(task)
 
 
 def GenTests(api):
@@ -198,5 +198,12 @@ def GenTests(api):
           'task',
           ['Run on Device OS(es): ABC123, XYZ789'],
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'canceled_before_collect',
+      api.properties(task_name='task'),
+      api.runtime.global_shutdown_on_step('task'),
       api.post_process(post_process.DropExpectation),
   )
