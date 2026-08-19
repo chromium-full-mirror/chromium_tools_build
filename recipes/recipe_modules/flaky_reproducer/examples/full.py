@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import typing
+
 from recipe_engine.recipe_api import Property
 
 DEPS = [
@@ -156,16 +158,12 @@ def GenTests(api):
           status=test_verdict.TestVerdictStatus.EXPECTED,
       ),
   ])
-  generate_bb_get_multi_result = lambda prop: {
-      'id': 1234,
-      'input': {
-          'properties': {
-              'fields': {
-                  k: struct_pb2.Value(string_value=v) for k, v in prop.items()
-              }
-          }
-      }
-  }
+
+  def generate_bb_get_multi_result(prop: dict[str, typing.Any]) -> dict:
+    props = struct_pb2.Struct()
+    props.update(prop)
+    return {'id': 1234, 'input': {'properties': props}}
+
   verify_swarming_result = lambda id: api.swarming.task_result(
       id=id,
       name='flaky reproducer verify on Linux Tests for MockUnitTests.FailTest',
