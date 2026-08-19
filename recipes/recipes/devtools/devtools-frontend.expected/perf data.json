@@ -1537,6 +1537,525 @@
     ]
   },
   {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:API\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:linux\", \"stepname:API Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:api_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=1\", \"front_end/**/*.test.api.ts\", \"mcp/**/*.test.api.ts\", \"inspector_overlay/**/*.test.api.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline API Tests.Run tests.Trigger API Tests.[trigger] API Tests (Shard #0) on Ubuntu-22.04",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"devtools:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"builder_group:tryserver.devtools-frontend\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:API\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:devtools\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:devtools.ci:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:API Tests (Shard #0) on Ubuntu-22.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:api_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"ci:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/Debug/gen/test/run.js\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-count=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-number=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"front_end/**/*.test.api.ts\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"mcp/**/*.test.api.ts\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"inspector_overlay/**/*.test.api.ts\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline API Tests.Run tests.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/3\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/3\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:Performance\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:linux\", \"stepname:Performance Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:perf_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"test/perf\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline Performance Tests.Run tests.Trigger Performance Tests.[trigger] Performance Tests (Shard #0) on Ubuntu-22.04",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"devtools:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"builder_group:tryserver.devtools-frontend\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:Performance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:devtools\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:devtools.ci:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:Performance Tests (Shard #0) on Ubuntu-22.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:perf_tests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"ci:linux\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/Debug/gen/test/run.js\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test/perf\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline Performance Tests.Run tests.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/4\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/4\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline Unit Tests.Run tests.resultdb.update_included_invocations",
+    "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateIncludedInvocations",
+      "-include-update-token"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Pipeline Unit Tests.Run tests.resultdb.update_included_invocations (2)",
+    "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"invocations/1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  ],@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/wait_for_finished_task_set.py",
+      "--swarming-server",
+      "https://example.swarmingserver.appspot.com",
+      "--output-json",
+      "/path/to/tmp/json",
+      "--input-json",
+      "[[\"2\"], [\"3\"], [\"4\"], [\"0\", \"1\"]]",
+      "--attempts",
+      "0",
+      "--verbose"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "wait for tasks",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"attempts\": 0,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"sets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    [@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    [@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    [@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    [@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"0\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "Pipeline Unit Tests (node).Run tests.Unit Tests (node)",
     "~followup_annotations": [
@@ -1756,200 +2275,6 @@
     ]
   },
   {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
-      "spawn-tasks",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-json-input",
-      "{\"requests\": [{\"name\": \"API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:API\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:linux\", \"stepname:API Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:api_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"--shard-count=1\", \"--shard-number=1\", \"--shard-bias=1\", \"front_end/**/*.test.api.ts\", \"mcp/**/*.test.api.ts\", \"inspector_overlay/**/*.test.api.ts\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline API Tests.Run tests.Trigger API Tests.[trigger] API Tests (Shard #0) on Ubuntu-22.04",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/3\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"devtools:ci\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
-      "@@@STEP_LOG_LINE@json.input@      },@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"builder_group:tryserver.devtools-frontend\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"buildername:linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"name:API\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"project:devtools\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"spec_name:devtools.ci:linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:API Tests (Shard #0) on Ubuntu-22.04\"@@@",
-      "@@@STEP_LOG_LINE@json.input@      ],@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:api_tests\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"ci:linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out/Debug/gen/test/run.js\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--shard-count=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--shard-number=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--shard-bias=1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"front_end/**/*.test.api.ts\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"mcp/**/*.test.api.ts\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"inspector_overlay/**/*.test.api.ts\"@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              },@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22.04\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              },@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
-      "@@@STEP_LOG_LINE@json.input@          },@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
-      "@@@STEP_LOG_LINE@json.input@        }@@@",
-      "@@@STEP_LOG_LINE@json.input@      ]@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  ]@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: API Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline API Tests.Run tests.resultdb.update_included_invocations",
-    "stdin": "{\"addInvocations\": [\"invocations/3\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/3\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Pipeline API Tests.Run tests.API Tests",
     "~followup_annotations": [
@@ -2099,195 +2424,6 @@
     "name": "Pipeline API Tests.Detect flakes in new tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
-      "spawn-tasks",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-json-input",
-      "{\"requests\": [{\"name\": \"Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\", \"priority\": \"25\", \"realm\": \"devtools:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:tryserver.devtools-frontend\", \"buildername:linux\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:Performance\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.ci:linux\", \"stepname:Performance Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:default\", \"-tag\", \"test_type:perf_tests\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:linux\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"out/Debug/gen/test/run.js\", \"--artifacts-dir=${ISOLATED_OUTDIR}\", \"--skip-ninja\", \"--verbose=2\", \"--on-diff=throw\", \"test/perf\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Performance Tests.Run tests.Trigger Performance Tests.[trigger] Performance Tests (Shard #0) on Ubuntu-22.04",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"4\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/4\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"devtools:ci\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
-      "@@@STEP_LOG_LINE@json.input@      },@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"bucket:ci\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"builder_group:tryserver.devtools-frontend\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"buildername:linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"name:Performance\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"project:devtools\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"spec_name:devtools.ci:linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:Performance Tests (Shard #0) on Ubuntu-22.04\"@@@",
-      "@@@STEP_LOG_LINE@json.input@      ],@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@        {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"run_phase:default\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_type:perf_tests\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"ci:linux\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out/Debug/gen/test/run.js\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--artifacts-dir=${ISOLATED_OUTDIR}\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--skip-ninja\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--verbose=2\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"--on-diff=throw\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test/perf\"@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
-      "@@@STEP_LOG_LINE@json.input@            },@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              },@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22.04\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              },@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              {@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
-      "@@@STEP_LOG_LINE@json.input@              }@@@",
-      "@@@STEP_LOG_LINE@json.input@            ],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
-      "@@@STEP_LOG_LINE@json.input@          },@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
-      "@@@STEP_LOG_LINE@json.input@        }@@@",
-      "@@@STEP_LOG_LINE@json.input@      ]@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  ]@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: Performance Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/linux/-1@https://example.swarmingserver.appspot.com/task?id=4@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Performance Tests.Run tests.resultdb.update_included_invocations",
-    "stdin": "{\"addInvocations\": [\"invocations/4\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/4\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {
@@ -2500,88 +2636,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Unit Tests.Run tests.resultdb.update_included_invocations",
-    "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/0\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateIncludedInvocations",
-      "-include-update-token"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Pipeline Unit Tests.Run tests.resultdb.update_included_invocations (2)",
-    "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"addInvocations\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"invocations/1\"@@@",
-      "@@@STEP_LOG_LINE@json.input@  ],@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"includingInvocation\": \"invocations/build:8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
     ]
   },
   {

@@ -40,7 +40,7 @@ class RepeatE2EShuffledTests(E2ETests):
   def trigger_exoneration(self, test_names):
     pass
 
-  def process_exoneration_results(self, test_names):
+  def process_exoneration_results(self, test_names, coordinator=None):
     pass
 
   @property

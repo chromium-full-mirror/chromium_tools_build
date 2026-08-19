@@ -5,12 +5,12 @@
 from recipe_engine import post_process
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
     common as common_pb2,
-    invocation as invocation_pb2,
     test_result as test_result_pb2,
 )
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
-from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
+from RECIPE_MODULES.build.devtools.performance_tests_runner import (
+    PerformanceTests)
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.test_runner_base import (
     FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER,
@@ -116,8 +116,9 @@ def GenTests(api):
       rdb_query('Pipeline Unit Tests.rdb query for unit_tests',
                 test_result('unit1', 'unit_tests', expected=False)),
       api.step_data(
-          'Pipeline Unit Tests.Flake exoneration attempt.Unit Tests (rerun).'
-          'Unit Tests (rerun) shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          'Pipeline Unit Tests.Flake exoneration attempt.'
+          'Unit Tests (rerun).Unit Tests (rerun) shards results.'
+          'Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(
               None, {'shards': [{
                   'state': 'COMPLETED (FAILURE)'
@@ -127,7 +128,8 @@ def GenTests(api):
       status='FAILURE',
   )
 
-  # Unowned touched tests should produce a step warning and be logged in 'unowned tests'
+  # Unowned touched tests should produce a step warning and be logged in
+  # 'unowned tests'
   yield api.test(
       'unowned_touched_test_warns',
       try_build(),
@@ -147,13 +149,15 @@ def GenTests(api):
       ),
       api.post_process(
           post_process.DoesNotRun,
-          'Pipeline Unit Tests.Detect flakes in new tests.Trigger Unit Tests (flake detection)'
+          'Pipeline Unit Tests.Detect flakes in new tests.'
+          'Trigger Unit Tests (flake detection)',
       ),
       api.post_process(post_process.DropExpectation),
   )
 
-  # Non-exonerable runners like PerformanceTests do not define trigger_exoneration or
-  # trigger_flake_detection, so they should not execute exoneration or flake detection steps.
+  # Non-exonerable runners like PerformanceTests do not define
+  # trigger_exoneration or trigger_flake_detection, so they should not execute
+  # exoneration or flake detection steps.
   yield api.test(
       'bug_non_exonerable_runner_hasattr_exoneration',
       try_build(),
@@ -164,4 +168,16 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'Pipeline Performance Tests.Detect flakes in new tests'),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'trigger_fails',
+      try_build(),
+      api.step_data(
+          'Pipeline Unit Tests.Run tests.Trigger Unit Tests.'
+          '[trigger] Unit Tests (Shard #0) on Ubuntu-22.04',
+          retcode=1,
+      ),
+      api.post_process(post_process.DropExpectation),
+      status='INFRA_FAILURE',
   )

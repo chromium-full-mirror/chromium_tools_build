@@ -92,7 +92,9 @@ class DevToolsTests(ABC):
       self.api.resultdb.include_invocations(
           [i[len('invocations/'):] for i in task.get_invocation_names()])
 
-  def process_results(self):
+  def process_results(self, coordinator=None):
+    if coordinator and self.tasks:
+      coordinator.register_and_wait(self.tasks)
     with self.api.step.nest(self.step_name):
       new_results = self.collect()
       if not new_results.infra_failures:
@@ -106,6 +108,7 @@ class DevToolsTests(ABC):
       new_results.exonerated_failures = list(self.exoneration_tests)
       self.results.task_failures = []
     self.results += new_results
+    self.tasks = []
 
   def _post_collect(self):
     """
@@ -174,6 +177,7 @@ class ExonerableTests(DevToolsTests):
         'e2e_tests', 'unit_tests') and values are sets of test names
         (strings) that failed in the initial run.
     """
+    self.tasks = []
     owned_tests = test_names.get(self.test_type_tag)
     if not owned_tests:
       self.skip_exoneration_result = Results()
@@ -188,7 +192,7 @@ class ExonerableTests(DevToolsTests):
     self.prepare_filtered_rerun(owned_tests)
     self.trigger('exoneration')
 
-  def process_exoneration_results(self, test_names):
+  def process_exoneration_results(self, test_names, coordinator=None):
     """Processes the results of the exoneration rerun.
 
       This method is called after the exoneration rerun has completed. An
@@ -202,6 +206,7 @@ class ExonerableTests(DevToolsTests):
           - keys are test type tags (e.g., 'e2e_tests', 'unit_tests').
           - values are sets of test names (strings) that were initially
             identified as failing.
+        coordinator: Optional TaskCoordinator for non-blocking task collection.
 
       Returns:
         None
@@ -210,7 +215,7 @@ class ExonerableTests(DevToolsTests):
       if self.skip_exoneration_result:
         self.results += self.skip_exoneration_result
         return
-      self.process_results()
+      self.process_results(coordinator=coordinator)
     finally:
       self.is_flake_exoneration = False
 
@@ -230,6 +235,7 @@ class ExonerableTests(DevToolsTests):
         test_names (list): A list of test names (strings) that are candidates
           for flake detection.
       """
+    self.tasks = []
     self.is_flake_exoneration = False
     self.owned_new_tests = [test for test in test_names if self.owns_test(test)]
     if not self.owned_new_tests:
@@ -242,7 +248,7 @@ class ExonerableTests(DevToolsTests):
       self.extra_args.append(FLAKE_DETECTION_OPTION)
     self.trigger('flake detection')
 
-  def process_flake_detection_results(self, test_names):
+  def process_flake_detection_results(self, test_names, coordinator=None):
     """Processes the results of the flake detection rerun.
 
     This method is called after the flake detection rerun has completed.
@@ -253,11 +259,12 @@ class ExonerableTests(DevToolsTests):
     Args:
       test_names (list): A list of test names (strings) that were initially
         identified as candidates for flake detection.
+      coordinator: Optional TaskCoordinator for non-blocking task collection.
     """
     if self.skip_deflaking_result:
       self.results += self.skip_deflaking_result
       return
-    self.process_results()
+    self.process_results(coordinator=coordinator)
 
   def sharding_args(self):
     return [[

@@ -11,6 +11,68 @@ from .test_runner_base import (FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
                                FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
 
 
+class TaskCoordinator:
+  """Coordinates asynchronous Swarming task polling across concurrent runners.
+
+  Instead of runners calling `collect_task()` which synchronously blocks the
+  recipe engine while waiting for remote Swarming execution, runners register
+  their active Swarming tasks with the coordinator and wait on a channel.
+  The coordinator polls task states via `wait_for_finished_task_set` and signals
+  each runner when its tasks are finished so `collect_task()` completes
+  immediately.
+  """
+
+  def __init__(self, api):
+    self._api = api
+    self._pending = {}  # frozenset(task_ids) -> (task_list, channel)
+    self._attempts = 0
+
+  def register_and_wait(self, tasks):
+    """Called by a runner greenlet to wait until tasks complete on Swarming."""
+    task_ids = sum((t.get_task_ids() for t in tasks), [])
+    if not task_ids:
+      return
+    ch = self._api.futures.make_channel()
+    self._pending[frozenset(task_ids)] = (task_ids, ch)
+    ch.get()
+
+  def abort(self):
+    """Aborts all waiting channels on error."""
+    pending = self._pending
+    self._pending = {}
+    for _, ch in pending.values():
+      ch.put(None)
+
+  def run_poller(self, futures):
+    """Polls pending tasks until all runner futures are complete."""
+    while not all(f.done for f in futures):
+      for f in futures:
+        if f.done and f.exception():
+          self.abort()
+          f.result()
+
+      if self._pending:
+        task_sets = [task_ids for task_ids, _ in self._pending.values()]
+        finished_sets, self._attempts = (
+            self._api.chromium_swarming.wait_for_finished_task_set(
+                task_sets, attempts=self._attempts))
+        for task_set in finished_sets:
+          key = frozenset(task_set)
+          item = self._pending.pop(key, None)
+          if item:
+            _, ch = item
+            ch.put(None)
+      else:
+        running_futures = [f for f in futures if not f.done]
+        if running_futures:
+          self._api.futures.wait(running_futures, timeout=0.1, count=1)
+
+    for f in futures:
+      if f.exception():
+        self.abort()
+        f.result()
+
+
 def run_test_pipelines(api, runners):
   """
   Runs the full test execution pipeline for multiple runners concurrently.
@@ -69,11 +131,13 @@ def run_test_pipelines(api, runners):
 
     return list(failing_tests - passing_tests)
 
+  coordinator = TaskCoordinator(api)
+
   def _run_pipeline(runner):
     with api.step.nest(f'Pipeline {runner.step_name}'):
       with api.step.nest('Run tests'):
         runner.trigger()
-        runner.process_results()
+        runner.process_results(coordinator)
 
       failed_tests = _get_failed_tests_for_runner(runner.test_type_tag)
       if failed_tests:
@@ -86,19 +150,20 @@ def run_test_pipelines(api, runners):
           with api.step.nest('Flake exoneration attempt') as presentation:
             presentation.logs['found tests'] = failed_tests
             runner.trigger_exoneration(test_names)
-            runner.process_exoneration_results(test_names)
+            runner.process_exoneration_results(test_names, coordinator)
             if runner.results.task_failures:
-              presentation.step_text = 'Failed to exonerate some of the failing tests'
+              presentation.step_text = (
+                  'Failed to exonerate some of the failing tests')
 
       if hasattr(runner, 'trigger_flake_detection'):
         with api.step.nest('Detect flakes in new tests'):
           runner.trigger_flake_detection(touched_tests)
-          runner.process_flake_detection_results(touched_tests)
+          runner.process_flake_detection_results(touched_tests, coordinator)
 
     return runner.results
 
   futures = [api.futures.spawn(_run_pipeline, r) for r in runners]
-  api.futures.wait(futures)
+  coordinator.run_poller(futures)
   results = Results()
   for future in futures:
     results += future.result()
