@@ -14,7 +14,7 @@ class E2ETests(ExonerableTests):
 
   def __init__(self, api, trigger, builder_config, step_name):
     super().__init__(
-        api, trigger, builder_config, False, step_name, shard_count=4)
+        api, trigger, builder_config, False, step_name, shard_count=8)
 
   @property
   def test_patterns(self):
