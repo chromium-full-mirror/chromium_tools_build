@@ -173,7 +173,11 @@ _AddBuildSpec(
     target_arch='arm',
 )
 
-_AddBuildSpec('linux-arm-builder-perf', 'linux')
+_AddBuildSpec(
+    'linux-arm-builder-perf',
+    'linux',
+    target_arch='arm',
+)
 _AddBuildSpec('linux-builder-perf', 'linux')
 _AddBuildSpec('linux-builder-perf-pgo', 'linux')
 
@@ -272,8 +276,11 @@ _AddIsolatedTestSpec(
 
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
-_AddIsolatedTestSpec('linux-nvidia-dgx-spark-arm-perf', 'linux',
-                     'linux-arm-builder-perf')
+_AddIsolatedTestSpec(
+    'linux-nvidia-dgx-spark-arm-perf',
+    'linux',
+    'linux-arm-builder-perf',
+    target_arch='arm')
 
 # Deprecated in perf waterfall. Needed for pinpoint when running Chrome
 # Health on old commits.
