@@ -361,54 +361,13 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]/builder/devtools-frontend"
+      "rmglob",
+      "[CACHE]/builder/devtools-frontend",
+      "**/siso*.INFO",
+      "--hidden"
     ],
     "infra_step": true,
-    "name": "list root entries",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.git@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.gitignore@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.stylelintignore@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.stylelintrc.json@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/build@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/config@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/eslint.config.mjs@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/extension-api@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/extensions@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/front_end@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/inspector_overlay@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/mcp@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/node_modules@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/out@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/package.json@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/scripts@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/test@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]/builder/devtools-frontend/third_party"
-    ],
-    "infra_step": true,
-    "name": "list third_party entries",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/chrome@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/depot_tools@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/emscripten-releases@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/i18n@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/image_diff@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/node@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
+    "name": "Clean up SISO files"
   },
   {
     "cmd": [
@@ -491,7 +450,7 @@
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\"[CACHE]/builder/devtools-frontend\", \".gitignore\"], [\"[CACHE]/builder/devtools-frontend\", \".stylelintignore\"], [\"[CACHE]/builder/devtools-frontend\", \".stylelintrc.json\"], [\"[CACHE]/builder/devtools-frontend\", \"config\"], [\"[CACHE]/builder/devtools-frontend\", \"eslint.config.mjs\"], [\"[CACHE]/builder/devtools-frontend\", \"extension-api\"], [\"[CACHE]/builder/devtools-frontend\", \"front_end\"], [\"[CACHE]/builder/devtools-frontend\", \"inspector_overlay\"], [\"[CACHE]/builder/devtools-frontend\", \"mcp\"], [\"[CACHE]/builder/devtools-frontend\", \"node_modules\"], [\"[CACHE]/builder/devtools-frontend\", \"package.json\"], [\"[CACHE]/builder/devtools-frontend\", \"scripts\"], [\"[CACHE]/builder/devtools-frontend\", \"test\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/chrome\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/i18n\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/image_diff\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/node\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/args.gn\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/build.ninja\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/gen\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/resources\"]]"
+      "[[\"[CACHE]/builder/devtools-frontend\", \".\"]]"
     ],
     "infra_step": true,
     "name": "archive",

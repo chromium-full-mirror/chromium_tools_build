@@ -129,90 +129,9 @@ class DevToolsAPI(recipe_api.RecipeApi):
         'pool': 'chromium.tests',
     }
 
-  def archive_to_cas(self, builder_config=None):
-    builder_config = (
-        builder_config or
-        (self.m.chromium.c and self.m.chromium.c.build_config_fs) or 'Release')
-    build_dir = self.source_dir / 'out' / builder_config
-
-    # Top-level heavy hitters to exclude
-    excluded_top_level = {
-        '.git',
-        'build',
-        'buildtools',
-        'build_overrides',
-        'docs',
-        'extensions',
-        'out',
-        'third_party',
-    }
-
-    # third_party build toolchains to exclude
-    excluded_third_party = {
-        'chromium',
-        'cmake',
-        'depot_tools',
-        'emscripten-releases',
-        'ninja',
-        'siso',
-    }
-
-    paths = []
-
-    # 1. Include root files and non-excluded directories
-    root_entries = self.m.file.listdir(
-        'list root entries',
-        self.source_dir,
-        test_data=[
-            'config',
-            'front_end',
-            'inspector_overlay',
-            'mcp',
-            'node_modules',
-            'scripts',
-            'test',
-            'extension-api',
-            'package.json',
-            'eslint.config.mjs',
-            '.stylelintrc.json',
-            '.stylelintignore',
-            '.gitignore',
-            '.git',
-            'build',
-            'extensions',
-            'out',
-            'third_party',
-        ])
-    for entry in root_entries:
-      if entry.name not in excluded_top_level:
-        paths.append(entry)
-
-    # 2. Include third_party test dependencies
-    third_party_dir = self.source_dir / 'third_party'
-    third_party_entries = self.m.file.listdir(
-        'list third_party entries',
-        third_party_dir,
-        test_data=[
-            'node',
-            'chrome',
-            'image_diff',
-            'i18n',
-            'depot_tools',
-            'emscripten-releases',
-        ])
-    for entry in third_party_entries:
-      if entry.name not in excluded_third_party:
-        paths.append(entry)
-
-    # 3. Include only the required build output artifacts for the active target
-    paths.extend([
-        build_dir / 'args.gn',
-        build_dir / 'build.ninja',
-        build_dir / 'gen',
-        build_dir / 'resources',
-    ])
-
-    return self.m.cas.archive('archive', self.source_dir, *paths)
+  def archive_to_cas(self):
+    self.m.file.rmglob('Clean up SISO files', self.source_dir, '**/siso*.INFO')
+    return self.m.cas.archive('archive', self.source_dir)
 
   def divided_e2e_commands(self,
                            builder_config,
