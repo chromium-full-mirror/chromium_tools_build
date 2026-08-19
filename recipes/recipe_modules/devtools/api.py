@@ -9,10 +9,6 @@ from __future__ import annotations
 from contextlib import contextmanager
 from pathlib import Path
 from recipe_engine import recipe_api
-from RECIPE_MODULES.build.attr_utils import cached_property
-
-
-from shlex import split
 
 REPO_URL = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
 
@@ -261,21 +257,3 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def _git_clean(self, source_dir):
     with self.m.context(cwd=source_dir):
       self.m.git('clean', '-xf', '--', 'front_end')
-
-  @cached_property
-  def package_scripts(self):
-    package_path = self.source_dir.joinpath('package.json')
-    package = self.m.file.read_json(
-        'Read all commands',
-        str(package_path),
-        test_data={
-            'scripts': {
-                'lint': 'echo 123',
-                'test': 'test',
-            },
-        })
-    return package['scripts']
-
-  def lookup_command(self, name):
-    """Lookup a command from the package.json file."""
-    return split(self.package_scripts[name])

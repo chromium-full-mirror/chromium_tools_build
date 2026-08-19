@@ -108,8 +108,7 @@ def run_lint_check(api, builder_config):
   if is_debug_build or not api.platform.is_linux:
     return
   with api.step.nest('Linting'), api.context(cwd=api.devtools.source_dir):
-    lint_command = api.devtools.lookup_command('lint')
-    api.step('Run lint check', lint_command)
+    api.devtools.run_node_script('Run lint check', 'run_lint_check.mjs')
 
 
 

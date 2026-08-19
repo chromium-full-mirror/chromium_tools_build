@@ -46,9 +46,7 @@ def RunSteps(api, properties):
     if not properties.parallel:
       api.devtools.run_e2e(builder_config)
     else:
-      # No function; called for complete coverage.
-      command = api.devtools.lookup_command('lint')
-      assert command == ['echo', '123']
+
       with api.step.nest('E2E Tests'):
         commands = api.devtools.divided_e2e_commands(
             builder_config=builder_config,)

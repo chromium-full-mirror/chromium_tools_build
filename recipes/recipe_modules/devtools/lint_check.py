@@ -23,4 +23,8 @@ class LintCheck(DevToolsTests):
     return is_debug_build or not is_linux
 
   def commands(self):
-    return [self.api.devtools.lookup_command('lint')]
+    return [[
+        self.api.path.join('third_party', 'node', 'node.py'),
+        '--output',
+        'scripts/test/run_lint_check.mjs',
+    ]]
