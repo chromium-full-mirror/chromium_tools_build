@@ -986,12 +986,12 @@
     "cmd": [
       "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/python_extractor.py",
-      "[CACHE]/builder",
+      "[CACHE]/builder/src",
       "[CLEANUP]/tmp_tmp_2/python_metadata.json",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
       "--root",
-      "[CACHE]/builder"
+      "[CACHE]/builder/src"
     ],
     "luci_context": {
       "realm": {
@@ -1089,7 +1089,7 @@
       "--output",
       "[CLEANUP]/tmp_tmp_2/python_kzip.kzip",
       "--root",
-      "[CACHE]/builder",
+      "[CACHE]/builder/src",
       "[CLEANUP]/tmp_tmp_2/python_metadata.json"
     ],
     "luci_context": {

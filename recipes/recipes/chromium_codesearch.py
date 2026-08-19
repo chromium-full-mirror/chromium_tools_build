@@ -409,19 +409,19 @@ def RunSteps(api, properties):
       api.step('extract python metadata', [
           'vpython3',
           extractor_script,
-          checkout_dir,
+          source_dir,
           out_json_path,
           '--corpus',
           corpus,
           '--root',
-          checkout_dir,
+          source_dir,
       ])
 
       exec_path = api.cipd.ensure_tool("infra/tools/kzip_builder/${platform}",
                                        "latest")
       python_kzip_path = extractor_out_dir / 'python_kzip.kzip'
       api.step('build python kzip', [
-          exec_path, '--output', python_kzip_path, '--root', checkout_dir,
+          exec_path, '--output', python_kzip_path, '--root', source_dir,
           out_json_path
       ])
     except api.step.StepFailure as exc:
