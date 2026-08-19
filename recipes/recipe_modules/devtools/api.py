@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Recipe module for DevTools."""
+
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -35,6 +37,27 @@ class DevToolsAPI(recipe_api.RecipeApi):
       self.m.gclient.runhooks()
     self.source_dir = result.source_root.path
     return result
+
+  def shallow_checkout(self, depth=2):
+    source_dir = self.m.path.cleanup_dir / 'devtools-frontend'
+    self.m.file.ensure_directory('ensure source dir', source_dir)
+    with self.m.context(cwd=source_dir):
+      self.m.git('init')
+      if (self.m.tryserver.is_tryserver and
+          self.m.tryserver.gerrit_change_fetch_ref):
+        repo_url = self.m.tryserver.gerrit_change_repo_url or REPO_URL
+        fetch_ref = self.m.tryserver.gerrit_change_fetch_ref
+        self.m.git('fetch', repo_url, fetch_ref, f'--depth={depth}')
+        self.m.git('checkout', 'FETCH_HEAD')
+        self.m.git('reset', '--soft', 'HEAD~1')
+      else:
+        ref = (
+            self.m.buildbucket.gitiles_commit.id or
+            self.m.buildbucket.gitiles_commit.ref or 'refs/heads/main')
+        self.m.git('fetch', REPO_URL, ref, f'--depth={depth}')
+        self.m.git('checkout', 'FETCH_HEAD')
+    self.source_dir = source_dir
+
 
   @contextmanager
   def depot_on_path(self):
@@ -79,11 +102,11 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   def run_e2e(self, builder_config, args=None, run_mode='regular'):
     args = list(args or [])
-    mode_modifiers = dict(
-        regular=([], ''),
-        parallel=(['--jobs=4'], ' (Parallel)'),
-        sequential=(['--mocha-fgrep=[sequential]'], ' (Sequential)'),
-    )
+    mode_modifiers = {
+        'regular': ([], ''),
+        'parallel': (['--jobs=4'], ' (Parallel)'),
+        'sequential': (['--mocha-fgrep=[sequential]'], ' (Sequential)'),
+    }
 
     extra_args, suffix = mode_modifiers[run_mode]
     args += extra_args
@@ -94,15 +117,15 @@ class DevToolsAPI(recipe_api.RecipeApi):
     ] + args)
 
   def get_dimensions_for_platform(self):
-    os_names = dict(
-        linux='Ubuntu-22.04',
-        mac='Mac-26',
-        win='Windows-10-19045',
-    )
-    cpu_dimensions = dict(
-        arm='arm64',
-        intel='x86-64',
-    )
+    os_names = {
+        'linux': 'Ubuntu-22.04',
+        'mac': 'Mac-26',
+        'win': 'Windows-10-19045',
+    }
+    cpu_dimensions = {
+        'arm': 'arm64',
+        'intel': 'x86-64',
+    }
 
     return {
         'cpu': cpu_dimensions[self.m.platform.arch],
@@ -167,12 +190,11 @@ class DevToolsAPI(recipe_api.RecipeApi):
     self.m.chromium_swarming.default_priority = (
         30 if self.m.tryserver.is_tryserver else 25)
 
-    for i in range(len(commands)):
-      if commands[i][0].startswith('ITERATIONS='):
-        env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
-      needs_vpy3 = commands[i][0] != 'vpython3'
-      full_command = (["vpython3", "-u"]
-                      if needs_vpy3 else []) + commands[i] + args
+    for i, command in enumerate(commands):
+      if command[0].startswith('ITERATIONS='):
+        env['ITERATIONS'] = command.pop(0).split('=')[1]
+      needs_vpy3 = command[0] != 'vpython3'
+      full_command = (["vpython3", "-u"] if needs_vpy3 else []) + command + args
       task_input = self.m.step.empty('Full command')
       task_input.presentation.logs['command'] = full_command
       task = self.m.chromium_swarming.task(

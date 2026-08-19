@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Recipe for DevTools trybot tester."""
+
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
+from recipe_engine.post_process import DoesNotRunRE, DropExpectation
 
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
@@ -17,7 +19,8 @@ from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.lint_check import LintCheck
-from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
+from RECIPE_MODULES.build.devtools.performance_tests_runner import (
+    PerformanceTests,)
 from RECIPE_MODULES.build.devtools.scripts_tests_runner import ScriptsTests
 
 
@@ -51,7 +54,7 @@ def RunSteps(api, properties):
 
   api.devtools.configure(builder_config, properties.is_official_build,
                          properties.devtools_skip_typecheck)
-  api.devtools.update()
+  api.devtools.shallow_checkout(depth=2)
 
   comp_props, maybe_raw_result = api.v8_orchestrator.orchestrated_compilation(
       properties.compilator_name)
@@ -106,9 +109,11 @@ def GenTests(api):
         id=54321,
         status=status,
         summary_markdown=summary,
-        output=dict(
-            properties=json_format.Parse(
-                api.json.dumps(output_properties), struct_pb2.Struct())))
+        output={
+            'properties':
+                json_format.Parse(
+                    api.json.dumps(output_properties), struct_pb2.Struct())
+        })
     return api.step_data('compilator steps', api.step.sub_build(sub_build))
 
   def test(name, *args, **kwargs):
