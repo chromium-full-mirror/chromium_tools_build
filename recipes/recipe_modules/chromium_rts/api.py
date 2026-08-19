@@ -124,10 +124,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         results.
     """
     if TEST_RTS_MODEL_EXPERIMENT in self.m.buildbucket.build.input.experiments:
-      # Exclude suites that are actively skipping tests from evaluation.
-      tests_to_evaluate = [t for t in tests if not t.enable_rts_filtering]
-      evaluation.evaluate_rts(self, build_dir, tests_to_evaluate,
-                              self._get_banned_suites())
+      evaluation.evaluate_rts(self, build_dir, tests, self._get_banned_suites(),
+                              self._overwritten_tests)
 
   def start_evaluation(
       self,
