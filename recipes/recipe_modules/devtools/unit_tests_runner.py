@@ -17,7 +17,7 @@ class UnitTests(ExonerableTests):
                step_name,
                node_unit_tests=False):
     ExonerableTests.__init__(
-        self, api, trigger, builder_config, coverage, step_name, shard_count=2)
+        self, api, trigger, builder_config, coverage, step_name, shard_count=4)
     self.coverage = coverage
     self.shard_bias = 2  # Use a bias to keep shards balanced
     self.node_unit_tests = node_unit_tests
