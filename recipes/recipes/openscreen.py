@@ -50,6 +50,7 @@ OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
 GN_PROPERTIES = [
     'cast_allow_developer_certificate',
+    'enable_rust',
     'have_ffmpeg',
     'have_libopus',
     'have_libsdl2',
