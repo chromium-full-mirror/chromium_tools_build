@@ -29,7 +29,7 @@ class TaskCoordinator:
 
   def register_and_wait(self, tasks):
     """Called by a runner greenlet to wait until tasks complete on Swarming."""
-    task_ids = sum((t.get_task_ids() for t in tasks), [])
+    task_ids = [tid for t in tasks for tid in t.get_task_ids()]
     if not task_ids:
       return
     ch = self._api.futures.make_channel()
@@ -115,7 +115,7 @@ def run_test_pipelines(api, runners, affected_files=None):
         tr_fields=['testId', 'tags', 'expected'],
         limit=0,
         step_name=f'rdb query for {test_type_tag}')
-    proto_results = sum((res.test_results for res in response.values()), [])
+    proto_results = [r for res in response.values() for r in res.test_results]
 
     passing_tests = set()
     failing_tests = set()
@@ -161,7 +161,8 @@ def run_test_pipelines(api, runners, affected_files=None):
     return runner.results
 
   futures = [api.futures.spawn(_run_pipeline, r) for r in runners]
-  coordinator.run_poller(futures)
+  with api.step.nest('Waiting for tasks'):
+    coordinator.run_poller(futures)
   results = Results()
   for future in futures:
     results += future.result()

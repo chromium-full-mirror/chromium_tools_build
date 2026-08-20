@@ -481,9 +481,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "resultdb.update_included_invocations",
+    "name": "Trigger API Tests.resultdb.update_included_invocations",
     "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",

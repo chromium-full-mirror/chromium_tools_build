@@ -43,15 +43,27 @@ class DevToolsTests(ABC):
   def skip(self):
     return False
 
-  def collect(self):
+  def collect(self, coordinator=None):
     """
     Returns a Results object that contains a list of the infra failures and
     another one for test failures (empty lists if there are no failures).
     """
     results = Results()
     with self.api.step.nest(f'{self.step_name} shards results'):
-      for i in range(len(self.tasks)):
-        step, is_valid = self.api.chromium_swarming.collect_task(self.tasks[i])
+
+      def _collect_shard(i, task):
+        if coordinator:
+          coordinator.register_and_wait([task])
+        step, is_valid = self.api.chromium_swarming.collect_task(task)
+        return step, is_valid, i
+
+      futures_api = getattr(self.api, 'futures', self.api.devtools.m.futures)
+      shard_futures = [
+          futures_api.spawn(_collect_shard, i, task)
+          for i, task in enumerate(self.tasks)
+      ]
+      for future in shard_futures:
+        step, is_valid, i = future.result()
         if not is_valid:
           results.add_infra_failure(
               f'Infra Failure in {self.step_name} (shard #{i})')
@@ -87,16 +99,16 @@ class DevToolsTests(ABC):
           commands=self.commands(),
           env=self.construct_env(),
       )
-    for task in self.tasks:
-      # Remove 'invocations/' because it is added again in include_invocations.
-      self.api.resultdb.include_invocations(
-          [i[len('invocations/'):] for i in task.get_invocation_names()])
+      invocations = [
+          inv for t in self.tasks for inv in t.get_invocation_names()
+      ]
+      if invocations:
+        self.api.resultdb.include_invocations(
+            self.api.resultdb.invocation_ids(invocations))
 
   def process_results(self, coordinator=None):
-    if coordinator and self.tasks:
-      coordinator.register_and_wait(self.tasks)
     with self.api.step.nest(self.step_name):
-      new_results = self.collect()
+      new_results = self.collect(coordinator=coordinator)
       if not new_results.infra_failures:
         try:
           self._post_collect()
