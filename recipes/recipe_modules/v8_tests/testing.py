@@ -520,6 +520,8 @@ def override_swarming_attrs(task, task_slice, attrs):
   task.request = task.request.with_slice(0, task_slice)
   if attrs.get('priority'):
     task.request = task.request.with_priority(int(attrs['priority']))
+  if attrs.get('service_account'):
+    task.request = task.request.with_service_account(attrs['service_account'])
 
 
 class V8SwarmingTest(V8Test):

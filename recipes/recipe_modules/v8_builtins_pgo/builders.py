@@ -109,11 +109,12 @@ def with_wrapper_step(func):
 
 class BaseProfileBuilder(ABC):
 
-  def __init__(self, api, compilators):
+  def __init__(self, api, compilators, swarming_service_account):
     self.api = api
     self.profile_trackers = None
     self.perf_code_path = None
     self.selected_compilator_ids = compilators
+    self.swarming_service_account = swarming_service_account
 
   @cached_property
   def compilators(self):
@@ -262,8 +263,11 @@ class BaseProfileBuilder(ABC):
         task_dimensions.update(tracker.swarming_dimensions)
         task_slice = task_slice.with_dimensions(**task_dimensions)
 
-        v8testing.override_swarming_attrs(task, task_slice,
-                                          dict(tracker.swarming_task_attrs))
+        swarming_task_attrs = dict(tracker.swarming_task_attrs)
+        if self.swarming_service_account:
+          swarming_task_attrs['service_account'] = self.swarming_service_account
+
+        v8testing.override_swarming_attrs(task, task_slice, swarming_task_attrs)
 
         self.api.chromium_swarming.trigger_task(task)
         tracker.profile_task = task
@@ -365,8 +369,8 @@ class BaseProfileBuilder(ABC):
 
 class V8CiBuilder(BaseProfileBuilder):
 
-  def __init__(self, api, compilators, revision):
-    super().__init__(api, compilators)
+  def __init__(self, api, compilators, revision, swarming_service_account):
+    super().__init__(api, compilators, swarming_service_account)
     self.revision = revision
 
   @with_wrapper_step
@@ -380,8 +384,8 @@ class V8CiBuilder(BaseProfileBuilder):
 
 class V8TryBuilder(BaseProfileBuilder):
 
-  def __init__(self, api, compilators, change):
-    super().__init__(api, compilators)
+  def __init__(self, api, compilators, change, swarming_service_account):
+    super().__init__(api, compilators, swarming_service_account)
     self.change = change
 
   @with_wrapper_step
@@ -395,8 +399,8 @@ class V8TryBuilder(BaseProfileBuilder):
 
 class V8PerfTryBuilder(BaseProfileBuilder):
 
-  def __init__(self, api, compilators, change):
-    super().__init__(api, compilators)
+  def __init__(self, api, compilators, change, swarming_service_account):
+    super().__init__(api, compilators, swarming_service_account)
     self.change = change
 
   @cached_property
@@ -430,8 +434,8 @@ class V8PerfTryBuilder(BaseProfileBuilder):
 class V8VersionTagBuilder(BaseProfileBuilder):
 
   def __init__(self, api, compilators, max_parallel_versions,
-               version_number_cutoff):
-    super().__init__(api, compilators)
+               version_number_cutoff, swarming_service_account):
+    super().__init__(api, compilators, swarming_service_account)
     self.max_parallel_versions = max_parallel_versions
     self.version_number_cutoff = version_number_cutoff
 

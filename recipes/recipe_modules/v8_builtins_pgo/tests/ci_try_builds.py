@@ -9,11 +9,14 @@ import recipe_engine.post_process as post
 DEPS = [
     'v8_builtins_pgo',
     'recipe_engine/buildbucket',
+    'recipe_engine/properties',
 ]
 
 
 def RunSteps(api):
-  return api.v8_builtins_pgo.run(compilators=['x64'])
+  return api.v8_builtins_pgo.run(
+      compilators=['x64'],
+      swarming_service_account=api.properties.get('swarming_service_account'))
 
 
 def GenTests(api):
@@ -86,6 +89,33 @@ def GenTests(api):
       must_run_builders=['V8 Linux64 PGO instrumentation - builder'],
       do_not_run_builders=['v8_linux64_pgo_compile_rel'],
       profiling_pool='chromium.tests',
+  )
+
+  yield test(
+      'ci_restricted',
+      api.buildbucket.ci_build(bucket='ci', revision='c0ffee15'),
+      compilator_label='c0ffee15',
+      must_run_builders=['V8 Linux64 PGO instrumentation - builder'],
+      do_not_run_builders=['v8_linux64_pgo_compile_rel'],
+      profiling_pool='chromium.tests',
+      additional=[
+          api.properties(swarming_service_account='restricted@account.com'),
+          api.post_process(
+              post.StepCommandRE,
+              ('trigger profilers.c0ffee15 x64.'
+               '[trigger] pgo profile c0ffee15 x64 on Ubuntu 31.41'),
+              [
+                  r'.*/swarming',
+                  'spawn-tasks',
+                  '-server',
+                  'https://example.swarmingserver.appspot.com',
+                  '-json-input',
+                  r'.*"service_account": "restricted@account.com".*',
+                  '-json-output',
+                  '/path/to/tmp/json',
+              ],
+          ),
+      ],
   )
 
   yield test(

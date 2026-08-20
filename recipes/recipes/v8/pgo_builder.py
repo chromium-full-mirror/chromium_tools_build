@@ -20,11 +20,14 @@ DEPS = [
 
 PROPERTIES = {
     'compilators': Property(kind=list, default=None),
+    'swarming_service_account': Property(kind=str, default=None),
 }
 
 
-def RunSteps(api, compilators):
-  return api.v8_builtins_pgo.run(compilators=compilators)
+def RunSteps(api, compilators, swarming_service_account):
+  return api.v8_builtins_pgo.run(
+      compilators=compilators,
+      swarming_service_account=swarming_service_account)
 
 
 def GenTests(api):
