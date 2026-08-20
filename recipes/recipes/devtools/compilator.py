@@ -122,3 +122,15 @@ def GenTests(api):
       ),
       api.post_process(DropExpectation),
   )
+
+  yield api.test(
+      'no bundle',
+      api.properties(devtools_bundle=False),
+      *check_steps(
+          MustRun,
+          'compile',
+          'archive',
+          'compilator properties',
+      ),
+      api.post_process(DropExpectation),
+  )

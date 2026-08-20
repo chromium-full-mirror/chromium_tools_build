@@ -82,7 +82,7 @@
     "cwd": "[CACHE]/builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/builder/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/parallel builder/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -185,7 +185,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/builder/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/parallel builder/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -212,7 +212,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
-      "[CACHE]/builder/devtools-frontend/out/e50c-builder",
+      "[CACHE]/builder/devtools-frontend/out/0826-parallel_builde",
       "--args=is_official_build=true devtools_skip_typecheck=true devtools_bundle=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
@@ -243,19 +243,17 @@
     "name": "Ubuntu-22.04 x86-64"
   },
   {
+    "cmd": [],
+    "name": "E2E Tests"
+  },
+  {
     "cmd": [
-      "rdb",
-      "stream",
-      "--",
       "vpython3",
       "-u",
-      "third_party/node/node.py",
-      "--output",
-      "scripts/test/run_test_suite.js",
-      "--test-suite-path=gen/test/e2e",
-      "--test-suite-source-dir=test/e2e",
-      "--test-server-type='hosted-mode'",
-      "--target=Release"
+      "scripts/test/e2e_divider.py",
+      "--jobs=4",
+      "--test-file-pattern=",
+      "--iterations=1"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env_prefixes": {
@@ -275,7 +273,637 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "E2E tests"
+    "name": "E2E Tests.divide test run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@ITERATIONS=1 node runner config pattern@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/devtools-frontend"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.list root entries",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.git@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.gitignore@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.stylelintignore@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/.stylelintrc.json@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/build@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/config@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/eslint.config.mjs@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/extension-api@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/extensions@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/front_end@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/inspector_overlay@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/mcp@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/node_modules@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/out@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/package.json@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/scripts@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/test@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/devtools-frontend/third_party"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.list third_party entries",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/chrome@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/depot_tools@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/emscripten-releases@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/i18n@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/image_diff@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/devtools-frontend/third_party/node@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.read infra revision",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@infra.sha1@git_revision:mock_infra_git_revision@@@",
+      "@@@STEP_LOG_END@infra.sha1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "E2E Tests.install infra/tools/luci/cas",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.install infra/tools/luci/cas.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee",
+      "-ensure-file",
+      "infra/tools/luci/cas/${platform} git_revision:mock_infra_git_revision",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.install infra/tools/luci/cas.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:moc\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/luci/cas/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee/cas",
+      "archive",
+      "-log-level",
+      "info",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-dump-digest",
+      "/path/to/tmp/",
+      "-paths-json",
+      "[[\"[CACHE]/builder/devtools-frontend\", \".gitignore\"], [\"[CACHE]/builder/devtools-frontend\", \".stylelintignore\"], [\"[CACHE]/builder/devtools-frontend\", \".stylelintrc.json\"], [\"[CACHE]/builder/devtools-frontend\", \"config\"], [\"[CACHE]/builder/devtools-frontend\", \"eslint.config.mjs\"], [\"[CACHE]/builder/devtools-frontend\", \"extension-api\"], [\"[CACHE]/builder/devtools-frontend\", \"front_end\"], [\"[CACHE]/builder/devtools-frontend\", \"inspector_overlay\"], [\"[CACHE]/builder/devtools-frontend\", \"mcp\"], [\"[CACHE]/builder/devtools-frontend\", \"node_modules\"], [\"[CACHE]/builder/devtools-frontend\", \"package.json\"], [\"[CACHE]/builder/devtools-frontend\", \"scripts\"], [\"[CACHE]/builder/devtools-frontend\", \"test\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/chrome\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/i18n\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/image_diff\"], [\"[CACHE]/builder/devtools-frontend\", \"third_party/node\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/args.gn\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/build.ninja\"], [\"[CACHE]/builder/devtools-frontend\", \"out/Release/gen\"]]"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.archive",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "E2E Tests.Full command",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@command@vpython3@@@",
+      "@@@STEP_LOG_LINE@command@-u@@@",
+      "@@@STEP_LOG_LINE@command@third_party/node/node.py@@@",
+      "@@@STEP_LOG_LINE@command@--output@@@",
+      "@@@STEP_LOG_LINE@command@scripts/test/run_test_suite.js@@@",
+      "@@@STEP_LOG_LINE@command@--test-suite-path=gen/test/e2e@@@",
+      "@@@STEP_LOG_LINE@command@--test-suite-source-dir=test/e2e@@@",
+      "@@@STEP_LOG_LINE@command@--test-server-type='hosted-mode'@@@",
+      "@@@STEP_LOG_LINE@command@--target=Release@@@",
+      "@@@STEP_LOG_LINE@command@config@@@",
+      "@@@STEP_LOG_LINE@command@pattern@@@",
+      "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "E2E Tests.install infra/tools/luci/swarming",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.install infra/tools/luci/swarming.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227",
+      "-ensure-file",
+      "infra/tools/luci/swarming/${platform} swarming_module_pin",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.install infra/tools/luci/swarming.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-swarming_module_\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/luci/swarming/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/parallel builder/-1\", \"priority\": \"30\", \"realm\": \"devtools:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"buildername:parallel builder\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"gerrit:https://chromium-review.googlesource.com/c/91827/1\", \"name:E2E\", \"project:devtools\", \"shard_count:1\", \"shard_index:0\", \"spec_name:devtools.try:parallel builder\", \"stepname:E2E Tests (Shard #0) on Ubuntu-22.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-tag\", \"run_phase:normal\", \"-tag\", \"test_type:e2e\", \"-coerce-negative-duration\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"try:parallel builder\", \"--\", \"vpython3\", \"-u\", \"third_party/node/node.py\", \"--output\", \"scripts/test/run_test_suite.js\", \"--test-suite-path=gen/test/e2e\", \"--test-suite-source-dir=test/e2e\", \"--test-server-type='hosted-mode'\", \"--target=Release\", \"config\", \"pattern\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"ITERATIONS\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.[trigger] E2E Tests (Shard #0) on Ubuntu-22.04",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/parallel builder/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/0\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/parallel builder/-1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"realm\": \"devtools:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"enable\": true@@@",
+      "@@@STEP_LOG_LINE@json.input@      },@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"bucket:try\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"buildername:parallel builder\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gerrit:https://chromium-review.googlesource.com/c/91827/1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:E2E\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"project:devtools\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"shard_count:1\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"shard_index:0\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"spec_name:devtools.try:parallel builder\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:E2E Tests (Shard #0) on Ubuntu-22.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ],@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"rdb\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"stream\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"run_phase:normal\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_type:e2e\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-baseline-id\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"try:parallel builder\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"third_party/node/node.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"scripts/test/run_test_suite.js\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--test-suite-path=gen/test/e2e\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--test-suite-source-dir=test/e2e\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--test-server-type='hosted-mode'\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--target=Release\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"config\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"pattern\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            },@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              },@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ITERATIONS\",@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"3600\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false,@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\",@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          },@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: E2E Tests (Shard #0)/Ubuntu-22.04/e3b0c44298/parallel builder/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "E2E Tests.E2E Tests result collection",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "E2E Tests.E2E Tests result collection.E2E Tests shards results",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/tmp_tmp_1",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "console",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"0\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227",
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E Tests.E2E Tests result collection.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/><br/>Test command to run from the build dir:<br/>```vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/e2e --test-suite-source-dir=test/e2e --test-server-type='hosted-mode' --target=Release config pattern```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"key\": \"os\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"value\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@            \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      ],@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/0\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      },@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@"
+    ]
   },
   {
     "name": "$result"

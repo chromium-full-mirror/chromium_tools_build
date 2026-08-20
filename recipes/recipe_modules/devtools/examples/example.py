@@ -169,8 +169,11 @@ def GenTests(api):
 
   yield api.test(
       'no bundle',
-      api.properties(devtools_bundle=False),
-      try_build(),
-      #api.post_process(post_process.DropExpectation),
+      api.properties(devtools_bundle=False, parallel=True),
+      try_build(builder='parallel builder'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'ITERATIONS=1 node runner config pattern', stream='stdout')),
       status='SUCCESS',
   )
