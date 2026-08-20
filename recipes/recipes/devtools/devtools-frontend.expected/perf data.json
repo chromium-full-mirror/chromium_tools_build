@@ -825,6 +825,18 @@
   },
   {
     "cmd": [],
+    "name": "Pipeline Unit Tests (node)"
+  },
+  {
+    "cmd": [],
+    "name": "Pipeline API Tests"
+  },
+  {
+    "cmd": [],
+    "name": "Pipeline Performance Tests"
+  },
+  {
+    "cmd": [],
     "name": "Pipeline Unit Tests.Run tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -863,7 +875,10 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline Unit Tests (node)"
+    "name": "Pipeline Unit Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [],
@@ -906,7 +921,10 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline API Tests"
+    "name": "Pipeline Unit Tests (node).Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [],
@@ -947,7 +965,10 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline Performance Tests"
+    "name": "Pipeline API Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [],
@@ -2699,13 +2720,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Pipeline Unit Tests (node).Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
@@ -2834,13 +2848,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Pipeline API Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -3525,13 +3532,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Pipeline Unit Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {

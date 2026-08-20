@@ -795,6 +795,10 @@
   },
   {
     "cmd": [],
+    "name": "Pipeline Repeat E2E Tests"
+  },
+  {
+    "cmd": [],
     "name": "Pipeline E2E Tests.Run tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -830,7 +834,10 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline Repeat E2E Tests"
+    "name": "Pipeline E2E Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [],
@@ -865,6 +872,13 @@
       "@@@STEP_LOG_LINE@command@--shard-bias=1@@@",
       "@@@STEP_LOG_LINE@command@test/e2e@@@",
       "@@@STEP_LOG_END@command@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Pipeline Repeat E2E Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -4780,13 +4794,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "Pipeline Repeat E2E Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
@@ -5491,13 +5498,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Pipeline E2E Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {

@@ -37,6 +37,13 @@
   },
   {
     "cmd": [],
+    "name": "Pipeline E2E Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "Pipeline E2E Tests.Run tests.Trigger E2E Tests.install infra/tools/luci/swarming",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
@@ -457,13 +464,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Pipeline E2E Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   }
 ]

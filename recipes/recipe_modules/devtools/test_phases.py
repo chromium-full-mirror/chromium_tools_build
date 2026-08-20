@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import copy
 import fnmatch
 import gevent
 
@@ -138,32 +139,50 @@ def run_test_pipelines(api, runners, affected_files=None):
 
   def _run_pipeline(runner):
     with api.step.nest(f'Pipeline {runner.step_name}'):
-      with api.step.nest('Run tests'):
-        runner.trigger()
-        runner.process_results(coordinator)
 
-      failed_tests = _get_failed_tests_for_runner(runner.test_type_tag)
-      if failed_tests:
-        with api.step.nest('test re-run cmd') as presentation:
-          presentation.step_text = 'npm run test -- ' + ' '.join(failed_tests)
+      def _run_tests():
+        with api.step.nest('Run tests'):
+          runner.trigger()
+          runner.process_results(coordinator)
 
-      if hasattr(runner, 'trigger_exoneration'):
+        failed_tests = _get_failed_tests_for_runner(runner.test_type_tag)
         if failed_tests:
-          test_names = {runner.test_type_tag: failed_tests}
-          with api.step.nest('Flake exoneration attempt') as presentation:
-            presentation.logs['found tests'] = failed_tests
-            runner.trigger_exoneration(test_names)
-            runner.process_exoneration_results(test_names, coordinator)
-            if runner.results.task_failures:
-              presentation.step_text = (
-                  'Failed to exonerate some of the failing tests')
+          with api.step.nest('test re-run cmd') as presentation:
+            presentation.step_text = 'npm run test -- ' + ' '.join(failed_tests)
 
-      if hasattr(runner, 'trigger_flake_detection'):
+        if hasattr(runner, 'trigger_exoneration'):
+          if failed_tests:
+            test_names = {runner.test_type_tag: failed_tests}
+            with api.step.nest('Flake exoneration attempt') as presentation:
+              presentation.logs['found tests'] = failed_tests
+              runner.trigger_exoneration(test_names)
+              runner.process_exoneration_results(test_names, coordinator)
+              if runner.results.task_failures:
+                presentation.step_text = (
+                    'Failed to exonerate some of the failing tests')
+
+        return runner.results
+
+      def _run_flake_detection():
+        flake_runner = copy.copy(runner)
+        flake_runner.output_dir = api.path.mkdtemp()
+        flake_runner.extra_args = list(runner.extra_args)
+        flake_runner.tasks = []
+        flake_runner.results = Results()
+        flake_runner.env = dict(runner.env)
+        flake_runner.coverage = False
         with api.step.nest('Detect flakes in new tests'):
-          runner.trigger_flake_detection(touched_tests)
-          runner.process_flake_detection_results(touched_tests, coordinator)
+          flake_runner.trigger_flake_detection(touched_tests)
+          flake_runner.process_flake_detection_results(touched_tests,
+                                                       coordinator)
+        return flake_runner.results
 
-    return runner.results
+      test_future = api.futures.spawn(_run_tests)
+      if hasattr(runner, 'trigger_flake_detection'):
+        flake_future = api.futures.spawn(_run_flake_detection)
+        return test_future.result() + flake_future.result()
+
+      return test_future.result()
 
   futures = [api.futures.spawn(_run_pipeline, r) for r in runners]
   with api.step.nest('Waiting for tasks'):

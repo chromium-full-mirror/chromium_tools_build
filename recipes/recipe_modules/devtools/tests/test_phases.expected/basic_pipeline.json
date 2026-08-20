@@ -342,6 +342,10 @@
   },
   {
     "cmd": [],
+    "name": "Pipeline Performance Tests"
+  },
+  {
+    "cmd": [],
     "name": "Pipeline Unit Tests.Run tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -379,7 +383,10 @@
   },
   {
     "cmd": [],
-    "name": "Pipeline Performance Tests"
+    "name": "Pipeline Unit Tests.Detect flakes in new tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [],
@@ -1984,13 +1991,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Pipeline Unit Tests.Detect flakes in new tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
