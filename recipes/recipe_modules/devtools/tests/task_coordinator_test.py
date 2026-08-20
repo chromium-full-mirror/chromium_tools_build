@@ -79,6 +79,23 @@ def RunSteps(api):
     assert unblocked == ['worker_unblocked'], unblocked
     return
 
+  # Edge Case: Worker crashes after task completes -> caught by post-loop check
+  if api.properties.get('test_crash_after_task', False):
+    coord = TaskCoordinator(api)
+
+    def crashing_post_task_worker():
+      coord.register_and_wait([MockTask(['task-done'])])
+      raise RuntimeError('crash after task completion')
+
+    f_crash = api.futures.spawn(crashing_post_task_worker)
+
+    try:
+      coord.run_poller([f_crash])
+      assert False, 'Expected RuntimeError'  # pragma: no cover
+    except RuntimeError as e:
+      assert str(e) == 'crash after task completion', str(e)
+    return
+
   # Edge Case 3: Empty tasks / MockTask with empty IDs -> return immediately
   coord = TaskCoordinator(api)
   coord.register_and_wait([])
@@ -171,5 +188,18 @@ def GenTests(api):
   yield api.test(
       'crash_aborts_pending',
       api.properties(test_crash_with_pending=True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'crash_after_task',
+      api.properties(test_crash_after_task=True),
+      api.step_data(
+          'wait for tasks',
+          api.json.output({
+              'attempts': 0,
+              'sets': [['task-done']],
+          }),
+      ),
       api.post_process(post_process.DropExpectation),
   )

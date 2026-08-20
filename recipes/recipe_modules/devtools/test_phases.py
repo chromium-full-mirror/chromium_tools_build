@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import fnmatch
+import gevent
 
 from .commons import Results
 from .test_runner_base import (FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
@@ -46,6 +47,10 @@ class TaskCoordinator:
   def run_poller(self, futures):
     """Polls pending tasks until all runner futures are complete."""
     while not all(f.done for f in futures):
+      # Yield to let active runner greenlets make progress and register
+      # their pending tasks before polling Swarming.
+      gevent.sleep(0)
+
       for f in futures:
         if f.done and f.exception():
           self.abort()
@@ -63,9 +68,9 @@ class TaskCoordinator:
             _, ch = item
             ch.put(None)
       else:
-        running_futures = [f for f in futures if not f.done]
-        if running_futures:
-          self._api.futures.wait(running_futures, timeout=0.1, count=1)
+        # Prevent busy-looping when waiting for runners to do non-Swarming work.
+        if not self._api._test_data.enabled:
+          gevent.sleep(1)  # pragma: no cover
 
     for f in futures:
       if f.exception():
