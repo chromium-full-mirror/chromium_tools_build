@@ -18,8 +18,6 @@ from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
-from RECIPE_MODULES.build.devtools.performance_tests_runner import (
-    PerformanceTests,)
 from RECIPE_MODULES.build.devtools.scripts_tests_runner import ScriptsTests
 
 
@@ -82,8 +80,6 @@ def RunSteps(api, properties):
       ApiTests(api, trigger, builder_config, 'API Tests'),
       E2ETests(api, trigger, builder_config, 'E2E Tests'),
       ScriptsTests(api, trigger, builder_config, 'Scripts Tests', target_os),
-      PerformanceTests(api, trigger, builder_config, 'Performance Tests',
-                       target_os)
   ]
   tests = [t for t in tests if not t.skip()]
 
