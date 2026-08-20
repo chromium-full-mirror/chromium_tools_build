@@ -151,7 +151,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
     excluded_third_party = {
         'chromium',
         'cmake',
-        'depot_tools',
         'emscripten-releases',
         'esbuild',
         'ninja',
