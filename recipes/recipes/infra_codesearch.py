@@ -70,38 +70,32 @@ def RunSteps(api: DEPS):
     kzip_name = '%s.kzip' % result.properties['got_revision']
 
   checkout_dir = api.path.cache_dir / 'infra_superproject'
-  kzip_loc = api.path.cache_dir / kzip_name
 
   # Hardcode the active Go modules inside the superproject. We do this because
   # recursive globbing (walking the entire tree) takes extremely long
   # on LUCI bots due to traversing massive package caches (gomodcache/gopath)
   # and compiler distribution folders.
   # TODO: Figure out a way to glob go.mod files efficiently.
-  potential_go_mod_files = [
+  public_go_mod_files_rel = [
       'infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
       'infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
       'infra/go/src/go.chromium.org/luci/go.mod',
       'infra/go/src/infra/go.mod',
   ]
-  if internal:
-    potential_go_mod_files += [
-        # Internal code won't be readable by public codesearch builders.
-        'infra_internal/go/src/infra_internal/go.mod',
-    ]
 
-  go_mod_files = []
-  for relpath in potential_go_mod_files:
+  public_go_mod_files = []
+  for relpath in public_go_mod_files_rel:
     abs_path = checkout_dir / relpath
     if api.path.exists(abs_path):
-      go_mod_files.append(abs_path)
+      public_go_mod_files.append(abs_path)
 
-  if not go_mod_files:
+  if not public_go_mod_files:
     raise api.step.StepFailure('No go.mod files found in the repository.')
 
   targets = []
   targets_dir = []
   go_version = '1.24.5'
-  for mod_file in go_mod_files:
+  for mod_file in public_go_mod_files:
     mod_text = api.file.read_text('read %s' % mod_file, mod_file)
     # Exclude the conflicting standalone version of grpc/stats/opentelemetry.
     # We do this dynamically in all workspace go.mod files so that the Go module
@@ -124,6 +118,8 @@ def RunSteps(api: DEPS):
     if not match:
       raise api.step.StepFailure('Did not detect Go version for %s' % mod_file)
     go_version = max(go_version, match.group(1), key=parse)
+
+  public_go_kzip_loc = api.path.cache_dir / f'public_go_{kzip_name}'
 
   # KYTHE_ROOT_DIRECTORY makes sub modules relpath to build repo root.
   with api.golang(version=go_version), api.context(
@@ -152,6 +148,39 @@ def RunSteps(api: DEPS):
         'go.chromium.org/luci@v0.0.0-20260326213659-7c3f2951dea9=./infra/go/src/go.chromium.org/luci',
     ])
 
+    api.step('generate go kzip', [
+        kythe_bin, '--corpus',
+        'chromium.googlesource.com/infra/infra_superproject//main',
+        '--use_default_corpus_for_stdlib=true',
+        '--use_default_corpus_for_deps=true', '--output', public_go_kzip_loc
+    ] + targets)
+
+  kzips_to_merge = [public_go_kzip_loc]
+
+  # Compile internal go module independently if present.
+  internal_mod_file = checkout_dir / 'infra_internal/go/src/infra_internal/go.mod'
+  if internal and api.path.exists(internal_mod_file):
+    internal_mod_text = api.file.read_text('read %s' % internal_mod_file,
+                                           internal_mod_file)
+    internal_mod_text += '\nexclude google.golang.org/grpc/stats/opentelemetry v0.0.0-20240907200651-3ffb98b2c93a\n'
+    api.file.write_text('exclude stats/opentelemetry in %s' % internal_mod_file,
+                        internal_mod_file, internal_mod_text)
+
+    match = MODULE_RE.search(internal_mod_text)
+    if not match:
+      raise api.step.StepFailure('Did not detect Modules for %s' %
+                                 internal_mod_file)
+    internal_target = match.group(1) + '/...'
+
+    match = GO_VERSION_RE.search(internal_mod_text)
+    if not match:
+      raise api.step.StepFailure('Did not detect Go version for %s' %
+                                 internal_mod_file)
+    internal_go_version = match.group(1)
+
+    internal_mod_dir = api.path.dirname(internal_mod_file)
+    internal_go_kzip_loc = api.path.cache_dir / f'internal_go_{kzip_name}'
+
     vnames_config = [{
         "pattern": "infra_internal/(.*)",
         "vname": {
@@ -163,16 +192,25 @@ def RunSteps(api: DEPS):
     }]
     vnames_config_json = api.json.dumps(vnames_config)
 
-    api.step('generate go kzip', [
-        kythe_bin, '--corpus',
-        'chromium.googlesource.com/infra/infra_superproject//main',
-        '--use_default_corpus_for_stdlib=true',
-        '--use_default_corpus_for_deps=true', '--rules',
-        api.raw_io.input_text(vnames_config_json,
-                              suffix='.json'), '--output', kzip_loc
-    ] + targets)
-
-  final_kzip_loc = kzip_loc
+    with api.golang(version=internal_go_version), api.context(
+        cwd=internal_mod_dir,
+        env={
+            'GOWORK': 'off',
+            'KYTHE_ROOT_DIRECTORY': checkout_dir,
+        }):
+      api.step('generate internal go kzip', [
+          kythe_bin,
+          '--corpus',
+          'chromium.googlesource.com/infra/infra_superproject//main',
+          '--use_default_corpus_for_stdlib=true',
+          '--use_default_corpus_for_deps=true',
+          '--rules',
+          api.raw_io.input_text(vnames_config_json, suffix='.json'),
+          '--output',
+          internal_go_kzip_loc,
+          internal_target,
+      ])
+    kzips_to_merge.append(internal_go_kzip_loc)
 
   try:
     extractor_out_dir = api.path.cleanup_dir / 'extractor_output'
@@ -216,14 +254,18 @@ def RunSteps(api: DEPS):
               checkout_dir,
           ] + json_files,
       )
-
-      final_kzip_loc = api.codesearch.run_kzip_merge(kzip_loc, python_kzip_loc)
+      kzips_to_merge.append(python_kzip_loc)
 
   except api.step.StepFailure as exc:
     if api.step.active_result:
       result = api.step.active_result
       result.presentation.step_text = 'python kzip extraction failed, skipping'
       result.presentation.logs['exception'] = str(exc).splitlines()
+
+  if len(kzips_to_merge) > 1:
+    final_kzip_loc = api.codesearch.run_kzip_merge(*kzips_to_merge)
+  else:
+    final_kzip_loc = kzips_to_merge[0]
 
   api.gsutil.upload(
       name='upload kythe index pack',
@@ -313,10 +355,6 @@ def GenTests(api: TEST_DEPS):
           'infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
           'infra/go/src/go.chromium.org/luci',
           'infra/go/src/infra',
-      ]),
-      api.post_process(StepCommandContains, 'generate go kzip', [
-          '--rules',
-          '[{"pattern": "infra_internal/(.*)", "vname": {"corpus": "chromium.googlesource.com/infra/infra_superproject//main", "path": "infra_internal/@1@"}}]',
       ]),
       api.post_process(StepCommandContains, 'generate go kzip', [
           'go.chromium.org/chromiumos/config/go/...',
@@ -525,6 +563,56 @@ def GenTests(api: TEST_DEPS):
           api.path.cache_dir / 'infra_superproject',
           api.path.cache_dir / 'infra_superproject' /
           'infra/go/src/infra/go.mod',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra_internal/go/src/infra_internal/go.mod',
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/infra
+              go 1.24.0
+              ''')),
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module infra_internal
+              go 1.25.0
+              ''')),
+      ),
+      api.post_process(StepCommandContains, 'generate go kzip', [
+          'go.chromium.org/infra/...',
+      ]),
+      api.post_process(StepCommandContains, 'generate internal go kzip', [
+          'infra_internal/...',
+      ]),
+      api.post_process(StepCommandContains, 'generate internal go kzip', [
+          '--rules',
+          '[{"pattern": "infra_internal/(.*)", "vname": {"corpus": "chromium.googlesource.com/infra/infra_superproject//main", "path": "infra_internal/@1@"}}]',
+      ]),
+      api.post_process(StepCommandContains, 'merge kzips', [
+          'merge',
+          '--encoding',
+          'PROTO',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'internal_no_internal_mod_file',
+      api.buildbucket.try_build(
+          project='infra-internal',
+          builder='generic tester',
+          git_repo='https://chrome-internal.googlesource.com/infra/infra_superproject'
+      ) + api.properties(internal=True),
+      api.platform('linux', 64),
+      api.path.exists(
+          api.path.cache_dir / 'infra_superproject',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra/go/src/infra/go.mod',
       ),
       api.step_data(
           'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
@@ -535,5 +623,75 @@ def GenTests(api: TEST_DEPS):
               ''')),
       ),
       api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'malformed_internal_mod_files',
+      api.buildbucket.try_build(
+          project='infra-internal',
+          builder='generic tester',
+          git_repo='https://chrome-internal.googlesource.com/infra/infra_superproject'
+      ) + api.properties(internal=True),
+      api.platform('linux', 64),
+      api.path.exists(
+          api.path.cache_dir / 'infra_superproject',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra/go/src/infra/go.mod',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra_internal/go/src/infra_internal/go.mod',
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/infra
+              go 1.24.0
+              ''')),
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              go 1.25.0
+              ''')),
+      ),
+      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'malformed_internal_mod_version',
+      api.buildbucket.try_build(
+          project='infra-internal',
+          builder='generic tester',
+          git_repo='https://chrome-internal.googlesource.com/infra/infra_superproject'
+      ) + api.properties(internal=True),
+      api.platform('linux', 64),
+      api.path.exists(
+          api.path.cache_dir / 'infra_superproject',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra/go/src/infra/go.mod',
+          api.path.cache_dir / 'infra_superproject' /
+          'infra_internal/go/src/infra_internal/go.mod',
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module go.chromium.org/infra
+              go 1.24.0
+              ''')),
+      ),
+      api.step_data(
+          'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
+          api.file.read_text(
+              textwrap.dedent('''
+              module infra_internal
+              ''')),
+      ),
+      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
