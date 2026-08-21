@@ -176,6 +176,7 @@ _AddBuildSpec('android-desktop-arm-builder-perf', 'android', target_bits=64)
 # The config for the following builders is now specified src-side in
 # //internal/infra/config/subprojects/chrome/ci/chromium.perf.star
 # * android_arm64_high_end-builder-perf-pgo
+# * android_arm64_high_end-builder-perf-pgo-heapdump
 # * android-pixel4_webview-perf-pgo
 # * android-pixel6-perf-pgo
 # * android-pixel10_webview-perf-pgo

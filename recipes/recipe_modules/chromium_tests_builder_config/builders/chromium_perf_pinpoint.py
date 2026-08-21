@@ -156,6 +156,10 @@ _AddBuildSpec('android_arm64_high_end-builder-perf', 'android', target_bits=64)
 # LUCI builder
 _AddBuildSpec(
     'android_arm64_high_end-builder-perf-pgo', 'android', target_bits=64)
+_AddBuildSpec(
+    'android_arm64_high_end-builder-perf-pgo-heapdump',
+    'android',
+    target_bits=64)
 
 _AddBuildSpec('win64-builder-perf', 'win')
 _AddBuildSpec('win64-builder-perf-pgo', 'win')
@@ -294,6 +298,8 @@ _AddPinpointTestSpec('android-pixel4a_power-perf-pgo', 'android',
                      'android_arm64-builder-perf-pgo')
 _AddPinpointTestSpec('android-pixel6-perf-pgo', 'android',
                      'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel10_webview-perf-pgo-heapdump', 'android',
+                     'android_arm64_high_end-builder-perf-pgo-heapdump')
 _AddPinpointTestSpec('android-pixel6-pro-perf-pgo', 'android',
                      'android_arm64_high_end-builder-perf-pgo')
 _AddPinpointTestSpec('android-pixel9-perf', 'android',
