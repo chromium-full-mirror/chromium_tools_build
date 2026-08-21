@@ -290,7 +290,7 @@ def GenTests(api: recipe_test_api.RecipeTestApi):
       api.post_process(
           post_process.MustRun,
           'processing generated orderfile.register'
-          ' chromium/android_webview/tools/orderfiles/arm64',
+          ' chromium/android_webview/tools/orderfiles/arm64_webview_pgo',
       ),
       api.post_process(post_process.DropExpectation),
   )
