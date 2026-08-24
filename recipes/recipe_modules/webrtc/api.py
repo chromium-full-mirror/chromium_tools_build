@@ -325,7 +325,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         self.m.step('build android archive', cmd)
       self.m.file.rmtree('Remove android archive dir', build_dir)
 
-    if not self.m.tryserver.is_tryserver and not self.m.runtime.is_experimental:
+    if not self.m.tryserver.is_tryserver:
       self.m.gsutil.upload(
           source_dir / 'libwebrtc.aar',
           'chromium-webrtc',
@@ -344,7 +344,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     apk_upload_url = 'client.webrtc/%s/AppRTCMobile_apk_%s.zip' % (
         builder_id.builder, self.revision_number)
-    if not self.m.runtime.is_experimental:
+    if not self.m.tryserver.is_tryserver:
       self.m.gsutil.upload(
           zip_path,
           _WEBRTC_GS_BUCKET,

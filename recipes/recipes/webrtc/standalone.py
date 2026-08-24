@@ -19,6 +19,7 @@ DEPS = [
     'chromium_swarming',
     'depot_tools/tryserver',
     'gn',
+    'recipe_engine/led',
     'recipe_engine/platform',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -81,9 +82,9 @@ def RunSteps(api):
     builder_spec = builders.BUILDERS_DB[builder_id]
     if builder_spec.binary_size_files:
       api.webrtc.get_binary_sizes(builder_spec.binary_size_files, build_dir)
-    if builder_spec.build_android_archive:
+    if not api.led.launched_by_led and builder_spec.build_android_archive:
       api.webrtc.build_android_archive(source_dir)
-    if builder_spec.archive_apprtc:
+    if not api.led.launched_by_led and builder_spec.archive_apprtc:
       api.webrtc.package_apprtcmobile(build_dir, builder_id)
     if builder_spec.include_cleaner:
       return api.webrtc.include_cleaner(source_dir, build_dir)
