@@ -147,15 +147,20 @@ def GetChangedFiles(api: recipe_api.RecipeApi,
 
 def FormatGnArgs(properties: recipe_api.Properties) -> str:
   """Takes a list of properties and maps them to string gn arguments."""
+
+  # Legacy fallback for builders that have not yet been updated.
   gn_args = {p: properties[p] for p in GN_PROPERTIES if p in properties}
 
-  # use_coverage is a legacy name, Chromium uses use_clang_coverage.
-  if gn_args.get('use_coverage'):
-    gn_args['use_clang_coverage'] = gn_args.pop('use_coverage')
+  # We are updating our builders to pass GN args as a single string property.
+  # Format: "arg1=value1,arg2=value2"
+  # Note: This does not handle embedded commas in values.
+  if 'gn_args' in properties:
+    gn_args.update(
+        dict(arg.split('=') for arg in properties['gn_args'].split(',')))
 
   def format_arg(arg, value):
-    if isinstance(value, str):
-      return f'{arg}="{value}"'
+    if isinstance(value, str) and value.lower() not in ('true', 'false'):
+      return f'{arg}="{value.strip(chr(34))}"'
     return f'{arg}={str(value).lower()}'
 
   return ' '.join(format_arg(k, v) for k, v in gn_args.items())
@@ -466,6 +471,7 @@ def GenTests(api: recipe_api.RecipeTestApi):
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
+          gn_args='is_asan=true,use_coverage=true',
           is_asan=True,
           use_coverage=True,
           is_valid_coverage_test=True,
@@ -480,6 +486,7 @@ def GenTests(api: recipe_api.RecipeTestApi):
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
+          gn_args='is_asan=true,use_coverage=true',
           is_asan=True,
           use_coverage=True,
           is_valid_coverage_test=True,
@@ -495,20 +502,27 @@ def GenTests(api: recipe_api.RecipeTestApi):
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
-          is_asan=True, use_coverage=True, is_valid_coverage_test=True),
+          gn_args='is_asan=true,use_coverage=true',
+          is_asan=True,
+          use_coverage=True,
+          is_valid_coverage_test=True),
       api.expect_status('FAILURE'),
   )
   yield api.test(
       'linux_x64_coverage_failed_coverage_init',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_asan=True, use_coverage=True),
+      api.properties(
+          gn_args='is_asan=true,use_coverage=true',
+          is_asan=True,
+          use_coverage=True),
   )
   yield api.test(
       'linux_x64_coverage_full_repo_coverage',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'ci'),
       api.properties(
+          gn_args='is_asan=true,use_coverage=true',
           is_asan=True,
           is_ci=True,
           use_coverage=True,
@@ -523,44 +537,55 @@ def GenTests(api: recipe_api.RecipeTestApi):
       'linux_x64',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_asan=True),
+      api.properties(gn_args='is_asan=true', is_asan=True),
   )
   yield api.test(
       'linux_x64_tsan_rel',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=False, is_tsan=True),
+      api.properties(gn_args='is_debug=false,is_tsan=true'),
   )
   yield api.test(
       'linux_x64_msan_rel',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=False, is_msan=True),
+      api.properties(gn_args='is_debug=false,is_msan=true'),
   )
   yield api.test(
       'linux_x64_gcc',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_clang=False, use_custom_libcxx=False),
+      api.properties(gn_args='is_clang=false,use_custom_libcxx=false'),
   )
-  yield api.test('linux_arm64', api.platform('linux', 64),
-                 api.buildbucket.try_build('openscreen', 'try'),
-                 api.properties(is_component_build=False, target_cpu='arm64'))
   yield api.test(
-      'linux_arm64_ci', api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'ci'),
-      api.properties(is_component_build=False, target_cpu='arm64', is_ci=True))
-  yield api.test(
-      'linux_arm64_cast_receiver', api.platform('linux', 64),
+      'linux_arm64',
+      api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
-          is_component_build=False,
+          target_cpu='arm64',
+          gn_args='is_component_build=false,target_cpu=arm64'),
+  )
+  yield api.test(
+      'linux_arm64_ci',
+      api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'ci'),
+      api.properties(
+          target_cpu='arm64',
+          is_ci=True,
+          gn_args='is_component_build=false,target_cpu=arm64'),
+  )
+  yield api.test(
+      'linux_arm64_cast_receiver',
+      api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'try'),
+      api.properties(
           target_cpu='arm64',
           cast_allow_developer_certificate=True,
-          have_ffmpeg=True,
-          have_libsdl2=True,
-          have_libopus=True,
-          have_libvpx=True))
+          gn_args=('cast_allow_developer_certificate=true,have_ffmpeg=true,'
+                   'have_libopus=true,have_libsdl2=true,have_libvpx=true,'
+                   'is_component_build=false,target_cpu=arm64'),
+      ),
+  )
 
   failed_result = api.swarming.task_result(
       id='0',
@@ -571,7 +596,9 @@ def GenTests(api: recipe_api.RecipeTestApi):
       'linux_arm64_with_collect_COMPLETED_and_failed',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_component_build=False, target_cpu='arm64'),
+      api.properties(
+          target_cpu='arm64',
+          gn_args='is_component_build=false,target_cpu=arm64'),
       api.override_step_data('collect swarming tests',
                              api.swarming.collect([failed_result])),
       api.expect_status('FAILURE'),
@@ -585,7 +612,9 @@ def GenTests(api: recipe_api.RecipeTestApi):
       'linux_arm64_with_collect_TIMED_OUT',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_component_build=False, target_cpu='arm64'),
+      api.properties(
+          target_cpu='arm64',
+          gn_args='is_component_build=false,target_cpu=arm64'),
       api.override_step_data('collect swarming tests',
                              api.swarming.collect([timeout_result])),
       api.expect_status('FAILURE'),
@@ -597,7 +626,9 @@ def GenTests(api: recipe_api.RecipeTestApi):
       'linux_arm64_with_collect_BOT_DIED',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_component_build=False, target_cpu='arm64'),
+      api.properties(
+          target_cpu='arm64',
+          gn_args='is_component_build=false,target_cpu=arm64'),
       api.override_step_data('collect swarming tests',
                              api.swarming.collect([died_result])),
       api.expect_status('INFRA_FAILURE'),
@@ -606,7 +637,7 @@ def GenTests(api: recipe_api.RecipeTestApi):
       'mac_arm64',
       api.platform('mac', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(target_cpu='arm64'),
+      api.properties(target_cpu='arm64', gn_args='target_cpu=arm64'),
   )
   yield api.test(
       'win_x64',

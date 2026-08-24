@@ -275,7 +275,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_component_build=false target_cpu=\"arm64\""
+      "--args=target_cpu=\"arm64\" is_component_build=false"
     ],
     "cwd": "[START_DIR]/openscreen",
     "luci_context": {

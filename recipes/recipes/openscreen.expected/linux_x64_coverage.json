@@ -388,7 +388,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_asan=true use_clang_coverage=true"
+      "--args=is_asan=true use_coverage=true"
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
