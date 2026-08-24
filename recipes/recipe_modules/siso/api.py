@@ -345,12 +345,13 @@ class SisoApi(recipe_api.RecipeApi):
             abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
             if not self.m.path.exists(abs_path):
               continue
-            gs_filename = '%s/%s' % (gs_foldername, file)
             self.m.futures.spawn(
                 self.m.gsutil.upload,
                 abs_path,
                 _GS_BUCKET,
-                gs_filename,
+                # gs_foldername should end with '/' to avoid
+                # storage.objects.list API call in gsutil.
+                gs_foldername + '/',
                 # Applies gzip transport encoding.
                 args=['-J'],
                 # Set text/plain for browser to detect the file type.
