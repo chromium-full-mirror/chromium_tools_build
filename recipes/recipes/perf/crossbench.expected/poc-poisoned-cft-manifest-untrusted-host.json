@@ -123,6 +123,13 @@
   },
   {
     "cmd": [],
+    "name": "Download Chrome Stable 131.0.6778.204",
+    "~followup_annotations": [
+      "@@@STEP_EXCEPTION@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "RECIPE CRASH (Uncaught exception)",
     "~followup_annotations": [
       "@@@STEP_EXCEPTION@@@",
@@ -144,14 +151,16 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 39, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 272, in download_chrome",
-      "    raise NotImplementedError('Unsupported platform: %s' % (config_key,))",
-      "NotImplementedError: Unsupported platform: ('linux', 'intel', 32)"
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 286, in download_chrome",
+      "    _validate_cft_url(url, version, cft_platform, 'chrome')",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 226, in _validate_cft_url",
+      "    raise ValueError(",
+      "ValueError: Untrusted CFT URL 'https://evil.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip': expected https://storage.googleapis.com/..."
     ]
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: NotImplementedError(\"Unsupported platform: ('linux', 'intel', 32)\")"
+      "humanReason": "Uncaught Exception: ValueError(\"Untrusted CFT URL 'https://evil.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip': expected https://storage.googleapis.com/...\")"
     },
     "name": "$result"
   }

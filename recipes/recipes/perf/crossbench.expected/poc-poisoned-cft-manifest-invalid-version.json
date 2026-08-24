@@ -107,21 +107,6 @@
     "name": "Get the latest Chrome Stable binary URL to download"
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CACHE]/builder/chrome/Stable/131.0.6778.204"
-    ],
-    "infra_step": true,
-    "name": "Init cache if not exists"
-  },
-  {
     "cmd": [],
     "name": "RECIPE CRASH (Uncaught exception)",
     "~followup_annotations": [
@@ -144,14 +129,16 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 39, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 272, in download_chrome",
-      "    raise NotImplementedError('Unsupported platform: %s' % (config_key,))",
-      "NotImplementedError: Unsupported platform: ('linux', 'intel', 32)"
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 263, in download_chrome",
+      "    _validate_cft_version(version)",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 220, in _validate_cft_version",
+      "    raise ValueError(f'Invalid Chrome for Testing version: {version!r}')",
+      "ValueError: Invalid Chrome for Testing version: 'invalid_version'"
     ]
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: NotImplementedError(\"Unsupported platform: ('linux', 'intel', 32)\")"
+      "humanReason": "Uncaught Exception: ValueError(\"Invalid Chrome for Testing version: 'invalid_version'\")"
     },
     "name": "$result"
   }

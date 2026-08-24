@@ -123,6 +123,13 @@
   },
   {
     "cmd": [],
+    "name": "Download Chrome Stable 131.0.6778.204",
+    "~followup_annotations": [
+      "@@@STEP_EXCEPTION@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "RECIPE CRASH (Uncaught exception)",
     "~followup_annotations": [
       "@@@STEP_EXCEPTION@@@",
@@ -144,14 +151,14 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 39, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 272, in download_chrome",
-      "    raise NotImplementedError('Unsupported platform: %s' % (config_key,))",
-      "NotImplementedError: Unsupported platform: ('linux', 'intel', 32)"
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 283, in download_chrome",
+      "    raise ValueError(",
+      "ValueError: No CFT download URL found for platform 'linux64'"
     ]
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: NotImplementedError(\"Unsupported platform: ('linux', 'intel', 32)\")"
+      "humanReason": "Uncaught Exception: ValueError(\"No CFT download URL found for platform 'linux64'\")"
     },
     "name": "$result"
   }
