@@ -64,6 +64,8 @@ def _BuildSpec(config_name,
       'checkout_pgo_profiles',
       'chromium_with_telemetry_dependencies',
   ]
+  if extra_gclient_apply_config:
+    kwargs['gclient_apply_config'] += list(extra_gclient_apply_config)
 
   return builder_spec.BuilderSpec.create(**kwargs)
 
@@ -181,6 +183,7 @@ _AddBuildSpec(
     'linux-arm-builder-perf',
     'linux',
     target_arch='arm',
+    gclient_apply_config=['arm64'],
 )
 _AddBuildSpec('linux-builder-perf', 'linux')
 _AddBuildSpec('linux-builder-perf-pgo', 'linux')

@@ -206,6 +206,7 @@ _AddBuildSpec(
     'linux-arm-builder-perf',
     'linux',
     target_arch='arm',
+    gclient_apply_config=['arm64'],
 )
 _AddBuildSpec('linux-builder-perf', 'linux')
 _AddBuildSpec('linux-builder-perf-pgo', 'linux')
