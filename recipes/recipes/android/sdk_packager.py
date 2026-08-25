@@ -33,18 +33,6 @@ PROPERTIES = sdk_packager.InputProperties
 # The sdk root we use to install the packages
 SDK_ROOT = ('third_party', 'android_sdk', 'public')
 
-# Mapping of OS & arch values, from proto to one that's accepted by sdkmanager.
-# The proto values are more aligned with the name scheme on the src side.
-OS_MAPPING = {
-    'linux': 'linux',
-    'mac': 'macosx',
-    'windows': 'windows',
-}
-ARCH_MAPPING = {
-    'x86_64': 'x86_64',
-    'arm64': 'aarch64',
-}
-
 
 def RunSteps(api, properties):
   api.gclient.set_config('chromium')
@@ -52,11 +40,12 @@ def RunSteps(api, properties):
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
 
-  cmdline_tools = source_dir.joinpath(*SDK_ROOT, 'cmdline-tools', 'latest')
-  sdk_manager = cmdline_tools.joinpath('bin', 'sdkmanager')
-  if not api.path.exists(sdk_manager):
-    summary_markdown = (
-        'Unable to find sdkmanager at path `%s`' % str(sdk_manager))
+  sdk_root = source_dir.joinpath(*SDK_ROOT)
+  cmdline_tools = sdk_root.joinpath('cmdline-tools', 'latest')
+  android_cli = cmdline_tools.joinpath('bin', 'android')
+  if not api.path.exists(android_cli):
+    summary_markdown = ('Unable to find android_cli at path `%s`' %
+                        str(android_cli))
     return result_pb.RawResult(
         status=common_pb.INFRA_FAILURE,
         summary_markdown=summary_markdown)
@@ -64,6 +53,13 @@ def RunSteps(api, properties):
   temp_dir = api.path.mkdtemp('tmp')
   temp_cmdline_tools = temp_dir.joinpath('cmdline-tools')
   api.file.copytree('copy cmdline-tools', cmdline_tools, temp_cmdline_tools)
+
+  # Remove all existing sdk packages to avoid errors during migration from
+  # sdkmanager to android cli. See https://crbug.com/550431997#comment3
+  with api.step.nest('remove existing packages'):
+    children = api.file.listdir('list existing packages', sdk_root)
+    for child in children:
+      api.file.rmtree(f'remove {child}', child)
 
   # Use dict to keep the insertion order.
   package_dict = defaultdict(list)
@@ -107,26 +103,21 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
   env = {
       # Use the JDK from chromium repo to avoid out-of-date JDK on bot.
       'JAVA_HOME': str(source_dir.joinpath('third_party', 'jdk', 'current')),
-      # See https://developer.android.com/tools/variables#repo_os_override
-      'REPO_OS_OVERRIDE': OS_MAPPING[target_os],
-      # sdkmanager reads the JVM property "os.arch" to set the arch.
-      # Override it via SDKMANAGER_OPTS. See https://bit.ly/3Qp7DzD
-      'SDKMANAGER_OPTS': '-Dos.arch=%s' % ARCH_MAPPING[target_arch],
   }
-  sdk_manager = cmdline_tools_dir.joinpath('bin', 'sdkmanager')
+  android_cli = cmdline_tools_dir.joinpath('bin', 'android')
   sdk_root = source_dir.joinpath(*SDK_ROOT)
-  channel_value = sdk_packager.SdkChannel.Value(channel)
+  sdk_cmd = [android_cli, f'--sdk={sdk_root}', 'sdk']
 
   packages_by_name = {}
   with api.step.nest('package versions'):
-    list_cmd = [
-        sdk_manager, '--list', '--verbose',
-        '--sdk_root=%s' % sdk_root,
-        '--channel=%d' % channel_value
-    ]
+    list_cmd = ['list', '--all']
+    if channel == 'BETA':
+      list_cmd.append('--beta')
+    elif channel == 'CANARY':
+      list_cmd.append('--canary')
     with api.context(env=env):
       list_output = api.step(
-          'list', list_cmd, stdout=api.raw_io.output_text()).stdout
+          'list', sdk_cmd + list_cmd, stdout=api.raw_io.output_text()).stdout
 
     parse_result = api.step('parse', [
         'python3',
@@ -139,7 +130,7 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
     if not parse_result.json.output:
       return result_pb.RawResult(
           status=common_pb.INFRA_FAILURE,
-          summary_markdown='Unable to parse sdkmanager output.')
+          summary_markdown='Unable to parse android cli output.')
     for p in parse_result.json.output.get('available', []):
       packages_by_name[p['name']] = p
 
@@ -157,28 +148,25 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
     with api.step.nest(package.sdk_package_name):
       # Uninstall first to remove potential installation from previous attempt.
       uninstall_cmd = [
-          sdk_manager,
-          '--uninstall',
-          '--verbose',
-          '--sdk_root=%s' % sdk_root,
-          '--channel=%d' % channel_value,
+          'remove',
           package.sdk_package_name,
       ]
       with api.context(env=env):
-        api.step('cleanup', uninstall_cmd)
+        api.step('cleanup', sdk_cmd + uninstall_cmd)
 
-      install_cmd = [
-          sdk_manager,
-          '--install',
-          '--verbose',
-          '--sdk_root=%s' % sdk_root,
-          '--channel=%d' % channel_value,
-          package.sdk_package_name,
-      ]
+      install_cmd = ['install']
+      if channel == 'BETA':
+        install_cmd.append('--beta')
+      elif channel == 'CANARY':
+        install_cmd.append('--canary')
+
+      install_cmd.append(f'--platform={target_os}_{target_arch}')
+      install_cmd.append(package.sdk_package_name)
+
       with api.context(env=env):
         api.step(
             'install',
-            install_cmd,
+            sdk_cmd + install_cmd,
             # Accept the license agreement, if necessary.
             stdin=api.raw_io.input_text('y'))
       tags = {
@@ -195,7 +183,6 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
         # to a single instance (a version tag can match multiple instances).
         refs.append('version_%s' % package_version)
       api.cipd.create_from_yaml(cipd_yaml, tags=tags, refs=refs)
-
 
 
 def GenTests(api):
@@ -296,12 +283,17 @@ def GenTests(api):
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-sdk-packager'),
+      api.step_data(
+          'remove existing packages.list existing packages',
+          api.file.listdir([
+              '[CACHE]/builder/src/third_party/android_sdk/public/platforms'
+          ])),
       api.post_process(post_process.MustRun, 'copy cmdline-tools'),
       emulator_package_properties,
       api.path.exists(
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
                                          'cmdline-tools', 'latest', 'bin',
-                                         'sdkmanager'),
+                                         'android'),
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
                                          'emulator.yaml'),
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
@@ -344,7 +336,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'no-sdkmanager',
+      'no-android-cli',
       api.buildbucket.ci_build(
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
@@ -364,7 +356,7 @@ def GenTests(api):
       api.path.exists(
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
                                          'cmdline-tools', 'latest', 'bin',
-                                         'sdkmanager')),
+                                         'android')),
       api.override_step_data(
           'Process STABLE channel for linux x86_64.package versions.list',
           stdout=api.raw_io.output_text(
@@ -373,7 +365,7 @@ def GenTests(api):
               '''))),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.SummaryMarkdown,
-                       'Unable to parse sdkmanager output.'),
+                       'Unable to parse android cli output.'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -387,7 +379,7 @@ def GenTests(api):
       api.path.exists(
           api.path.checkout_dir.joinpath('third_party', 'android_sdk', 'public',
                                          'cmdline-tools', 'latest', 'bin',
-                                         'sdkmanager')),
+                                         'android')),
       package_version_stable_steps(),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.SummaryMarkdownRE,

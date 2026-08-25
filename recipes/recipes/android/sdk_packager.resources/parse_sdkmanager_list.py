@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-"""Parses the output of `sdkmanager --list --verbose` into a JSON.
+"""Parses the output of `android sdk list` into a JSON.
 
 The emitted JSON takes the following form:
 
@@ -11,18 +10,16 @@ The emitted JSON takes the following form:
     'available': [
       {
         'name': '{package name}',
-        'descripition': '{package description}',
-        'version', '{package version}',
-        'installed location': null
+        'description': '{package description}',
+        'version': '{package version}'
       },
       ... # additional available packages
     ],
     'installed': [
       {
         'name': '{package name}',
-        'descripition': '{package description}',
-        'version', '{package version}',
-        'installed location': '/path/to/installed/location'
+        'description': '{package description}',
+        'version': '{package version}'
       },
       ... # additional installed packages
     ]
@@ -33,61 +30,29 @@ If the provided input cannot be parsed, no JSON will be emitted.
 
 import argparse
 import json
-import re
 import os
+import re
 import sys
 
-
-_KNOWN_PACKAGE_INFO_TYPES = [
-    'description', 'version', 'installed location']
-
-PACKAGE_INFO_RE = re.compile(r'\s+([a-zA-Z ]+):\s+(.*)$')
-PACKAGE_NAME_RE = re.compile(r'^[a-zA-Z0-9;\.\-_]+$')
-PACKAGES_HEADER_RE = re.compile(
-    r'^([a-z]+) packages:\s*$', flags=re.IGNORECASE)
+PACKAGE_LINE_RE = re.compile(
+    r'^\s*(\S+)\s+(\S+)(?:\s*\(\+\d+\))?(?:\s*->\s*(\S+)(?:\s*\(\+\d+\))?)?(?:\s+(.*))?$'
+)
+PACKAGES_HEADER_RE = re.compile(r'^([a-z]+) packages:\s*$', flags=re.IGNORECASE)
 SEPARATOR_RE = re.compile(r'^[\s-]+$')
-UPDATES_HEADER_RE = re.compile(
-    r'([a-z]+) updates:', flags=re.IGNORECASE)
+UPDATES_HEADER_RE = re.compile(r'([a-z]+)?\s*updates:\s*$', flags=re.IGNORECASE)
 
 
-def ParseSdkManagerList(raw):
-
+def ParseSdkList(raw):
   available_packages = []
   installed_packages = []
 
-  current_package = {}
   current_section = None
 
   for line in raw.splitlines():
-    if not line:
-      if current_section is not None and current_package:
-        current_section.append(current_package)
-        current_package = {}
+    if not line.strip():
       continue
 
-    m = SEPARATOR_RE.match(line)
-    if m:
-      continue
-
-    m = PACKAGE_INFO_RE.match(line)
-    if m:
-      info_type = m.group(1).lower()
-      info = m.group(2)
-      if info_type in _KNOWN_PACKAGE_INFO_TYPES:
-        if current_package:
-          current_package[info_type] = info
-        else:
-          print('Orphaned package description: "%s"' % line)
-      continue
-
-    m = PACKAGE_NAME_RE.match(line)
-    if m:
-      current_package = {
-          'name': m.group(0),
-          'description': None,
-          'version': None,
-          'installed location': None,
-      }
+    if SEPARATOR_RE.match(line):
       continue
 
     m = PACKAGES_HEADER_RE.match(line)
@@ -99,6 +64,7 @@ def ParseSdkManagerList(raw):
         current_section = installed_packages
       else:
         print('Unrecognized header name: "%s"' % header_name)
+        current_section = None
       continue
 
     m = UPDATES_HEADER_RE.match(line)
@@ -106,10 +72,19 @@ def ParseSdkManagerList(raw):
       current_section = None
       continue
 
-    # Ignore otherwise.
-
-  if current_section is not None and current_package:
-    current_section.append(current_package)
+    if current_section is not None:
+      m = PACKAGE_LINE_RE.match(line)
+      if m:
+        name = m.group(1)
+        installed_ver = m.group(2)
+        desc = (m.group(4) or '').strip() or None
+        current_section.append({
+            'name': name,
+            'description': desc,
+            'version': installed_ver,
+        })
+      else:
+        print('Unrecognized package line: "%s"' % line)
 
   return {
       'available': available_packages,
@@ -120,18 +95,22 @@ def ParseSdkManagerList(raw):
 def main(raw_args):
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--raw-input', required=True, type=os.path.realpath,
-      help='Path from which raw output from `sdkmanager --list --verbose` '
-           'will be read.')
+      '--raw-input',
+      required=True,
+      type=os.path.realpath,
+      help='Path from which raw output from `android sdk list` '
+      'will be read.')
   parser.add_argument(
-      '--json-output', required=True, type=os.path.realpath,
+      '--json-output',
+      required=True,
+      type=os.path.realpath,
       help='Path to which the output JSON will be written.')
   args = parser.parse_args(raw_args)
 
   with open(args.raw_input) as raw_input_file:
     raw = raw_input_file.read()
 
-  parsed = ParseSdkManagerList(raw)
+  parsed = ParseSdkList(raw)
   with open(args.json_output, 'w') as json_output_file:
     json.dump(parsed, json_output_file)
 

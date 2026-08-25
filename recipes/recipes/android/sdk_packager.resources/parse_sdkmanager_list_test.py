@@ -1,109 +1,131 @@
 #!/usr/bin/env python3
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import os
 import sys
-import textwrap
 import unittest
 
 THIS_DIR = os.path.dirname(__file__)
 
-sys.path.insert(
-    0, os.path.abspath(os.path.join(THIS_DIR, '..', 'sdk_packager.resources')))
+sys.path.insert(0, THIS_DIR)
 import parse_sdkmanager_list
 
 
-class PackageInfoReTest(unittest.TestCase):
+def _format_package_line(name, version, description=None, update_version=None):
+  parts = [f'  {name:<88}']
+  if update_version:
+    parts.append(f'{version:<21}->        {update_version:<9}')
+  else:
+    parts.append(f'{version:<23}')
+  if description:
+    parts.append(f'{description:<80}')
+  return ''.join(parts)
+
+
+class PackageLineReTest(unittest.TestCase):
 
   def testValid(self):
-    description_line = '      Description: A sample package description'
-    m = parse_sdkmanager_list.PACKAGE_INFO_RE.match(description_line)
+    line = _format_package_line('emulator', '37.1.11', 'Android Emulator')
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
-    self.assertEqual('Description', m.group(1))
-    self.assertEqual('A sample package description', m.group(2))
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('37.1.11', m.group(2))
+    self.assertIsNone(m.group(3))
+    self.assertEqual('Android Emulator', m.group(4).strip())
+
+  def testValidWithArrow(self):
+    line = _format_package_line(
+        'emulator', '31.2.10', 'Android Emulator', update_version='37.1.11')
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    self.assertTrue(m)
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('31.2.10', m.group(2))
+    self.assertEqual('37.1.11', m.group(3))
+    self.assertEqual('Android Emulator', m.group(4).strip())
 
   def testValidWithTabs(self):
-    version_line = '\tVersion:\t1.2.3'
-    m = parse_sdkmanager_list.PACKAGE_INFO_RE.match(version_line)
+    line = '\temulator\t37.1.11\tAndroid Emulator'
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
-    self.assertEqual('Version', m.group(1))
-    self.assertEqual('1.2.3', m.group(2))
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('37.1.11', m.group(2))
+    self.assertEqual('Android Emulator', m.group(4).strip())
 
-
-class PackageNameReTest(unittest.TestCase):
-
-  def testNameNoSemicolons(self):
-    name_line = 'emulator'
-    m = parse_sdkmanager_list.PACKAGE_NAME_RE.match(name_line)
+  def testValidWithTabsAndArrow(self):
+    line = '\temulator\t31.2.10\t->\t37.1.11\tAndroid Emulator'
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
-    self.assertEqual('emulator', m.group(0))
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('31.2.10', m.group(2))
+    self.assertEqual('37.1.11', m.group(3))
+    self.assertEqual('Android Emulator', m.group(4).strip())
 
-  def testNameWithSemicolons(self):
-    name_line = 'system-images;android-28;google_apis;x86'
-    m = parse_sdkmanager_list.PACKAGE_NAME_RE.match(name_line)
+  def testValidWithVersionPlusCount(self):
+    line = _format_package_line('platforms/android-34', '3.0.0 (+1)',
+                                'Android SDK Platform 34')
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
-    self.assertEqual('system-images;android-28;google_apis;x86', m.group(0))
+    self.assertEqual('platforms/android-34', m.group(1))
+    self.assertEqual('3.0.0', m.group(2))
+    self.assertEqual('Android SDK Platform 34', m.group(4).strip())
 
-  def testLeadingWhitespace(self):
-    name_line = '  emulator'
-    m = parse_sdkmanager_list.PACKAGE_NAME_RE.match(name_line)
-    self.assertFalse(m)
+  def testValidWithoutDescription(self):
+    line = '  emulator  37.1.11'
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    self.assertTrue(m)
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('37.1.11', m.group(2))
+    self.assertIsNone(m.group(4))
+
+  def testValidWithArrowWithoutDescription(self):
+    line = '  emulator  31.2.10  ->  37.1.11'
+    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    self.assertTrue(m)
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('31.2.10', m.group(2))
+    self.assertEqual('37.1.11', m.group(3))
+    self.assertIsNone(m.group(4))
 
 
-class ParseSdkManagerListTest(unittest.TestCase):
+class ParseSdkListTest(unittest.TestCase):
 
   def testSingleAvailablePackage(self):
-    raw = textwrap.dedent(
-        '''\
-        Available Packages:
-        ----------------------------
-        emulator
-            Description:      Android Emulator
-            Version:          29.0.11
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
+    raw = '\n'.join([
+        'Available packages:',
+        _format_package_line('emulator', '37.1.11', 'Android Emulator'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
     expected = {
-        'available': [
-            {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.11',
-                'installed location': None,
-            },
-        ],
+        'available': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '37.1.11',
+        },],
         'installed': [],
     }
     self.assertEqual(expected, result)
 
   def testMultipleAvailablePackages(self):
-    raw = textwrap.dedent(
-        '''\
-        Available Packages:
-        ----------------------------
-        emulator
-            Description:      Android Emulator
-            Version:          29.0.11
-
-        system-images;android-28;google_apis;x86
-            Description:      Google APIs Intel x86 Atom System Image
-            Version:          9
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
+    raw = '\n'.join([
+        'Available packages:',
+        _format_package_line('build-tools/36.0.0', '36.0.0',
+                             'Android SDK Build-Tools 36'),
+        _format_package_line('emulator', '37.1.11', 'Android Emulator'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
     expected = {
         'available': [
             {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.11',
-                'installed location': None,
+                'name': 'build-tools/36.0.0',
+                'description': 'Android SDK Build-Tools 36',
+                'version': '36.0.0',
             },
             {
-                'name': 'system-images;android-28;google_apis;x86',
-                'description': 'Google APIs Intel x86 Atom System Image',
-                'version': '9',
-                'installed location': None,
+                'name': 'emulator',
+                'description': 'Android Emulator',
+                'version': '37.1.11',
             },
         ],
         'installed': [],
@@ -111,160 +133,168 @@ class ParseSdkManagerListTest(unittest.TestCase):
     self.assertEqual(expected, result)
 
   def testSingleInstalledPackage(self):
-    raw = textwrap.dedent(
-        '''\
-        Installed packages:
-        ----------------------------
-        emulator
-            Description:        Android Emulator
-            Version:            29.0.11
-            Installed Location: /path/to/the/emulator
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
+    raw = '\n'.join([
+        'Installed packages:',
+        _format_package_line('emulator', '37.1.11', 'Android Emulator'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
     expected = {
         'available': [],
-        'installed': [
-            {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.11',
-                'installed location': '/path/to/the/emulator',
-            },
-        ],
+        'installed': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '37.1.11',
+        },],
+    }
+    self.assertEqual(expected, result)
+
+  def testInstalledPackageWithUpdate(self):
+    raw = '\n'.join([
+        'Installed packages:',
+        _format_package_line(
+            'emulator', '31.2.10', 'Android Emulator',
+            update_version='37.1.11'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
+    expected = {
+        'available': [],
+        'installed': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '31.2.10',
+        },],
     }
     self.assertEqual(expected, result)
 
   def testMultipleInstalledPackages(self):
-    raw = textwrap.dedent(
-        '''\
-        Installed packages:
-        ----------------------------
-        emulator
-            Description:        Android Emulator
-            Version:            29.0.11
-            Installed Location: /path/to/the/emulator
-
-        system-images;android-28;google_apis;x86
-            Description:        Google APIs Intel x86 Atom System Image
-            Version:            9
-            Installed Location: /system-images/android-28/google_apis/x86
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
+    raw = '\n'.join([
+        'Installed packages:',
+        _format_package_line('build-tools/36.0.0', '36.0.0',
+                             'Android SDK Build-Tools 36'),
+        _format_package_line(
+            'emulator', '31.2.10', 'Android Emulator',
+            update_version='37.1.11'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
     expected = {
         'available': [],
         'installed': [
             {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.11',
-                'installed location': '/path/to/the/emulator',
+                'name': 'build-tools/36.0.0',
+                'description': 'Android SDK Build-Tools 36',
+                'version': '36.0.0',
             },
             {
-                'name': 'system-images;android-28;google_apis;x86',
-                'description': 'Google APIs Intel x86 Atom System Image',
-                'version': '9',
-                'installed location':
-                    '/system-images/android-28/google_apis/x86',
+                'name': 'emulator',
+                'description': 'Android Emulator',
+                'version': '31.2.10',
             },
         ],
     }
     self.assertEqual(expected, result)
 
   def testAvailableAndInstalledPackages(self):
-    raw = textwrap.dedent(
-        '''\
-        Installed packages:
-        ----------------------------
-        system-images;android-28;google_apis;x86
-            Description:        Google APIs Intel x86 Atom System Image
-            Version:            9
-            Installed Location: /system-images/android-28/google_apis/x86
-
-        Available Packages:
-        ----------------------------
-        emulator
-            Description:      Android Emulator
-            Version:          29.0.11
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
+    raw = '\n'.join([
+        'Installed packages:',
+        _format_package_line('build-tools/36.0.0', '36.0.0',
+                             'Android SDK Build-Tools 36'),
+        '',
+        'Available packages:',
+        _format_package_line('emulator', '37.1.11', 'Android Emulator'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
     expected = {
-        'available': [
-            {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.11',
-                'installed location': None,
-            },
-        ],
-        'installed': [
-            {
-                'name': 'system-images;android-28;google_apis;x86',
-                'description': 'Google APIs Intel x86 Atom System Image',
-                'version': '9',
-                'installed location':
-                    '/system-images/android-28/google_apis/x86',
-            },
-        ],
+        'available': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '37.1.11',
+        },],
+        'installed': [{
+            'name': 'build-tools/36.0.0',
+            'description': 'Android SDK Build-Tools 36',
+            'version': '36.0.0',
+        },],
     }
     self.assertEqual(expected, result)
 
-  def testUpdatesAvailable(self):
-    # Ensures that the parser silently ignores any update information.
-    raw = textwrap.dedent(
-        '''\
-        Installed packages:
-        ----------------------------
-        emulator
-            Description:        Android Emulator
-            Version:            29.0.9
-            Installed Location: /path/to/the/emulator
-
-        Available Packages:
-        ----------------------------
-        emulator
-            Description:      Android Emulator
-            Version:          29.0.11
-
-        Available Updates:
-        ----------------------------
-        emulator
-            Installed Version: 29.0.9
-            Available Version: 29.0.11
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
+  def testPackageWithVersionPlusCount(self):
+    raw = '\n'.join([
+        'Available packages:',
+        _format_package_line('extras/google/Android_Emulator_Hypervisor_Driver',
+                             '2.2.0 (+1)',
+                             'Android Emulator hypervisor driver (installer)'),
+        _format_package_line('ndk-bundle', '22.1.7171670 (+13)', 'NDK'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
     expected = {
         'available': [
             {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.11',
-                'installed location': None,
+                'name': 'extras/google/Android_Emulator_Hypervisor_Driver',
+                'description': 'Android Emulator hypervisor driver (installer)',
+                'version': '2.2.0',
             },
-        ],
-        'installed': [
             {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '29.0.9',
-                'installed location': '/path/to/the/emulator',
+                'name': 'ndk-bundle',
+                'description': 'NDK',
+                'version': '22.1.7171670',
             },
         ],
-    }
-    self.assertEqual(expected, result)
-
-  def testOnlyInfo(self):
-    raw = textwrap.dedent(
-        '''\
-            Description: more stuff
-
-        Installed packages:
-        ''')
-    result = parse_sdkmanager_list.ParseSdkManagerList(raw)
-    expected = {
-        'available': [],
         'installed': [],
     }
     self.assertEqual(expected, result)
+
+  def testUpdatesIgnored(self):
+    raw = '\n'.join([
+        'Installed packages:',
+        _format_package_line('emulator', '31.2.10', 'Android Emulator'),
+        '',
+        'Available packages:',
+        _format_package_line('emulator', '37.1.11', 'Android Emulator'),
+        '',
+        'Available updates:',
+        _format_package_line('emulator', '31.2.10', update_version='37.1.11'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
+    expected = {
+        'available': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '37.1.11',
+        },],
+        'installed': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '31.2.10',
+        },],
+    }
+    self.assertEqual(expected, result)
+
+  def testUnrecognizedLinesIgnored(self):
+    raw = '\n'.join([
+        'Some banner text',
+        'Installed packages:',
+        _format_package_line('emulator', '37.1.11', 'Android Emulator'),
+    ])
+    result = parse_sdkmanager_list.ParseSdkList(raw)
+    expected = {
+        'available': [],
+        'installed': [{
+            'name': 'emulator',
+            'description': 'Android Emulator',
+            'version': '37.1.11',
+        },],
+    }
+    self.assertEqual(expected, result)
+
+  def testListAllFile(self):
+    list_all_path = os.path.join(THIS_DIR, 'list_all.txt')
+    if os.path.exists(list_all_path):
+      with open(list_all_path) as f:
+        result = parse_sdkmanager_list.ParseSdkList(f.read())
+      self.assertEqual(6, len(result['installed']))
+      self.assertEqual(615, len(result['available']))
+      self.assertEqual('emulator', result['installed'][2]['name'])
+      self.assertEqual('31.2.10', result['installed'][2]['version'])
 
 
 if __name__ == '__main__':
