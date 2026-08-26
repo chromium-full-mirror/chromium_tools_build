@@ -360,24 +360,6 @@ class GcsArtifact(BaseArtifact):
   ID_MAPPINGS = {
       'third_party/llvm-build/Release+Asserts':
           CLANG_MAPPING,
-      'src/third_party/llvm-build/Release+Asserts':
-          CLANG_MAPPING,
-      'src/third_party/node/win':
-          lambda idx, oname: f'third-party/node/win-{idx}',
-      'third_party/node/win':
-          lambda idx, oname: f'third-party/node/win-{idx}',
-      'src/third_party/node/linux':
-          lambda idx, oname: f'third-party/node/linux-{idx}',
-      'third_party/node/linux':
-          lambda idx, oname: f'third-party/node/linux-{idx}',
-      'src/third_party/node/mac':
-          lambda idx, oname: f'third-party/node/mac-{idx}',
-      'third_party/node/mac':
-          lambda idx, oname: f'third-party/node/mac-{idx}',
-      'src/third_party/node/mac_arm64':
-          lambda idx, oname: f'third-party/node/mac_arm64-{idx}',
-      'third_party/node/mac_arm64':
-          lambda idx, oname: f'third-party/node/mac_arm64-{idx}',
   }
 
   def __repr__(self):
@@ -386,7 +368,12 @@ class GcsArtifact(BaseArtifact):
 
   @property
   def identifier(self):
-    id_mapping = self.ID_MAPPINGS.get(self.dep.path, lambda idx, name: str(idx))
+    path = self.dep.path
+    if path.startswith('src/'):
+      path = path[4:]
+
+    id_mapping = self.ID_MAPPINGS.get(
+        path, lambda idx, name: f'{path.replace("/", "_")}-{idx}')
     artifact_id = id_mapping(self.index, self.artifact['object_name'])
 
     return f'gcs:{self.dep.spec["bucket"]}/{artifact_id}'

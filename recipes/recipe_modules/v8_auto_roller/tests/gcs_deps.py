@@ -126,6 +126,60 @@ CLANG_CHROMIUM_DEPS = """deps = {
   },
 }"""
 
+COLLIDING_V8_DEPS = """deps = {
+  'third_party/llvm-libclang': {
+    'dep_type': 'gcs',
+    'bucket': 'chromium-browser-clang',
+    'objects': [
+      {
+        'object_name': 'Linux_x64/rust-libclang-OLDVERSION.tar.xz',
+        'sha256sum': 'sum-libclang-old',
+        'size_bytes': 100,
+        'generation': 10,
+      },
+    ],
+  },
+  'third_party/rust-toolchain': {
+    'dep_type': 'gcs',
+    'bucket': 'chromium-browser-clang',
+    'objects': [
+      {
+        'object_name': 'Linux_x64/rust-toolchain-OLDVERSION.tar.xz',
+        'sha256sum': 'sum-rust-old',
+        'size_bytes': 200,
+        'generation': 20,
+      },
+    ],
+  },
+}"""
+
+COLLIDING_CHROMIUM_DEPS = """deps = {
+  'src/third_party/llvm-libclang': {
+    'dep_type': 'gcs',
+    'bucket': 'chromium-browser-clang',
+    'objects': [
+      {
+        'object_name': 'Linux_x64/rust-libclang-NEWVERSION.tar.xz',
+        'sha256sum': 'sum-libclang-new',
+        'size_bytes': 101,
+        'generation': 11,
+      },
+    ],
+  },
+  'src/third_party/rust-toolchain': {
+    'dep_type': 'gcs',
+    'bucket': 'chromium-browser-clang',
+    'objects': [
+      {
+        'object_name': 'Linux_x64/rust-toolchain-NEWVERSION.tar.xz',
+        'sha256sum': 'sum-rust-new',
+        'size_bytes': 201,
+        'generation': 21,
+      },
+    ],
+  },
+}"""
+
 
 def RunSteps(api):
   # Add defaults
@@ -187,4 +241,26 @@ def GenTests(api):
       "deps = {}",
       DEFAULT_V8_DEPS,
       api.expect_exception('NotImplementedError'),
+  )
+
+  yield test(
+      'prevent colliding gcs deps',
+      COLLIDING_CHROMIUM_DEPS,
+      COLLIDING_V8_DEPS,
+      api.post_process(
+          StepCommandContains,
+          'Update trusted deps.gclient setdep third_party_llvm-libclang',
+          [
+              'setdep', '-r',
+              'third_party/llvm-libclang@Linux_x64/rust-libclang-NEWVERSION.tar.xz,sum-libclang-new,101,11'
+          ],
+      ),
+      api.post_process(
+          StepCommandContains,
+          'Update trusted deps.gclient setdep third_party_rust-toolchain',
+          [
+              'setdep', '-r',
+              'third_party/rust-toolchain@Linux_x64/rust-toolchain-NEWVERSION.tar.xz,sum-rust-new,201,21'
+          ],
+      ),
   )
