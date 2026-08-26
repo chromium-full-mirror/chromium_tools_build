@@ -2,3 +2,5 @@ bpastene@chromium.org
 sshrimp@google.com
 
 per-file fuzz.py=file:fuzz.expected/OWNERS
+per-file crowbar.*=fancl@chromium.org
+per-file crowbar.*=qjw@chromium.org
