@@ -121,7 +121,7 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
 
     parse_result = api.step('parse', [
         'python3',
-        api.resource('parse_sdkmanager_list.py'),
+        api.resource('parse_sdk_list.py'),
         '--raw-input',
         api.raw_io.input_text(list_output),
         '--json-output',
@@ -308,12 +308,12 @@ def GenTests(api):
           'Process STABLE channel for linux x86_64.emulator.install'),
       api.post_process(
           post_process.MustRun,
-          'Process STABLE channel for linux x86_64.emulator.create emulator.yaml'
-      ),
+          'Process STABLE channel for linux x86_64.emulator.create'
+          ' emulator.yaml'),
       api.post_process(
           post_process.StepCommandContains,
-          'Process STABLE channel for linux x86_64.emulator.create emulator.yaml',
-          ['-ref', 'version_29.0.11']),
+          'Process STABLE channel for linux x86_64.emulator.create'
+          ' emulator.yaml', ['-ref', 'version_29.0.11']),
       api.post_process(
           post_process.MustRun,
           'Process STABLE channel for linux x86_64.emulator.remove'),

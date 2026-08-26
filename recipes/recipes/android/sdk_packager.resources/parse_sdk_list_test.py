@@ -10,7 +10,7 @@ import unittest
 THIS_DIR = os.path.dirname(__file__)
 
 sys.path.insert(0, THIS_DIR)
-import parse_sdkmanager_list
+import parse_sdk_list
 
 
 def _format_package_line(name, version, description=None, update_version=None):
@@ -28,7 +28,7 @@ class PackageLineReTest(unittest.TestCase):
 
   def testValid(self):
     line = _format_package_line('emulator', '37.1.11', 'Android Emulator')
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
     self.assertEqual('37.1.11', m.group(2))
@@ -38,7 +38,7 @@ class PackageLineReTest(unittest.TestCase):
   def testValidWithArrow(self):
     line = _format_package_line(
         'emulator', '31.2.10', 'Android Emulator', update_version='37.1.11')
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
     self.assertEqual('31.2.10', m.group(2))
@@ -47,7 +47,7 @@ class PackageLineReTest(unittest.TestCase):
 
   def testValidWithTabs(self):
     line = '\temulator\t37.1.11\tAndroid Emulator'
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
     self.assertEqual('37.1.11', m.group(2))
@@ -55,7 +55,7 @@ class PackageLineReTest(unittest.TestCase):
 
   def testValidWithTabsAndArrow(self):
     line = '\temulator\t31.2.10\t->\t37.1.11\tAndroid Emulator'
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
     self.assertEqual('31.2.10', m.group(2))
@@ -65,7 +65,7 @@ class PackageLineReTest(unittest.TestCase):
   def testValidWithVersionPlusCount(self):
     line = _format_package_line('platforms/android-34', '3.0.0 (+1)',
                                 'Android SDK Platform 34')
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('platforms/android-34', m.group(1))
     self.assertEqual('3.0.0', m.group(2))
@@ -73,7 +73,7 @@ class PackageLineReTest(unittest.TestCase):
 
   def testValidWithoutDescription(self):
     line = '  emulator  37.1.11'
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
     self.assertEqual('37.1.11', m.group(2))
@@ -81,7 +81,7 @@ class PackageLineReTest(unittest.TestCase):
 
   def testValidWithArrowWithoutDescription(self):
     line = '  emulator  31.2.10  ->  37.1.11'
-    m = parse_sdkmanager_list.PACKAGE_LINE_RE.match(line)
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
     self.assertEqual('31.2.10', m.group(2))
@@ -96,7 +96,7 @@ class ParseSdkListTest(unittest.TestCase):
         'Available packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [{
             'name': 'emulator',
@@ -114,7 +114,7 @@ class ParseSdkListTest(unittest.TestCase):
                              'Android SDK Build-Tools 36'),
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [
             {
@@ -137,7 +137,7 @@ class ParseSdkListTest(unittest.TestCase):
         'Installed packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [],
         'installed': [{
@@ -155,7 +155,7 @@ class ParseSdkListTest(unittest.TestCase):
             'emulator', '31.2.10', 'Android Emulator',
             update_version='37.1.11'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [],
         'installed': [{
@@ -175,7 +175,7 @@ class ParseSdkListTest(unittest.TestCase):
             'emulator', '31.2.10', 'Android Emulator',
             update_version='37.1.11'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [],
         'installed': [
@@ -202,7 +202,7 @@ class ParseSdkListTest(unittest.TestCase):
         'Available packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [{
             'name': 'emulator',
@@ -225,7 +225,7 @@ class ParseSdkListTest(unittest.TestCase):
                              'Android Emulator hypervisor driver (installer)'),
         _format_package_line('ndk-bundle', '22.1.7171670 (+13)', 'NDK'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [
             {
@@ -254,7 +254,7 @@ class ParseSdkListTest(unittest.TestCase):
         'Available updates:',
         _format_package_line('emulator', '31.2.10', update_version='37.1.11'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [{
             'name': 'emulator',
@@ -275,7 +275,7 @@ class ParseSdkListTest(unittest.TestCase):
         'Installed packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
     ])
-    result = parse_sdkmanager_list.ParseSdkList(raw)
+    result = parse_sdk_list.ParseSdkList(raw)
     expected = {
         'available': [],
         'installed': [{
@@ -290,7 +290,7 @@ class ParseSdkListTest(unittest.TestCase):
     list_all_path = os.path.join(THIS_DIR, 'list_all.txt')
     if os.path.exists(list_all_path):
       with open(list_all_path) as f:
-        result = parse_sdkmanager_list.ParseSdkList(f.read())
+        result = parse_sdk_list.ParseSdkList(f.read())
       self.assertEqual(6, len(result['installed']))
       self.assertEqual(615, len(result['available']))
       self.assertEqual('emulator', result['installed'][2]['name'])
