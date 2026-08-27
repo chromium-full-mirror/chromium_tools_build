@@ -17,7 +17,7 @@ from recipe_engine.config_types import Path
 _MAX_SWARM_HASHES_PROPERTY_LENGTH = 200
 
 # Take revision from https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-_CIPD_VERSION = 'git_revision:d011b1c404484997f48c987ecc9649c3283d372b'
+_CIPD_VERSION = 'git_revision:52cb75e2c9ae2ffb9d5499ae9bb04e6d8a998439'
 
 
 class IsolateApi(recipe_api.RecipeApi):
