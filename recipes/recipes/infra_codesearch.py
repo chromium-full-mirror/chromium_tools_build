@@ -146,6 +146,8 @@ def RunSteps(api: DEPS):
         'go.chromium.org/chromiumos/infra/proto/go@v0.0.0-20250623190020-bff867fc0474=./infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
         '-replace',
         'go.chromium.org/luci@v0.0.0-20260326213659-7c3f2951dea9=./infra/go/src/go.chromium.org/luci',
+        '-replace',
+        'github.com/testcontainers/testcontainers-go/modules/compose=github.com/testcontainers/testcontainers-go/modules/compose@v0.34.0',
     ])
 
     api.step('generate go kzip', [

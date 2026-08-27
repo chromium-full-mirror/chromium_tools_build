@@ -107,6 +107,13 @@ def RunSteps(api: DEPS):
       cwd=build_dir, env={'KYTHE_ROOT_DIRECTORY': build_dir}):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
+    api.step('override broken go modules', [
+        'go',
+        'work',
+        'edit',
+        '-replace',
+        'go.opentelemetry.io/collector/exporter/exportertest=go.opentelemetry.io/collector/exporter/exportertest@v0.157.0',
+    ])
     api.step('generate go kzip', [
         kythe_bin, '--corpus', 'chromium.googlesource.com/build//main',
         '--use_default_corpus_for_stdlib=true',
