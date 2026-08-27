@@ -227,6 +227,25 @@ def RunSteps(api: DEPS):
       if not api.path.isdir(target_dir) or dir_name.startswith(
           '.') or dir_name == 'gcloud':
         continue
+
+      recipes_cfg_path = target_dir / 'infra' / 'config' / 'recipes.cfg'
+      if api.path.exists(recipes_cfg_path):
+        recipes_cfg = api.file.read_json(
+            f'read recipes.cfg for {dir_name}',
+            recipes_cfg_path,
+            test_data={'recipes_path': 'recipes'},
+        )
+        recipes_path = recipes_cfg.get('recipes_path', '')
+        recipes_py = (
+            target_dir.joinpath(recipes_path, 'recipes.py')
+            if recipes_path else target_dir / 'recipes.py')
+        if api.path.exists(recipes_py):
+          api.step(f'fetch recipe deps for {dir_name}', [
+              'vpython3',
+              recipes_py,
+              'fetch',
+          ])
+
       out_json_path = extractor_out_dir / f'{dir_name}.json'
       api.step(f'extract python metadata for {dir_name}', [
           'vpython3',
@@ -298,6 +317,9 @@ def GenTests(api: TEST_DEPS):
           api.path.cache_dir /
           'infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
           api.path.cache_dir / 'infra_superproject/infra/go/src/infra/go.mod',
+          api.path.cache_dir /
+          'infra_superproject/infra/infra/config/recipes.cfg',
+          api.path.cache_dir / 'infra_superproject/infra/recipes/recipes.py',
       ),
       api.step_data(
           'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
@@ -363,6 +385,11 @@ def GenTests(api: TEST_DEPS):
           'go.chromium.org/chromiumos/infra/proto/go/...',
           'go.chromium.org/luci/...',
           'go.chromium.org/infra/...',
+      ]),
+      api.post_process(StepCommandContains, 'fetch recipe deps for infra', [
+          'vpython3',
+          '[CACHE]/infra_superproject/infra/recipes/recipes.py',
+          'fetch',
       ]),
       api.post_process(
           StepCommandContains, 'extract python metadata for infra', [
