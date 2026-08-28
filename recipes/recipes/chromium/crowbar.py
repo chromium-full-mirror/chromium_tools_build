@@ -26,13 +26,19 @@ DEPS = [
     'recipe_engine/step',
 ]
 
+# Path to git repos (including submodules) to find Crowbar packages.
+_REPO_PATHS = [
+    'src',
+]
 
 def RunSteps(api):
   api.gclient.set_config('chromium')
 
   c = api.chromium_checkout.ensure_checkout()
-  pkgs = api.crowbar.list_packages(c.checkout_dir)
-  api.crowbar.build(c.checkout_dir, packages=pkgs)
+  for p in _REPO_PATHS:
+    repo_dir = c.checkout_dir / p
+    pkgs = api.crowbar.list_packages(repo_dir)
+    api.crowbar.build(repo_dir, packages=pkgs)
 
 
 def GenTests(api):
