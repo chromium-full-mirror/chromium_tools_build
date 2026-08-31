@@ -210,9 +210,16 @@ class BaseTestBinary:
     filter_message = ''
     filter_file = None
     if self.tests and len(self.tests) >= self.TEST_FILTER_LIMIT:
+      delimiter = '__TESTS_FILTER_EOF__'
+      tests_content = '\n'.join(self.tests)
+      if delimiter in tests_content:
+        raise Exception(
+            f'Tests list contains delimiter {delimiter}, cannot safely '
+            'generate readable command')
       filter_file = 'tests.filter'
-      filter_message = "cat <<EOF > {0}\n{1}\nEOF\n".format(
-          filter_file, '\n'.join(self.tests))
+      filter_message = (f"cat <<'{delimiter}' > {filter_file}\n"
+                        f"{tests_content}\n"
+                        f"{delimiter}\n")
     cmd = self._get_command(filter_file)
     return filter_message + ' '.join(map(shlex.quote, cmd))
 

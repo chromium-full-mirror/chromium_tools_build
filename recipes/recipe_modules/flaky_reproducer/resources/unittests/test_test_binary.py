@@ -370,9 +370,17 @@ class BaseTestBinaryTest(unittest.TestCase):
       .readable_command()
     mock_get_command.assert_called_with('tests.filter')
     self.assertEqual(readable_info,
-                     ('cat <<EOF > tests.filter\n' +
-                      ('\n'.join(['MockUnitTests.CrashTest'] * 20)) + '\nEOF\n'
-                      'return command'))
+                     ("cat <<'__TESTS_FILTER_EOF__' > tests.filter\n" +
+                      ('\n'.join(['MockUnitTests.CrashTest'] * 20)) +
+                      '\n__TESTS_FILTER_EOF__\nreturn command'))
+
+    with self.assertRaisesRegex(
+        Exception,
+        'Tests list contains delimiter __TESTS_FILTER_EOF__, cannot safely '
+        'generate readable command'):
+      test_binary\
+        .with_tests(['MockUnitTests.CrashTest', '__TESTS_FILTER_EOF__'] * 10)\
+        .readable_command()
 
   @patch.object(BaseTestBinary, '_get_command')
   def test_as_command(self, mock_get_command):
