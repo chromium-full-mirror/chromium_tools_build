@@ -23,6 +23,7 @@ from RECIPE_MODULES.depot_tools import (
 )
 from RECIPE_MODULES.recipe_engine import (
     buildbucket,
+    cipd,
     context,
     file,
     golang,
@@ -40,6 +41,7 @@ class DEPS(RecipeScriptApi):
   chromium: chromium.API
   codesearch: codesearch.API
   context: context.API
+  cipd: cipd.API
   file: file.API
   gclient: gclient.API
   git: git.API
@@ -102,9 +104,26 @@ def RunSteps(api: DEPS):
       raise api.step.StepFailure('Did not detect Go version for %s' % mod_file)
     go_version = max(go_version, match.group(1), key=parse)
 
+  # Download pre-built 3pp static libseccomp for linux-amd64,
+  # needed for siso-tap
+  seccomp_dir = api.path.mkdtemp('libseccomp')
+  ensure_file = api.cipd.EnsureFile()
+  ensure_file.add_package('infra/3pp/static_libs/libseccomp/${platform}',
+                          'latest')
+  api.cipd.ensure(seccomp_dir, ensure_file)
+  base_env = {
+      'KYTHE_ROOT_DIRECTORY': build_dir,
+      'CGO_ENABLED': '1',
+      'CGO_CFLAGS': f'-I{seccomp_dir}/include',
+      'CGO_LDFLAGS': f'-L{seccomp_dir}/lib -lseccomp',
+  }
+  env_prefixes = {
+      'PKG_CONFIG_PATH': [seccomp_dir / 'lib' / 'pkgconfig'],
+  }
+
   # KYTHE_ROOT_DIRECTORY makes sub modules relpath to build repo root.
   with api.golang(version=go_version), api.context(
-      cwd=build_dir, env={'KYTHE_ROOT_DIRECTORY': build_dir}):
+      cwd=build_dir, env=base_env, env_prefixes=env_prefixes):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
     api.step('override broken go modules', [
@@ -176,7 +195,7 @@ def GenTests(api: TEST_DEPS):
                 google.golang.org/b/bar
               )''')),
       ),
-      api.post_process(StepCommandContains, 'ensure_installed (2)',
+      api.post_process(StepCommandContains, 'ensure_installed (3)',
                        ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
       api.post_process(StepCommandContains, 'init go modules',
                        ['go', 'work', 'init', 'bench', 'kajiya', 'siso']),
