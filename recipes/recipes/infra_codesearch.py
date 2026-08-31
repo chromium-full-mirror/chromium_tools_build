@@ -233,16 +233,35 @@ def RunSteps(api: DEPS):
         recipes_cfg = api.file.read_json(
             f'read recipes.cfg for {dir_name}',
             recipes_cfg_path,
-            test_data={'recipes_path': 'recipes'},
+            test_data={
+                'recipes_path': 'recipes',
+                'deps': {
+                    'recipe_engine': {
+                        'url':
+                            'https://chromium.googlesource.com/infra/luci/recipes-py.git'
+                    }
+                }
+            },
         )
         recipes_path = recipes_cfg.get('recipes_path', '')
         recipes_py = (
             target_dir.joinpath(recipes_path, 'recipes.py')
             if recipes_path else target_dir / 'recipes.py')
         if api.path.exists(recipes_py):
+          override_args = []
+          for dep_name, dep_info in recipes_cfg.get('deps', {}).items():
+            url = dep_info.get('url', '').rstrip('/')
+            repo_name = url.split('/')[-1].removesuffix('.git')
+            for candidate in [repo_name, dep_name]:
+              sibling_dir = checkout_dir / candidate
+              if api.path.exists(sibling_dir):
+                override_args.extend(['-O', f'{dep_name}={sibling_dir}'])
+                break
+
           api.step(f'fetch recipe deps for {dir_name}', [
               'vpython3',
               recipes_py,
+              *override_args,
               'fetch',
           ])
 
@@ -307,6 +326,7 @@ def GenTests(api: TEST_DEPS):
       api.path.dirs_exist(
           api.path.cache_dir / 'infra_superproject',
           api.path.cache_dir / 'infra_superproject/infra',
+          api.path.cache_dir / 'infra_superproject/recipes-py',
           api.path.cache_dir / 'infra_superproject/.git',
       ),
       api.path.exists(
@@ -389,6 +409,8 @@ def GenTests(api: TEST_DEPS):
       api.post_process(StepCommandContains, 'fetch recipe deps for infra', [
           'vpython3',
           '[CACHE]/infra_superproject/infra/recipes/recipes.py',
+          '-O',
+          'recipe_engine=[CACHE]/infra_superproject/recipes-py',
           'fetch',
       ]),
       api.post_process(
