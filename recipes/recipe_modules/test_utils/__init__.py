@@ -6,28 +6,59 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.test_utils import properties
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'flakiness',
-    'depot_tools/depot_tools',
-    'depot_tools/tryserver',
-    'presentation_utils',
-    'recipe_engine/buildbucket',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/legacy_annotation',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'repro_instructions',
-]
-
 PROPERTIES = properties.InputProperties
+
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    flakiness,
+    presentation_utils,
+    repro_instructions,
+)
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    futures,
+    json,
+    legacy_annotation,
+    luci_analysis,
+    path,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  flakiness: flakiness.API
+  depot_tools: depot_tools.API
+  tryserver: tryserver.API
+  presentation_utils: presentation_utils.API
+  buildbucket: buildbucket.API
+  futures: futures.API
+  json: json.API
+  legacy_annotation: legacy_annotation.API
+  luci_analysis: luci_analysis.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  time: time.API
+  repro_instructions: repro_instructions.API
+
+
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True

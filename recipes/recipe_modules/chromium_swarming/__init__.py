@@ -6,30 +6,61 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.chromium_swarming import properties as properties_pb
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_checkout',
-    'code_coverage',
-    'depot_tools/tryserver',
-    'presentation_utils',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/cv',
-    'recipe_engine/led',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'repro_instructions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_checkout,
+    code_coverage,
+    presentation_utils,
+    repro_instructions,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    cipd,
+    context,
+    cv,
+    json,
+    led,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    runtime,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  code_coverage: code_coverage.API
+  tryserver: tryserver.API
+  presentation_utils: presentation_utils.API
+  buildbucket: buildbucket.API
+  cas: cas.API
+  cipd: cipd.API
+  context: context.API
+  cv: cv.API
+  led: led.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  resultdb: resultdb.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+  swarming: swarming.API
+  repro_instructions: repro_instructions.API
 
 PROPERTIES = properties_pb.InputProperties
 

@@ -5,20 +5,41 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import (
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  git: git.API
+  tryserver: tryserver.API
+  buildbucket: buildbucket.API
+  context: context.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
 
 from .api import FilterApi as API
 from .test_api import FilterTestApi as TEST_API

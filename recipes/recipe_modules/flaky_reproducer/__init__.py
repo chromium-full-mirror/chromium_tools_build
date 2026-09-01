@@ -5,22 +5,43 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'recipe_engine/cas',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/url',
-    'isolate',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import isolate
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    cipd,
+    file,
+    futures,
+    json,
+    luci_analysis,
+    path,
+    raw_io,
+    resultdb,
+    step,
+    swarming,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  cas: cas.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  file: file.API
+  futures: futures.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  path: path.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  swarming: swarming.API
+  url: url.API
+  isolate: isolate.API
 
 from .api import FlakyReproducer as API
 from .test_api import FlakyReproducerTestApi as TEST_API

@@ -6,28 +6,59 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.chromium_utr import request
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_swarming',
-    'chromium_tests',
-    'code_coverage',
-    'gn',
-    'isolate',
-    'profiles',
-    'siso',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/milo',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_swarming,
+    chromium_tests,
+    code_coverage,
+    gn,
+    isolate,
+    profiles,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import (
+    gclient,
+    git,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    milo,
+    path,
+    platform,
+    raw_io,
+    resultdb,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  code_coverage: code_coverage.API
+  gn: gn.API
+  isolate: isolate.API
+  profiles: profiles.API
+  siso: siso.API
+  gclient: gclient.API
+  git: git.API
+  context: context.API
+  file: file.API
+  milo: milo.API
+  path: path.API
+  platform: platform.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  swarming: swarming.API
 
 ENV_PROPERTIES = request.EnvProperties
 

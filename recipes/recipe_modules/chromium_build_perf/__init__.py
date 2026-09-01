@@ -5,21 +5,44 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'reclient',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    reclient,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    json,
+    path,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  builder_group: builder_group.API
+  chromium: chromium.API
+  gclient: gclient.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  json: json.API
+  path: path.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+  reclient: reclient.API
+  siso: siso.API
 
 from .api import ChromiumBuildPerfApi as API

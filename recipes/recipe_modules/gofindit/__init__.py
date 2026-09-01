@@ -5,11 +5,22 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  json: json.API
+  step: step.API
+  swarming: swarming.API
 
 from .api import LuciBisectionApi as API

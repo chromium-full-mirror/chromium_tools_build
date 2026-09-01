@@ -4,15 +4,31 @@
 
 from __future__ import annotations
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/tryserver',
-    'recipe_engine/cipd',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    cipd,
+    platform,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  tryserver: tryserver.API
+  cipd: cipd.API
+  platform: platform.API
+  step: step.API
 
 from .api import DawnApi as API
 from .test_api import DawnTestsApi as TEST_API

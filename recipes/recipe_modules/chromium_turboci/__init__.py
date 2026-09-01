@@ -4,12 +4,24 @@
 
 from __future__ import annotations
 
-DEPS = [
-    'chromium',
-    'recipe_engine/buildbucket',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/uuid',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    runtime,
+    step,
+    uuid,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  buildbucket: buildbucket.API
+  runtime: runtime.API
+  step: step.API
+  uuid: uuid.API
 
 from .api import ChromiumTurbociApi as API
