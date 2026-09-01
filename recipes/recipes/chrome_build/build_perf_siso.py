@@ -171,7 +171,7 @@ def _run_clean_builds(api,
         build_dir,
         target,
         with_remote_cache=True,
-        step_name_suffix=' with fail-on-bad-deps',
+        step_name_suffix=' with Siso with fail-on-bad-deps',
         siso_experiments=['fail-on-bad-deps'])
     _raise_raw_result_on_failure(api, raw_result)
 
