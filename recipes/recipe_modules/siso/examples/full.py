@@ -10,6 +10,7 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import siso
 
 DEPS = [
+    'builder_group',
     'chromium',
     'depot_tools/gclient',
     'depot_tools/tryserver',
@@ -161,6 +162,25 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'compile', [
           '--metrics_labels',
           'type=ci,host_os=linux,project=chromium,bucket=ci,builder=linux-rel,source=prod,tool=siso',
+      ]),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'cloud_monitoring_with_builder_group',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.buildbucket.ci_build(project='chromium', builder='linux-rel'),
+      api.builder_group.for_current('fake-group'),
+      api.siso.properties(
+          project='test-rbe-proj',
+          enable_cloud_monitoring=True,
+      ),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--enable_cloud_monitoring']),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--metrics_project', 'test-rbe-proj']),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '--metrics_labels',
+          'type=ci,host_os=linux,project=chromium,bucket=ci,builder=linux-rel,builder_group=fake-group,source=prod,tool=siso',
       ]),
       api.post_process(post_process.DropExpectation),
   )

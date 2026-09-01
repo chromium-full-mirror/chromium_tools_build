@@ -251,6 +251,8 @@ class SisoApi(recipe_api.RecipeApi):
         if buildbucket_builder_id.builder:
           labels += 'builder=' + re.sub(r'[=,]', '_',
                                         buildbucket_builder_id.builder) + ','
+        if self.m.builder_group.for_current:
+          labels += 'builder_group=' + self.m.builder_group.for_current + ','
         labels += 'source=' + ('led'
                                if self.m.led.launched_by_led else 'prod') + ','
         labels += 'tool=siso'

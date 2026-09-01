@@ -9,6 +9,7 @@ from PB.recipe_modules.build.siso import properties
 from .api import RUSAGE_FORMAT
 
 DEPS = [
+    'builder_group',
     'depot_tools/gclient',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
