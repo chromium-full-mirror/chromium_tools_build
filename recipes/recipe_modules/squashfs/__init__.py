@@ -5,22 +5,11 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
-    cipd,
-    path,
-    platform,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  cipd: cipd.API
-  path: path.API
-  platform: platform.API
-  step: step.API
+DEPS = [
+    'recipe_engine/cipd',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/step',
+]
 
 from .api import SquashfsApi as API

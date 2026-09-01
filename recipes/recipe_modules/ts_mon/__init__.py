@@ -5,28 +5,14 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    json,
-    path,
-    raw_io,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  buildbucket: buildbucket.API
-  cipd: cipd.API
-  context: context.API
-  json: json.API
-  path: path.API
-  raw_io: raw_io.API
-  step: step.API
+DEPS = [
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/context',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
+]
 
 from .api import TSMonApi as API

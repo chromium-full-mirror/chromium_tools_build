@@ -5,53 +5,25 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
-    builder_group,
-    chromium_swarming,
-    isolate,
-)
-from RECIPE_MODULES.depot_tools import (
-    gsutil,
-    tryserver,
-)
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
-    swarming,
-    time,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  builder_group: builder_group.API
-  chromium_swarming: chromium_swarming.API
-  gsutil: gsutil.API
-  tryserver: tryserver.API
-  isolate: isolate.API
-  buildbucket: buildbucket.API
-  cas: cas.API
-  context: context.API
-  json: json.API
-  path: path.API
-  platform: platform.API
-  properties: properties.API
-  raw_io: raw_io.API
-  resultdb: resultdb.API
-  step: step.API
-  swarming: swarming.API
-  time: time.API
+DEPS = [
+    'builder_group',
+    'chromium_swarming',
+    'depot_tools/gsutil',
+    'depot_tools/tryserver',
+    'isolate',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cas',
+    'recipe_engine/context',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/resultdb',
+    'recipe_engine/step',
+    'recipe_engine/swarming',
+    'recipe_engine/time',
+]
 
 # TODO(http://crbug.com/693058): provide coverage.
 DISABLE_STRICT_COVERAGE = True

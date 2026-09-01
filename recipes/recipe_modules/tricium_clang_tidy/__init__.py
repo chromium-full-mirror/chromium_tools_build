@@ -5,35 +5,17 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
-    chromium,
-    siso,
-)
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    findings,
-    path,
-    platform,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  chromium: chromium.API
-  buildbucket: buildbucket.API
-  context: context.API
-  file: file.API
-  findings: findings.API
-  path: path.API
-  platform: platform.API
-  step: step.API
-  siso: siso.API
+DEPS = [
+    'chromium',
+    'recipe_engine/buildbucket',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/findings',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/step',
+    'siso',
+]
 
 _clang_tidy_path = ('third_party', 'llvm-build', 'Release+Asserts', 'bin',
                     'clang-tidy')

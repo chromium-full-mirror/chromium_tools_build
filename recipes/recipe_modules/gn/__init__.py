@@ -5,25 +5,13 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.depot_tools import depot_tools
-from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    raw_io,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  depot_tools: depot_tools.API
-  context: context.API
-  file: file.API
-  raw_io: raw_io.API
-  step: step.API
+DEPS = [
+    'depot_tools/depot_tools',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
+]
 
 from .api import GnApi as API
 from .test_api import GnTestApi as TEST_API

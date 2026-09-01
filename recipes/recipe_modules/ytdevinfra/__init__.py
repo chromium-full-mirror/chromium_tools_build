@@ -6,24 +6,12 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.ytdevinfra import properties
 
+DEPS = [
+    'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/step',
+]
+
 PROPERTIES = properties.InputProperties
-
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
-    path,
-    properties,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  path: path.API
-  properties: properties.API
-  step: step.API
-
-
 
 from .api import DevInfraApi as API

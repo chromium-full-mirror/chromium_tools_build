@@ -2,52 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-)
-from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    gerrit,
-    git,
-    gitiles,
-    tryserver,
-)
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  chromium: chromium.API
-  chromium_checkout: chromium_checkout.API
-  bot_update: bot_update.API
-  depot_tools: depot_tools.API
-  gclient: gclient.API
-  tryserver: tryserver.API
-  gerrit: gerrit.API
-  git: git.API
-  gitiles: gitiles.API
-  buildbucket: buildbucket.API
-  context: context.API
-  path: path.API
-  platform: platform.API
-  properties: properties.API
-  step: step.API
-  raw_io: raw_io.API
-  file: file.API
-  json: json.API
+DEPS = [
+    'chromium',
+    'chromium_checkout',
+    'depot_tools/bot_update',
+    'depot_tools/depot_tools',
+    'depot_tools/gclient',
+    'depot_tools/tryserver',
+    'depot_tools/gerrit',
+    'depot_tools/git',
+    'depot_tools/gitiles',
+    'recipe_engine/buildbucket',
+    'recipe_engine/context',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/step',
+    'recipe_engine/raw_io',
+    'recipe_engine/file',
+    'recipe_engine/json',
+]

@@ -5,23 +5,12 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
-    json,
-    path,
-    platform,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  json: json.API
-  path: path.API
-  platform: platform.API
-  step: step.API
+DEPS = [
+  'recipe_engine/json',
+  'recipe_engine/path',
+  'recipe_engine/platform',
+  'recipe_engine/step',
+]
 
 from .api import DiskApi as API
 from .test_api import DiskApi as TEST_API

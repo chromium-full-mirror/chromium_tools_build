@@ -5,15 +5,9 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import properties
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  properties: properties.API
+DEPS = [
+    'recipe_engine/properties',
+]
 
 from .api import BuilderGroupApi as API
 from .test_api import ChromiumTestApi as TEST_API

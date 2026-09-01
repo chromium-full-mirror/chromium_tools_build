@@ -5,36 +5,18 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.depot_tools import tryserver
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    file,
-    json,
-    led,
-    path,
-    properties,
-    runtime,
-    step,
-    swarming,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  tryserver: tryserver.API
-  buildbucket: buildbucket.API
-  cipd: cipd.API
-  file: file.API
-  json: json.API
-  led: led.API
-  path: path.API
-  properties: properties.API
-  runtime: runtime.API
-  step: step.API
-  swarming: swarming.API
+DEPS = [
+    'depot_tools/tryserver',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/led',
+    'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/runtime',
+    'recipe_engine/step',
+    'recipe_engine/swarming',
+]
 
 from .api import V8OrchestratorApi as API

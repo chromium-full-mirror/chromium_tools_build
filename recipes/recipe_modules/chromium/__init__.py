@@ -6,79 +6,41 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.chromium import properties
 
+DEPS = [
+    'depot_tools/bot_update',
+    'depot_tools/depot_tools',
+    # in order to have set_config automatically populate gclient
+    'depot_tools/gclient',
+    'depot_tools/git',
+    'depot_tools/gsutil',
+    'depot_tools/tryserver',
+    'builder_group',
+    'gn',
+    'ninjalog',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/commit_position',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/led',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/resultdb',
+    'recipe_engine/runtime',
+    'recipe_engine/step',
+    'recipe_engine/uuid',
+    'repro_instructions',
+    'siso',
+    'xcode',
+]
+
 PROPERTIES = properties.InputProperties
 
 # Forward symbols for other modules to import
 from .config import config_ctx as CONFIG_CTX
-
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
-    builder_group,
-    gn,
-    ninjalog,
-    repro_instructions,
-    siso,
-    xcode,
-)
-from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    git,
-    gsutil,
-    tryserver,
-)
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    commit_position,
-    context,
-    file,
-    json,
-    led,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    runtime,
-    step,
-    uuid,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  bot_update: bot_update.API
-  depot_tools: depot_tools.API
-  gclient: gclient.API
-  git: git.API
-  gsutil: gsutil.API
-  tryserver: tryserver.API
-  builder_group: builder_group.API
-  gn: gn.API
-  ninjalog: ninjalog.API
-  buildbucket: buildbucket.API
-  cipd: cipd.API
-  commit_position: commit_position.API
-  context: context.API
-  file: file.API
-  json: json.API
-  led: led.API
-  path: path.API
-  platform: platform.API
-  properties: properties.API
-  raw_io: raw_io.API
-  resultdb: resultdb.API
-  runtime: runtime.API
-  step: step.API
-  uuid: uuid.API
-  repro_instructions: repro_instructions.API
-  siso: siso.API
-  xcode: xcode.API
-
 
 # These introduce circular imports, so import them last.
 from .api import ChromiumApi as API

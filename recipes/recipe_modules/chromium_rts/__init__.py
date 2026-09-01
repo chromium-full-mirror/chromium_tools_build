@@ -5,34 +5,17 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import isolate
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    file,
-    futures,
-    json,
-    path,
-    platform,
-    raw_io,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  isolate: isolate.API
-  buildbucket: buildbucket.API
-  cipd: cipd.API
-  file: file.API
-  futures: futures.API
-  json: json.API
-  path: path.API
-  platform: platform.API
-  raw_io: raw_io.API
-  step: step.API
+DEPS = [
+    'isolate',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/file',
+    'recipe_engine/futures',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
+]
 
 from .api import ChromiumRtsApi as API

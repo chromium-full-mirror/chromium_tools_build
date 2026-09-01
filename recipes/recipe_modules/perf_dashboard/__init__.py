@@ -5,35 +5,18 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import builder_group
-from RECIPE_MODULES.depot_tools import tryserver
-from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    json,
-    platform,
-    properties,
-    raw_io,
-    runtime,
-    service_account,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  builder_group: builder_group.API
-  tryserver: tryserver.API
-  buildbucket: buildbucket.API
-  json: json.API
-  platform: platform.API
-  properties: properties.API
-  raw_io: raw_io.API
-  runtime: runtime.API
-  service_account: service_account.API
-  step: step.API
+DEPS = [
+    'builder_group',
+    'depot_tools/tryserver',
+    'recipe_engine/buildbucket',
+    'recipe_engine/json',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/runtime',
+    'recipe_engine/service_account',
+    'recipe_engine/step',
+]
 
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).

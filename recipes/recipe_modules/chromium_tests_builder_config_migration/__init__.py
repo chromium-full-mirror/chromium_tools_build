@@ -5,23 +5,12 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  file: file.API
-  json: json.API
-  path: path.API
-  step: step.API
+DEPS = [
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/step',
+]
 
 # Don't set properties, just let the recipes set the properties to the
 # properties proto defined in this module

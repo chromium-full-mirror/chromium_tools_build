@@ -6,6 +6,15 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.chromium_tests_builder_config import properties
 
+DEPS = [
+    'chromium',
+    'depot_tools/gsutil',
+    'depot_tools/tryserver',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/step',
+]
+
 PROPERTIES = properties.InputProperties
 
 # Forward symbols for other modules to import
@@ -26,32 +35,6 @@ from .try_spec import (
     ALWAYS,
     NEVER,
 )
-
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import chromium
-from RECIPE_MODULES.depot_tools import (
-    gsutil,
-    tryserver,
-)
-from RECIPE_MODULES.recipe_engine import (
-    platform,
-    properties,
-    step,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  chromium: chromium.API
-  gsutil: gsutil.API
-  tryserver: tryserver.API
-  platform: platform.API
-  properties: properties.API
-  step: step.API
-
-
 
 # These can introduce a circular import, so import them last.
 from .api import ChromiumTestsBuilderConfigApi as API

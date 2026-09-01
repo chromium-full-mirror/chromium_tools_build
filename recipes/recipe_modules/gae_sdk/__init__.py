@@ -5,18 +5,9 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
-    cipd,
-    platform,
-)
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  cipd: cipd.API
-  platform: platform.API
+DEPS = [
+    'recipe_engine/cipd',
+    'recipe_engine/platform',
+]
 
 from .api import GaeSdkApi as API

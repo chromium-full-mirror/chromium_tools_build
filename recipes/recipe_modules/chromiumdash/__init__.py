@@ -5,14 +5,8 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass
-
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import url
-
-
-@dataclass
-class DEPS(RecipeScriptApi):
-  url: url.API
+DEPS = [
+    'recipe_engine/url',
+]
 
 from .api import ChromiumDashApi as API
