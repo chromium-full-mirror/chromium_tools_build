@@ -12,6 +12,7 @@ from RECIPE_MODULES.build.binary_size import constants
 
 DEPS = [
     'binary_size',
+    'depot_tools/tryserver',
     'filter',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -54,6 +55,15 @@ def GenTests(api):
       api.post_check(has_binary_size_property),
       api.post_process(post_process.MustRun, 'analyze'),
       api.post_process(post_process.DoesNotRunRE, r'.*compile'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'runs_on_readme_chromium',
+      api.binary_size.build(override_commit_log=True),
+      api.tryserver.get_files_affected_by_patch(
+          ['src/third_party/foo/README.chromium']),
+      api.post_process(post_process.MustRun, 'compile (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
 

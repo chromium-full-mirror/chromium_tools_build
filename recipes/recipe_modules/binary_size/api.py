@@ -281,12 +281,20 @@ class BinarySizeApi(recipe_api.RecipeApi):
       self._clear_failed_expectation_files(build_dir)
 
       affected_files = self.m.chromium_checkout.get_files_affected_by_patch()
+      # README.chromium files are implicit inputs to about:credits which affects binary size.
+      # Ensure binary size analysis runs whenever any README.chromium is modified.
+      additional_exclusions = {
+          f: 'binary_size recipe'
+          for f in affected_files
+          if f.endswith('README.chromium')
+      }
       affected_test_targets, _ = self.m.filter.analyze(
           source_dir,
           build_dir,
           affected_files,
           self._analyze_targets,
           None,
+          additional_exclusions=additional_exclusions,
       )
       if not affected_test_targets:
         step_result = self.m.step.active_result
