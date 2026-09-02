@@ -23,28 +23,68 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 \
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_verdict
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'filter',
-    'flakiness',
-    'test_utils',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    filter as filter_module,
+    flakiness,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    json,
+    luci_analysis,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  filter: filter_module.API
+  flakiness: flakiness.API
+  gclient: gclient.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  flakiness: flakiness.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.assertions.assertEqual(api.flakiness.gs_bucket, 'flake_endorser')
   api.assertions.assertEqual(
       api.flakiness.gs_source_template(experimental=True).format(
@@ -57,7 +97,7 @@ def RunSteps(api):
     return api.chromium_tests.trybot_steps(builder_id, builder_config)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builder = builder_common_pb2.BuilderID(
       builder='fake-try-builder', project='chromium', bucket='try')
 

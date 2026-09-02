@@ -6,19 +6,43 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests.steps import MockTestSpec
 
-DEPS = [
-    'chromium',
-    'chromium_rts',
-    'chromium_tests',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_rts, chromium_tests
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    path,
+    platform,
+    properties,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_rts: chromium_rts.API
+  chromium_tests: chromium_tests.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   experiments = api.buildbucket.build.input.experiments
   expected_generate = 'chromium_rts.filter_file_analysis' in experiments
   assert api.chromium_rts._should_generate_filters() == expected_generate
@@ -69,7 +93,7 @@ def RunSteps(api):
     assert command_line_variants == {}
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.try_build(builder='linux-rel'),

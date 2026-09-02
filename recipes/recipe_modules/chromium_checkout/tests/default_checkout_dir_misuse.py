@@ -6,21 +6,30 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium_checkout',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout
+from RECIPE_MODULES.recipe_engine import assertions, path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_checkout: chromium_checkout.API
+  path: path.API
+
+
+def RunSteps(api: DEPS):
   _ = api.chromium_checkout.default_checkout_dir
   with api.assertions.assertRaisesRegexp(ValueError,
                                          'this indicates a likely mistake'):
     api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(post_process.DropExpectation),

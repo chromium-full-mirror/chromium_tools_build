@@ -13,29 +13,67 @@ from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES
 
 from PB.recipe_modules.recipe_engine.led.properties import InputProperties
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'profiles',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    profiles,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  swarming: swarming.TEST_API
 
 # Number of tests. Needed by the tests.
 _NUM_TESTS = 7
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
@@ -113,7 +151,7 @@ def RunSteps(api):
   _ = api.code_coverage.using_coverage
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

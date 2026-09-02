@@ -10,12 +10,20 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_tests_builder_config import (try_spec as
                                                                 try_spec_module)
 
-DEPS = [
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+
+
+def RunSteps(api: DEPS):
   api.assertions.maxDiff = None
 
   # TryMirror creation *********************************************************
@@ -108,7 +116,7 @@ def RunSteps(api):
       ]))
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

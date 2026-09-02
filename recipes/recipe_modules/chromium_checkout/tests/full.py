@@ -12,18 +12,46 @@ from recipe_engine.recipe_api import Property
 from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
                                                 GCLIENT_CONFIG_CTX)
 
-DEPS = [
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout, siso
+from RECIPE_MODULES.depot_tools import gclient as gclient_module
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium_checkout: chromium_checkout.API
+  gclient: gclient_module.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
 
 PROPERTIES = {
     'ignore_input_commit': Property(kind=bool, default=False),
@@ -41,8 +69,8 @@ def revision_resolver(c):
   c.revisions['src-internal'] = gclient.RevisionFallbackChain('refs/heads/main')
 
 
-def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow,
-             report_via_property):
+def RunSteps(api: DEPS, ignore_input_commit, set_output_commit, no_history,
+             shallow, report_via_property):
   with api.assertions.assertRaisesRegexp(ValueError, 'checkout_dir is not set'):
     _ = api.chromium_checkout.checkout_dir
   with api.assertions.assertRaisesRegexp(ValueError, 'source_dir is not set'):
@@ -74,7 +102,8 @@ def RunSteps(api, ignore_input_commit, set_output_commit, no_history, shallow,
   # Checking out again is fine if the checkout_dir and source_dir are the same
   api.chromium_checkout.ensure_checkout()
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'full_ci',
       api.platform('linux', 64),

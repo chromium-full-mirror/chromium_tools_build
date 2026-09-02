@@ -10,17 +10,32 @@ from PB.recipe_modules.build.code_coverage.tests.api.get_binary_in_orchestrator_
 
 from RECIPE_MODULES.build.code_coverage import constants
 
-DEPS = [
-    'code_coverage',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import code_coverage
+from RECIPE_MODULES.recipe_engine import assertions, path, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  code_coverage: code_coverage.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  path: path.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties: InputProperties):
+def RunSteps(api: DEPS, properties: InputProperties):
   api.code_coverage.build_dir = api.path.cleanup_dir
   binaries = sorted(
       list(
@@ -30,7 +45,7 @@ def RunSteps(api, properties: InputProperties):
                                   properties.expected_binaries)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

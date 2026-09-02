@@ -12,26 +12,60 @@ from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.code_coverage import constants
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'profiles',
-    'siso',
-    'recipe_engine/assertions',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    profiles,
+    siso,
+)
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  file: file.API
+  json: json.API
+  path: path.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  code_coverage: code_coverage.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties: InputProperties):
+def RunSteps(api: DEPS, properties: InputProperties):
   api.chromium.set_config(
       'chromium', TARGET_PLATFORM=properties.target_platform)
 
@@ -50,7 +84,7 @@ def RunSteps(api, properties: InputProperties):
   api.assertions.assertCountEqual(str_file_paths, properties.expected_paths)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

@@ -23,23 +23,51 @@ from recipe_engine import recipe_test_api
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils import util
 
-DEPS = [
-    'chromium_tests',
-    'flakiness',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests, flakiness, test_utils
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    file,
+    json,
+    luci_analysis,
+    properties,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium_tests: chromium_tests.API
+  file: file.API
+  flakiness: flakiness.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  flakiness: flakiness.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   test_objects = []
   for i in range(6):
     inv_bundle = {}
@@ -95,7 +123,7 @@ def RunSteps(api):
     api.assertions.assertEqual(new_tests, found_tests)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   basic_build = build_pb2.Build(
       builder=builder_common_pb2.BuilderID(
           builder='Builder', project='chromium', bucket='try'),

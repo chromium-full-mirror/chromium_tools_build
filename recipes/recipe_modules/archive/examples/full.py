@@ -9,18 +9,46 @@ import datetime
 from PB.recipe_modules.build.archive import properties
 from recipe_engine import post_process
 
-DEPS = [
-    'archive',
-    'chromium',
-    'squashfs',
-    'recipe_engine/assertions',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import archive, chromium, squashfs
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    file,
+    json,
+    path,
+    platform,
+    properties as properties_module,
+    runtime,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  assertions: assertions.API
+  chromium: chromium.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties_module.API
+  runtime: runtime.API
+  squashfs: squashfs.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  archive: archive.TEST_API
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  properties: properties_module.TEST_API
+  runtime: runtime.TEST_API
 
 TEST_CHROME_VERSION = '''MAJOR=91
 MINOR=0
@@ -36,7 +64,7 @@ TEST_COMMIT_POSITON_COMPONENT = 'refs/heads/main@{#234}'
 source_side_spec_path = ['archive', 'foo.json']
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   checkout_dir = api.path.cleanup_dir
   source_dir = checkout_dir / 'fake-repo'
 
@@ -130,7 +158,7 @@ def RunSteps(api):
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   update_properties = {
       'got_revision': TEST_HASH_MAIN,
       'got_revision_cp': TEST_COMMIT_POSITON_MAIN,

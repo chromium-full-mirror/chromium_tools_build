@@ -12,15 +12,29 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
 
-DEPS = [
-    'flakiness',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness
+from RECIPE_MODULES.recipe_engine import assertions, buildbucket, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  flakiness: flakiness.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  flakiness: flakiness.TEST_API
+
+
+def RunSteps(api: DEPS):
 
   def _generate_test_definition():
     test_result = test_result_pb2.TestResult(
@@ -40,7 +54,7 @@ def RunSteps(api):
       len(filtered_test), api.flakiness._max_test_targets)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   # max_test_targets defaults to 10
   yield api.test('basic', api.flakiness(check_for_flakiness=True,),
                  api.post_process(post_process.DropExpectation))

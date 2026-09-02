@@ -8,22 +8,47 @@ from recipe_engine import post_process
 from PB.recipe_modules.build.devtools.examples.example import InputProperties
 from recipe_engine.recipe_api import StepFailure
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'devtools',
-    'recipe_engine/buildbucket',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_swarming, devtools
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  devtools: devtools.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   assert api.devtools.get_affected_files() == []
   builder_config = properties.builder_config or 'Release'
   devtools_bundle = properties.devtools_bundle
@@ -74,7 +99,7 @@ def RunSteps(api, properties):
                   f'#{", ".join([str(x) for x in failed_shards])}.')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   def try_build(builder='builder', **kwargs):

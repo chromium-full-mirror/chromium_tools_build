@@ -7,16 +7,32 @@ from __future__ import annotations
 from recipe_engine import post_process
 import textwrap
 
-DEPS = [
-  'chromium',
-  'chromium_checkout',
-  'depot_tools/gclient',
-  'recipe_engine/context',
-  'recipe_engine/json',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import context, json
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  gclient: gclient.API
+  json: json.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  json: json.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
   update_result = api.chromium_checkout.ensure_checkout()
@@ -35,7 +51,7 @@ def RunSteps(api):
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.try_build(

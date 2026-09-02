@@ -5,14 +5,28 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'flaky_reproducer',
-    'recipe_engine/json',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flaky_reproducer
+from RECIPE_MODULES.recipe_engine import json, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  flaky_reproducer: flaky_reproducer.API
+  json: json.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.flaky_reproducer.check_monorail_comment_posted('123')
   api.flaky_reproducer.post_summary_to_monorail('123', 'summary')
 
@@ -20,7 +34,7 @@ def RunSteps(api):
 from recipe_engine import post_process
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def generate_issue_result(labels=None):
     if labels is None:

@@ -8,15 +8,29 @@ from recipe_engine import post_process, turboci
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'chromium',
-    'chromium_turboci',
-    'recipe_engine/buildbucket',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_turboci
+from RECIPE_MODULES.recipe_engine import buildbucket, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_turboci: chromium_turboci.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
   # exercise ensure_check_id
   api.chromium_turboci.ensure_check_id('foo', 'prefix')
@@ -74,7 +88,7 @@ def RunSteps(api):
   api.chromium_turboci.finalize_test_check('test', True, 'display')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.buildbucket.ci_build(

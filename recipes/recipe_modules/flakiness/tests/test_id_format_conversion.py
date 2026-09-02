@@ -8,13 +8,22 @@ import collections
 
 from recipe_engine import post_process
 
-DEPS = [
-    'flakiness',
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  flakiness: flakiness.API
+
+
+def RunSteps(api: DEPS):
   IndividualTest = collections.namedtuple(
       'IndividualTest', ['test_id', 'test_name', 'duration_milliseconds'])
 
@@ -91,7 +100,7 @@ def RunSteps(api):
   api.assertions.assertEqual(results[test_obj], (["c.f.case"], 100))
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(post_process.DropExpectation),

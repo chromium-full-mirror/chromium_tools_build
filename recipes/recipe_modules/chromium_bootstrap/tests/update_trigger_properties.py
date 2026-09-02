@@ -9,21 +9,36 @@ from recipe_engine.engine_types import thaw
 
 from PB.go.chromium.org.luci.buildbucket.proto import common
 
-DEPS = [
-    'chromium_bootstrap',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_bootstrap
+from RECIPE_MODULES.recipe_engine import assertions, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_bootstrap: chromium_bootstrap.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_bootstrap: chromium_bootstrap.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   trigger_props = {'foo': 'bar'}
   api.chromium_bootstrap.update_trigger_properties(trigger_props)
   api.assertions.assertEqual(trigger_props,
                              thaw(api.properties['expected_properties']))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def expect_properties(properties):
     return sum([

@@ -6,18 +6,34 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
-DEPS = [
-  'archive',
-  'chromium',
-  'depot_tools/bot_update',
-  'depot_tools/gclient',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/runtime',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import archive, chromium
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import path, properties, runtime
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  bot_update: bot_update.API
+  chromium: chromium.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
 
   update_result = api.bot_update.ensure_checkout()
@@ -38,7 +54,7 @@ def RunSteps(api):
       store_by_hash=False)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'linux',

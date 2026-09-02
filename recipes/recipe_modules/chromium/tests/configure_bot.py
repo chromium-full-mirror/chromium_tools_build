@@ -9,10 +9,24 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_types
 
 
-DEPS = [
-    'chromium',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.recipe_engine import properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
 
 
 _BUILDERS_DICT = {
@@ -39,10 +53,10 @@ _BUILDERS_DICT = {
 }
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.chromium.configure_bot(_BUILDERS_DICT, additional_configs=['codesearch'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for test in api.chromium.gen_tests_for_builders(_BUILDERS_DICT):
     yield test + api.post_process(post_process.DropExpectation)

@@ -10,17 +10,41 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'filter',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, filter as filter_module
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    json,
+    path,
+    platform,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  filter: filter_module.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  filter: filter_module.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
   for c in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(c)
@@ -60,7 +84,7 @@ def RunSteps(api):
                                     expected_affected_compile_targets)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.platform('linux', 64),

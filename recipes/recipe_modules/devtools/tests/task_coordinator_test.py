@@ -5,14 +5,34 @@
 from recipe_engine import post_process
 from RECIPE_MODULES.build.devtools.test_phases import TaskCoordinator
 
-DEPS = [
-    'chromium_swarming',
-    'devtools',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_swarming, devtools
+from RECIPE_MODULES.recipe_engine import (
+    futures,
+    json,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_swarming: chromium_swarming.API
+  devtools: devtools.API
+  futures: futures.API
+  json: json.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  properties: properties.TEST_API
 
 
 class MockTask:
@@ -24,7 +44,7 @@ class MockTask:
     return self._task_ids
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Edge Case 1: Multi-phase runners and multi-iteration polling
   if api.properties.get('test_multiphase', False):
     coord = TaskCoordinator(api)
@@ -144,7 +164,7 @@ def RunSteps(api):
   api.step.empty('TaskCoordinator unit tests passed')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.step_data(

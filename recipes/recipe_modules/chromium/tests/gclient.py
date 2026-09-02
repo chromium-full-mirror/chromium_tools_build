@@ -6,13 +6,26 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    # chromium_android is needed here so that certain android configs can be
-    # applied.
-    'chromium_android',
-    'depot_tools/gclient',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_android
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_android: chromium_android.API
+  gclient: gclient.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 TEST_CONFIGS = [
     'arm',
@@ -40,14 +53,15 @@ TEST_CONFIGS = [
 ]
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   for config_name in TEST_CONFIGS:
     api.gclient.make_config(config_name)
 
   api.gclient.set_config('chromium')
   api.gclient.apply_config(api.properties.get('apply_gclient_config'))
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(apply_gclient_config='checkout_instrumented_libraries'),

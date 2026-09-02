@@ -6,17 +6,33 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-  'chromium_android',
-  'depot_tools/bot_update',
-  'depot_tools/gclient',
-  'recipe_engine/context',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_android
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import context, path, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium_android: chromium_android.API
+  context: context.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  path: path.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   # Sets api.path.checkout_dir.
   update_result = api.bot_update.ensure_checkout()
@@ -33,7 +49,7 @@ def RunSteps(api):
       globs=globs)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def check_args(check, step_odict, expected_cwd, expected_args):
     step_name = 'unzip_build_product'
     expected_cwd = expected_cwd or api.path.checkout_dir

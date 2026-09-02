@@ -10,15 +10,30 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium_tests_builder_config',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import assertions, json, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  json: json.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id = chromium_types.BuilderId.create_for_group(
       'unused-group', 'unused-builder')
 
@@ -47,7 +62,7 @@ def RunSteps(api):
         'builder_config.{}:\nexpected: {{second}}\nactual: {{first}}'.format(k))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builder_id = chromium_types.BuilderId.create_for_group(
       'fake-group', 'fake-builder')
   tester_id = chromium_types.BuilderId.create_for_group('fake-group',

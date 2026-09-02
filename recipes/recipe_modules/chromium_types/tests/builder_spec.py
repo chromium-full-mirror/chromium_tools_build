@@ -9,10 +9,20 @@ from recipe_engine.engine_types import FrozenDict
 
 from RECIPE_MODULES.build.chromium_types import BuilderSpec
 
-DEPS = ['recipe_engine/assertions']
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+
+
+def RunSteps(api: DEPS):
   builder_spec = BuilderSpec.create(
       chromium_config='hello',
       chromium_apply_config=['a', 'b', 'c'],
@@ -29,7 +39,7 @@ def RunSteps(api):
   api.assertions.assertEqual(builder_spec.clobber, True)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

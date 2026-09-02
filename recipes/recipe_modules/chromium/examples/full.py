@@ -10,23 +10,51 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'repro_instructions',
-    'siso',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, repro_instructions, siso
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  context: context.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  repro_instructions: repro_instructions.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso.TEST_API
+
+
+def RunSteps(api: DEPS):
   resource_usage_output_file = api.properties.get('resource_usage_output_file',
                                                   None)
 
@@ -79,7 +107,7 @@ def RunSteps(api):
         builder_id=builder_id)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.ci_build(

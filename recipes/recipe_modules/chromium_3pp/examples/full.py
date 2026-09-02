@@ -6,22 +6,46 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium_3pp',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_3pp
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    path,
+    properties,
+    raw_io,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_3pp: chromium_3pp.API
+  file: file.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium_3pp.prepare()
   api.chromium_3pp.execute()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def generate_properties(runtime_properties=None, **kwargs):
     chromium_3pp_properties = {

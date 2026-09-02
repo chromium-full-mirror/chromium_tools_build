@@ -10,16 +10,35 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_utr.instruction import (
     get_utr_instruction, get_utr_compile_instruction)
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/led',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'repro_instructions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import repro_instructions
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    led,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  led: led.API
+  properties: properties.API
+  repro_instructions: repro_instructions.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   get_utr_instruction('run', 'project', 'bucket', 'builder', ['test 1'],
                       ['filter'])
   get_utr_instruction('run', 'project', 'bucket', 'builder', [], ['filter'])
@@ -30,7 +49,7 @@ def RunSteps(api):
   get_utr_compile_instruction(api, step_result, builder_id)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('basic', api.post_process(post_process.DropExpectation))
   yield api.test(
       'orchestrator',

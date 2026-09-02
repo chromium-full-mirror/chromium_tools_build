@@ -16,13 +16,21 @@ from RECIPE_MODULES.build.attr_utils import (FieldMapping, attrib, attrs,
                                              command_args, enum, mapping,
                                              sequence, set_)
 
-DEPS = [
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions, path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  path: path.API
+
+
+def RunSteps(api: DEPS):
   # attrib *********************************************************************
   with api.assertions.assertRaises(TypeError) as caught:
     attrib(1)
@@ -330,7 +338,7 @@ def RunSteps(api):
   api.assertions.assertEqual(x.x, 'foo')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

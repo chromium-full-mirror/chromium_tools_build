@@ -5,24 +5,52 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, siso
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    runtime,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  siso: siso.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso.TEST_API
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
 import textwrap
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.chromium.set_config(
       api.properties.get('chromium_config', 'chromium_clang'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
@@ -42,7 +70,7 @@ def RunSteps(api):
       ninja_path=api.properties.get('ninja_path'))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

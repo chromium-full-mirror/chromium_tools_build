@@ -4,18 +4,33 @@
 
 from recipe_engine import post_process
 
-DEPS = [
-    'devtools',
-    'recipe_engine/buildbucket',
-    'depot_tools/tryserver',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import devtools
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import buildbucket
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  devtools: devtools.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.devtools.shallow_checkout(depth=2)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   yield api.test(

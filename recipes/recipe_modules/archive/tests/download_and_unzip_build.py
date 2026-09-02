@@ -6,14 +6,28 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
-DEPS = [
-    'archive',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import archive
+from RECIPE_MODULES.recipe_engine import path, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   api.archive.download_and_unzip_build(
       'extract build',
@@ -25,7 +39,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(

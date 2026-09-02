@@ -9,15 +9,30 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium_tests_builder_config',
-    'findit',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests_builder_config, findit
+from RECIPE_MODULES.recipe_engine import assertions, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  findit: findit.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   target_builder_id = api.properties['target_builder_id']
 
   builder_config = api.findit.get_builder_config(target_builder_id)
@@ -32,7 +47,8 @@ def RunSteps(api):
     api.assertions.assertEqual(builder_config.targets_spec_directory,
                                api.properties['targets_spec_directory'])
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   builder_id = chromium_types.BuilderId.create_for_group(
       'fake-group', 'fake-builder')
   tester_id = chromium_types.BuilderId.create_for_group('fake-group',

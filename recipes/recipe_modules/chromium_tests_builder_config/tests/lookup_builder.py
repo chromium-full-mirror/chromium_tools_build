@@ -16,12 +16,28 @@ from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
 from PB.go.chromium.org.luci.buildbucket.proto \
   import builder_common as builder_common_pb2
 
-DEPS = [
-    'chromium',
-    'chromium_tests_builder_config',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import assertions, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'expected_attrs': recipe_api.Property(kind=Dict(), default={}),
@@ -63,7 +79,7 @@ TRY_DB = ctbc.TryDatabase.create({
 })
 
 
-def RunSteps(api, expected_attrs, use_static_dbs):
+def RunSteps(api: DEPS, expected_attrs, use_static_dbs):
   lookup_kwargs = {}
   if not use_static_dbs:
     lookup_kwargs = {'builder_db': BUILDER_DB, 'try_db': TRY_DB}
@@ -76,7 +92,7 @@ def RunSteps(api, expected_attrs, use_static_dbs):
         'Expected value of {} to be {{second}}, got {{first}}'.format(k))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),

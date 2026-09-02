@@ -11,16 +11,32 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec,
                                                                 try_spec)
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'dawn',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, dawn
+from RECIPE_MODULES.recipe_engine import platform, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  dawn: dawn.API
+  platform: platform.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  dawn: dawn.TEST_API
+  platform: platform.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.dawn.try_steps()
   api.step('Success', ['echo', 'Success!'])
 
@@ -89,7 +105,7 @@ _TEST_SPECS = {
 }
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'not_a_tryjob',
       api.platform('linux', 64),

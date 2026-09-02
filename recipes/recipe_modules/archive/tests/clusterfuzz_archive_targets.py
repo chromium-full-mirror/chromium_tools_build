@@ -10,17 +10,39 @@ import json
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, LogEquals,
                                         MustRun, StepCommandContains)
 
-DEPS = [
-    'archive',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import archive
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    path,
+    properties,
+    runtime,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  buildbucket: buildbucket.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = source_dir / 'out/Release'
 
@@ -47,7 +69,7 @@ def RunSteps(api):
       **kwargs)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   expected_zip_paths = json.dumps([
       'clusterfuzz_manifest.json',
       'out/Release/args.gn',

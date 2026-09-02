@@ -8,15 +8,31 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, siso
+from RECIPE_MODULES.recipe_engine import file, path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  file: file.API
+  path: path.API
+  siso: siso.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  path: path.TEST_API
+  siso: siso.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = source_dir / 'out/Release'
@@ -30,7 +46,7 @@ def RunSteps(api):
     return api.chromium.compile(source_dir, build_dir)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('basic',
                  api.post_check(post_process.MustRun, 'create compile guard'),
                  api.post_check(post_process.MustRun, 'remove compile guard'),

@@ -14,23 +14,38 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'filter',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests, chromium_tests_builder_config, filter as filter_module
+from RECIPE_MODULES.recipe_engine import properties, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  filter: filter_module.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   api.chromium_tests.trybot_steps(builder_id, builder_config)
   api.step('Success', ['echo', 'Success!'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for builder_id in sorted(ctbc.trybots.TRYBOTS):
     builder_group = builder_id.group
     buildername = builder_id.builder

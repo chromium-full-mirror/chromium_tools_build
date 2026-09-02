@@ -6,14 +6,23 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
-DEPS = [
-    'recipe_engine/path',
-    'chromium',
-    'chromium_android',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_android
+from RECIPE_MODULES.recipe_engine import path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  path: path.API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('base_config')
   source_dir = api.path.cache_dir / 'builder/src'
@@ -21,7 +30,7 @@ def RunSteps(api):
   api.chromium_android.provision_devices(source_dir, emulators=True)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(StepCommandContains, 'provision_devices', [

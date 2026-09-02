@@ -10,19 +10,45 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.binary_size import constants
 
-DEPS = [
-    'binary_size',
-    'depot_tools/tryserver',
-    'filter',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import binary_size, filter as filter_module
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    platform,
+    properties,
+    time,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  binary_size: binary_size.API
+  file: file.API
+  filter: filter_module.API
+  json: json.API
+  platform: platform.API
+  properties: properties.API
+  time: time.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  binary_size: binary_size.TEST_API
+  file: file.TEST_API
+  filter: filter_module.TEST_API
+  json: json.TEST_API
+  time: time.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS):
   return api.binary_size.android_binary_size(
       chromium_config='chromium',
       chromium_apply_configs=['mb'],
@@ -31,7 +57,7 @@ def RunSteps(api):
       try_gs_analysis=True)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def override_expectation_to_fail(with_patch=True, use_alternative=False):
     suffix = ' (with patch)' if with_patch else ' (without patch)'

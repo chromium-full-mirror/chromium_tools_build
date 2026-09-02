@@ -6,16 +6,25 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests.steps import MockTestSpec
 
-DEPS = [
-    'chromium_rts',
-    'chromium_tests',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_rts, chromium_tests
+from RECIPE_MODULES.recipe_engine import file, path, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_rts: chromium_rts.API
+  chromium_tests: chromium_tests.API
+  file: file.API
+  path: path.API
+  properties: properties.API
+
+
+def RunSteps(api: DEPS):
   spec = MockTestSpec.create(
       name='blink_web_tests',
       runs_on_swarming=True,
@@ -47,7 +56,7 @@ def RunSteps(api):
   assert test2.raw_cmd != ['/bin/rts_cmd']
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'set_swarming_test_execution_info',
       api.post_process(post_process.DropExpectation),

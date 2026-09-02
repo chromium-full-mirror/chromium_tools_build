@@ -8,12 +8,20 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests_builder_config import builder_spec
 
-DEPS = [
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+
+
+def RunSteps(api: DEPS):
   api.assertions.maxDiff = None
 
   # Test evolve method
@@ -115,7 +123,7 @@ def RunSteps(api):
   api.assertions.assertEqual(str(caught.exception), message)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

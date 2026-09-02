@@ -11,11 +11,26 @@ from PB.go.chromium.org.luci.swarming.proto.api_v2 import (
     swarming as swarming_pb)
 from PB.infra.chromium import chromium_bootstrap
 
-DEPS = [
-    'chromium_bootstrap',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_bootstrap as chromium_bootstrap_module
+from RECIPE_MODULES.recipe_engine import assertions, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_bootstrap: chromium_bootstrap_module.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_bootstrap: chromium_bootstrap_module.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'expected_exe_cas_hash': Property(kind=str),
@@ -23,14 +38,14 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, expected_exe_cas_hash, expected_exe_cas_size_bytes):
+def RunSteps(api: DEPS, expected_exe_cas_hash, expected_exe_cas_size_bytes):
   exe = api.chromium_bootstrap.exe
   api.assertions.assertEqual(exe.cas.digest.hash, expected_exe_cas_hash)
   api.assertions.assertEqual(exe.cas.digest.size_bytes,
                              expected_exe_cas_size_bytes)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium_bootstrap.properties(

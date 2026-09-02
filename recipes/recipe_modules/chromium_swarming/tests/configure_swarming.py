@@ -7,16 +7,31 @@ from __future__ import annotations
 from recipe_engine import post_process
 
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_swarming
+from RECIPE_MODULES.recipe_engine import path, properties, runtime
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('android', TARGET_PLATFORM='android')
 
   api.chromium_swarming.configure_swarming(
@@ -26,7 +41,7 @@ def RunSteps(api):
                                                         'merge_scripts'))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'precommit_cq',
       api.properties(

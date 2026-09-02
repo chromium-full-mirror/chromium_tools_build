@@ -5,24 +5,66 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_swarming',
-    'code_coverage',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'swarming_client',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_swarming as chromium_swarming_module,
+    code_coverage,
+    swarming_client,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    runtime,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_swarming: chromium_swarming_module.API
+  code_coverage: code_coverage.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+  swarming: swarming.API
+  swarming_client: swarming_client.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming_module.TEST_API
+  code_coverage: code_coverage.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  runtime: runtime.TEST_API
+  swarming: swarming.TEST_API
+  test_utils: test_utils.TEST_API
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
@@ -47,7 +89,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, platforms, custom_trigger_script,
+def RunSteps(api: DEPS, platforms, custom_trigger_script,
              show_outputs_ref_in_collect_step, gtest_task, isolated_script_task,
              merge, trigger_script, named_caches, service_account,
              wait_for_tasks, realm, resultdb_spec, raw_cmd):
@@ -219,7 +261,7 @@ def RunSteps(api, platforms, custom_trigger_script,
   api.file.rmtree('remove temp dir', temp_dir)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.ci_build(
@@ -775,7 +817,7 @@ def GenTests(api):
       api.chromium.ci_build(
           builder_group='test_group',
           builder='test_buildername',
-      ), api.m.code_coverage(use_clang_coverage=True),
+      ), api.code_coverage(use_clang_coverage=True),
       api.step_data(
           'archive for linux',
           stdout=api.raw_io.output_text(

@@ -6,14 +6,35 @@ from __future__ import annotations
 
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'flaky_reproducer',
-    'recipe_engine/step',
-    'recipe_engine/json',
-    'recipe_engine/raw_io',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flaky_reproducer
+from RECIPE_MODULES.recipe_engine import (
+    json,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  flaky_reproducer: flaky_reproducer.API
+  json: json.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
 
 PROPERTIES = {
     'task_id': Property(default=None, kind=str),
@@ -23,7 +44,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, task_id, build_id, test_name, test_id):
+def RunSteps(api: DEPS, task_id, build_id, test_name, test_id):
   ret = api.flaky_reproducer.query_resultdb_for_task_id_and_test_name(
       task_id=task_id, build_id=build_id, test_name=test_name, test_id=test_id)
   with api.step.nest('result') as presentation:
@@ -40,7 +61,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (
 )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   query_test_results = resultdb_pb2.QueryTestResultsResponse(
       test_results=[
           test_result_pb2.TestResult(

@@ -23,38 +23,100 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 
-DEPS = [
-    'chromium',
-    'chromium_orchestrator',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'depot_tools/gclient',
-    'depot_tools/gitiles',
-    'depot_tools/tryserver',
-    'filter',
-    'flakiness',
-    'profiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cv',
-    'recipe_engine/cq',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'skylab',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_orchestrator,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    filter as filter_module,
+    flakiness,
+    profiles,
+    skylab,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import gclient, gitiles, tryserver as tryserver_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cq,
+    cv,
+    file,
+    json,
+    luci_analysis,
+    path,
+    properties,
+    raw_io,
+    resultdb,
+    runtime,
+    step,
+    swarming,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_orchestrator: chromium_orchestrator.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  cq: cq.API
+  cv: cv.API
+  file: file.API
+  filter: filter_module.API
+  flakiness: flakiness.API
+  gclient: gclient.API
+  gitiles: gitiles.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  path: path.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  runtime: runtime.API
+  skylab: skylab.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_orchestrator: chromium_orchestrator.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  cq: cq.TEST_API
+  cv: cv.TEST_API
+  file: file.TEST_API
+  flakiness: flakiness.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  runtime: runtime.TEST_API
+  skylab: skylab.TEST_API
+  swarming: swarming.TEST_API
+  test_utils: test_utils.TEST_API
+  tryserver: tryserver_module.TEST_API
+
+
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
   api.path.mock_add_paths(
       api.profiles.profile_dir().joinpath('overall-merged.profdata'))
@@ -62,7 +124,7 @@ def RunSteps(api):
   return api.chromium_orchestrator.trybot_steps()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def ctbc_properties(**kwargs):

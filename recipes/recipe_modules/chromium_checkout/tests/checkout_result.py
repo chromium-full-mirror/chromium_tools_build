@@ -5,13 +5,22 @@
 from recipe_engine import post_process
 from RECIPE_MODULES.build.chromium_checkout import checkout_result
 
-DEPS = [
-    'chromium_checkout',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout
+from RECIPE_MODULES.recipe_engine import path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_checkout: chromium_checkout.API
+  path: path.API
+
+
+def RunSteps(api: DEPS):
   checkout_dir = api.path.cache_dir / 'builder'
   source_dir = checkout_dir / 'src'
 
@@ -79,7 +88,7 @@ def RunSteps(api):
   assert adapter_no_patch.patch_root is None
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(post_process.DropExpectation),

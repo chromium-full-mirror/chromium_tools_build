@@ -8,18 +8,34 @@ from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.buildbucket.proto import common
 
-DEPS = [
-    'chromium_bootstrap',
-    'depot_tools/gclient',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_bootstrap
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import assertions, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_bootstrap: chromium_bootstrap.API
+  gclient: gclient.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_bootstrap: chromium_bootstrap.TEST_API
+  properties: properties.TEST_API
 
 DEFAULT_REPO = 'fake-repo'
 DEFAULT_HASH = 'default-hash'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   gclient_config = api.gclient.make_config()
   for repo, path in api.properties.get('paths_by_repo', {}).items():
     s = gclient_config.solutions.add()
@@ -38,7 +54,7 @@ def RunSteps(api):
       callback(manifest)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def paths_by_repo(paths_by_repo):
     return api.properties(paths_by_repo=paths_by_repo)

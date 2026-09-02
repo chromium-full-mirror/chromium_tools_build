@@ -9,15 +9,32 @@ from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 
-DEPS = [
-    'chromium',
-    'chromium_android',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_android
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import context, path, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  context: context.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'gclient_config': Property(default='chromium'),
@@ -33,7 +50,7 @@ def fake_dep(c):
   c.repo_path_map[FAKE_DEP_REPO_URL] = (FAKE_DEP_REPO_REL_PATH, None)
 
 
-def RunSteps(api, gclient_config, additional_repos):
+def RunSteps(api: DEPS, gclient_config, additional_repos):
   api.gclient.set_config(gclient_config)
   api.gclient.c.target_os = ['android']
   with api.context(cwd=api.path.cache_dir / 'builder'):
@@ -41,7 +58,7 @@ def RunSteps(api, gclient_config, additional_repos):
   api.chromium_android.run_tree_truth(update_result, additional_repos)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def tree_truth_for_repos(check, steps, repo, *additional_repos):
     source_dir = api.path.cache_dir / 'builder/src'

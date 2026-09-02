@@ -7,14 +7,28 @@ from __future__ import annotations
 from recipe_engine import post_process
 
 
-DEPS = [
-  'chromium',
-  'chromium_android',
-  'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_android
+from RECIPE_MODULES.recipe_engine import properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   chromium_config_kwargs = {
       'BUILD_CONFIG': 'Debug',
       'TARGET_ARCH': 'arm',
@@ -33,7 +47,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'cronet_builder',
       api.properties(chromium_config='cronet_builder'),

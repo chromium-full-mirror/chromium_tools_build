@@ -6,13 +6,32 @@ from __future__ import annotations
 
 import json
 
-DEPS = [
-  'chromium_swarming',
-  'recipe_engine/assertions',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
-  'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_swarming: chromium_swarming.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
@@ -25,7 +44,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, task_to_retry, none_trigger_output, expected_value,
+def RunSteps(api: DEPS, task_to_retry, none_trigger_output, expected_value,
              expected_inv_names):
   kwargs = {}
   if task_to_retry:
@@ -66,7 +85,7 @@ def RunSteps(api, task_to_retry, none_trigger_output, expected_value,
     api.assertions.assertEqual(task.get_invocation_names(), expected_inv_names)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(expected_value='10 11 12'),

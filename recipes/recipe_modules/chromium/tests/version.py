@@ -6,13 +6,28 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.recipe_engine import assertions, path
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  path: path.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   version = api.chromium.get_version(source_dir)
   api.assertions.assertEqual(version, {
@@ -22,7 +37,8 @@ def RunSteps(api):
       'PATCH': '2',
   })
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'override_version',
       api.chromium.override_version(major=123, minor=1, build=9876, patch=2),

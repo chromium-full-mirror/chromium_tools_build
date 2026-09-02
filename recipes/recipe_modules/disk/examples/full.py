@@ -5,17 +5,32 @@
 from __future__ import annotations
 
 
-DEPS = [
-  'disk',
-  'recipe_engine/json',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import disk
+from RECIPE_MODULES.recipe_engine import json, platform, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  disk: disk.API
+  json: json.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 GIB = 1 << 30
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   default_usage1 = {
     'capacity': 100 * GIB,
     'used': 50 * GIB,
@@ -42,7 +57,8 @@ def RunSteps(api):
       step_test_data=lambda: api.json.test_api.output_stream(default_usage2),
       previous_result=usage1)
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test('basic')
   yield api.test(
       'high_usage',

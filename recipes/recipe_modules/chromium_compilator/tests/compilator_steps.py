@@ -31,39 +31,95 @@ from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
 from PB.turboci.graph.orchestrator.v1.check_state import CheckState
 from PB.turboci.graph.orchestrator.v1.workplan import WorkPlan
 
-DEPS = [
-    'chromium',
-    'chromium_compilator',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'depot_tools/tryserver',
-    'filter',
-    'flakiness',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cv',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_compilator,
+    chromium_tests as chromium_tests_module,
+    chromium_tests_builder_config,
+    code_coverage,
+    filter as filter_module,
+    flakiness,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cv,
+    file,
+    json,
+    luci_analysis,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    runtime,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_compilator: chromium_compilator.API
+  chromium_tests: chromium_tests_module.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  cv: cv.API
+  file: file.API
+  filter: filter_module.API
+  flakiness: flakiness.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  runtime: runtime.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests_module.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  cv: cv.TEST_API
+  file: file.TEST_API
+  filter: filter_module.TEST_API
+  flakiness: flakiness.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  runtime: runtime.TEST_API
+  test_utils: test_utils.TEST_API
+  tryserver: tryserver.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   return api.chromium_compilator.compilator_steps(properties)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   _TEST_BUILDERS = ctbc.BuilderDatabase.create({
       'chromium.test': {
           'chromium-rel':

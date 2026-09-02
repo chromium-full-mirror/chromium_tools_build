@@ -11,16 +11,31 @@ from PB.recipe_modules.build.code_coverage.tests.api.get_chromium_fuzz_coverage 
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.code_coverage import constants
 
-DEPS = [
-    'code_coverage',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import code_coverage
+from RECIPE_MODULES.recipe_engine import path, properties, raw_io
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  code_coverage: code_coverage.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties: InputProperties):
+def RunSteps(api: DEPS, properties: InputProperties):
   overall = properties.overall if properties.HasField('overall') else True
   api.code_coverage.get_chromium_fuzz_coverage(
       api.path.start_dir / 'checkout',
@@ -31,7 +46,7 @@ def RunSteps(api, properties: InputProperties):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'overall',
       api.properties(targets=['blink_unittest_fake_fuzzer', 'fake_fuzzer']),

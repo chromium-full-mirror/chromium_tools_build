@@ -6,13 +6,22 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'flakiness',
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  flakiness: flakiness.API
+
+
+def RunSteps(api: DEPS):
   test_data = [{
       'test_id': 'ninja://some/test:module/TestSuite.test_a',
       'variant_hash': 'test_a',
@@ -23,7 +32,7 @@ def RunSteps(api):
                              'test_a') in tests)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(post_process.DropExpectation),

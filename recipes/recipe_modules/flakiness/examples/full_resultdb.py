@@ -18,20 +18,49 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 \
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'flakiness',
-    'recipe_engine/assertions',
-    'recipe_engine/step',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    flakiness,
+)
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    raw_io,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  flakiness: flakiness.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  flakiness: flakiness.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+
+
+def RunSteps(api: DEPS):
   # These steps are to mimic the Chromium try recipe before we actually call the
   # flakiness workflow for testing.
   b_id, b_config = api.chromium_tests_builder_config.lookup_builder()
@@ -39,7 +68,7 @@ def RunSteps(api):
     api.chromium_tests.trybot_steps(b_id, b_config)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builder_db = ctbc.BuilderDatabase.create({
       'fake-group': {
           'fake-builder':

@@ -10,12 +10,27 @@ from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.chromium.config import config_ctx
 
-DEPS = [
-    'chromium',
-    'recipe_engine/assertions',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.recipe_engine import assertions, platform, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'config': Property(kind=str, default=''),
@@ -28,7 +43,7 @@ def bad_generator(c):
   c.project_generator.tool = 'this is not a valid generator'
 
 
-def RunSteps(api, config, host_platform, target_platform):
+def RunSteps(api: DEPS, config, host_platform, target_platform):
   with api.assertions.assertRaises(BadConf):
     api.chromium.set_config(
         config,
@@ -37,7 +52,7 @@ def RunSteps(api, config, host_platform, target_platform):
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'bad_generator',
       api.properties(config='bad_generator'),

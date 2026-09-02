@@ -12,32 +12,69 @@ from PB.go.chromium.org.luci.swarming.proto.api_v2 import (
     swarming as swarming_pb)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'chromium',
-    'chromium_bootstrap',
-    'chromium_orchestrator',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'depot_tools/tryserver',
-    'recipe_engine/file',
-    'recipe_engine/led',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_bootstrap as chromium_bootstrap_module,
+    chromium_orchestrator,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    led,
+    properties,
+    step,
+    swarming,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_bootstrap: chromium_bootstrap_module.API
+  chromium_orchestrator: chromium_orchestrator.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  file: file.API
+  json: json.API
+  led: led.API
+  properties: properties.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_bootstrap: chromium_bootstrap_module.TEST_API
+  chromium_orchestrator: chromium_orchestrator.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   return api.chromium_orchestrator.trybot_steps()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def ctbc_properties():

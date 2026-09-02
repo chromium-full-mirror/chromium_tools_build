@@ -6,16 +6,25 @@
 from __future__ import annotations
 
 
-DEPS = [
-  'chromiumdash',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromiumdash
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromiumdash: chromiumdash.API
+
+
+def RunSteps(api: DEPS):
   api.chromiumdash.releases('Android', 'Beta', 1)
   api.chromiumdash.milestones(3, only_branched=True)
   api.chromiumdash.milestones(0, only_active=True)
   api.chromiumdash.fetch_commit_info('abcdefg')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test('basic')

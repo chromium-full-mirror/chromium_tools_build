@@ -13,12 +13,20 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from PB.recipe_modules.build.chromium_tests_builder_config.properties import (
     BuilderSpec, BuilderDatabase, BuilderConfig, InputProperties)
 
-DEPS = [
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+
+
+def RunSteps(api: DEPS):
 
   def assert_invalid(obj, *expected_errors):
     errors = proto.VALIDATORS.validate(obj, '$test')
@@ -325,7 +333,7 @@ def RunSteps(api):
   api.assertions.assertTrue(converted_config_shallow.shallow)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

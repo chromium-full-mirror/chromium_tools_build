@@ -6,18 +6,32 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'flakiness',
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  flakiness: flakiness.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  flakiness: flakiness.TEST_API
+
+
+def RunSteps(api: DEPS):
   id_tests = api.flakiness.check_for_flakiness
   api.assertions.assertEqual(id_tests, True)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

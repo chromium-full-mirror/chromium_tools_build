@@ -5,20 +5,42 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium_swarming',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.recipe_engine import (
+    platform,
+    properties,
+    runtime,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_swarming: chromium_swarming.API
+  platform: platform.API
+  properties: properties.API
+  runtime: runtime.API
+  swarming: swarming.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_swarming: chromium_swarming.TEST_API
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
+  swarming: swarming.TEST_API
 
 import datetime
 
 from recipe_engine import recipe_test_api, post_process
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   opt_dims = api.properties.get('optional_dimensions')
   cas_input_root = api.properties.get('cas_input_root')
   task = api.chromium_swarming.task(
@@ -45,7 +67,7 @@ def RunSteps(api):
   api.chromium_swarming.collect_task(task)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'wait_for_capacity',

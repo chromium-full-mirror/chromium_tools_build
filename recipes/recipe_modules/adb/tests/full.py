@@ -5,15 +5,24 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'adb',
-    'recipe_engine/path',
-    'recipe_engine/step',
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import adb
+from RECIPE_MODULES.recipe_engine import assertions, path, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  adb: adb.API
+  assertions: assertions.API
+  path: path.API
+  step: step.API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   default_adb_path = api.adb.default_adb_path(source_dir)
   api.assertions.assertEqual(
@@ -23,5 +32,5 @@ def RunSteps(api):
   api.adb.root_devices(source_dir / 'custom/adb/path')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test('basic')

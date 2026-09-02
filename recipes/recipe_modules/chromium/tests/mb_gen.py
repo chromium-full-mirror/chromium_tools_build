@@ -9,13 +9,35 @@ import textwrap
 
 from RECIPE_MODULES.build import chromium, chromium_types
 
-DEPS = [
-    'chromium',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/json',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium as chromium_module
+from RECIPE_MODULES.recipe_engine import (
+    json,
+    path,
+    platform,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium_module.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium_module.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 
 @chromium.config.config_ctx()
@@ -36,7 +58,7 @@ def mb_two_isolate_maps(c):
   ]
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.chromium.set_config(
       api.properties.get('chromium_config', 'chromium'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
@@ -60,7 +82,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

@@ -13,12 +13,28 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from PB.recipe_modules.build.chromium_polymorphic.properties \
     import BuilderGroupAndName
 
-DEPS = [
-    'chromium_polymorphic',
-    'chromium_tests_builder_config',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_polymorphic, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import assertions, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_polymorphic: chromium_polymorphic.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_polymorphic: chromium_polymorphic.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'allow_tester': Property(default=False),
@@ -27,7 +43,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, allow_tester, expected_builder_id, expected_tester_ids):
+def RunSteps(api: DEPS, allow_tester, expected_builder_id, expected_tester_ids):
   builder_id, builder_config = api.chromium_polymorphic.lookup_builder_config(
       allow_tester=allow_tester)
   api.assertions.assertEqual(builder_id, expected_builder_id)
@@ -44,7 +60,7 @@ def RunSteps(api, allow_tester, expected_builder_id, expected_tester_ids):
       expected_builder_ids_in_scope_for_testing)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

@@ -8,22 +8,53 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_build_perf',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'reclient',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_build_perf,
+    chromium_tests,
+    chromium_tests_builder_config,
+    reclient,
+    siso,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    path,
+    platform,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_build_perf: chromium_build_perf.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  reclient: reclient.API
+  siso: siso.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  reclient: reclient.TEST_API
+  siso: siso.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id = chromium_types.BuilderId.create_for_group(
       api.builder_group.for_current, api.buildbucket.builder_name)
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
@@ -80,7 +111,7 @@ def RunSteps(api):
   api.chromium_build_perf.upload_build_stats_to_bq(rusage, include_analysis)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
   builder = {
       'builder_group': 'fake-group',

@@ -12,20 +12,42 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 
-DEPS = [
-    'flakiness',
-    'recipe_engine/buildbucket',
-    'recipe_engine/led',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    led,
+    properties,
+    resultdb,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  flakiness: flakiness.API
+  led: led.API
+  properties: properties.API
+  resultdb: resultdb.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  flakiness: flakiness.TEST_API
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.flakiness.identify_new_test_variants()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   basic_build = build_pb2.Build(
       builder=builder_common_pb2.BuilderID(
           builder='Builder', project='chromium', bucket='try'),

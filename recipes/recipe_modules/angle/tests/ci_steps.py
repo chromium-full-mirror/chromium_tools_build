@@ -10,18 +10,43 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec)
 
-DEPS = [
-    'chromium_tests',
-    'angle',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import angle, chromium_tests
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    path,
+    platform,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  angle: angle.API
+  chromium_tests: chromium_tests.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  angle: angle.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   res, _ = api.angle.ci_steps()
   if res:
     return res
@@ -141,7 +166,7 @@ _TEST_SPECS = {
 }
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'linux_compile_and_test',
       api.platform('linux', 64),

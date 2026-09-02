@@ -6,18 +6,32 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium_gerrit_utils',
-    'depot_tools/gerrit',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_gerrit_utils
+from RECIPE_MODULES.depot_tools import gerrit
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_gerrit_utils: chromium_gerrit_utils.API
+  gerrit: gerrit.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  gerrit: gerrit.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium_gerrit_utils.create_temp_cl('some/file/path', 'some-topic')
   api.chromium_gerrit_utils.abandon_old_cls('some-topic', '24h')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.override_step_data(

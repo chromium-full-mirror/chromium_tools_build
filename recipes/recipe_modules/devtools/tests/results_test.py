@@ -6,14 +6,23 @@ from recipe_engine import post_process
 from recipe_engine.recipe_api import StepFailure, InfraFailure
 from RECIPE_MODULES.build.devtools.commons import Results
 
-DEPS = [
-    'devtools',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import devtools
+from RECIPE_MODULES.recipe_engine import properties, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  devtools: devtools.API
+  properties: properties.API
+  step: step.API
+
+
+def RunSteps(api: DEPS):
   # 1. Basic addition of Results objects and explicit add methods
   r1 = Results()
   r1.add_infra_failure('infra1')
@@ -81,5 +90,5 @@ def RunSteps(api):
   api.step.empty('Results unit tests verified')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test('basic', api.post_process(post_process.DropExpectation))

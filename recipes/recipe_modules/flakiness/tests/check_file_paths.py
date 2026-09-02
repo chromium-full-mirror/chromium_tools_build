@@ -7,13 +7,27 @@ from __future__ import annotations
 from recipe_engine import post_process
 from RECIPE_MODULES.build.flakiness.utils import TestDefinition
 
-DEPS = [
-    'flakiness',
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  flakiness: flakiness.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  flakiness: flakiness.TEST_API
+
+
+def RunSteps(api: DEPS):
   affected_files = [
       'some/test/path/test.cc',
       'some/nontest/path/fake_base.cc',
@@ -47,7 +61,7 @@ def RunSteps(api):
   api.assertions.assertEqual(2, len(final_result))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.flakiness(check_for_flakiness=True,),

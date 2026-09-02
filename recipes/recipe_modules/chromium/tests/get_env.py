@@ -6,17 +6,37 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, StepEnvContains
 
-DEPS = [
-    'chromium',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    path,
+    platform,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  context: context.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium', TARGET_PLATFORM='mac')
 
   source_dir = api.path.cache_dir / 'builder/src'
@@ -25,7 +45,7 @@ def RunSteps(api):
     api.step('test', ['echo', 'foo'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

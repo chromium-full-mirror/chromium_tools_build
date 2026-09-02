@@ -10,14 +10,22 @@ from RECIPE_MODULES.build.chromium_types import BuilderId
 from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec)
 
-DEPS = [
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
 
 EMPTY_SPEC = builder_spec.BuilderSpec.create()
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.assertions.maxDiff = None
 
   db = builder_db.BuilderDatabase.create({
@@ -96,7 +104,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

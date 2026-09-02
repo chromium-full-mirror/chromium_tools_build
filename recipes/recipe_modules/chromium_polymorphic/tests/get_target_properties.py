@@ -16,11 +16,26 @@ from PB.recipe_modules.build.chromium_polymorphic.properties \
     import BuilderGroupAndName, TesterFilter
 
 
-DEPS = [
-    'chromium_polymorphic',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_polymorphic
+from RECIPE_MODULES.recipe_engine import assertions, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_polymorphic: chromium_polymorphic.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_polymorphic: chromium_polymorphic.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'builder_id': Property(kind=dict),
@@ -29,7 +44,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, builder_id, tester_filter, expected_properties):
+def RunSteps(api: DEPS, builder_id, tester_filter, expected_properties):
   builder_id = builder_common_pb.BuilderID(**builder_id)
   tester_filter_proto = None
   if tester_filter:
@@ -41,7 +56,7 @@ def RunSteps(api, builder_id, tester_filter, expected_properties):
   api.assertions.assertEqual(properties, expected_properties)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builder_id = {
       'project': 'fake-project',
       'bucket': 'fake-bucket',

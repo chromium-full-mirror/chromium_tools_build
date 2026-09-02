@@ -8,23 +8,51 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_polymorphic',
-    'chromium_reviver',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'test_utils',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_polymorphic,
+    chromium_reviver,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import raw_io
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_polymorphic: chromium_polymorphic.API
+  chromium_reviver: chromium_reviver.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  raw_io: raw_io.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_polymorphic: chromium_polymorphic.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  raw_io: raw_io.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   return api.chromium_reviver.run()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

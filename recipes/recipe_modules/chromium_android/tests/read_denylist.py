@@ -7,17 +7,38 @@ from __future__ import annotations
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         StepCommandContains, StepSuccess)
 
-DEPS = [
-    'chromium_android',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/path',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_android
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_android: chromium_android.API
+  file: file.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   if api.properties['denylist_exists']:
     api.path.mock_add_paths(api.chromium_android.denylist_file(source_dir))
@@ -26,7 +47,7 @@ def RunSteps(api):
   api.step('print devices', ['echo'] + available_devices)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'denylisted_device',
       api.properties(denylist_exists=True),

@@ -8,17 +8,41 @@ from recipe_engine.engine_types import freeze
 from recipe_engine import post_process
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'chromium',
-    'chromium_android',
-    'cronet',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_android,
+    cronet,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import buildbucket, properties, runtime
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  cronet: cronet.API
+  gclient: gclient.API
+  properties: properties.API
+  runtime: runtime.API
+  siso: siso.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  chromium: chromium.TEST_API
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
+  siso: siso.TEST_API
 
 BUILDERS = freeze({
     'local_test': {
@@ -51,7 +75,7 @@ BUILDERS = freeze({
 })
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   builder_config = BUILDERS.get(api.buildbucket.builder_name, {})
   kwargs = builder_config.get('kwargs', {})
   chromium_apply_config = builder_config.get('chromium_apply_config', [])
@@ -80,7 +104,7 @@ def RunSteps(api):
   return cronet.upload_package(source_dir, kwargs['BUILD_CONFIG'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for builder in BUILDERS:
     for is_experimental in (False, True):
       test_name = builder

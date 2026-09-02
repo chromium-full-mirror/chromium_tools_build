@@ -12,14 +12,37 @@ from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium_tests_builder_config',
-    'chromium_tests_builder_config_verifier',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests_builder_config, chromium_tests_builder_config_verifier
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    path,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_tests_builder_config_verifier: chromium_tests_builder_config_verifier.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  chromium_tests_builder_config_verifier: chromium_tests_builder_config_verifier.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'dbs': Property(default=()),
@@ -28,7 +51,7 @@ PROPERTIES = {
 _PROPS_DIR = 'props-files'
 
 
-def RunSteps(api, dbs):
+def RunSteps(api: DEPS, dbs):
   # We need some fake path to use as the repo path
   repo_path = api.path.start_dir
 
@@ -40,7 +63,7 @@ def RunSteps(api, dbs):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def dumps(obj):
     return api.json.dumps(obj, indent=2)

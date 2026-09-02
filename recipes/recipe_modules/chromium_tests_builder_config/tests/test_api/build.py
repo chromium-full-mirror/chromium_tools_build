@@ -11,13 +11,28 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_tests_builder_config import (
     builders, trybots, BuilderDatabase, BuilderSpec, TryDatabase, TrySpec)
 
-DEPS = [
-    'chromium',
-    'chromium_tests_builder_config',
-    'recipe_engine/assertions',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import assertions, platform, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 BUILDER_DB = BuilderDatabase.create({
     'fake-group': {
@@ -36,7 +51,7 @@ TRY_DB = TryDatabase.create({
 })
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.assertions.assertEqual(api.chromium.get_builder_id(),
                              api.properties['expected_builder_id'])
   api.assertions.assertEqual(api.chromium_tests_builder_config.builder_db,
@@ -49,7 +64,7 @@ def RunSteps(api):
                              api.properties['expected_platform_bits'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'generic-build',
       api.chromium_tests_builder_config.generic_build(

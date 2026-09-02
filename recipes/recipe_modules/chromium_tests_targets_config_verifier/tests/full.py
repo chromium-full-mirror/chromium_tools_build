@@ -10,20 +10,46 @@ from recipe_engine import recipe_test_api
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'chromium_tests_targets_config_verifier',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests, chromium_tests_builder_config, chromium_tests_targets_config_verifier
+from RECIPE_MODULES.depot_tools import gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    path,
+    properties,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_tests_targets_config_verifier: chromium_tests_targets_config_verifier.API
+  file: file.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS):
   gclient_config = api.gclient.make_config('chromium')
   if (apply_gclient_config := api.properties.get('gclient_apply_config', None)):
     api.gclient.apply_config(apply_gclient_config, gclient_config)
@@ -34,7 +60,7 @@ def RunSteps(api):
 _CTBC_PROPERTY = '$build/chromium_tests_builder_config'
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   ctbc_api = api.chromium_tests_builder_config
 

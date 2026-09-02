@@ -11,20 +11,44 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_pb
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils import util
 
-DEPS = [
-    'chromium',
-    'chromium_rts',
-    'chromium_tests',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_rts, chromium_tests
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_rts: chromium_rts.API
+  chromium_tests: chromium_tests.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   test_suite_name = api.properties.get('test_suite_name', 'MockTest')
   is_orchestrator = api.properties.get('is_orchestrator', False)
   per_suffix_valid = api.properties.get('per_suffix_valid', {})
@@ -127,7 +151,7 @@ def RunSteps(api):
   api.chromium_rts.wait_for_evaluation()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'rts_evaluation_basic_test',
       api.chromium.try_build(

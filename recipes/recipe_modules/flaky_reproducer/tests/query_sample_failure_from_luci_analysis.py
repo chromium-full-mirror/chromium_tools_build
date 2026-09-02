@@ -6,12 +6,27 @@ from __future__ import annotations
 
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'flaky_reproducer',
-    'recipe_engine/properties',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flaky_reproducer
+from RECIPE_MODULES.recipe_engine import luci_analysis, properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  flaky_reproducer: flaky_reproducer.API
+  luci_analysis: luci_analysis.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  luci_analysis: luci_analysis.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'monorail_issue': Property(default=None, kind=str),
@@ -19,7 +34,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, monorail_issue, test_id):
+def RunSteps(api: DEPS, monorail_issue, test_id):
   with api.step.nest('result') as presentation:
     build_id, test_id = (
         api.flaky_reproducer.query_sample_failure_from_luci_analysis(
@@ -31,7 +46,7 @@ def RunSteps(api, monorail_issue, test_id):
 from recipe_engine import post_process
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(monorail_issue='123', test_id='test/1'),

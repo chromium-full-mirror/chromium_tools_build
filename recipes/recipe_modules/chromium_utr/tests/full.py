@@ -12,29 +12,73 @@ from PB.recipe_modules.build.chromium_utr.request import Request
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'chromium_utr',
-    'code_coverage',
-    'siso',
-    'test_utils',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    chromium_utr,
+    code_coverage,
+    siso,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_utr: chromium_utr.API
+  code_coverage: code_coverage.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso.TEST_API
+  test_utils: test_utils.TEST_API
 
 PROPERTIES = Request
 
 
-def RunSteps(api, request):
+def RunSteps(api: DEPS, request):
   source_dir = api.path.cast_to_path(request.checkout_path)
   checkout_dir = source_dir.parent
   api.chromium_checkout.set_paths(checkout_dir, source_dir)
@@ -55,7 +99,7 @@ def RunSteps(api, request):
                               builder_config)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def gen_ctbc_properties(builder_spec=None):

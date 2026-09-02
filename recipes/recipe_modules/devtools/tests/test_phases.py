@@ -17,27 +17,63 @@ from RECIPE_MODULES.build.devtools.test_runner_base import (
     FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
 )
 
-DEPS = [
-    'devtools',
-    'chromium',
-    'chromium_swarming',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    devtools,
+    v8,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    futures,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  context: context.API
+  devtools: devtools.API
+  file: file.API
+  futures: futures.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  tryserver: tryserver.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  json: json.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.devtools.configure(
       'Release', is_official_build=False, devtools_skip_typecheck=True)
   api.devtools.update()
@@ -52,7 +88,7 @@ def RunSteps(api):
   return results.raw_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   def try_build(builder='linux'):

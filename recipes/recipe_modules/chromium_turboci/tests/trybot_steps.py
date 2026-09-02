@@ -6,18 +6,41 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'chromium_turboci',
-    'depot_tools/tryserver',
-    'recipe_engine/platform',
-    'recipe_engine/runtime',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+    chromium_turboci,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import platform, runtime
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_turboci: chromium_turboci.API
+  platform: platform.API
+  runtime: runtime.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  runtime: runtime.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.tryserver.require_is_tryserver()
 
   builder_id, builder_config = (
@@ -27,7 +50,7 @@ def RunSteps(api):
     return api.chromium_tests.trybot_steps(builder_id, builder_config)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

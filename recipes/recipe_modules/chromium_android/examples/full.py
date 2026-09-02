@@ -8,20 +8,45 @@ from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'adb',
-    'chromium',
-    'chromium_android',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import adb, chromium, chromium_android
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  adb: adb.API
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
 
 BUILDERS = freeze({
     'basic_builder': {
@@ -64,7 +89,7 @@ BUILDERS = freeze({
 })
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   config = BUILDERS[api.buildbucket.builder_name]
 
   api.chromium.set_config(
@@ -151,7 +176,8 @@ def RunSteps(api):
     # pylint: disable=raising-bad-type
     raise failure
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   def properties_for(buildername):
     return sum([
         api.chromium.ci_build(

@@ -7,21 +7,35 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'dawn',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import dawn
+from RECIPE_MODULES.recipe_engine import path, platform, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  dawn: dawn.API
+  path: path.API
+  platform: platform.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+
+
+def RunSteps(api: DEPS):
   go_paths = api.dawn.get_go_paths(api.path.start_dir)
   for i, p in enumerate(go_paths):
     api.step.empty('Path %d' % i, step_text=str(p))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'linux-amd64',
       api.platform('linux', 64, 'intel'),

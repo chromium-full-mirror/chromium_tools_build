@@ -11,19 +11,37 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
                                                                 builder_spec,
                                                                 try_spec)
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'angle',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import angle, chromium, chromium_tests
+from RECIPE_MODULES.depot_tools import gclient, tryserver
+from RECIPE_MODULES.recipe_engine import platform, properties, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  angle: angle.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  gclient: gclient.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  angle: angle.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   res = api.angle.try_steps()
   if api.tryserver.is_tryserver:
     expected_val = False if api.properties.get('no_extra_traces') else None
@@ -98,7 +116,7 @@ _TEST_SPECS = {
 }
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'not_a_tryjob',
       api.platform('linux', 64),

@@ -6,20 +6,36 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium_bootstrap',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_bootstrap
+from RECIPE_MODULES.recipe_engine import assertions, json, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_bootstrap: chromium_bootstrap.API
+  json: json.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_bootstrap: chromium_bootstrap.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Initialize gets run when the recipe module is loaded
   pass
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'not-bootstrapped',

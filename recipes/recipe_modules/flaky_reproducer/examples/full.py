@@ -8,17 +8,47 @@ import typing
 
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'flaky_reproducer',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flaky_reproducer
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    luci_analysis,
+    properties,
+    raw_io,
+    resultdb,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  file: file.API
+  flaky_reproducer: flaky_reproducer.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  swarming: swarming.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  flaky_reproducer: flaky_reproducer.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  swarming: swarming.TEST_API
 
 PROPERTIES = {
     'task_id': Property(default=None, kind=str),
@@ -30,7 +60,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, config, task_id, build_id, test_name, test_id,
+def RunSteps(api: DEPS, config, task_id, build_id, test_name, test_id,
              monorail_issue):
   api.flaky_reproducer.set_config(config)
   return api.flaky_reproducer.run(
@@ -58,7 +88,7 @@ from PB.go.chromium.org.luci.analysis.proto.v1 import (
 )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   success_swarming_results = [
       api.swarming.task_result(
           id='0',

@@ -12,21 +12,44 @@ from PB.recipe_modules.build.archive import properties
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'archive',
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/bot_update',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    archive,
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.recipe_engine import path, properties as properties_module
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  path: path.API
+  properties: properties_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  archive: archive.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties_module.TEST_API
 
 source_side_spec_path = ['archive', 'foo.json']
 non_existing_spec_path = ['non', 'existing', 'foo.json']
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   update_properties = api.properties.get('update_properties')
@@ -79,7 +102,7 @@ def _input_properties():
   return input_properties
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
