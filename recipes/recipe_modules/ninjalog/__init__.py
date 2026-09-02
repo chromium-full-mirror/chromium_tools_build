@@ -5,16 +5,32 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/time',
-    'recipe_engine/uuid',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.depot_tools import gsutil
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    time,
+    uuid,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gsutil: gsutil.API
+  buildbucket: buildbucket.API
+  context: context.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  time: time.API
+  uuid: uuid.API
 
 from .api import NinjalogApi as API

@@ -5,14 +5,28 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/led',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    led,
+    path,
+    properties,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  json: json.API
+  led: led.API
+  path: path.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
 
 from .api import ReproInstructionsApi as API

@@ -5,13 +5,26 @@
 from __future__ import annotations
 
 
-DEPS = [
-  'depot_tools/git',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/raw_io',
-  'recipe_engine/step',
-  'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.depot_tools import git
+from RECIPE_MODULES.recipe_engine import (
+    path,
+    properties,
+    raw_io,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  git: git.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  swarming: swarming.API
 
 from .api import SwarmingClientApi as API

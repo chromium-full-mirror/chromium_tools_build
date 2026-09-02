@@ -5,28 +5,60 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/url',
-    'recipe_engine/futures',
-    'v8',
-    'v8_tests',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    v8,
+    v8_tests,
+)
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    gsutil,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    file,
+    futures,
+    path,
+    platform,
+    raw_io,
+    resultdb,
+    step,
+    swarming,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  bot_update: bot_update.API
+  gclient: gclient.API
+  git: git.API
+  gsutil: gsutil.API
+  tryserver: tryserver.API
+  buildbucket: buildbucket.API
+  cas: cas.API
+  context: context.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  swarming: swarming.API
+  url: url.API
+  futures: futures.API
+  v8: v8.API
+  v8_tests: v8_tests.API
 
 from .api import DevToolsAPI as API

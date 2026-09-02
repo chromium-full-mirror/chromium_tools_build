@@ -4,17 +4,35 @@
 
 from __future__ import annotations
 
-DEPS = [
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.depot_tools import (
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    futures,
+    json,
+    path,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  git: git.API
+  tryserver: tryserver.API
+  context: context.API
+  file: file.API
+  futures: futures.API
+  json: json.API
+  path: path.API
+  raw_io: raw_io.API
+  step: step.API
 
 from .api import ChromiumTestsBuilderConfigVerifierApi as API
 from .test_api import ChromiumTestsBuilderConfigVerifierApi as TEST_API

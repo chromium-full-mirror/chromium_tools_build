@@ -8,42 +8,87 @@ from __future__ import annotations
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, List, Single
 
-DEPS = [
-    'archive',
-    'builder_group',
-    'chromium',
-    'chromiumdash',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gitiles',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'depot_tools/tryserver',
-    'gn',
-    'infra/docker',
-    'isolate',
-    'perf_dashboard',
-    'recipe_engine/buildbucket',
-    'recipe_engine/commit_position',
-    'recipe_engine/context',
-    'recipe_engine/cv',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/led',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/scheduler',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/url',
-    'siso',
-    'test_utils',
-    'v8_tests',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    archive,
+    builder_group,
+    chromium,
+    chromiumdash,
+    gn,
+    isolate,
+    perf_dashboard,
+    siso,
+    test_utils,
+    v8_tests,
+)
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    gitiles,
+    gsutil,
+    osx_sdk,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    commit_position,
+    context,
+    cv,
+    file,
+    json,
+    led,
+    path,
+    platform,
+    properties,
+    raw_io,
+    runtime,
+    scheduler,
+    step,
+    time,
+    url,
+)
+from RECIPE_MODULES.infra import docker
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromiumdash: chromiumdash.API
+  bot_update: bot_update.API
+  gclient: gclient.API
+  git: git.API
+  gitiles: gitiles.API
+  gsutil: gsutil.API
+  osx_sdk: osx_sdk.API
+  tryserver: tryserver.API
+  gn: gn.API
+  docker: docker.API
+  isolate: isolate.API
+  perf_dashboard: perf_dashboard.API
+  buildbucket: buildbucket.API
+  commit_position: commit_position.API
+  context: context.API
+  cv: cv.API
+  file: file.API
+  json: json.API
+  led: led.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  scheduler: scheduler.API
+  step: step.API
+  time: time.API
+  url: url.API
+  siso: siso.API
+  test_utils: test_utils.API
+  v8_tests: v8_tests.API
 
 PROPERTIES = {
     '$build/v8':

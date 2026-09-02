@@ -4,18 +4,40 @@
 
 from __future__ import annotations
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/step',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+)
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    json,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  bot_update: bot_update.API
+  gclient: gclient.API
+  tryserver: tryserver.API
+  context: context.API
+  file: file.API
+  json: json.API
+  path: path.API
+  step: step.API
+  properties: properties.API
 
 from .api import ChromiumTestsTargetsConfigVerifierApi as API

@@ -5,13 +5,26 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'depot_tools/gsutil',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.depot_tools import gsutil
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    platform,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gsutil: gsutil.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  step: step.API
 
 from .api import ProfilesApi as API

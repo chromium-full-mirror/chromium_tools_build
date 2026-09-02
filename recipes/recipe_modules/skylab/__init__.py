@@ -5,19 +5,39 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium_checkout',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/json',
-    'recipe_engine/raw_io',
-    'recipe_engine/path',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/time',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium_checkout,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    json,
+    path,
+    raw_io,
+    runtime,
+    step,
+    swarming,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_checkout: chromium_checkout.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  json: json.API
+  raw_io: raw_io.API
+  path: path.API
+  runtime: runtime.API
+  step: step.API
+  swarming: swarming.API
+  time: time.API
+  test_utils: test_utils.API
 
 from .api import SkylabApi as API
 from .test_api import SkylabTestApi as TEST_API

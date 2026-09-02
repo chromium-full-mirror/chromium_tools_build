@@ -6,24 +6,50 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.ssci import properties
 
-DEPS = [
-    'chromium',
-    'depot_tools/depot_tools',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/uuid',
-]
-
 PROPERTIES = properties.InputProperties
+
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    futures,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+    uuid,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  depot_tools: depot_tools.API
+  gsutil: gsutil.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  futures: futures.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  uuid: uuid.API
+
+
 
 from .api import SsciAPI as API

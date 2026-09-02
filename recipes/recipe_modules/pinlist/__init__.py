@@ -6,20 +6,41 @@ from __future__ import annotations
 
 from PB.recipe_modules.build.pinlist import properties
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'recipe_engine/bcid_reporter',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/file',
-    'recipe_engine/led',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
-
 PROPERTIES = properties.InputProperties
+
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+)
+from RECIPE_MODULES.recipe_engine import (
+    bcid_reporter,
+    buildbucket,
+    cipd,
+    file,
+    led,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  bcid_reporter: bcid_reporter.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  file: file.API
+  led: led.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+
+
 
 from .api import PinlistApi as API
 from .test_api import PinlistTestApi as TEST_API

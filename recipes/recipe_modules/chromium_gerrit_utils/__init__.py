@@ -5,13 +5,28 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'depot_tools/gerrit',
-    'depot_tools/gitiles',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from RECIPE_MODULES.depot_tools import (
+    gerrit,
+    gitiles,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gerrit: gerrit.API
+  gitiles: gitiles.API
+  tryserver: tryserver.API
+  buildbucket: buildbucket.API
+  json: json.API
+  step: step.API
 
 from .api import ChromiumGerritUitlsApi as API
