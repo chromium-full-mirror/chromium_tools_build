@@ -311,18 +311,19 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target):
     _raise_raw_result_on_failure(api, result)
 
     # Enable fail-on-bad-deps as an additional step on Linux for continuous
-    # benchmarking before enabling by default. See https://crbug.com/547682173.
+    # benchmarking before enabling by default. See crbug.com/547682173.
+    # Note: Do not fail the build if this step fails to avoid interrupting
+    # continuous performance metrics collection. See crbug.com/556013464.
     if api.platform.is_linux:
       api.chromium_build_perf.recreate_build_dir(
           source_dir, build_dir, phase=phase)
-      result = api.chromium_build_perf.build_with_siso(
+      api.chromium_build_perf.build_with_siso(
           source_dir,
           build_dir,
           target,
           with_remote_cache=True,
           step_name_suffix=step_name_suffix + ' with fail-on-bad-deps',
           siso_experiments=['fail-on-bad-deps'])
-      _raise_raw_result_on_failure(api, result)
 
 
 
