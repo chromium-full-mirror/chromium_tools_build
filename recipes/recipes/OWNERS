@@ -1,3 +1,6 @@
+# Prefer the per-recipe OWNERS files if possible. Otherwise use the root OWNERS
+# file in this repo for generic recipe reviews, or if you're making a sweeping
+# change across many recipes.
 per-file angle_chromium.py=file:angle/OWNERS
 per-file angle_chromium_trybot.py=file:angle/OWNERS
 per-file art.proto=file:art.expected/OWNERS
@@ -35,6 +38,3 @@ per-file reclient*=file://recipes/reclient/OWNERS
 per-file tricium_clang_tidy_wrapper.py=file://recipes/BUILD_TEAM_OWNERS
 per-file v8.py=file:v8.expected/OWNERS
 per-file webpagereplay.py=file:webpagereplay.expected/OWNERS
-
-# Generic owners, if the file isn't listed above.
-bpastene@chromium.org

@@ -5,5 +5,11 @@
 # Folks primarily on the Chrome Browser Infra team.
 bpastene@chromium.org
 gatong@chromium.org
+sshrimp@google.com
+
+# For reverts only
+agrieve@chromium.org
+# TODO: b/422005134 - Remove after granting O-O power to the TOK build team's oncallers.
+jwata@google.com
 
 per-file .vpython3=ovsienko@google.com

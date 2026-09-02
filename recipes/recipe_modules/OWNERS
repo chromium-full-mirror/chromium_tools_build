@@ -1,8 +1,4 @@
-# General recipe_module owners. Prefer the per-module OWNERS files if possible
-# and treat these folks as a fallback in case it's unclear, or if you're making
-# a sweeping change across many modules.
-
-bpastene@chromium.org
-sshrimp@google.com
-
+# Prefer the per-module OWNERS files if possible. Otherwise use the root OWNERS
+# file in this repo for generic recipe reviews, or if you're making a sweeping
+# change across many modules.
 per-file v8*/**=file:v8/v8:main:/INFRA_OWNERS
