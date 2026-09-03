@@ -8,17 +8,40 @@ from recipe_engine import post_process
 from recipe_engine.config_types import Path
 from PB.recipes.build.compile_size_trybot import InputProperties
 
-DEPS = [
-    'binary_size',
-    'siso',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import binary_size, siso
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    path,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  binary_size: binary_size.API
+  buildbucket: buildbucket.API
+  context: context.API
+  file: file.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  binary_size: binary_size.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = InputProperties
 
@@ -28,7 +51,7 @@ DELTA_LINE_RE = re.compile('Delta: .* \((.*)\)')
 DEFAULT_SIZE_THRESHOLD_MIB = 500
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
 
   def create_diffs(
       author,
@@ -138,7 +161,7 @@ def RunSteps(api, properties):
       analysis_warning_statuses={})
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def check_sizes(check, steps, before=None, delta=None):
     diff_output_properties = steps['Write size results'].output_properties

@@ -6,16 +6,37 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  gclient: gclient.API
+  json: json.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests.TEST_API
 
 # Name of pinpoint try builder -> (perf builder group, perf builder name)
 _PINPOINT_MAPPING = {
@@ -51,7 +72,7 @@ _PINPOINT_MAPPING = {
 }
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # In Perf on CQ, if CQ triggers Pinpoint, the builds triggered by those
   # Pinpoint jobs will show up in Gerrit. We should not show them because
   # this should be part of Pinpoint workflow and be transparent to gerrit
@@ -86,7 +107,7 @@ def RunSteps(api):
         targets_config.compile_targets, targets_config.all_tests)[0]
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   # pylint: disable=import-outside-toplevel
   from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 

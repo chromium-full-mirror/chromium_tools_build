@@ -15,25 +15,68 @@ from PB.recipes.build.chromium.autosharder import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/depot_tools',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'depot_tools/git_cl',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/led',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gclient,
+    gerrit,
+    git,
+    git_cl,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    led,
+    path,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  git: git.API
+  git_cl: git_cl.API
+  json: json.API
+  led: led.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_checkout: chromium_checkout.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gerrit: gerrit.TEST_API
+  git: git.TEST_API
+  json: json.TEST_API
+  led: led.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 COMMIT_MESSAGE = """
 Autoshard chromium/src test suites
@@ -307,7 +350,7 @@ def _calculate_optimal_shards(
 def _load_shardings_file(api: RecipeApi):
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
       'infra', 'config', 'autoshard_exceptions.json')
-  exceptions_json = api.m.file.read_json(
+  exceptions_json = api.file.read_json(
       'read current exceptions file', exceptions_file, test_data={})
   return [
       Sharding(

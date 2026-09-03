@@ -10,24 +10,60 @@ from PB.recipe_modules.build.chromium_orchestrator.properties import (
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_orchestrator',
-    'chromium_tests_builder_config',
-    'chromium_turboci',
-    'code_coverage',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/cv',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_orchestrator,
+    chromium_tests_builder_config,
+    chromium_turboci,
+    code_coverage,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    cv,
+    json,
+    platform,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cas: cas.API
+  chromium: chromium.API
+  chromium_orchestrator: chromium_orchestrator.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_turboci: chromium_turboci.API
+  code_coverage: code_coverage.API
+  cv: cv.API
+  json: json.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_orchestrator: chromium_orchestrator.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  cv: cv.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.tryserver.require_is_tryserver()
 
   with api.chromium.chromium_layout(), \
@@ -35,7 +71,7 @@ def RunSteps(api):
     return api.chromium_orchestrator.trybot_steps()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

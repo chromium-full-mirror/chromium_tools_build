@@ -14,13 +14,26 @@ https://crbug.com/1487672
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'chromium_mega_cq',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_mega_cq
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_mega_cq: chromium_mega_cq.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+
+
+def RunSteps(api: DEPS):
   trybots = api.chromium_mega_cq.read_bots_file(
       'https://chromium.googlesource.com/chromium/src',
       'infra/config/generated/cq-usage/mega_cq_bots.txt',
@@ -32,7 +45,7 @@ def RunSteps(api):
   return result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

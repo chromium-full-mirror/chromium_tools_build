@@ -13,21 +13,50 @@ from PB.recipe_modules.build.chromium_utr.request import Request
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'chromium_utr',
-    # Not used directly, but needed for UTR support for Dawn so that the configs
-    # from the recipe module are included.
-    'dawn',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    chromium_utr,
+    dawn,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_utr: chromium_utr.API
+  dawn: dawn.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = Request
 
@@ -79,7 +108,7 @@ def configure_build(
   """
   builder = api.buildbucket.build.builder.builder
   builder_id = chromium_types.BuilderId.create_for_group(
-      api.m.properties['builder_group'], builder)
+      api.properties['builder_group'], builder)
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
 

@@ -16,17 +16,32 @@ from recipe_engine import post_process
 from PB.recipe_engine import result as result_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import buildbucket, json, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  json: json.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json.TEST_API
 
 _FOOTER = 'Requires-Testing'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
   if api.tryserver.get_footer('Requires-Testing'):
     return result_pb.RawResult(
@@ -36,7 +51,7 @@ def RunSteps(api):
             ' and CQ is not enabled for this branch'.format(_FOOTER)))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'requires-testing',
       api.buildbucket.try_build(),

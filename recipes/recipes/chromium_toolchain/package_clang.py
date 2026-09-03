@@ -9,24 +9,58 @@ from PB.recipes.build.chromium_toolchain.package import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/depot_tools',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import depot_tools, gsutil, osx_sdk
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    futures,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  cipd: cipd.API
+  context: context.API
+  depot_tools: depot_tools.API
+  futures: futures.API
+  gsutil: gsutil.API
+  json: json.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  cipd: cipd.TEST_API
+  context: context.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = InputProperties
 
@@ -133,7 +167,8 @@ def _trigger_tbi(api, change=None):
       api.step.active_result.presentation.step_text = (
           "TBI failed or infra issue: %s" % e)
 
-def RunSteps(api, properties):
+
+def RunSteps(api: DEPS, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
   update_result = api.chromium_checkout.ensure_checkout(
@@ -197,7 +232,8 @@ def RunSteps(api, properties):
           tbi_background.cancel()  # pragma: no cover
           tbi_background.result()  # pragma: no cover
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'mac',
       api.platform.name('mac'),

@@ -12,20 +12,53 @@ from PB.recipe_engine import result as result_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.android import sdk_packager
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  cipd: cipd.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
 
 
 PROPERTIES = sdk_packager.InputProperties
@@ -34,7 +67,7 @@ PROPERTIES = sdk_packager.InputProperties
 SDK_ROOT = ('third_party', 'android_sdk', 'public')
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   api.gclient.set_config('chromium')
   api.gclient.apply_config('android')
   update_result = api.chromium_checkout.ensure_checkout()
@@ -186,7 +219,7 @@ def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
         api.step('remove', sdk_cmd + uninstall_cmd)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   emulator_package_properties = api.properties(packages=[
       {
           'sdk_package_name': 'emulator',

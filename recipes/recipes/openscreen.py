@@ -9,27 +9,72 @@ from __future__ import annotations
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
-DEPS = [
-    'code_coverage',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'depot_tools/tryserver',
-    'profiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import code_coverage, profiles
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    git,
+    gsutil,
+    osx_sdk,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  cas: cas.API
+  code_coverage: code_coverage.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  gsutil: gsutil.API
+  json: json.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  code_coverage: code_coverage.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
+  swarming: swarming.TEST_API
+  tryserver: tryserver.TEST_API
 
 # Open Screen specific paths and repository information.
 BUILD_CONFIG = 'Default'

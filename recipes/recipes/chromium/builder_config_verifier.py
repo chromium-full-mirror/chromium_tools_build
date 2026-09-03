@@ -23,23 +23,50 @@ from PB.recipes.build.chromium import (builder_config_verifier as
 
 PROPERTIES = builder_config_verifier_pb.InputProperties
 
-DEPS = [
-    'chromium_tests_builder_config',
-    'chromium_tests_builder_config_verifier',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests_builder_config, chromium_tests_builder_config_verifier
+from RECIPE_MODULES.depot_tools import bot_update, gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+)
 
 
-def RunSteps(api, properties):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_tests_builder_config_verifier: chromium_tests_builder_config_verifier.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  chromium_tests_builder_config_verifier: chromium_tests_builder_config_verifier.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS, properties):
   api.tryserver.require_is_tryserver()
 
   errors = VALIDATORS.validate(properties)
@@ -84,7 +111,7 @@ def _result(status, header, elements):
   return result_pb.RawResult(status=status, summary_markdown='\n'.join(summary))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def properties(**kwargs):
     return api.properties(builder_config_verifier_pb.InputProperties(**kwargs))

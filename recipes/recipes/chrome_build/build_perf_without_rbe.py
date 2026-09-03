@@ -13,26 +13,69 @@ from recipe_engine.config_types import Path
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'depot_tools/gsutil',
-    'builder_group',
-    'chromium',
-    'chromium_build_perf',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_build_perf,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import gsutil
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json as json_module,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_build_perf: chromium_build_perf.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  context: context.API
+  file: file.API
+  gsutil: gsutil.API
+  json: json_module.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  json: json_module.TEST_API
+  path: path.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso.TEST_API
+  step: step.TEST_API
 
 # TODO: Create a new bucket to make the include analysis public.
 _GS_BUCKET = 'chrome-goma-log'
@@ -145,7 +188,7 @@ def _analyze_includes(
     return analysis_result
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
@@ -187,7 +230,7 @@ def RunSteps(api):
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   # Test data.

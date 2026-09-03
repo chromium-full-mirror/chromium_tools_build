@@ -126,12 +126,12 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 39, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 67, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 263, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 291, in download_chrome",
       "    _validate_cft_version(version)",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 220, in _validate_cft_version",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 248, in _validate_cft_version",
       "    raise ValueError(f'Invalid Chrome for Testing version: {version!r}')",
       "ValueError: Invalid Chrome for Testing version: 'invalid_version'"
     ]

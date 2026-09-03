@@ -5,17 +5,42 @@ from recipe_engine.engine_types import freeze
 
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import bot_update, depot_tools
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    json,
+    platform,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  json: json.API
+  platform: platform.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  platform: platform.TEST_API
+  step: step.TEST_API
 
 BUILDERS = freeze({
     'chromium.clang': {
@@ -64,9 +89,10 @@ SAMPLE_TARGETS = [
     'unit_tests'
 ]
 
-def RunSteps(api):
-  builder_id, bot_config = api.m.chromium.configure_bot(BUILDERS, ['mb'])
-  with api.m.context(cwd=api.m.chromium_checkout.default_checkout_dir):
+
+def RunSteps(api: DEPS):
+  builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
+  with api.context(cwd=api.chromium_checkout.default_checkout_dir):
     _RunStepsInBuilderCacheDir(api, builder_id, bot_config)
 
 
@@ -134,6 +160,6 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   api.file.read_json('read %s' % summary_file_name, summary_file_path)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for test in api.chromium.gen_tests_for_builders(BUILDERS):
     yield test

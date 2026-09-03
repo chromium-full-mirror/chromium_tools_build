@@ -9,24 +9,59 @@ from contextlib import contextmanager
 from PB.recipes.build.perf.crossbench_android import InputProperties
 from PB.recipes.build.perf.crossbench_android import TestRunConfig
 
-DEPS = [
-    'adb',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import adb
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    cipd,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  adb: adb.API
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  cas: cas.API
+  cipd: cipd.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 _AVD_CIPD_VERSION = 'latest'
@@ -169,7 +204,7 @@ class AndroidEmulator:
             stdout=self.api.raw_io.output_text(add_output_log=True))
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   api.gclient.set_config('crossbench')
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
@@ -206,7 +241,7 @@ def RunSteps(api, properties):
                           cas_archive)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   _INSTALL_STEP = 'Install android_35_google_apis_x64.textpb'
   run_config = TestRunConfig(sdk_version=35, avd_suffix='')

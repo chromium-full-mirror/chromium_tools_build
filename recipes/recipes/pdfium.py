@@ -6,29 +6,76 @@
 # Separately, python command used to run the steps in the recipe.
 PYTHON_CMD = ['vpython3', '-u']
 
-DEPS = [
-    'builder_group',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/time',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, siso
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    gsutil,
+    osx_sdk,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    cipd,
+    context,
+    defer,
+    file,
+    path,
+    platform,
+    properties,
+    resultdb,
+    step,
+    swarming,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  cas: cas.API
+  cipd: cipd.API
+  context: context.API
+  defer: defer.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  resultdb: resultdb.API
+  siso: siso.API
+  step: step.API
+  swarming: swarming.API
+  time: time.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
+  step: step.TEST_API
+  swarming: swarming.TEST_API
 
 from dataclasses import dataclass
 
@@ -877,7 +924,7 @@ def _get_modifiable_script_args(api, build_config, option, renderer):
       keys['suite'] = option.test_suite_suffix
 
     # Add the OS from the builder name.
-    builder_name = api.m.buildbucket.builder_name.strip()
+    builder_name = api.buildbucket.builder_name.strip()
     keys['os'] = builder_name.split('_')[0]
 
     keys['javascript_runtime'] = 'disabled' if (
@@ -973,9 +1020,9 @@ def _gen_properties(api, **kwargs):
   return api.properties(**updated_kwargs) + api.siso.properties()
 
 
-def RunSteps(api, memory_tool, partition_alloc, skia, rust, xfa, v8, target_cpu,
-             rel, run_skia_gold, brotli, component, skip_test, target_os,
-             renderers, swarming, use_cxx23):
+def RunSteps(api: DEPS, memory_tool, partition_alloc, skia, rust, xfa, v8,
+             target_cpu, rel, run_skia_gold, brotli, component, skip_test,
+             target_os, renderers, swarming, use_cxx23):
   update_result = _checkout_step(api, target_os, rust, skia, v8)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
@@ -1003,7 +1050,7 @@ def RunSteps(api, memory_tool, partition_alloc, skia, rust, xfa, v8, target_cpu,
                build_config, revision, run_skia_gold, renderers, swarming)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'win',
       api.platform('win', 64),

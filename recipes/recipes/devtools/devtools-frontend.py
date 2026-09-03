@@ -24,38 +24,95 @@ from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_swarming',
-    'devtools',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'perf_dashboard',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/random',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/time',
-    'recipe_engine/futures',
-    'v8',
-    'depot_tools/gsutil',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_swarming,
+    devtools,
+    perf_dashboard,
+    v8,
+)
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    git,
+    gsutil,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    file,
+    futures,
+    path,
+    platform,
+    properties,
+    random,
+    raw_io,
+    resultdb,
+    step,
+    swarming,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  cas: cas.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  context: context.API
+  depot_tools: depot_tools.API
+  devtools: devtools.API
+  file: file.API
+  futures: futures.API
+  git: git.API
+  gsutil: gsutil.API
+  path: path.API
+  perf_dashboard: perf_dashboard.API
+  platform: platform.API
+  properties: properties.API
+  random: random.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  swarming: swarming.API
+  time: time.API
+  tryserver: tryserver.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  git: git.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
+  tryserver: tryserver.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   builder_config = properties.builder_config or 'Release'
   coverage = properties.coverage
   if 'coverage' not in api.properties:
@@ -118,16 +175,16 @@ def publish_performance_benchmarks(api, skip):
   report_file = api.devtools.source_dir / 'perf-data/devtools-perf.json'
   front_end_results = api.file.read_json('Read performance data results',
                                          report_file)
-  tmp_dir = api.m.path.mkdtemp('perf-results')
+  tmp_dir = api.path.mkdtemp('perf-results')
   results_file = tmp_dir / 'devtools-perf.json'
   git_revision = api.bot_update.last_returned_properties['got_revision']
-  api.m.file.write_json(
+  api.file.write_json(
       'Write Skia Perf format', results_file, {
           'version': 1,
           'git_hash': git_revision,
           'key': {
               'master': 'client.devtools-frontend.integration',
-              'bot': api.m.buildbucket.builder_name
+              'bot': api.buildbucket.builder_name
           },
           'results': front_end_results
       })
@@ -136,12 +193,12 @@ def publish_performance_benchmarks(api, skip):
 
 def save_perf_data_in_bucket(api, report_file):
   bucket = 'devtools-frontend-perf'
-  today = api.m.time.utcnow().strftime('%Y/%m/%d/%H')
+  today = api.time.utcnow().strftime('%Y/%m/%d/%H')
   upload_name = '{}/{}/{}/{}/{}/{}'.format(
       'ingest', today, 'client.devtools-frontend.integration',
-      api.m.buildbucket.builder_name, 'performance-tests', 'perf-data.json')
-  api.m.step.empty(f'Upload name {upload_name}')
-  api.m.gsutil.upload(
+      api.buildbucket.builder_name, 'performance-tests', 'perf-data.json')
+  api.step.empty(f'Upload name {upload_name}')
+  api.gsutil.upload(
       source=report_file,
       bucket=bucket,
       dest=upload_name,
@@ -210,14 +267,14 @@ def publish_coverage_points(api, skip):
 
 def _point(api, dimension, totals, commit_count):
   p = {
-      'master': api.m.builder_group.for_current,
-      'bot': api.m.buildbucket.builder_name,
+      'master': api.builder_group.for_current,
+      'bot': api.buildbucket.builder_name,
       'test': '/'.join(['devtools.infra', 'coverage_v2', dimension]),
       'revision': int(commit_count),
       'value': totals[dimension]['pct'],
-      'masterid': api.m.builder_group.for_current,
-      'buildername': api.m.buildbucket.builder_name,
-      'buildnumber': api.m.buildbucket.build.number,
+      'masterid': api.builder_group.for_current,
+      'buildername': api.buildbucket.builder_name,
+      'buildnumber': api.buildbucket.build.number,
   }
 
   p['supplemental_columns'] = {
@@ -227,7 +284,7 @@ def _point(api, dimension, totals, commit_count):
   return p
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   def ci_build(builder):

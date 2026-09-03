@@ -2,20 +2,52 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-DEPS = [
-  'chromium',
-  'depot_tools/bot_update',
-  'depot_tools/gclient',
-  'depot_tools/gitiles',
-  'depot_tools/osx_sdk',
-  'gae_sdk',
-  'recipe_engine/cipd',
-  'recipe_engine/context',
-  'recipe_engine/generator_script',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, gae_sdk
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    gitiles,
+    osx_sdk,
+)
+from RECIPE_MODULES.recipe_engine import (
+    cipd,
+    context,
+    generator_script,
+    path,
+    platform,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  cipd: cipd.API
+  context: context.API
+  gae_sdk: gae_sdk.API
+  gclient: gclient.API
+  generator_script: generator_script.API
+  gitiles: gitiles.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  gclient: gclient.TEST_API
+  generator_script: generator_script.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 from PB.recipes.build.catapult import InputProperties
 
@@ -65,7 +97,7 @@ def _RemoteSteps(api, source_dir, app_engine_sdk_path, properties):
   return api.generator_script(*args, interpreter='vpython3')
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   update_result = _CheckoutSteps(api)
 
   # The dashboard unit tests depend on Python modules in the App Engine SDK,
@@ -93,7 +125,7 @@ def RunSteps(api, properties):
       _RemoteSteps(api, source_dir, app_engine_sdk_path, properties)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.platform.name('win'),

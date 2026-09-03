@@ -25,23 +25,61 @@ from recipe_engine.post_process import (
 from recipe_engine.recipe_api import Property
 from PB.recipe_engine.result import RawResult
 
-DEPS = [
-    'builder_group',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'depot_tools/gitiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/file',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/service_account',
-    'recipe_engine/step',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, v8
+from RECIPE_MODULES.depot_tools import (
+    gclient,
+    gerrit,
+    git,
+    gitiles,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json as json_module,
+    properties,
+    raw_io,
+    runtime,
+    service_account,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  git: git.API
+  gitiles: gitiles.API
+  json: json_module.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  service_account: service_account.API
+  step: step.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  gerrit: gerrit.TEST_API
+  git: git.TEST_API
+  gitiles: gitiles.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  runtime: runtime.TEST_API
+  step: step.TEST_API
+  v8: v8.TEST_API
 
 CHROMIUM_BRANCH_RE = re.compile(r'\w+\s+refs/heads/chromium/(\w+)')
 CHROMIUM_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/(\d+)$')
@@ -63,7 +101,7 @@ class BuildResults:
     self.performed_actions = []
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('v8')
   update_result = api.v8.checkout(with_branch_heads=True)
   source_dir = update_result.source_root.path
@@ -342,7 +380,7 @@ def subject(latest_version):
   return 'Version %s' % latest_version
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def stdout(step_name, text):
     return api.override_step_data(

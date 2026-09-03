@@ -13,17 +13,46 @@ from RECIPE_MODULES.build.attr_utils import attrib, attrs
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'recipe_engine/cipd',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import (
+    cipd,
+    file,
+    futures,
+    json,
+    path,
+    platform,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  cipd: cipd.API
+  file: file.API
+  futures: futures.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 # These are actually 4 week periods
 REJECTION_DATA_MONTHS = 3
@@ -47,7 +76,7 @@ class SavingsAnalysis:
     return f'{self.builder}:{self.test_suite} {self.recall}%, {self.savings}%'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Install rts-suite-analysis executables.
   exec_path = api.cipd.ensure_tool(
       'chromium/rts/rts-suite-analysis/${platform}', 'latest')
@@ -197,7 +226,7 @@ def _date_range_flags(date_range):
   ]
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.platform.name('linux'),

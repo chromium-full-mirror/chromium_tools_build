@@ -7,23 +7,66 @@ import re
 from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'build/chromium',
-    'build/chromium_checkout',
-    'build/chromium_tests',
-    'build/chromium_tests_builder_config',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.depot_tools import gsutil
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  cipd: cipd.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 BASE_PKG_NAME = 'infra/history_rag/chrome'
 
@@ -51,7 +94,8 @@ def _get_manifest_pkg_name(submodule_name):
 def _get_file_blame_jsons_pkg_name(submodule_name):
   return f'{BASE_PKG_NAME}/{submodule_name}/file_blame_jsons'
 
-def RunSteps(api):
+
+def RunSteps(api: DEPS):
   source_dir, _ = checkout_source_code(api)
   submodules = find_submodules(api, source_dir)
   failed_submodules = {}
@@ -621,7 +665,8 @@ def StepCommandContainsSubstrings(check, step_odict, step, substrings):
       'command line for step %s contained %s as substrings' %
       (step, substrings), all(found_in_commandline(s) for s in substrings))
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   # Basic test case: Baseline manifest exists and is valid.
   yield api.test(
       'basic_with_baseline',

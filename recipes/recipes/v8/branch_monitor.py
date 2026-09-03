@@ -15,20 +15,52 @@ from recipe_engine.post_process import (DropExpectation, StepFailure,
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 
-DEPS = [
-    'chromiumdash',
-    'depot_tools/gitiles',
-    'depot_tools/gsutil',
-    'depot_tools/gclient',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/url',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromiumdash, v8
+from RECIPE_MODULES.depot_tools import gclient, gitiles, gsutil
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    raw_io,
+    step,
+    time,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromiumdash: chromiumdash.API
+  file: file.API
+  gclient: gclient.API
+  gitiles: gitiles.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+  url: url.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  gitiles: gitiles.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
+  url: url.TEST_API
+  v8: v8.TEST_API
 
 PROPERTIES = {
     'max_gap_seconds':
@@ -92,7 +124,7 @@ class BranchResult:
     return self.num_overdue_commits > 0
 
 
-def RunSteps(api, max_gap_seconds, branch_cut_max_gap_seconds):
+def RunSteps(api: DEPS, max_gap_seconds, branch_cut_max_gap_seconds):
   now = api.time.utcnow()
   branches = api.chromiumdash.milestones(0, only_active=True)
   if not branches:
@@ -199,7 +231,7 @@ def commit_time(commit, now):
   return CommitTime(commit['commit'], committer_time, time_gap)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def fake_branches():
     return api.url.json(

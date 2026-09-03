@@ -9,17 +9,38 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as resultdb_pb2
 
 PROPERTIES = InputProperties
 
-DEPS = [
-    'flaky_reproducer',
-    'recipe_engine/step',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flaky_reproducer
+from RECIPE_MODULES.recipe_engine import (
+    json,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api, properties):
+@dataclass
+class DEPS(RecipeScriptApi):
+  flaky_reproducer: flaky_reproducer.API
+  json: json.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
+
+
+def RunSteps(api: DEPS, properties):
   api.flaky_reproducer.set_config(properties.config or 'auto')
   return api.flaky_reproducer.run(
       task_id=properties.task_id,
@@ -30,7 +51,7 @@ def RunSteps(api, properties):
       monorail_issue=properties.monorail_issue)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'cannot_retrieve_invocation',
       api.properties(

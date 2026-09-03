@@ -9,21 +9,45 @@ from recipe_engine.post_process import (DropExpectation, MustRun, StepFailure)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'findit',
-    'gofindit',
-    'recipe_engine/step',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    findit,
+    gofindit,
+)
+from RECIPE_MODULES.recipe_engine import properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  findit: findit.API
+  gofindit: gofindit.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   try:
     # If any error happens, send INFRA_FAILURE back to LUCI Bisection
     compile_status = common_pb.INFRA_FAILURE
@@ -84,7 +108,7 @@ def _configure_builder(api, target_builder, should_clobber):
   return builder_config.builder_ids[0], builder_config
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def setup(api,
             target_builder_group='fake-group',

@@ -8,19 +8,42 @@ from recipe_engine.engine_types import freeze
 from PB.recipes.build.chromium_toolchain.package import InputProperties
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/depot_tools',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import depot_tools, gsutil, osx_sdk
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    platform,
+    properties,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  depot_tools: depot_tools.API
+  gsutil: gsutil.API
+  osx_sdk: osx_sdk.API
+  platform: platform.API
+  properties: properties.API
+  runtime: runtime.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  platform: platform.TEST_API
 
 PROPERTIES = InputProperties
 
@@ -115,7 +138,7 @@ ARM_MAC_BUILDERS = (
 )
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
   update_result = api.chromium_checkout.ensure_checkout(
@@ -137,7 +160,7 @@ def RunSteps(api, properties):
            source_dir.joinpath('tools', 'rust', 'package_rust.py')] + args)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'mac',
       api.platform.name('mac'),

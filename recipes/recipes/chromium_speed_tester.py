@@ -2,18 +2,47 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    json,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  context: context.API
+  json: json.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 NO_SUFFIX = ''
 
 from recipe_engine import post_process
@@ -22,7 +51,8 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 PROPERTIES = InputProperties
 
-def RunSteps(api, properties):
+
+def RunSteps(api: DEPS, properties):
   with api.chromium.chromium_layout():
     builder_id, builder_config = (
         api.chromium_tests_builder_config.lookup_builder())
@@ -91,7 +121,7 @@ def RunSteps(api, properties):
     return test_failure_summary
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'tester-coverage',
       api.chromium_tests_builder_config.ci_build(

@@ -41,16 +41,41 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 
 
-DEPS = [
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'depot_tools/gitiles',
-    'depot_tools/gsutil',
-    'chromium_swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.depot_tools import gitiles, gsutil
+from RECIPE_MODULES.recipe_engine import (
+    json as json_module,
+    path,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_swarming: chromium_swarming.API
+  gitiles: gitiles.API
+  gsutil: gsutil.API
+  json: json_module.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_swarming: chromium_swarming.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = {
     # Group of the builder that produced the builds for bisection.
@@ -912,7 +937,7 @@ def create_flakes_pyl_entry_step(api, config):
   api.step('flakes.pyl entry', cmd=None).presentation.logs['config'] = log
 
 
-def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
+def RunSteps(api: DEPS, bisect_builder_group, bisect_buildername, extra_args,
              failure_regexp, max_calibration_attempts, min_flake_threshold,
              isolated_name, mode, num_shards, outdir, override_flag_history,
              repetitions, revision, swarming_dimensions, swarming_priority,
@@ -990,7 +1015,7 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def builder_properties(bisect_buildername='V8 Foobar',
                          mode='regression',

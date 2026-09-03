@@ -13,28 +13,75 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_build_perf',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'profiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'reclient',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_build_perf,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    profiles,
+    reclient,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import gclient, git
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_build_perf: chromium_build_perf.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  path: path.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  reclient: reclient.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  file: file.TEST_API
+  git: git.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  raw_io: raw_io.TEST_API
+  reclient: reclient.TEST_API
+  siso: siso.TEST_API
+  step: step.TEST_API
 
 
 def _raise_raw_result_on_failure(api, raw_result):
@@ -178,7 +225,7 @@ def _run_clean_builds(api,
 
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
@@ -210,7 +257,8 @@ def RunSteps(api):
   out_dir = build_dir.parent
   api.file.rmtree('rmtree %s' % str(out_dir), str(out_dir))
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   # Test data.

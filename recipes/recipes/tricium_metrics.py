@@ -6,25 +6,63 @@ from recipe_engine import post_process
 from google.protobuf import json_format
 from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/findings',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import (
+    gclient,
+    gerrit,
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    findings,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  findings: findings.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  git: git.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  cipd: cipd.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  tryserver: tryserver.TEST_API
 
 
 def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
@@ -60,7 +98,7 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
     api.findings.upload_findings(findings.findings, step_name='upload findings')
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
 
   api.buildbucket.hide_current_build_in_gerrit()
@@ -134,7 +172,7 @@ def RunSteps(api):
                             api.tryserver.get_change_description())
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def build_with_patch(affected_files,
                        include_diff=True,

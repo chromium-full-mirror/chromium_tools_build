@@ -4,22 +4,54 @@
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/tricium',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import gclient, gerrit, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    raw_io,
+    step,
+    tricium,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  raw_io: raw_io.API
+  step: step.API
+  tricium: tricium.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
 
 
 class _ChangeDetails:
@@ -86,7 +118,7 @@ def _RunUntracedMemberAnalyzer(api, src_dir, affected):
           return
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
 
   api.buildbucket.hide_current_build_in_gerrit()
@@ -129,7 +161,7 @@ def RunSteps(api):
       api.tricium.write_comments()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def build_with_patch(affected_files,
                        cc,

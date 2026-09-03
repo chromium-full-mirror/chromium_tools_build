@@ -4,21 +4,53 @@
 
 from recipe_engine.post_process import DropExpectation, Filter, MustRun
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/osx_sdk',
-    'reclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import reclient
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    osx_sdk,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    defer,
+    file,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  defer: defer.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  reclient: reclient.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  platform: platform.TEST_API
+  reclient: reclient.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = {
 }
@@ -58,7 +90,7 @@ def ExecBuildSteps(api, build_steps, sync_dir, dir_flags):
     api.step(step['name'], ['vpython3', script] + dir_flags + args)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('emscripten_releases')
   env = {
       'BUILDBOT_MASTERNAME': 'emscripten-releases',
@@ -120,7 +152,7 @@ def RunSteps(api):
           defer(api.step, step['name'], ['vpython3', script] + dir_flags + args)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def build():
     return api.buildbucket.ci_build(

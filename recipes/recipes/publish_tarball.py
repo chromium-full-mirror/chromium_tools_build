@@ -10,25 +10,71 @@ import contextlib
 import json
 import re
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/scheduler',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/url',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    git,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    defer,
+    file,
+    path,
+    platform,
+    properties,
+    raw_io,
+    scheduler,
+    step,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  context: context.API
+  defer: defer.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  gsutil: gsutil.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  scheduler: scheduler.API
+  step: step.API
+  url: url.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  git: git.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  scheduler: scheduler.TEST_API
+  step: step.TEST_API
+  url: url.TEST_API
 
 # Sometimes a revision will be bad because the checkout will fail, causing
 # publish_tarball to fail.  The version will stay in the version list for
@@ -683,7 +729,7 @@ def publish_tarball(api):
       defer(export_nacl_tarball, api, source_dir, version)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   if 'version' not in api.properties:
     # This code path executes on 'publish_tarball_dispatcher' builder.
     trigger_publish_tarball_jobs(api)
@@ -692,7 +738,7 @@ def RunSteps(api):
     publish_tarball(api)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (
       api.test('basic') + api.buildbucket.generic_build() +
       api.properties(version='128.0.6534.0') + api.platform('linux', 64) +

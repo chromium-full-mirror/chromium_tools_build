@@ -5,20 +5,43 @@
 
 from recipe_engine import post_process
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/osx_sdk',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import bot_update, gclient, osx_sdk
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    platform,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  gclient: gclient.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Set up gclient to checkout Dawn.
   api.gclient.set_config('dawn')
 
@@ -77,7 +100,7 @@ def RunSteps(api):
     api.step('bazel build all', bazel_args)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'linux_rel',
       api.platform('linux', 64),

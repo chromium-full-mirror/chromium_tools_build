@@ -14,25 +14,61 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.google.rpc import code as rpc_code_pb2
 
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'depot_tools/tryserver',
-    'infra/zip',
-    'recipe_engine/buildbucket',
-    'recipe_engine/commit_position',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'siso',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, siso, v8
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    gsutil,
+    tryserver,
+)
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    commit_position,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  commit_position: commit_position.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  siso: siso.API
+  step: step.API
+  tryserver: tryserver.API
+  v8: v8.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
+  step: step.TEST_API
+  v8: v8.TEST_API
 
 PROPERTIES = {
     # Run in debug mode.
@@ -69,7 +105,7 @@ def run_with_retry(api, step_name, step_fun):
   return True
 
 
-def RunSteps(api, is_debug, triggers, v8_tot):
+def RunSteps(api: DEPS, is_debug, triggers, v8_tot):
   with api.step.nest('initialization'):
     if is_debug:
       build_config = 'Debug'
@@ -194,7 +230,7 @@ def _sanitize_nonalpha(*chunks):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def test(buildername, platform, is_trybot=False, suffix='', status='SUCCESS',
            **properties):
     buildbucket_kwargs = {

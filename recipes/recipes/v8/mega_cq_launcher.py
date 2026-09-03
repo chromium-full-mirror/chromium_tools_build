@@ -9,13 +9,27 @@ migrated to CV.
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium_mega_cq',
-    'recipe_engine/buildbucket',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_mega_cq
+from RECIPE_MODULES.recipe_engine import buildbucket
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_mega_cq: chromium_mega_cq.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+
+
+def RunSteps(api: DEPS):
   # TODO(https://crbug.com/336441276): Read list of trybots from V8.
   trybots = [
       (
@@ -29,7 +43,7 @@ def RunSteps(api):
   return result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

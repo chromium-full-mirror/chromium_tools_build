@@ -15,12 +15,27 @@ from PB.recipes.build.merge_approval_blocker import InputProperties
 
 PROPERTIES = InputProperties
 
-DEPS = [
-    'depot_tools/gerrit',
-    'depot_tools/tryserver',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import gerrit, tryserver
+from RECIPE_MODULES.recipe_engine import properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gerrit: gerrit.API
+  properties: properties.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  gerrit: gerrit.TEST_API
+  properties: properties.TEST_API
 
 
 def get_cl_description(
@@ -94,7 +109,7 @@ def get_branch(
 
 
 # TODO(crbug.com/359821551): - Iterative steps to implement merge blocker.
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   description = get_cl_description(api, properties)
   api.step(
       'Get CL Description',
@@ -108,7 +123,7 @@ def RunSteps(api, properties):
     get_branch(api, properties)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'exist_cl_description',
       api.properties(

@@ -18,24 +18,51 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (
     test_result as test_result_pb2,
 )
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'findit',
-    'gofindit',
-    'test_utils',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    findit,
+    gofindit,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import properties, resultdb, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  findit: findit.API
+  gofindit: gofindit.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = InputProperties
 
 
 # TODO (nqmtuan): Extract out common step for compile and test failures.
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   """Run tests for a particular revision."""
   test_results = []
   run_succeeded = False  # Whether the build finish running the tests and collecting results.
@@ -178,7 +205,7 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
   return test_suites, compile_targets
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def setup(
       api,

@@ -5,17 +5,45 @@
 
 from recipe_engine.post_process import StepCommandRE, DropExpectation
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'ytdevinfra',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import ytdevinfra
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+  ytdevinfra: ytdevinfra.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 
 def _checkout_steps(api):
@@ -29,7 +57,7 @@ def _checkout_steps(api):
   return update_result
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.step('Print recipe title', ['echo', 'Build recipe for Android APK'])
   api.ytdevinfra.set_config('ytdevinfra_android')
   api.ytdevinfra.title()
@@ -73,7 +101,7 @@ def RunSteps(api):
             wrapper=shell_wrapper)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(ytdevinfra_recipe_version=0.2),

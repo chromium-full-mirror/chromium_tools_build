@@ -10,19 +10,45 @@ contain exportable changes and merges these pull requests.
 
 import json
 
-DEPS = [
-    'depot_tools/gclient',
-    'infra/cloudkms',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/scheduler',
-    'recipe_engine/service_account',
-    'recipe_engine/step',
-    'v8',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8, v8_auto_roller
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.infra import cloudkms
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    path,
+    properties,
+    scheduler,
+    service_account,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  cloudkms: cloudkms.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  scheduler: scheduler.API
+  service_account: service_account.API
+  step: step.API
+  v8: v8.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  properties: properties.TEST_API
 
 EXPORTER_CREDS_NAME = 'test262-import-export'
 APPROVER_CREDS_NAME = 'test262-approve'
@@ -30,7 +56,7 @@ KMS_CRYPTO_KEY = ('projects/v8-infra/locations/global/keyRings/'
                   'test262-import-export/cryptoKeys/default')
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   configure(api)
 
   api.v8.checkout()
@@ -87,6 +113,6 @@ def patch_gerrit_credentials(api, creds_file):
   api.file.write_json("update credetials", creds_file, creds, include_log=False)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('test262-export')
   yield api.test('test262-approve') + api.properties(approver=True)

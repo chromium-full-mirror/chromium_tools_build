@@ -11,25 +11,66 @@ from PB.go.chromium.org.luci.common.proto.findings import findings as findings_p
 from RECIPE_MODULES.build.tricium_clang_tidy import _clang_tidy_path
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'gn',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/tryserver',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/proto',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'tricium_clang_tidy',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    gn,
+    tricium_clang_tidy,
+)
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gclient,
+    gerrit,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    proto,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  gn: gn.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  proto: proto.API
+  raw_io: raw_io.API
+  step: step.API
+  tricium_clang_tidy: tricium_clang_tidy.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  gerrit: gerrit.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  tryserver: tryserver.TEST_API
 
 
 class ClangTidySpec(chromium_types.BuilderSpec):
@@ -89,7 +130,7 @@ def _normalize_path_for_os(api, path):
   return path
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
 
   if _should_skip_linting(api):
@@ -151,7 +192,7 @@ def RunSteps(api):
             zlib.compress(api.proto.encode(findings, 'BINARY'))).decode()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def build_with_patch(affected_files,
                        is_revert=False,

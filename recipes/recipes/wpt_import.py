@@ -13,18 +13,44 @@ See: //docs/testing/web_platform_tests.md (https://goo.gl/rSRGmZ)
 
 import contextlib
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/git_cl',
-    'infra/cloudkms',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    git_cl,
+)
+from RECIPE_MODULES.infra import cloudkms
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    json,
+    path,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  cloudkms: cloudkms.API
+  context: context.API
+  gclient: gclient.API
+  git: git.API
+  git_cl: git_cl.API
+  json: json.API
+  path: path.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
 
 # The credentials JSON is encrypted with KMS_CRYPTO_KEY and then stored in
 # assets/CREDS_NAME.
@@ -37,7 +63,7 @@ KMS_CRYPTO_KEY = (
     CREDS_NAME)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   update_result = api.bot_update.ensure_checkout()
   source_dir = update_result.source_root.path
@@ -103,7 +129,7 @@ def git_cl_issue_link(api):
 
 
 # Run `./recipes.py test train` to update wpt-import.json file.
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'wpt-import-with-issue',
       api.step_data(

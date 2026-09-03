@@ -8,19 +8,47 @@ Recipe for running Crossbench's End2End tests.
 import re
 from urllib.parse import urlparse
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'infra/zip',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/cas',
-    'recipe_engine/platform',
-    'recipe_engine/path',
-    'recipe_engine/step',
-    'recipe_engine/url',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    cas,
+    context,
+    file,
+    path,
+    platform,
+    step,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  cas: cas.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  path: path.API
+  platform: platform.API
+  step: step.API
+  url: url.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  context: context.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  step: step.TEST_API
+  url: url.TEST_API
 CFT_LKGR_URL = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
 ALLOWED_CFT_BUCKET = 'chrome-for-testing-public'
 ALLOWED_CFT_HOST = 'storage.googleapis.com'
@@ -31,7 +59,7 @@ _CAS_DIR_PREFIX = 'cq_archive_'
 _VERSION_RE = re.compile(r'^\d+(\.\d+)+$')
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('crossbench')
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
@@ -63,7 +91,7 @@ def RunSteps(api):
     api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('basic')
   yield api.test(
       'win-intel',

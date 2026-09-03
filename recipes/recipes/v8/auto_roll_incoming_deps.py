@@ -13,10 +13,24 @@ from recipe_engine.post_process import (DropExpectation, MustRun)
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, Dict, Single, List
 
-DEPS = [
-    'recipe_engine/properties',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_auto_roller
+from RECIPE_MODULES.recipe_engine import properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  properties: properties.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 PROPERTIES = {
     # Configuration of the auto-roller
@@ -41,7 +55,8 @@ PROPERTIES = {
             )),
 }
 
-def RunSteps(api, autoroller_config):
+
+def RunSteps(api: DEPS, autoroller_config):
   update_result = api.v8_auto_roller.setup_target(
       'v8',
       'https://chromium.googlesource.com/v8/v8',
@@ -55,7 +70,7 @@ def RunSteps(api, autoroller_config):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (api.test('default') + api.properties(
       autoroller_config={
           "subject": "Not important",

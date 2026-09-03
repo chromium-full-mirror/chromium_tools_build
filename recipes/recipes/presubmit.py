@@ -8,27 +8,51 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from recipe_engine import post_process
 import textwrap
 
-DEPS = [
-    'depot_tools/gclient',
-    'depot_tools/presubmit',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/cv',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'depot_tools/tryserver',
-    # The following recipe modules are not used here,
-    # but apparently set spooky gclient configs,
-    # which get used by this recipe through "api.gclient.set_config".
-    'angle',
-    'v8',
-    'webrtc',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import angle, v8, webrtc
+from RECIPE_MODULES.depot_tools import gclient, presubmit, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    cv,
+    file,
+    json,
+    path,
+    properties,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  angle: angle.API
+  buildbucket: buildbucket.API
+  context: context.API
+  cv: cv.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  presubmit: presubmit.API
+  properties: properties.API
+  tryserver: tryserver.API
+  v8: v8.API
+  webrtc: webrtc.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  cv: cv.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS):
   repo_name = api.properties.get('repo_name')
 
   # TODO(nodir): remove repo_name and repository_url properties.
@@ -88,7 +112,7 @@ def RunSteps(api):
         bot_update_step, skip_owners, run_all=not api.tryserver.gerrit_change)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'non_cq',
       api.buildbucket.try_build(

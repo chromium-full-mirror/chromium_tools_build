@@ -11,26 +11,59 @@ from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build.libyuv import builders
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_android',
-    'chromium_tests_builder_config',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'libyuv',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_android,
+    chromium_tests_builder_config,
+    libyuv,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import bot_update, gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    platform,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  context: context.API
+  gclient: gclient.API
+  libyuv: libyuv.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  siso: siso.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
+
+
+def RunSteps(api: DEPS):
   libyuv = api.libyuv
   builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_db=builders.BUILDERS_DB)
@@ -65,7 +98,7 @@ def _sanitize_nonalpha(text):
   return ''.join(c if c.isalnum() else '_' for c in text.lower())
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def generate_builder(builder_group, buildername, revision, suffix=None):
     suffix = suffix or ''
     bot_config = builders.BUILDERS_DB.builders_by_group[builder_group][

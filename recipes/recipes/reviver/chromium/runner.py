@@ -16,20 +16,42 @@ target builder.
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'chromium_polymorphic',
-    'chromium_reviver',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_polymorphic,
+    chromium_reviver,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_polymorphic: chromium_polymorphic.API
+  chromium_reviver: chromium_reviver.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_polymorphic: chromium_polymorphic.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+
+
+def RunSteps(api: DEPS):
   return api.chromium_reviver.run()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

@@ -17,30 +17,74 @@ from PB.recipes.build.chromium_codesearch import (InputProperties,
 
 PROPERTIES = InputProperties
 
-DEPS = [
-    'chromium',
-    'gn',
-    'infra/codesearch',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/commit_position',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, gn, siso
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    git,
+    gsutil,
+    tryserver,
+)
+from RECIPE_MODULES.infra import codesearch
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    commit_position,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  cipd: cipd.API
+  codesearch: codesearch.API
+  commit_position: commit_position.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  gn: gn.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  step: step.API
+  time: time.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso.TEST_API
+  step: step.TEST_API
 
 # Regular expression to identify a Git hash.
 GIT_COMMIT_HASH_RE = re.compile(r'[a-zA-Z0-9]{40}')
@@ -227,7 +271,7 @@ def extract_minimal_rust_kzip(api, rust_index_pack_path):
   return filtered_kzip_path
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   name_suffix = ''
   builder_id = api.chromium.get_builder_id()
   if api.tryserver.is_tryserver:
@@ -509,7 +553,8 @@ SAMPLE_GN_DESC_OUTPUT = '''
 }
 '''
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
 
   def props(platform, internal=False):
     return api.properties(

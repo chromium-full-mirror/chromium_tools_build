@@ -12,28 +12,74 @@ from recipe_engine.recipe_api import Property
 
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 
-DEPS = [
-    'archive',
-    'chromium',
-    'chromium_swarming',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/scheduler',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/url',
-    'recipe_engine/time',
-    'test_utils',
-    'depot_tools/tryserver',
-    'v8',
-    'v8_tests',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    archive,
+    chromium,
+    chromium_swarming,
+    test_utils,
+    v8,
+    v8_tests,
+)
+from RECIPE_MODULES.depot_tools import gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    json as json_module,
+    path,
+    platform,
+    properties,
+    raw_io,
+    scheduler,
+    step,
+    swarming,
+    time,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  context: context.API
+  gclient: gclient.API
+  json: json_module.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  scheduler: scheduler.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  time: time.API
+  tryserver: tryserver.API
+  url: url.API
+  v8: v8.API
+  v8_tests: v8_tests.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  json: json_module.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  scheduler: scheduler.TEST_API
+  step: step.TEST_API
+  test_utils: test_utils.TEST_API
+  time: time.TEST_API
+  v8: v8.TEST_API
+  v8_tests: v8_tests.TEST_API
 
 PROPERTIES = {
     # Additional configurations to enable binary size tracking. The mapping
@@ -77,10 +123,10 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
-             clusterfuzz_archive, coverage, custom_deps, default_targets,
-             enable_swarming, gclient_vars, mb_config_path, target_arch,
-             target_platform, track_build_dependencies, triggers,
+def RunSteps(api: DEPS, binary_size_tracking, build_config, clobber,
+             clobber_all, clusterfuzz_archive, coverage, custom_deps,
+             default_targets, enable_swarming, gclient_vars, mb_config_path,
+             target_arch, target_platform, track_build_dependencies, triggers,
              triggers_proxy):
   link_to_parent(api)
   v8 = api.v8
@@ -180,7 +226,7 @@ def link_to_parent(api):
     step_result.presentation.links['parent build'] = value
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (api.v8.test(
       'client.v8.branches',
       'V8 Foobar',
@@ -433,8 +479,8 @@ def GenTests(api):
     )
   )
 
-  step_test_data = api.m.chromium_swarming.canned_summary_output(
-      api.m.test_utils.canned_gtest_output(passing=False), failure=True)
+  step_test_data = api.chromium_swarming.canned_summary_output(
+      api.test_utils.canned_gtest_output(passing=False), failure=True)
   yield (api.v8.test(
       'client.v8',
       'V8 Foobar',

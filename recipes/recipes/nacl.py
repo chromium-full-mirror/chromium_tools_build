@@ -5,23 +5,61 @@
 from contextlib import contextmanager
 from recipe_engine.post_process import DropExpectation, MustRun
 
-DEPS = [
-    'builder_group',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'reclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/legacy_annotation',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, reclient
+from RECIPE_MODULES.depot_tools import bot_update, depot_tools, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    file,
+    legacy_annotation,
+    path,
+    platform,
+    properties,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  cas: cas.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  legacy_annotation: legacy_annotation.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  reclient: reclient.API
+  step: step.API
+  swarming: swarming.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  legacy_annotation: legacy_annotation.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  reclient: reclient.TEST_API
+  step: step.TEST_API
+  swarming: swarming.TEST_API
 
 # Maps from triggering builder to triggered builder for swarming.
 swarming_dimensions = {
@@ -191,7 +229,7 @@ def TriggerHardwareTests(api, got_revision, source_dir, compiled_sources_path,
   ParseSwarmingResults(api, dimensions['builder'], results)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   update_result = CheckoutSteps(api)
   got_revision = update_result.properties['got_revision']
   source_dir = update_result.source_root.path
@@ -202,7 +240,7 @@ def RunSteps(api):
                          swarming_dimensions[api.buildbucket.builder_name])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = (
       'https://chromium.googlesource.com/native_client/src/native_client.git')
 

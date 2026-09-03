@@ -34,20 +34,48 @@ from PB.recipes.build.branch_configuration import tester as tester_pb
 
 PROPERTIES = tester_pb.InputProperties
 
-DEPS = [
-    'chromium_bootstrap',
-    'chromium_tests',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_bootstrap, chromium_tests
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    defer,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium_bootstrap: chromium_bootstrap.API
+  chromium_tests: chromium_tests.API
+  context: context.API
+  defer: defer.API
+  gclient: gclient.API
+  git: git.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
 
 
 def _validate_properties(properties):
@@ -110,7 +138,7 @@ def _result(status, header, elements, footer=None):
   return result_pb.RawResult(status=status, summary_markdown='\n'.join(summary))
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   errors = _validate_properties(properties)
   if errors:
     return _result(
@@ -189,7 +217,7 @@ def RunSteps(api, properties):
         footer='See steps for more information')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.buildbucket.try_build(),

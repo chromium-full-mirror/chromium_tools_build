@@ -7,20 +7,43 @@ from recipe_engine import post_process
 from PB.recipes.build.chromium_toolchain.trusted_packaging import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    json,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  json: json.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   if properties.toolchain == InputProperties.UNKNOWN:
     raise api.step.StepFailure(
         "toolchain property must be set to CLANG or RUST")
@@ -83,7 +106,7 @@ def RunSteps(api, properties):
         res.presentation.step_text = 'TBI finished successfully'
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def gen_props(toolchain, **kwargs):
     return api.properties(toolchain=toolchain, **kwargs)

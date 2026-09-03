@@ -5,17 +5,40 @@
 from contextlib import contextmanager
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/osx_sdk',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import bot_update, gclient, osx_sdk
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    platform,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  context: context.API
+  gclient: gclient.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  platform: platform.TEST_API
+  step: step.TEST_API
 
 
 @contextmanager
@@ -37,7 +60,7 @@ def _RetryStepAfterBazelClean(api, bazel, name, cmd):
     api.step(name + ' (retry)', cmd)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Print the kernel version on Linux builders. BoringSSL is sensitive to
   # whether the kernel has getrandom support.
   if api.platform.is_linux:
@@ -88,7 +111,7 @@ def _CIBuild(api, builder):
       git_repo='https://boringssl.googlesource.com/boringssl')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   tests = [
       ('linux', api.platform('linux', 64)),
       ('mac', api.platform('mac', 64)),

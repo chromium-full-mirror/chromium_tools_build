@@ -18,23 +18,63 @@ TARGET_RUNTIME = 15.0
 
 SKIP_FOOTER = 'Autosharder-Skip'
 
-DEPS = [
-    'chromium_checkout',
-    'chromium_gerrit_utils',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/led',
-    'recipe_engine/json',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout, chromium_gerrit_utils
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    futures,
+    json,
+    led,
+    raw_io,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium_checkout: chromium_checkout.API
+  chromium_gerrit_utils: chromium_gerrit_utils.API
+  context: context.API
+  file: file.API
+  futures: futures.API
+  gclient: gclient.API
+  git: git.API
+  json: json.API
+  led: led.API
+  raw_io: raw_io.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  git: git.TEST_API
+  json: json.TEST_API
+  led: led.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  swarming: swarming.TEST_API
 
 
 def RunSteps(api: RecipeApi):
@@ -101,7 +141,7 @@ def _get_new_shardings(api: RecipeApi) -> tuple[dict[str, list[str]], str]:
   update_result = api.chromium_checkout.ensure_checkout()
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
       'infra', 'config', 'autoshard_exceptions.json')
-  shard_exceptions = api.m.file.read_json(
+  shard_exceptions = api.file.read_json(
       'read current exceptions file',
       exceptions_file,
       test_data={
@@ -123,7 +163,7 @@ def _get_new_shardings(api: RecipeApi) -> tuple[dict[str, list[str]], str]:
       step_test_data=lambda: api.raw_io.test_api.stream_output_text('deadbeef')
   ).stdout.strip()
 
-  previous_shard_exceptions = api.m.file.read_json(
+  previous_shard_exceptions = api.file.read_json(
       'read previous exceptions file',
       exceptions_file,
       test_data={

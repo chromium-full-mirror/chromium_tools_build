@@ -4,12 +4,20 @@
 
 from recipe_engine.post_process import DropExpectation
 
-DEPS = [
-    'v8_roll_watcher',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_roll_watcher
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  v8_roll_watcher: v8_roll_watcher.API
+
+
+def RunSteps(api: DEPS):
   v8_rollers = [
       roller('V8 DEPS Trusted', 'Update V8 DEPS (trusted)'),
       roller('V8 DEPS Reviewed', 'Update V8 DEPS (reviewed)'),
@@ -37,6 +45,6 @@ def roller(name, subject):
   }
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   # Minimal test for recipe coverage (still redundant with module tests).
   yield api.test('basic') + api.post_process(DropExpectation)

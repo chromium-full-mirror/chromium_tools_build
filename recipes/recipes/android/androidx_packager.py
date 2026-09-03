@@ -10,21 +10,56 @@ from PB.recipes.build.android import sdk_packager
 
 import math
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/bcid_reporter',
-    'recipe_engine/cipd',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/led',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import (
+    bcid_reporter,
+    buildbucket,
+    cipd,
+    file,
+    json,
+    led,
+    path,
+    properties,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bcid_reporter: bcid_reporter.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  cipd: cipd.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  led: led.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bcid_reporter: bcid_reporter.TEST_API
+  buildbucket: buildbucket.TEST_API
+  cipd: cipd.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  led: led.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 PROPERTIES = sdk_packager.InputProperties
 
@@ -90,7 +125,7 @@ def RollSubproject(api, subproject_name, subproject_path, roll_cmd):
         raise
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   if not api.led.led_build:
     api.bcid_reporter.report_stage("start")
 
@@ -116,7 +151,7 @@ def RunSteps(api, properties):
     api.bcid_reporter.report_stage("upload-complete")
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   androidx_dir = api.path.checkout_dir.joinpath('third_party', 'androidx')
   androidx_sample_lib = androidx_dir.joinpath('libs', 'androidx_dino')
   androidx_step_prefix = 'Roll //third_party/androidx.'

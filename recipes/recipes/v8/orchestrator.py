@@ -24,23 +24,54 @@ from recipe_engine.recipe_api import Property
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
 
-DEPS = [
-  'depot_tools/gitiles',
-  'depot_tools/tryserver',
-  'isolate',
-  'recipe_engine/buildbucket',
-  'recipe_engine/cipd',
-  'recipe_engine/file',
-  'recipe_engine/json',
-  'recipe_engine/led',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/runtime',
-  'recipe_engine/step',
-  'recipe_engine/swarming',
-  'v8_orchestrator',
-  'v8_tests',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import isolate, v8_orchestrator, v8_tests
+from RECIPE_MODULES.depot_tools import gitiles, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    file,
+    json as json_module,
+    led,
+    path,
+    properties,
+    runtime,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  file: file.API
+  gitiles: gitiles.API
+  isolate: isolate.API
+  json: json_module.API
+  led: led.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+  v8_orchestrator: v8_orchestrator.API
+  v8_tests: v8_tests.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
+  swarming: swarming.TEST_API
+  v8_tests: v8_tests.TEST_API
 
 PROPERTIES = {
     # Name of the compilator trybot to use.
@@ -99,7 +130,7 @@ def orchestrator_steps(api, compilator_name):
   return result_pb2.RawResult(status=status, summary_markdown=summary_markdown)
 
 
-def RunSteps(api, compilator_name):
+def RunSteps(api: DEPS, compilator_name):
   try:
     return orchestrator_steps(api, compilator_name)
   finally:
@@ -110,7 +141,8 @@ def RunSteps(api, compilator_name):
           status=common_pb.CANCELED,
           summary_markdown=BUILD_CANCELED_SUMMARY)
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   def subbuild_data(
       output_properties, summary='', status=common_pb.SUCCESS):
     output_properties = output_properties or {}

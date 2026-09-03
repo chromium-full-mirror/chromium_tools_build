@@ -10,19 +10,50 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'depot_tools/gerrit',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/findings',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/proto',
-    'recipe_engine/random',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import gerrit, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    findings,
+    json,
+    platform,
+    proto,
+    random,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  findings: findings.API
+  gerrit: gerrit.API
+  json: json.API
+  platform: platform.API
+  proto: proto.API
+  random: random.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  gerrit: gerrit.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  proto: proto.TEST_API
+  random: random.TEST_API
+  tryserver: tryserver.TEST_API
 
 # TODO(crbug.com/1153919): Figure out which subset of these are the best
 # trade-off between coverage/cost and enable them.
@@ -151,7 +182,7 @@ def _dedup_findings(api, all_platforms, findings_by_platform):
   return results
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
 
   api.buildbucket.hide_current_build_in_gerrit()
@@ -245,7 +276,7 @@ def RunSteps(api):
                                'block the CQ.')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   gerrit_change_ref = findings_pb.Location.GerritChangeReference(
       host='chromium-review.googlesource.com',
       project='chromium/src',

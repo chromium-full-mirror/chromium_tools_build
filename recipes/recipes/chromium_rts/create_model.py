@@ -11,24 +11,62 @@ from recipe_engine import post_process
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'chromium',  # to import gclient configs
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'infra/zip',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import gclient, gsutil
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    futures,
+    json,
+    path,
+    platform,
+    runtime,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  futures: futures.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  runtime: runtime.API
+  step: step.API
+  time: time.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  cipd: cipd.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  runtime: runtime.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 RTS_EXEC_CIPD_PREFIX = 'chromium/rts/rts-chromium/'
@@ -46,7 +84,7 @@ TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
 TEST_DURATION_DATA_PERCENTAGE = 1
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Start bot_update in background.
   checkout_dir_fut = api.futures.spawn_immediate(checkout_chromium, api)
 
@@ -95,7 +133,7 @@ def RunSteps(api):
   step_result = run_integration_tests(api, exec_path, model_dir, checkout_dir)
   # Still create the cipd package so we can inspect it if the build failed
   # but don't move the ref to latest so broken models don't end up in builds
-  should_update_ref = step_result.presentation.status == api.m.step.SUCCESS
+  should_update_ref = step_result.presentation.status == api.step.SUCCESS
 
   # TODO(crbug.com/1172372): ensure the new model is not significantly worse
   # than the current one.
@@ -368,7 +406,7 @@ def run_integration_tests(api, exec_path, model_dir, checkout_dir):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   linux_amd64 = (
       api.platform.name('linux') + \
       api.platform.arch('intel') +

@@ -22,17 +22,41 @@ from PB.recipes.build.chromium_polymorphic.launcher import InputProperties
 
 PROPERTIES = InputProperties
 
-DEPS = [
-    'chromium_polymorphic',
-    'recipe_engine/buildbucket',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_polymorphic
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    futures,
+    json,
+    properties,
+    step,
+)
 
 
-def RunSteps(api, properties):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_polymorphic: chromium_polymorphic.API
+  futures: futures.API
+  json: json.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_polymorphic: chromium_polymorphic.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
+
+
+def RunSteps(api: DEPS, properties):
   futures = [
       api.futures.spawn(_trigger_runner, api, target_builder,
                         properties.runner_builder)
@@ -75,7 +99,7 @@ def _trigger_runner(api, target_builder, runner_builder_id):
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def properties_on_target_build(*, project, bucket, builder, properties):
     return api.chromium_polymorphic.properties_on_target_build(

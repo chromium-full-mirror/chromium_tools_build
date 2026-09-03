@@ -5,21 +5,44 @@
 """Generates BoringSSL documentation and uploads it to Cloud Storage."""
 
 
-DEPS = [
-  'chromium',
-  'depot_tools/bot_update',
-  'depot_tools/gclient',
-  'depot_tools/gsutil',
-  'recipe_engine/buildbucket',
-  'recipe_engine/context',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/runtime',
-  'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    properties,
+    runtime,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  context: context.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  runtime: runtime.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Sync and pull in everything.
   api.gclient.set_config('boringssl')
   cache_dir = api.path.cache_dir / 'builder'
@@ -46,7 +69,7 @@ def RunSteps(api):
                   'gs://chromium-boringssl-docs/'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'docs',
       api.buildbucket.ci_build(

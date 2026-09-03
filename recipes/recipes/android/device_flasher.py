@@ -10,15 +10,41 @@ from google.protobuf import json_format
 from recipe_engine import post_process
 from PB.recipes.build.android import device_flasher
 
-DEPS = [
-    'depot_tools/gsutil',
-    'recipe_engine/cipd',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import gsutil
+from RECIPE_MODULES.recipe_engine import (
+    cipd,
+    json,
+    properties,
+    raw_io,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  cipd: cipd.API
+  gsutil: gsutil.API
+  json: json.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  swarming: swarming.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  cipd: cipd.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  swarming: swarming.TEST_API
 
 PROPERTIES = device_flasher.InputProperties
 
@@ -225,7 +251,7 @@ def _RunTasks(api, tasks_by_host, dry_run):
   return task_results
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   has_failure = False
   lookup_image_cache = {}
   for index, flash_criteria in enumerate(properties.flash_criteria):
@@ -261,7 +287,7 @@ def RunSteps(api, properties):
         status='FAILURE')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   walleye_dimensions = {
       'pool': ['chromium.tests'],

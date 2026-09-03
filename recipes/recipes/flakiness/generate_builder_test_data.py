@@ -8,20 +8,50 @@ from recipe_engine import post_process
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'flakiness',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'tar',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import flakiness, tar
+from RECIPE_MODULES.depot_tools import gsutil
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    file,
+    futures,
+    json as json_module,
+    path,
+    raw_io,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  file: file.API
+  flakiness: flakiness.API
+  futures: futures.API
+  gsutil: gsutil.API
+  json: json_module.API
+  path: path.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+  tar: tar.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  flakiness: flakiness.TEST_API
+  json: json_module.TEST_API
+  path: path.TEST_API
+  runtime: runtime.TEST_API
+  step: step.TEST_API
 
 
 def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
@@ -94,7 +124,7 @@ def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
         name='copy {} to latest'.format(tar_filename))
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # This recipe queries ResultDB via BigQuery directly to determine
   # historical test results for each try builder. The historical test results
   # are bundled and uploaded to CIPD such that try builders that check for
@@ -128,7 +158,7 @@ def RunSteps(api):
     f.result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.runtime(is_experimental=True),

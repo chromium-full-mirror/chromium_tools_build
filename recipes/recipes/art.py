@@ -4,22 +4,59 @@
 
 from PB.recipes.build.art import InputProperties
 
-DEPS = [
-    'depot_tools/git',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/url',
-    'repo',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import repo
+from RECIPE_MODULES.depot_tools import git
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    defer,
+    file,
+    path,
+    properties,
+    raw_io,
+    runtime,
+    step,
+    time,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  defer: defer.API
+  file: file.API
+  git: git.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  repo: repo.API
+  runtime: runtime.API
+  step: step.API
+  time: time.API
+  url: url.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  cipd: cipd.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  git: git.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 
 # Value passed to option `-j` of command `repo sync`.
@@ -29,7 +66,8 @@ PROPERTIES = InputProperties
 
 HOST_TEST_INTERPRETER_MAKE_JOBS = 5
 
-def RunSteps(api, props):
+
+def RunSteps(api: DEPS, props):
   manifest_branch = props.manifest_branch or 'master-art'
   if props.device:
     # Use different cache directory for RISCV to avoid interference.
@@ -620,7 +658,8 @@ def setup_target(api,
         defer(api.step, 'shut down virtual machine',
               [art_tools.joinpath('buildbot-vm.sh'), 'quit'])
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
     'host-x86_64-default_opts',
     api.buildbucket.ci_build(

@@ -13,22 +13,51 @@ from PB.recipes.build.v8.release_branch_updater import InputProperties, ChannelS
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process as post
 
-DEPS = [
-    'chromiumdash',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gitiles',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/url',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromiumdash, v8
+from RECIPE_MODULES.depot_tools import gclient, git, gitiles
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+    time,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromiumdash: chromiumdash.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  gitiles: gitiles.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+  url: url.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  time: time.TEST_API
+  url: url.TEST_API
 
 PROPERTIES = InputProperties
 
@@ -36,7 +65,7 @@ TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 V8_REPO = 'https://chromium.googlesource.com/v8/v8/'
 
 
-def RunSteps(api, props):
+def RunSteps(api: DEPS, props):
   updater = ReleaseBranchUpdater(api, props.channels)
   updater.init()
   channels = updater.retrieve_updates()
@@ -222,7 +251,7 @@ class ReleaseBranchUpdater:
     return outdated
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def milestone(milestone_number, chromium_branch, channel='stable'):
     return {

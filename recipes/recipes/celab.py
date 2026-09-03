@@ -11,26 +11,73 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'infra/zip',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+)
+from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    path,
+    platform,
+    properties,
+    resultdb,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
+  time: time.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  chromium: chromium.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  cipd: cipd.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
+  step: step.TEST_API
+  time: time.TEST_API
 
 CELAB_REPO = 'https://chromium.googlesource.com/enterprise/cel'
 CHROMIUM_REPO = 'https://chromium.googlesource.com/chromium/src'
@@ -57,7 +104,7 @@ def _get_python_packages(api, checkout):
       'find python packages', out_dir, '*.whl', test_data=['test.whl'])
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   project = api.buildbucket.build.builder.project
 
   if project == 'celab':
@@ -421,7 +468,7 @@ def _ParseTestSummary(api, storage_logs, logs_dir):
     return tests_summary
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic_try',
       api.buildbucket.try_build(

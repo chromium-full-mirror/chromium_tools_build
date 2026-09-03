@@ -21,14 +21,32 @@ from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
                                         SummaryMarkdownRE)
 
 
-DEPS = [
-    'depot_tools/gitiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/step',
-    'v8',
-    'v8_tests',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8, v8_tests
+from RECIPE_MODULES.depot_tools import gitiles
+from RECIPE_MODULES.recipe_engine import buildbucket, json, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  gitiles: gitiles.API
+  json: json.API
+  step: step.API
+  v8: v8.API
+  v8_tests: v8_tests.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  gitiles: gitiles.TEST_API
+  json: json.TEST_API
+  step: step.TEST_API
 
 MAX_CONFIGS = 16
 URL_FORMAT_RE = re.compile(r'(?:https?://)?(.+)')
@@ -71,7 +89,7 @@ def update_step_presentation(api, presentation, build, flake_config):
     presentation.status = api.step.EXCEPTION
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   configs = ast.literal_eval(api.gitiles.download_file(
       'https://chromium.googlesource.com/v8/v8', 'flakes/flakes.pyl',
       branch='infra/config', step_name='read flake config'))
@@ -143,7 +161,7 @@ def RunSteps(api):
   api.step('No flakes that fail to reproduce', cmd=None)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def test_data(results, ui_test_name=None):
     return sum([

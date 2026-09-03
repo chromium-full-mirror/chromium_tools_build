@@ -11,14 +11,27 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 from recipe_engine import post_process
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/step',
-    'recipe_engine/url',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import buildbucket, step, url
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  step: step.API
+  url: url.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+
+
+def RunSteps(api: DEPS):
   repo = 'https://chromium.googlesource.com/external/github.com/llvm/llvm-project'
   head_url = repo + '/+/refs/heads/main?format=JSON'
   rev = api.url.get_json(
@@ -82,7 +95,7 @@ def RunSteps(api):
   return RawResult(status=status, summary_markdown=summary_md)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'full',
       api.post_process(post_process.StatusSuccess),

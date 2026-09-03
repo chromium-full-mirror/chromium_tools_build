@@ -5,23 +5,55 @@
 from contextlib import contextmanager
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/osx_sdk',
-    'presentation_utils',
-    'recipe_engine/buildbucket',
-    "recipe_engine/cas",
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, presentation_utils
+from RECIPE_MODULES.depot_tools import bot_update, gclient, osx_sdk
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    defer,
+    file,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  cas: cas.API
+  chromium: chromium.API
+  context: context.API
+  defer: defer.API
+  file: file.API
+  gclient: gclient.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  presentation_utils: presentation_utils.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
 
 # This recipe historically parsed the builder name for test behavior. The
 # recipe framework prefers properties, which has the added benefit of requiring
@@ -224,10 +256,10 @@ def _CleanupMSVC(api):
           ok_ret='any')
 
 
-def RunSteps(api, android, check_prefixed_symbols, check_pregenerated_files,
-             check_stack, clang, cmake_args, gclient_vars, msvc_target,
-             prefixed_symbols, runner_args, run_ssl_tests, run_unit_tests, rust,
-             sde, upload_to_cas):
+def RunSteps(api: DEPS, android, check_prefixed_symbols,
+             check_pregenerated_files, check_stack, clang, cmake_args,
+             gclient_vars, msvc_target, prefixed_symbols, runner_args,
+             run_ssl_tests, run_unit_tests, rust, sde, upload_to_cas):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
       android=android,
@@ -502,7 +534,7 @@ def _TryBuild(api, builder):
       git_repo='https://boringssl.googlesource.com/boringssl')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   mock_go_tests = api.step_data(
       'read go tests',
       api.file.read_text("./util/ar\n./util/fipstools/delocate\n"))

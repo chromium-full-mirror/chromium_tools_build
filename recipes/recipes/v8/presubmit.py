@@ -8,15 +8,26 @@ Recipe for running presubmit in V8 CI.
 
 from recipe_engine.post_process import Filter
 
-DEPS = [
-    'chromium',
-    'depot_tools/gclient',
-    'recipe_engine/context',
-    'recipe_engine/properties',
-    'v8',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import context, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  context: context.API
+  gclient: gclient.API
+  properties: properties.API
+  v8: v8.API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
   update_result = api.v8.checkout()
@@ -34,7 +45,7 @@ def RunSteps(api):
     )
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(Filter('Presubmit')),

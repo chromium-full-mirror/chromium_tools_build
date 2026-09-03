@@ -18,23 +18,43 @@ https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/tools/dirmd
 
 
 
-DEPS = [
-    'build/chromium',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import bot_update, depot_tools, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  context: context.API
+  depot_tools: depot_tools.API
+  gclient: gclient.API
+  path: path.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
 
 DEST_BUCKET = 'chrome-metadata'
 DEST_BUCKET_LEGACY = 'chromium-owners'
 DEST_BIGQUERY_TABLE = 'chrome-metadata.chromium.dir_metadata'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   # TODO(gbeaty) This config causes a hook to be executed that updates the clang
   # coverage tools, it's probably unnecessary, but preserves the behavior from
@@ -83,5 +103,5 @@ def RunSteps(api):
   ])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('basic', api.chromium.ci_build())

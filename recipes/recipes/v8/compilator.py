@@ -22,19 +22,53 @@ from PB.recipe_engine import result as result_pb2
 from recipe_engine.post_process import DropExpectation, SummaryMarkdown
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'v8',
-    'v8_tests',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    v8,
+    v8_tests,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json as json_module,
+    path,
+    platform,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  file: file.API
+  json: json_module.API
+  path: path.API
+  platform: platform.API
+  runtime: runtime.API
+  step: step.API
+  v8: v8.API
+  v8_tests: v8_tests.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  json: json_module.TEST_API
+  platform: platform.TEST_API
+  runtime: runtime.TEST_API
+  step: step.TEST_API
+  v8: v8.TEST_API
+  v8_tests: v8_tests.TEST_API
 
 PROPERTIES = {
     # Mapping of custom dependencies to sync (dependency name as in DEPS
@@ -132,7 +166,7 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
   emit_compilator_properties(api, test_spec)
 
 
-def RunSteps(api, custom_deps, default_targets, gclient_vars, target_arch,
+def RunSteps(api: DEPS, custom_deps, default_targets, gclient_vars, target_arch,
              target_platform, revision):
   try:
     return compilator_steps(
@@ -147,7 +181,7 @@ def RunSteps(api, custom_deps, default_targets, gclient_vars, target_arch,
           summary_markdown=CANCELLATION_MESSAGE)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def test(name, builder_name='v8_foobar_compile_rel', status='SUCCESS'):
     build_msg = api.buildbucket.try_build_message(
         project='v8',

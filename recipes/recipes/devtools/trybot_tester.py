@@ -21,30 +21,67 @@ from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 from RECIPE_MODULES.build.devtools.scripts_tests_runner import ScriptsTests
 
 
-DEPS = [
-    'builder_group',
-    'chromium_swarming',
-    'devtools',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/platform',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/futures',
-    'v8_orchestrator',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium_swarming,
+    devtools,
+    v8,
+    v8_orchestrator,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    futures,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium_swarming: chromium_swarming.API
+  context: context.API
+  devtools: devtools.API
+  file: file.API
+  futures: futures.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  tryserver: tryserver.API
+  v8: v8.API
+  v8_orchestrator: v8_orchestrator.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   builder_config = properties.builder_config or 'Release'
   target_os = properties.target_os
   target_cpu = properties.target_cpu
@@ -86,7 +123,8 @@ def RunSteps(api, properties):
   results = run_test_pipelines(api, tests, affected_files=affected_files)
   return results.raw_result()
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   test_files = [
       'front_end/panels/timeline/timeline_test.ts',
       'test/e2e/helpers/datagrid-helpers.ts',

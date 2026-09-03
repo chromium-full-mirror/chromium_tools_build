@@ -11,34 +11,75 @@ from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests
 
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_swarming',
-    'devtools',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'perf_dashboard',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/futures',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_swarming,
+    devtools,
+    perf_dashboard,
+    v8,
+)
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    file,
+    futures,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  cas: cas.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  context: context.API
+  depot_tools: depot_tools.API
+  devtools: devtools.API
+  file: file.API
+  futures: futures.API
+  git: git.API
+  path: path.API
+  perf_dashboard: perf_dashboard.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  tryserver: tryserver.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   builder_config = 'Debug'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
@@ -81,7 +122,7 @@ class E2EStressTests(E2ETests):
     return [self.run_tests_command(tests)]
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   def ci_build(builder):

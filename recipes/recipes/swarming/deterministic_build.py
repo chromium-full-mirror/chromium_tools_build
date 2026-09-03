@@ -13,22 +13,57 @@ from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_android',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'isolate',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_android,
+    isolate,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  isolate: isolate.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  chromium: chromium.TEST_API
+  gclient: gclient.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
+  step: step.TEST_API
 
 # TODO(crbug.com/441328364): Migrate these configs src-side and read them in
 # from input props.
@@ -223,7 +258,7 @@ def ConfigureChromiumBuilder(api, recipe_config):
   return api.bot_update.ensure_checkout()
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   buildername = api.buildbucket.builder_name
   if buildername in DETERMINISTIC_BUILDERS:
     recipe_config = DETERMINISTIC_BUILDERS[buildername]
@@ -340,7 +375,8 @@ def RunSteps(api):
 def _sanitize_nonalpha(text):
   return ''.join(c if c.isalnum() else '_' for c in text)
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   builder_group = 'chromium.swarm'
   for buildername in DETERMINISTIC_BUILDERS:
     test_name = 'full_ci_%s_%s' % (_sanitize_nonalpha(builder_group),

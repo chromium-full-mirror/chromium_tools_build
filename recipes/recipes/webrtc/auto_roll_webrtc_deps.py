@@ -3,27 +3,57 @@
 # found in the LICENSE file.
 
 
-DEPS = [
-    'chromium_checkout',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/url',
-    'webrtc',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout, webrtc
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gclient,
+    gerrit,
+    git,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    json,
+    runtime,
+    step,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  depot_tools: depot_tools.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  git: git.API
+  json: json.API
+  runtime: runtime.API
+  step: step.API
+  url: url.API
+  webrtc: webrtc.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json.TEST_API
+  runtime: runtime.TEST_API
+  url: url.TEST_API
 
 
 GERRIT_URL = 'https://webrtc-review.googlesource.com'
 GERRIT_PROJECT = 'src'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('webrtc')
 
   # Make sure the checkout contains all deps for all platforms.
@@ -101,7 +131,7 @@ def RunSteps(api):
       api.step('autoroll DEPS', cmd)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   base = api.buildbucket.generic_build()
 
   yield api.test(

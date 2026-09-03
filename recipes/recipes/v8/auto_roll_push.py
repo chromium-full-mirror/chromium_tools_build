@@ -2,22 +2,42 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-DEPS = [
-  'depot_tools/bot_update',
-  'chromium',
-  'depot_tools/gclient',
-  'recipe_engine/buildbucket',
-  'recipe_engine/context',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/raw_io',
-  'recipe_engine/service_account',
-  'recipe_engine/step',
-  'recipe_engine/url',
-  'v8',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    properties,
+    raw_io,
+    service_account,
+    step,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  context: context.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  service_account: service_account.API
+  step: step.API
+  url: url.API
+  v8: v8.API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('v8')
   update_result = api.v8.checkout()
 
@@ -40,7 +60,7 @@ def RunSteps(api):
     )
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'standard',
       api.expect_status('SUCCESS'),

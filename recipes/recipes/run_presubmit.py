@@ -8,31 +8,79 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from recipe_engine import post_process
 import textwrap
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/presubmit',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/cv',
-    'recipe_engine/findings',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'depot_tools/tryserver',
-    # The following recipe modules are not used here,
-    # but apparently set spooky gclient configs,
-    # which get used by this recipe through "api.gclient.set_config".
-    'angle',
-    'libyuv',
-    'v8',
-    'webrtc',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    angle,
+    libyuv,
+    v8,
+    webrtc,
+)
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    presubmit,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    cv,
+    file,
+    findings,
+    json,
+    path,
+    platform,
+    properties,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  angle: angle.API
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  cv: cv.API
+  file: file.API
+  findings: findings.API
+  gclient: gclient.API
+  git: git.API
+  json: json.API
+  libyuv: libyuv.API
+  path: path.API
+  platform: platform.API
+  presubmit: presubmit.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
+  tryserver: tryserver.API
+  v8: v8.API
+  webrtc: webrtc.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  context: context.TEST_API
+  cv: cv.TEST_API
+  gclient: gclient.TEST_API
+  git: git.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  presubmit: presubmit.TEST_API
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
+  step: step.TEST_API
+  tryserver: tryserver.TEST_API
 
 
 def _limitSize(message_list, char_limit=450):
@@ -272,7 +320,7 @@ def _RunStepsInternal(api):
   return raw_result
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   safe_buildername = ''.join(
       c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
   # HACK to avoid invalidating caches when PRESUBMIT running
@@ -286,7 +334,7 @@ def RunSteps(api):
     return _RunStepsInternal(api)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'expected_tryjob',
       api.buildbucket.try_build(

@@ -9,28 +9,63 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'depot_tools/bot_update',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+)
+from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  time: time.TEST_API
 
 PROPERTIES = InputProperties
 
 warmed_file_name = 'warmed.txt'
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   with api.chromium.chromium_layout():
     cache_dir = api.path.cache_dir / 'builder'
     api.file.rmglob('delete warmed.txt', cache_dir, warmed_file_name)
@@ -79,7 +114,7 @@ def RunSteps(api, properties):
     # are pending builds
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def override_test_spec():
     return api.chromium_tests.read_targets_spec(

@@ -4,25 +4,68 @@
 """Buildbot recipe to build and test Dawn standalone using CMake.
 """
 
-DEPS = [
-    'dawn',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import dawn
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    gsutil,
+    osx_sdk,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  dawn: dawn.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  json: json.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  cipd: cipd.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
 
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -337,7 +380,7 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
   return build_path
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   target_cpu = properties.target_cpu
   debug = properties.debug
   clang = properties.clang
@@ -483,7 +526,7 @@ def RunSteps(api, properties):
           targets=['tint_api'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'linux',
       api.platform('linux', 64),

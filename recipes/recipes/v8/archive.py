@@ -13,21 +13,54 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
                                         MustRun)
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'chromium',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'infra/zip',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import git, gsutil
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  file: file.API
+  git: git.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  v8: v8.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  git: git.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  v8: v8.TEST_API
 
 
 PROPERTIES = {
@@ -202,7 +235,7 @@ def make_archive(api,
     return version, None
 
 
-def RunSteps(api, build_config, target_arch, target_bits, target_platform,
+def RunSteps(api: DEPS, build_config, target_arch, target_bits, target_platform,
              upload_archive):
   target_bits = int(target_bits)
 
@@ -278,7 +311,7 @@ def RunSteps(api, build_config, target_arch, target_bits, target_platform,
         return compile_failure
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def test_defaults(name, platform, build_config, status='SUCCESS', **kwargs):
     return api.test(
         api.v8.test_name('client.v8.official', 'V8 Foobar', name),

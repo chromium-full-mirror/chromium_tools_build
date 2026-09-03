@@ -10,22 +10,54 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipes.build.pinpoint import perf_try_job
 from PB.recipe_engine import result as result_pb2
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests_builder_config',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cv',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/service_account',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout, chromium_tests_builder_config
+from RECIPE_MODULES.depot_tools import gclient, gerrit, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cv,
+    file,
+    json as json_module,
+    properties,
+    raw_io,
+    service_account,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  cv: cv.API
+  file: file.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  json: json_module.API
+  properties: properties.API
+  raw_io: raw_io.API
+  service_account: service_account.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  gerrit: gerrit.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  tryserver: tryserver.TEST_API
 
 PROPERTIES = perf_try_job.InputProperties
 _CQ_TRIGGER_THRESHOLD = 3
@@ -179,7 +211,7 @@ def _generate_cabe_analysis_cmd(api, job_id):
   return cmd
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   api.tryserver.require_is_tryserver()
   with api.chromium.chromium_layout():
     gerrit_change = _get_current_change_from_gerrit(api)
@@ -293,7 +325,7 @@ def RunSteps(api, properties):
 
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   mock_gerrit_change = [
       common_pb2.GerritChange(
           host='chromium-review.googlesource.com',

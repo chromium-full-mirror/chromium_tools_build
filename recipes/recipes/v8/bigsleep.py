@@ -7,20 +7,41 @@ Recipe for V8 bigsleep uploads.
 
 from recipe_engine.post_process import DropExpectation, MustRun
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gsutil',
-    'depot_tools/tryserver',
-    'recipe_engine/commit_position',
-    'recipe_engine/path',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import bot_update, gsutil, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    commit_position,
+    path,
+    step,
+    time,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  commit_position: commit_position.API
+  gsutil: gsutil.API
+  path: path.API
+  step: step.API
+  time: time.API
+  tryserver: tryserver.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  v8: v8.TEST_API
+
+
+def RunSteps(api: DEPS):
   bot_config = {
       'chromium_apply_config': ['default_compiler', 'gn'],
       'v8_config_kwargs': {
@@ -105,7 +126,7 @@ def RunSteps(api):
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (
       api.v8.test('client.v8', 'v8_bigsleep') + api.step_data(
           'bot_update',

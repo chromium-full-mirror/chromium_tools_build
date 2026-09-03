@@ -5,9 +5,17 @@
 from recipe_engine.recipe_api import Property
 from recipe_engine.post_process import DropExpectation
 
-DEPS = [
-    'v8_roll_watcher',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_roll_watcher
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  v8_roll_watcher: v8_roll_watcher.API
 
 PROPERTIES = {
     'watched_rollers': Property(
@@ -17,10 +25,11 @@ PROPERTIES = {
     )
 }
 
-def RunSteps(api, watched_rollers):
+
+def RunSteps(api: DEPS, watched_rollers):
   return api.v8_roll_watcher.process_rollers(watched_rollers)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   # Minimal test for recipe coverage (still redundant with module tests).
   yield api.test('basic') + api.post_process(DropExpectation)

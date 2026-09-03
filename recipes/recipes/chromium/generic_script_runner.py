@@ -16,23 +16,45 @@ from RECIPE_MODULES.build import proto_validation
 
 PROPERTIES = InputProperties
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/context',
-    'recipe_engine/led',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.depot_tools import gclient, git, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    led,
+    properties,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  gclient: gclient.API
+  git: git.API
+  led: led.API
+  properties: properties.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  step: step.TEST_API
 
 VALIDATORS = proto_validation.Registry()
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   assert api.led.launched_by_led or not api.tryserver.is_tryserver
   assert api.swarming.current_server in ('https://chromium-swarm.appspot.com',
                                          'https://chrome-swarming.appspot.com')
@@ -75,7 +97,7 @@ def _validate_script_invocation(message, ctx):
   ctx.validate_field(message, 'script')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'happy_path_fuzzy_diff_analyzer',
       api.properties.environ(

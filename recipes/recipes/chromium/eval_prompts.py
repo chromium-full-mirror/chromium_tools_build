@@ -9,22 +9,63 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipe_engine import result as result_pb2
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    path,
+    properties,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  path: path.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  chromium: chromium.TEST_API
+  chromium_checkout: chromium_checkout.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  cipd: cipd.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  resultdb: resultdb.TEST_API
+  step: step.TEST_API
+  tryserver: tryserver.TEST_API
 
 GOOGLE_CLOUD_PROJECT = 'chrome-ci-vertex-provider'
 GOOGLE_CLOUD_LOCATION = 'global'

@@ -2,17 +2,45 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/json',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  file: file.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
 
 from recipe_engine import post_process
 from PB.recipes.build.chromium_speed_processor import InputProperties
@@ -23,14 +51,14 @@ PROPERTIES = InputProperties
 
 def read_processor_spec(api, file_path):
   """Reads the contents of a json file from given file_path."""
-  content = api.m.file.read_json(
-      'read processor spec file (%s)' % api.m.path.basename(file_path),
+  content = api.file.read_json(
+      'read processor spec file (%s)' % api.path.basename(file_path),
       file_path,
       test_data={})
   return content
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   with api.chromium.chromium_layout():
     # 1. update the bot to have latest scripts
     builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
@@ -103,7 +131,8 @@ MOCK_PROR_JSON_STRING = """
                         }
                         """
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   builder_db = ctbc.BuilderDatabase.create({
       'fake_group': {
           'fake_builder':

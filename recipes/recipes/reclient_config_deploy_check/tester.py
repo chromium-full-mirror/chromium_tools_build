@@ -10,17 +10,43 @@ from PB.recipes.build.reclient_config_deploy_check import tester as tester_pb
 
 PROPERTIES = tester_pb.InputProperties
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  gclient: gclient.API
+  git: git.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
 
 
 def _result(status, header, elements, footer=None):
@@ -31,7 +57,7 @@ def _result(status, header, elements, footer=None):
   return result_pb.RawResult(status=status, summary_markdown='\n'.join(summary))
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   gclient_config = api.gclient.make_config()
   s = gclient_config.solutions.add()
   s.url = api.tryserver.gerrit_change_repo_url
@@ -76,7 +102,7 @@ def RunSteps(api, properties):
         footer='See steps for more information')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.buildbucket.try_build(),

@@ -6,29 +6,60 @@ from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-DEPS = [
-    'binary_size',
-    'builder_group',
-    'chromium',
-    'chromium_android',
-    'chromium_checkout',
-    'chromium_tests',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'infra/zip',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/time',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    binary_size,
+    builder_group,
+    chromium,
+    chromium_android,
+    chromium_checkout,
+    chromium_tests,
+)
+from RECIPE_MODULES.depot_tools import gclient, gsutil
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    path,
+    properties,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  binary_size: binary_size.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  time: time.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  builder_group: builder_group.TEST_API
 
 GS_DIRECTORY = 'android-binary-size/commit_size_analysis/'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   """Zips up and uploads analysis files for android-binary-size trybot to use.
 
   This recipe will be run continuously on chromium ToT to keep the latest zip
@@ -77,7 +108,7 @@ def RunSteps(api):
 
     # Timestamp is needed so that clients of these zip files quickly know how
     # recent the file is
-    timestamp = str(int(api.m.time.time()))
+    timestamp = str(int(api.time.time()))
     file_name = '{}_{}.zip'.format(timestamp, got_revision)
 
     gs_dest = GS_DIRECTORY + file_name
@@ -104,7 +135,7 @@ def RunSteps(api):
     )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.builder_group.for_current('chromium.android'),

@@ -9,11 +9,26 @@ Recipe for rolling incoming changes in DevTools.
 from recipe_engine.post_process import (DropExpectation, MustRun)
 import json
 
-DEPS = [
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_auto_roller
+from RECIPE_MODULES.recipe_engine import file, path
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  file: file.API
+  path: path.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  path: path.TEST_API
 
 CONFIG = {
     "subject": "Update DevTools DEPS",
@@ -36,7 +51,7 @@ CONFIG = {
 }
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   update_result = api.v8_auto_roller.setup_target(
       'devtools-frontend',
       'https://chromium.googlesource.com/devtools/devtools-frontend',
@@ -61,7 +76,7 @@ def RunSteps(api):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def dummy_deps(*keys):
     return "deps = " + json.dumps({

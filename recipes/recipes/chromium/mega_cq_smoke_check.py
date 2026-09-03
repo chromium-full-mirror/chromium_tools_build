@@ -24,15 +24,33 @@ from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'chromium',
-    'chromium_gerrit_utils',
-    'chromium_mega_cq',
-    'depot_tools/gitiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_gerrit_utils, chromium_mega_cq
+from RECIPE_MODULES.depot_tools import gitiles
+from RECIPE_MODULES.recipe_engine import buildbucket, properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_gerrit_utils: chromium_gerrit_utils.API
+  chromium_mega_cq: chromium_mega_cq.API
+  gitiles: gitiles.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  gitiles: gitiles.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 

@@ -12,31 +12,61 @@ from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 from PB.recipes.build.chrome_codeql import InputProperties
 
-DEPS = [
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/gclient',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gsutil',
-    'build/chromium',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/time',
-    'recipe_engine/step',
-    'infra/zip',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    gsutil,
+)
+from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.recipe_engine import (
+    cipd,
+    context,
+    file,
+    path,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  cipd: cipd.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+  zip: zip_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
 UPLOAD_BUCKET = 'chrome-codeql-databases'
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   if not properties.codeql_version:
     raise api.step.StepFailure('No CodeQL version provided')
   api.gclient.set_config('chromium')
@@ -139,7 +169,8 @@ def RunSteps(api, properties):
         args=['-r'],
         link_name='CodeQL databases with logs')
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(InputProperties(codeql_version='latest')),

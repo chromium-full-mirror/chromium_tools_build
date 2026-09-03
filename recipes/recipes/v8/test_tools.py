@@ -10,17 +10,28 @@ dependencies and need docker.
 
 from recipe_engine.post_process import DropExpectation, Filter
 
-DEPS = [
-    'chromium',
-    'depot_tools/gclient',
-    'infra/docker',
-    'recipe_engine/context',
-    'recipe_engine/step',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.infra import docker
+from RECIPE_MODULES.recipe_engine import context, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  context: context.API
+  docker: docker.API
+  gclient: gclient.API
+  step: step.API
+  v8: v8.API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
   update_result = api.v8.checkout()
@@ -54,7 +65,7 @@ def RunSteps(api):
           step_name='npm test')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(Filter('js-fuzzer.npm install', 'js-fuzzer.npm test')),

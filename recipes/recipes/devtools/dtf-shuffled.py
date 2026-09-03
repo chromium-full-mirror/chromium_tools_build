@@ -11,29 +11,62 @@ from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests, RepeatE2EShuffledTests
 from RECIPE_MODULES.build.devtools.test_phases import run_test_pipelines
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_swarming',
-    'devtools',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cas',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/random',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/futures',
-    'recipe_engine/context',
-    'depot_tools/tryserver',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_swarming,
+    devtools,
+    v8,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cas,
+    context,
+    file,
+    futures,
+    path,
+    properties,
+    random,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  cas: cas.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  context: context.API
+  devtools: devtools.API
+  file: file.API
+  futures: futures.API
+  path: path.API
+  properties: properties.API
+  random: random.API
+  resultdb: resultdb.API
+  step: step.API
+  tryserver: tryserver.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   builder_config = 'Release'
   is_official_build = False
   devtools_skip_typecheck = False
@@ -65,7 +98,7 @@ def RunSteps(api, properties):
     return results.raw_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   def ci_build(builder):

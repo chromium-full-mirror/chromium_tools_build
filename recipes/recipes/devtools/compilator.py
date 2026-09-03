@@ -23,18 +23,43 @@ from PB.recipes.build.devtools.compilator import InputProperties
 
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
-DEPS = [
-    'chromium',
-    'devtools',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'chromium_checkout',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout, devtools
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    properties,
+    resultdb,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  devtools: devtools.API
+  file: file.API
+  json: json.API
+  properties: properties.API
+  resultdb: resultdb.API
+  runtime: runtime.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = InputProperties
 
@@ -42,7 +67,7 @@ CANCELLATION_MESSAGE = (
     'Parent orchestrating build ended, causing this build to be canceled.')
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   builder_config = properties.builder_config or 'Release'
   devtools_bundle = properties.devtools_bundle
   if 'devtools_bundle' not in api.properties:
@@ -86,7 +111,8 @@ def emit_compilator_properties(api, properties):
   properties_step.presentation.logs['compilator_properties'] = api.json.dumps(
       properties, indent=2)
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
 
   def check_steps(rule, *step_names):
     return [api.post_process(rule, name) for name in step_names]

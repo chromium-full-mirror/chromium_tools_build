@@ -11,22 +11,50 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 
-DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    gerrit,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    path,
+    properties,
+    raw_io,
+    runtime,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  raw_io: raw_io.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium_website')
   with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout()
@@ -37,9 +65,9 @@ def RunSteps(api):
     npmw_path = source_dir.joinpath('npmw')
     api.step('build', [npmw_path, 'build'])
 
-    if api.m.tryserver.is_tryserver:
-      channel_id = 'cl%d-ps%d' % (api.m.tryserver.gerrit_change.change,
-                                  api.m.tryserver.gerrit_change.patchset)
+    if api.tryserver.is_tryserver:
+      channel_id = 'cl%d-ps%d' % (api.tryserver.gerrit_change.change,
+                                  api.tryserver.gerrit_change.patchset)
       cmd = [npmw_path, 'deploy:preview', channel_id]
     else:
       cmd = [npmw_path, 'deploy:prod']
@@ -56,7 +84,7 @@ def RunSteps(api):
     # pylint: enable=line-too-long
 
     for line in out.splitlines():
-      if api.m.tryserver.is_tryserver:
+      if api.tryserver.is_tryserver:
         if 'Channel URL' in line:
           for word in line.split():
             if word.startswith('https://chromium-website'):
@@ -65,11 +93,11 @@ def RunSteps(api):
         if 'Hosting URL' in line:
           msg = 'Deployed to %s' % line.split()[-1]
 
-  if api.m.tryserver.is_tryserver:
-    api.m.gerrit.add_message(
-        host=f'https://{api.m.tryserver.gerrit_change.host}',
-        change=api.m.tryserver.gerrit_change.change,
-        revision=api.m.tryserver.gerrit_change.patchset,
+  if api.tryserver.is_tryserver:
+    api.gerrit.add_message(
+        host=f'https://{api.tryserver.gerrit_change.host}',
+        change=api.tryserver.gerrit_change.change,
+        revision=api.tryserver.gerrit_change.patchset,
         message=msg,
         automatic_attention_set_update=False)
 
@@ -78,7 +106,8 @@ def RunSteps(api):
       summary_markdown=msg,
   )
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   # pylint: disable=line-too-long
   yield api.test(
       'presubmit',

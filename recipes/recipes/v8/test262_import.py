@@ -8,10 +8,24 @@ Recipe for importing Test262 changes.
 
 from recipe_engine.post_process import (DropExpectation, MustRun)
 
-DEPS = [
-    'recipe_engine/raw_io',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_auto_roller
+from RECIPE_MODULES.recipe_engine import raw_io
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  raw_io: raw_io.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  raw_io: raw_io.TEST_API
 
 CONFIG = {
     "manual_roll_reviewers": [
@@ -20,7 +34,7 @@ CONFIG = {
 }
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   update_result = api.v8_auto_roller.setup_target(
       'v8',
       'https://chromium.googlesource.com/v8/v8',
@@ -35,7 +49,7 @@ def RunSteps(api):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (
     api.test('default') +
     api.override_step_data(

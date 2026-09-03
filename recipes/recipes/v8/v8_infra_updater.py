@@ -4,24 +4,52 @@
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/url',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gclient,
+    gerrit,
+    git,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    raw_io,
+    step,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  git: git.API
+  raw_io: raw_io.API
+  step: step.API
+  url: url.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  gerrit: gerrit.TEST_API
+  raw_io: raw_io.TEST_API
+  url: url.TEST_API
 
 HASHTAG = 'v8-infra-update'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('v8')
   update_result = api.v8.checkout(with_branch_heads=True)
 
@@ -85,7 +113,7 @@ def RunSteps(api):
       api.step('No new branch detected', [])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def fake_milestones(branches=None):
     if branches is None:

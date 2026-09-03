@@ -9,14 +9,25 @@ the result to wpt.fyi.
 
 """
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'infra/cloudkms',
-    'recipe_engine/path',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.infra import cloudkms
+from RECIPE_MODULES.recipe_engine import path, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  cloudkms: cloudkms.API
+  gclient: gclient.API
+  path: path.API
+  step: step.API
 
 # See wpt_import.py for details.
 CREDS_NAME = 'wpt-import-export'
@@ -25,7 +36,7 @@ KMS_CRYPTO_KEY = (
     CREDS_NAME)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   update_result = api.bot_update.ensure_checkout()
   creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
@@ -43,5 +54,5 @@ def RunSteps(api):
 
 
 # Run `./recipes.py test train` to update wpt-upload.json file.
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test('wpt-upload')

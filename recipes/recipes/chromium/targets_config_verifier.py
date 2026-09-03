@@ -24,20 +24,46 @@ from PB.recipes.build.chromium import (targets_config_verifier as
 
 PROPERTIES = targets_config_verifier_pb.InputProperties
 
-DEPS = [
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'chromium_tests_targets_config_verifier',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests, chromium_tests_builder_config, chromium_tests_targets_config_verifier
+from RECIPE_MODULES.depot_tools import gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    path,
+    properties,
+)
 
 
-def RunSteps(api, properties: targets_config_verifier_pb.InputProperties):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_tests_targets_config_verifier: chromium_tests_targets_config_verifier.API
+  file: file.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS, properties: targets_config_verifier_pb.InputProperties):
   api.tryserver.require_is_tryserver()
 
   errors = VALIDATORS.validate(properties)
@@ -74,7 +100,7 @@ def _result(
   return result_pb.RawResult(status=status, summary_markdown='\n'.join(summary))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   builder_config_dir = 'builder-config-dir'
   ctbc_api = api.chromium_tests_builder_config

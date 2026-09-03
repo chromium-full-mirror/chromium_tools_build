@@ -15,22 +15,56 @@ from RECIPE_MODULES.build import proto_validation
 
 PROPERTIES = InputProperties
 
-DEPS = [
-    'chromium',
-    'chromium_bootstrap',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/git_cl',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/properties',
-    'recipe_engine/random',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'recipe_engine/url',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_bootstrap
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    git_cl,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    properties,
+    random,
+    raw_io,
+    step,
+    time,
+    url,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_bootstrap: chromium_bootstrap.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  git_cl: git_cl.API
+  properties: properties.API
+  random: random.API
+  raw_io: raw_io.API
+  step: step.API
+  time: time.API
+  url: url.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  git: git.TEST_API
+  properties: properties.TEST_API
+  random: random.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  url: url.TEST_API
 
 VALIDATORS = proto_validation.Registry()
 
@@ -43,7 +77,7 @@ RUBBER_STAMPER = 'rubber-stamper@appspot.gserviceaccount.com'
 MAIN_BRANCH = 'main_expectations'
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   errors = VALIDATORS.validate(properties)
   if errors:
     summary = ['The following errors were found with the input properties:', '']
@@ -273,7 +307,7 @@ def StepCwdEquals(check, step_odict, step, cwd):
   check('cwd for step %s equaled %s' % (step, cwd), step_odict[step].cwd == cwd)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'happy_path_flake_finder',
       api.properties(

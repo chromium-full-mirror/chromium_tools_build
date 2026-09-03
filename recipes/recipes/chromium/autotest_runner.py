@@ -15,20 +15,45 @@ from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 from recipe_engine.post_process import StepCommandRE, DropExpectation
 
-DEPS = [
-    "chromium",
-    "chromium_checkout",
-    "gn",
-    "depot_tools/depot_tools",
-    "depot_tools/gclient",
-    "depot_tools/osx_sdk",
-    "recipe_engine/file",
-    "recipe_engine/path",
-    "recipe_engine/step",
-    "recipe_engine/context",
-    "recipe_engine/properties",
-    "recipe_engine/platform",
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout, gn
+from RECIPE_MODULES.depot_tools import depot_tools, gclient, osx_sdk
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gn: gn.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  context: context.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = InputProperties
 

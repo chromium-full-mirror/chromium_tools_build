@@ -3,24 +3,50 @@
 # found in the LICENSE file.
 
 
-DEPS = [
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'libyuv',
-    'recipe_engine/context',
-    'recipe_engine/json',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import libyuv
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gclient,
+    gerrit,
+    git,
+)
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    json,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  context: context.API
+  depot_tools: depot_tools.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  git: git.API
+  json: json.API
+  libyuv: libyuv.API
+  runtime: runtime.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  runtime: runtime.TEST_API
 
 
 GERRIT_URL = 'https://chromium-review.googlesource.com'
 GERRIT_PROJECT = 'libyuv/libyuv'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('libyuv')
 
   # Make sure the checkout contains all deps for all platforms.
@@ -73,7 +99,7 @@ def RunSteps(api):
       api.step('autoroll DEPS', cmd)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (
       api.test('normal_roll') +
       api.override_step_data('gerrit changes', api.json.output([]))

@@ -11,21 +11,52 @@ import re
 from distutils.version import StrictVersion
 from recipe_engine.post_process import DoesNotRun, DropExpectation, MustRun
 
-DEPS = [
-    'build/builder_group',
-    'build/v8',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, v8
+from RECIPE_MODULES.depot_tools import bot_update, gclient, git
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  context: context.TEST_API
+  gclient: gclient.TEST_API
+  git: git.TEST_API
+  path: path.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  v8: v8.TEST_API
 
 DEPS_KEY = 'src/v8'
 REPO = 'https://chromium.googlesource.com/v8/v8'
@@ -86,7 +117,7 @@ def GetCanaryVersion(revisions_by_head):
   return revisions_by_head[recent_version]
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   repo = api.properties.get('repo', REPO)
 
   revisions_by_head = GetHeads(api, repo)
@@ -99,7 +130,7 @@ def RunSteps(api):
     LogStep(api, 'There is no new canary.')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def get_remote_refs(canary_rev):
     return "\n".join([

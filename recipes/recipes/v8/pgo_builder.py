@@ -10,13 +10,34 @@ from recipe_engine.post_process import (
     LogDoesNotContain,
 )
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'v8_builtins_pgo',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_builtins_pgo
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  v8_builtins_pgo: v8_builtins_pgo.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = {
     'compilators': Property(kind=list, default=None),
@@ -24,13 +45,13 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, compilators, swarming_service_account):
+def RunSteps(api: DEPS, compilators, swarming_service_account):
   return api.v8_builtins_pgo.run(
       compilators=compilators,
       swarming_service_account=swarming_service_account)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'default',
       api.buildbucket.ci_build(bucket='ci-hp', revision=None),

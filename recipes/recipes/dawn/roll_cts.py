@@ -8,21 +8,56 @@
 
 from recipe_engine import post_process
 
-DEPS = [
-    'dawn',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/nodejs',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import dawn
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    nodejs,
+    path,
+    platform,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  dawn: dawn.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  gsutil: gsutil.API
+  nodejs: nodejs.API
+  path: path.API
+  platform: platform.API
+  step: step.API
+  swarming: swarming.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  context: context.TEST_API
+  file: file.TEST_API
+  gclient: gclient.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
 
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
@@ -47,7 +82,7 @@ def _checkout_steps(api):
 NODEJS_VERSION = '16.13.0'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   update_result = _checkout_steps(api)
   source_dir = update_result.source_root.path
 
@@ -66,7 +101,7 @@ def RunSteps(api):
       ])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'cts-roller',
       api.platform('linux', 64),

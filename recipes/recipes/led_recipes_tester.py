@@ -16,27 +16,69 @@ from PB.go.chromium.org.luci.led.job import job as job_pb2
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
                                              enum, sequence)
 
-DEPS = [
-    'chromium_gerrit_utils',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/defer',
-    'recipe_engine/file',
-    'recipe_engine/futures',
-    'recipe_engine/json',
-    'recipe_engine/led',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/gerrit',
-    'depot_tools/gitiles',
-    'depot_tools/tryserver',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_gerrit_utils
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    gerrit,
+    gitiles,
+    tryserver,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    defer,
+    file,
+    futures,
+    json,
+    led,
+    path,
+    properties,
+    raw_io,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium_gerrit_utils: chromium_gerrit_utils.API
+  cipd: cipd.API
+  context: context.API
+  defer: defer.API
+  file: file.API
+  futures: futures.API
+  gclient: gclient.API
+  gerrit: gerrit.API
+  gitiles: gitiles.API
+  json: json.API
+  led: led.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  context: context.TEST_API
+  json: json.TEST_API
+  led: led.TEST_API
+  path: path.TEST_API
+  raw_io: raw_io.TEST_API
+  step: step.TEST_API
+  tryserver: tryserver.TEST_API
 
 GERRIT_TOPIC = 'led-recipes-tester'
 
@@ -453,7 +495,7 @@ def _test_builder(api, builder, led_builder, cl):
         status=step_status)
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   gclient_config = api.gclient.make_config()
   s = gclient_config.solutions.add()
   s.url = api.tryserver.gerrit_change_repo_url
@@ -548,7 +590,7 @@ def RunSteps(api):
       api.chromium_gerrit_utils.abandon_cl(change_num)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   RECIPE = 'foo_recipe'
 
   def gerrit_change(footer_builder=None, experiments=()):

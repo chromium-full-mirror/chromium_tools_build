@@ -11,23 +11,53 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.webrtc import builders
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'chromium_swarming',
-    'depot_tools/tryserver',
-    'gn',
-    'recipe_engine/led',
-    'recipe_engine/platform',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'webrtc',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    gn,
+    webrtc,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    led,
+    platform,
+    raw_io,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  gn: gn.API
+  led: led.API
+  platform: platform.API
+  raw_io: raw_io.API
+  step: step.API
+  tryserver: tryserver.API
+  webrtc: webrtc.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  raw_io: raw_io.TEST_API
+  tryserver: tryserver.TEST_API
+  webrtc: webrtc.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_db=builders.BUILDERS_DB)
   api.webrtc.apply_bot_config(builder_id, builder_config)
@@ -110,7 +140,7 @@ def RunSteps(api):
                                     build_dir, update_result)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builders_db = builders.BUILDERS_DB
   generate_builder = functools.partial(api.webrtc.generate_builder, builders_db)
 

@@ -13,29 +13,71 @@ from PB.recipes.build.chromium.fuzz import InputProperties
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'archive',
-    'code_coverage',
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/depot_tools',
-    'depot_tools/gsutil',
-    'depot_tools/tryserver',
-    'filter',
-    'gn',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    archive,
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    filter as filter_module,
+    gn,
+)
+from RECIPE_MODULES.depot_tools import depot_tools, gsutil, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  archive: archive.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  filter: filter_module.API
+  gn: gn.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  filter: filter_module.TEST_API
+  gn: gn.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = InputProperties
 
@@ -158,7 +200,7 @@ def gn_ls_with_filter(api, build_dir, inputs, **kwargs):
   }
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   api.chromium_tests.configure_build(builder_config)
@@ -497,7 +539,7 @@ def RunSteps(api, properties):
       )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def generate_test(
       is_try=False,

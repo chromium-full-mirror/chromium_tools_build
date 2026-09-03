@@ -7,22 +7,55 @@ from recipe_engine.config import Single
 from recipe_engine.engine_types import freeze
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'chromium_checkout',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/git',
-    'depot_tools/gitiles',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    gclient,
+    git,
+    gitiles,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    path,
+    properties,
+    raw_io,
+    runtime,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium_checkout: chromium_checkout.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  git: git.API
+  gitiles: gitiles.API
+  gsutil: gsutil.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  gitiles: gitiles.TEST_API
+  properties: properties.TEST_API
+  runtime: runtime.TEST_API
 
 
 PROPERTIES = {
@@ -66,8 +99,8 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
-             src_ref):
+def RunSteps(api: DEPS, project, repo, ref, config, lkgr_status_gs_path,
+             allowed_lag, src_ref):
   if not project or not repo or not ref:
     api.step.empty(
         'configuration missing',
@@ -173,7 +206,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
             'push', repo, '%s:%s' % (new_lkgr, ref), name='push lkgr to ref')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def test_build(buildername):
     return (api.buildbucket.generic_build(builder=buildername))

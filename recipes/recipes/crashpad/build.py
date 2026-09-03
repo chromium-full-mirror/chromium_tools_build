@@ -10,21 +10,52 @@ import contextlib
 
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/osx_sdk',
-    'depot_tools/windows_sdk',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.depot_tools import (
+    bot_update,
+    depot_tools,
+    gclient,
+    osx_sdk,
+    windows_sdk,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  osx_sdk: osx_sdk.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+  windows_sdk: windows_sdk.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'config':
@@ -37,7 +68,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, config, target_os, target_cpu):
+def RunSteps(api: DEPS, config, target_os, target_cpu):
   """Generates the sequence of steps that will be run by the builder."""
   api.gclient.set_config('crashpad')
 
@@ -209,7 +240,7 @@ def RunSteps(api, config, target_os, target_cpu):
       run_tests(path)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   # Only test a single clobber case.
   test = 'crashpad_mac_dbg'
   CRASHPAD_REPO = 'https://chromium.googlesource.com/crashpad/crashpad.git'

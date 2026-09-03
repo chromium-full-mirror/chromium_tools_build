@@ -4,22 +4,42 @@
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'depot_tools/git',
-    'recipe_engine/context',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, v8
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gclient,
+    git,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import context, raw_io, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  context: context.API
+  depot_tools: depot_tools.API
+  gclient: gclient.API
+  git: git.API
+  gsutil: gsutil.API
+  raw_io: raw_io.API
+  step: step.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  raw_io: raw_io.TEST_API
 
 GS_BUCKET = 'chrome-v8-gcmole'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
   update_result = api.v8.checkout()
@@ -59,7 +79,7 @@ def RunSteps(api):
       )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       "default test",
       api.override_step_data(

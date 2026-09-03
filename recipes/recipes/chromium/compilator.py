@@ -6,23 +6,45 @@ from recipe_engine import post_process
 
 from PB.recipe_modules.build.chromium_compilator.properties import InputProperties
 
-DEPS = [
-    'chromium',
-    'chromium_compilator',
-    'chromium_tests_builder_config',
-    'chromium_turboci',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_compilator,
+    chromium_tests_builder_config,
+    chromium_turboci,
+)
+from RECIPE_MODULES.recipe_engine import properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_compilator: chromium_compilator.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_turboci: chromium_turboci.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
-def RunSteps(api, properties):
+
+def RunSteps(api: DEPS, properties):
   with api.chromium.chromium_layout(), \
        api.chromium_turboci.display_turboci_checks():
     return api.chromium_compilator.compilator_steps(properties)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
