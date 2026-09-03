@@ -348,11 +348,12 @@ def schedule_skylab_tests(opts):
         "key": "parent_buildbucket_id",
         "value": opts.parent_build_id,
     }]
-    # Use can_outlive_parent so it can be passed to Python-proto bindings.
-    bb_request_data['can_outlive_parent'] = 2  # 2 is NO
+    if not opts.schedule:
+      # Use can_outlive_parent so it can be passed to Python-proto bindings.
+      bb_request_data['can_outlive_parent'] = 2  # 2 is NO
 
   bb_request_data_json = json.dumps(bb_request_data)
-  if opts.dry_run:
+  if not opts.schedule:
     if opts.json_outfile:
       with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
         json_file.write(bb_request_data_json)
@@ -525,11 +526,12 @@ def main(args):
   subparser = subparsers.add_parser(
       'request', help=('Schedule Skylab test requests via Buildbucket API.'))
   subparser.add_argument(
-      '--nodry-run',
-      dest='dry_run',
-      action='store_false',
-      default=True,
-      help='Disable dry run mode and send request. For local testing.')
+      '--schedule',
+      action='store_true',
+      default=False,
+      help=('Directly send ScheduleBuild request to Buildbucket (for local '
+            'testing). Default is off (only generate/output request JSON).'),
+  )
   subparser.add_argument(
       '--builder-name', type=str, help='Buildbucket builder name.')
   subparser.add_argument('--board', type=str, help='ChromeOS board name.')
