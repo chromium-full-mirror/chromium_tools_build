@@ -4,6 +4,8 @@
 
 from recipe_engine import post_process
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+
 from RECIPE_MODULES.build import chromium_types
 
 from dataclasses import dataclass
@@ -102,9 +104,20 @@ def RunSteps(api: DEPS):
     update_step, build_dir, targets_config = (
         api.chromium_tests.prepare_checkout(
             builder_config, enforce_fetch=True, clean_ignored=True))
-    return api.chromium_tests.compile_specific_targets(
-        build_dir, builder_id, builder_config, update_step, targets_config,
-        targets_config.compile_targets, targets_config.all_tests)[0]
+    source_dir = update_step.source_root.path
+    compile_result, compile_output = (
+        api.chromium_tests.compile_specific_targets(
+            build_dir, builder_id, builder_config, update_step, targets_config,
+            targets_config.compile_targets, targets_config.all_tests))
+
+    if compile_result and compile_result.status != common_pb2.SUCCESS:
+      return compile_result
+
+    if compile_output:
+      api.chromium_tests.isolate_test_targets(source_dir, build_dir,
+                                              builder_config, update_step,
+                                              compile_output)
+    return compile_result
 
 
 def GenTests(api: TEST_DEPS):

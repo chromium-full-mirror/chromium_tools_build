@@ -54,11 +54,18 @@ class ChromiumReviverApi(recipe_api.RecipeApi):
               itertools.chain.from_iterable(
                   t.compile_targets() for t in tests)))
 
-      compile_result, _ = self.m.chromium_tests.compile_specific_targets(
-          build_dir, builder_id, builder_config, update_result, targets_config,
-          compile_targets, tests)
+      compile_result, compile_output = (
+          self.m.chromium_tests.compile_specific_targets(
+              build_dir, builder_id, builder_config, update_result,
+              targets_config, compile_targets, tests))
       if compile_result and compile_result.status != common_pb.SUCCESS:
         return compile_result
+
+      if compile_output:
+        self.m.chromium_tests.isolate_test_targets(source_dir, build_dir,
+                                                   builder_config,
+                                                   update_result,
+                                                   compile_output)
 
       # There will pretty much always be test failures since it is unlikely that
       # all disabled tests can be re-enabled, so don't fail the build due to

@@ -101,18 +101,24 @@ def RunSteps(api: DEPS, properties):
           .format(len(compile_targets), compile_targets))
 
       # Compile.
-      compile_result, _ = api.chromium_tests.compile_specific_targets(
-          build_dir,
-          builder_id,
-          builder_config,
-          update_result,
-          targets_config,
-          compile_targets,
-          override_execution_mode=ctbc.COMPILE_AND_TEST,
-          tests=step_tests)
+      compile_result, compile_output = (
+          api.chromium_tests.compile_specific_targets(
+              build_dir,
+              builder_id,
+              builder_config,
+              update_result,
+              targets_config,
+              compile_targets,
+              override_execution_mode=ctbc.COMPILE_AND_TEST,
+              tests=step_tests))
 
       if compile_result and compile_result.status != common_pb.SUCCESS:
         return compile_result.status
+
+      if compile_output:
+        api.chromium_tests.isolate_test_targets(source_dir, build_dir,
+                                                builder_config, update_result,
+                                                compile_output)
 
       # Run tests.
       # If we have < 10 tests to runs, trigger fast runs, which

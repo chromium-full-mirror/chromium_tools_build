@@ -182,6 +182,22 @@ class Task:
     return self.update_result.source_root.path
 
 
+@attrs()
+class CompileOutput:
+  """Output from the compiling."""
+
+  # A list of Test objects [see chromium_tests/steps.py] that will be isolated
+  # on remote swarming or locally.
+  isolated_tests = attrib(sequence[steps.AbstractTest])
+
+  # If the execution information should be exposed as build properties.
+  expose_to_properties = attrib(bool, default=False)
+
+  # A list of skylab Test objects [see chromium_tests/steps.py] that will be
+  # uploaded to GCS server.
+  skylab_isolate_tests = attrib(sequence[steps.AbstractTest])
+
+
 class ChromiumTestsApi(recipe_api.RecipeApi):
 
   # These are defined in //infra/config/lib/try.star in chromium/src.
@@ -715,55 +731,46 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                mb_recursive_lookup=True,
                                mb_write_ide_json=False,
                                override_execution_mode=None,
-                               isolate_output_files_for_coverage=False,
                                include_utr_instruction=False,
                                affected_files=None):
     """Runs compile and related steps for given builder.
 
     Allows finer-grained control about exact compile targets used.
 
-    If we're compiling tests which run on swarming, this method also isolates
-    those tests, and (possibly) updates build properties with relevant execution
-    information.
-
     Args:
-      build_dir - The path to the directory containing built outputs.
-      builder_id - A BuilderId identifying the configuration to use when running
+      build_dir: The path to the directory containing built outputs.
+      builder_id: A BuilderId identifying the configuration to use when running
         mb.
-      builder_config - The configuration for the builder being executed.
-      update_result - The result from the checkout.
-      targets_config - The configuration of the current build.
-      compile_targets - The list of targets to compile.
-      tests - The list of tests to be built for this builder. The tests may or
+      builder_config: The configuration for the builder being executed.
+      update_result: The result from the checkout.
+      targets_config: The configuration of the current build.
+      compile_targets: The list of targets to compile.
+      tests: The list of tests to be built for this builder. The tests may or
         may not be executed by the builder and may be executed by another
-        builder that is triggered. The compile operation will prepare and upload
-        the isolates for the tests that use isolate.
-      mb_phase - A phase argument to be passed to mb. Must be provided if the
+        builder that is triggered.
+      mb_phase: A phase argument to be passed to mb. Must be provided if the
         configuration identified by `builder_id` uses phases and must not be
         provided if the configuration identified by `builder_id` does not use
         phases.
-      mb_config_path - An optional override specifying the file where mb will
+      mb_config_path: An optional override specifying the file where mb will
         read configurations from.
-      mb_recursive_lookup - A boolean indicating whether the lookup operation
+      mb_recursive_lookup: A boolean indicating whether the lookup operation
         should recursively expand any included files. If False, then the lookup
         output will contain the include statement.
-      mb_write_ide_json - A boolean indicating if mb should have gn generate
+      mb_write_ide_json: A boolean indicating if mb should have gn generate
         a large JSON file containing target information for the project.
-      override_execution_mode - An optional override to change the execution
+      override_execution_mode: An optional override to change the execution
         mode.
-      isolate_output_files_for_coverage: Whether to also upload all test
-        binaries and other required code coverage output files to one hash.
       include_utr_instruction: Whether or not to include UTR reproduction
-        instructions
+        instructions.
       affected_files: List of paths to files affected by the current change.
 
     Returns:
-      A tuple of
-        RawResult object with compile step status and failure message or None
-          if the compile was successful.
-        SwarmingExecutionInfo describing how to execute any isolated tests that
-          were compiled and isolated. May be None.
-
+      A tuple of:
+        A RawResult object with compile step status, or None if the execution
+          mode is not COMPILE_AND_TEST.
+        CompileOutput containing the tests to be isolated (swarming and skylab),
+          or None if compile failed or execution mode is not COMPILE_AND_TEST.
     """
 
     assert isinstance(targets_config, targets_config_module.TargetsConfig), \
@@ -779,7 +786,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_config.expose_trigger_properties or
         any_child_use_test_trigger_cas)
 
-    checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
 
     if self.m.chromium.c.TARGET_PLATFORM == 'android':
@@ -796,19 +802,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Skylab tests pretend to be isolated_tests at run_mb_and_compile step,
     # for generating the runtime deps. We upload the deps to GCS instead of
     # isolate server, because skylab DUT does not support isolate.
-    skylab_isolates = [
-        t.target_name
-        for t in tests
+    skylab_isolate_tests = [
+        t for t in tests
         # Skylab test has different runner script and dependencies. A skylab
         # test should not appear in isolated_tests.
         if t.runs_on_skylab and not t in isolated_tests and t.is_enabled
     ]
 
-    suffix = ''
-    name_suffix = ''
-    if self.m.tryserver.is_tryserver:
-      suffix = 'with patch'
-      name_suffix = ' (with patch)'
+    name_suffix = ' (with patch)' if self.m.tryserver.is_tryserver else ''
 
     android_version_name, android_version_code = (
         self.get_android_version_details(
@@ -825,8 +826,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         source_dir,
         build_dir,
         builder_id,
-        compile_targets,
-        [t.isolate_target for t in isolated_tests] + skylab_isolates,
+        compile_targets, ([t.isolate_target for t in isolated_tests] +
+                          [t.target_name for t in skylab_isolate_tests]),
         name_suffix=name_suffix,
         mb_phase=mb_phase,
         mb_config_path=mb_config_path,
@@ -846,30 +847,66 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         affected_files=affected_files if affected_files is not None else [],
         tests=tests)
 
-    execution_info = None
+    return raw_result, CompileOutput(
+        isolated_tests=isolated_tests,
+        expose_to_properties=expose_to_properties,
+        skylab_isolate_tests=skylab_isolate_tests)
 
-    if isolated_tests:
+  def isolate_test_targets(
+      self,
+      source_dir: Path,
+      build_dir: Path,
+      builder_config,
+      update_result: bot_update.Result,
+      compile_output: CompileOutput,
+      *,
+      suffix=None,
+      isolate_output_files_for_coverage=False,
+      swarm_hashes_property_name='',
+  ):
+    """Perform the isolation for the compiled test targets.
+
+    Args:
+      source_dir: The path to the top-level repo.
+      build_dir: The path to the build directory.
+      builder_config: The BuilderConfig object.
+      update_result: The bot_update result.
+      compile_output: The output from previous compile step.
+      suffix: Suffix for step names (defaults to 'with patch' if tryserver
+        else '').
+      isolate_output_files_for_coverage: Whether to isolate output files for
+        code coverage.
+      swarm_hashes_property_name: The property name to output swarming hashes
+        into.
+
+    Returns:
+      SwarmingExecutionInfo describing how to execute the isolated tests.
+    """
+    if suffix is None:
+      suffix = 'with patch' if self.m.tryserver.is_tryserver else ''
+
+    execution_info = None
+    if compile_output.isolated_tests:
       additional_isolate_targets = []
       if isolate_output_files_for_coverage:
         file_paths = self.m.code_coverage.get_required_build_output_files(
-            isolated_tests)
+            compile_output.isolated_tests)
 
         self.m.isolate.write_isolate_files_for_binary_file_paths(
             file_paths, ALL_TEST_BINARIES_ISOLATE_NAME, source_dir, build_dir)
 
         additional_isolate_targets.append(ALL_TEST_BINARIES_ISOLATE_NAME)
 
-      # 'compile' just prepares all information needed for the isolation,
-      # and the isolation is a separate step.
       execution_info = self.isolate_tests(
           source_dir,
           build_dir,
           builder_config,
-          isolated_tests,
+          compile_output.isolated_tests,
           suffix,
           update_result.properties.get('got_revision_cp'),
+          swarm_hashes_property_name=swarm_hashes_property_name,
           additional_isolate_targets=additional_isolate_targets,
-          expose_to_properties=expose_to_properties)
+          expose_to_properties=compile_output.expose_to_properties)
 
       if builder_config.perf_isolate_upload:
         instance = self.m.cas.instance
@@ -884,16 +921,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                 'git_hash': git_hash,
             }]), instance, self.m.isolate.isolated_tests)
 
-    if skylab_isolates:
+    if compile_output.skylab_isolate_tests:
       self.prepare_artifact_for_skylab(
           builder_config,
-          checkout_dir,
+          update_result.checkout_dir,
           source_dir,
           build_dir,
-          [t for t in tests if t.target_name in skylab_isolates],
-      )
+          compile_output.skylab_isolate_tests,
+          phase=suffix or 'with patch')
 
-    return raw_result, execution_info
+    return execution_info
 
   def find_swarming_command_lines(self, suffix, build_dir: Path):
 
@@ -1547,13 +1584,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     Returns:
       A tuple of:
-        A RawResult object with the failure message and status or None if
-          nothing failed.
+        A RawResult object with the message and status or None if compile is
+          not needed.
         A SwarmingExecutionInfo object containing information about how
           to execute the swarming tests in failing_tests.
 
     """
-    skylab_isolates = [t.target_name for t in failing_tests if t.runs_on_skylab]
+    skylab_isolate_tests = [t for t in failing_tests if t.runs_on_skylab]
 
     compile_targets = set(
         itertools.chain(*[t.compile_targets() for t in failing_tests]))
@@ -1581,7 +1618,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       return None, None
 
     compile_targets = sorted(compile_targets)
-    failing_swarming_tests = [t for t in failing_tests if t.uses_isolate]
+    isolated_tests = [t for t in failing_tests if t.uses_isolate]
 
     source_dir = update_result.source_root.path
     with self.m.context(
@@ -1591,8 +1628,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           source_dir,
           build_dir,
           builder_id,
-          compile_targets,
-          [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
+          compile_targets, ([t.isolate_target for t in isolated_tests] +
+                            [t.target_name for t in skylab_isolate_tests]),
           ' (%s)' % suffix,
           include_utr_instruction=include_utr_instruction)
 
@@ -1608,26 +1645,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         if raw_result.status != common_pb.SUCCESS:
           return raw_result, None
 
-      if skylab_isolates:
-        self.prepare_artifact_for_skylab(
-            builder_config,
-            update_result.checkout_dir,
-            source_dir,
-            build_dir,
-            [t for t in failing_tests if t.target_name in skylab_isolates],
-            phase=suffix)
-      if not failing_swarming_tests:
-        return None, None
-
-      return None, self.isolate_tests(
+      compile_output = CompileOutput(
+          isolated_tests=isolated_tests,
+          skylab_isolate_tests=skylab_isolate_tests)
+      execution_info = self.isolate_test_targets(
           source_dir,
           build_dir,
           builder_config,
-          failing_swarming_tests,
-          suffix,
-          update_result.properties.get('got_revision_cp'),
+          update_result,
+          compile_output,
+          suffix=suffix,
           swarm_hashes_property_name='swarm_hashes',
       )
+
+      return raw_result, execution_info
 
   def should_skip_without_patch(
       self,
@@ -1932,7 +1963,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if self._enable_snoopy:
       self.m.bcid_reporter.report_stage('compile')
-    compile_result, swarming_execution_info = self.compile_specific_targets(
+    compile_result, compile_output = self.compile_specific_targets(
         build_dir,
         builder_id,
         builder_config,
@@ -1946,6 +1977,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if compile_result and compile_result.status != common_pb.SUCCESS:
       return compile_result, update_result
+
+    swarming_execution_info = None
+    if compile_output:
+      swarming_execution_info = self.isolate_test_targets(
+          source_dir, build_dir, builder_config, update_result, compile_output)
 
     self.inbound_transfer(build_dir, builder_config, builder_id, update_result,
                           targets_config)
@@ -2897,7 +2933,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       tests = self.tests_in_compile_targets(test_targets, tests)
       compile_targets = sorted(set(compile_targets))
-      raw_result, execution_info = self.compile_specific_targets(
+      raw_result, compile_output = self.compile_specific_targets(
           build_dir,
           builder_id,
           builder_config,
@@ -2906,12 +2942,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           compile_targets,
           tests,
           override_execution_mode=ctbc.COMPILE_AND_TEST,
-          isolate_output_files_for_coverage=isolate_output_files_for_coverage,
           include_utr_instruction=True,
           affected_files=affected_files)
 
       self.m.chromium_turboci.finalize_build_check(
           turboci_build_check_id, 'executed compile', raw_result=raw_result)
+
+      if compile_output:
+        execution_info = self.isolate_test_targets(
+            source_dir,
+            build_dir,
+            builder_config,
+            update_result,
+            compile_output,
+            isolate_output_files_for_coverage=isolate_output_files_for_coverage)
 
     else:
       self.m.chromium_turboci.set_build_check_planned(

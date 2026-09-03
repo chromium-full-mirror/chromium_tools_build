@@ -9,6 +9,8 @@ import collections
 from recipe_engine import post_process
 from recipe_engine.post_process import Filter
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
@@ -117,15 +119,26 @@ def RunSteps(api):
     tests.append(
         steps.SwarmingGTestTestSpec.create(target_name).get_test(
             api.chromium_tests))
-  return api.chromium_tests.compile_specific_targets(
-      build_dir,
-      builder_id,
-      builder_config,
-      update_result,
-      targets_config,
-      compile_targets=[target_name],
-      tests=tests,
-      override_execution_mode=ctbc.COMPILE_AND_TEST)[0]
+  compile_result, compile_output = (
+      api.chromium_tests.compile_specific_targets(
+          build_dir,
+          builder_id,
+          builder_config,
+          update_result,
+          targets_config,
+          compile_targets=[target_name],
+          tests=tests,
+          override_execution_mode=ctbc.COMPILE_AND_TEST))
+  if compile_result and compile_result.status != common_pb.SUCCESS:
+    return compile_result
+
+  if compile_output:
+    source_dir = update_result.source_root.path
+    api.chromium_tests.isolate_test_targets(source_dir, build_dir,
+                                            builder_config, update_result,
+                                            compile_output)
+
+  return compile_result
 
 
 def GenTests(api):
