@@ -222,3 +222,19 @@ def GenTests(api):
           ['-add-licenses'],
       ),
   )
+
+  yield api.test(
+      'cipd-resolve-wrong-pin-count',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.override_step_data(
+          'SSCI collection.cipd resolve infra_internal/tools/security/depbot/${platform}',
+          api.json.output({'result': {
+              '': []
+          }}),
+      ),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.SummaryMarkdown,
+                       'expected only 1 resolved pin but got 0'),
+      api.post_process(post_process.DropExpectation),
+  )

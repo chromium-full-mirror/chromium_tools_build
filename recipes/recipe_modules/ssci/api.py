@@ -222,12 +222,15 @@ class SsciAPI(recipe_api.RecipeApi):
         continue
 
       # Checks if we're using a proper CIPD version tag, or 'latest'. If we're using
-      # latest, CIPD describe is used to resolve it to an InstanceID.
-      desc = self.m.cipd.describe(cipd_tool.pkg_path, cipd_tool.ensure_version)
+      # latest, CIPD resolve is used to resolve it to an InstanceID.
+      res = self.m.cipd.resolve(cipd_tool.pkg_path, cipd_tool.ensure_version)
       # This also adds a v in front of the CIPD package versions to prevent issues where
       # CIPD package instance IDs can start with a `-` which can be interpreted as a CLI
       # flag.
-      cipd_tool.resolved_version = f"v{desc.pin.instance_id}"
+      if len(res) != 1:
+        raise recipe_api.StepFailure(
+            f'expected only 1 resolved pin but got {len(res)}')
+      cipd_tool.resolved_version = f"v{res[0].instance_id}"
 
   def _batch_targets(self, targets, batch_size=15):
     """Some recipes have many targets, and processing them all at once can cause builders to run out of memory and crash."""
