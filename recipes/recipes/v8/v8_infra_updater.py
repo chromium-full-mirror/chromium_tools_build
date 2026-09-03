@@ -47,6 +47,7 @@ class TEST_DEPS(RecipeTestApi):
   url: url.TEST_API
 
 HASHTAG = 'v8-infra-update'
+MAX_ACTIVE_BRANCHES = 6
 
 
 def RunSteps(api: DEPS):
@@ -86,9 +87,10 @@ def RunSteps(api: DEPS):
     current_branches = api.v8.infer_active_branches(definitions)
     if active_branches != current_branches:
       # Safety checks
-      if len(active_branches) > 5:
+      if len(active_branches) > MAX_ACTIVE_BRANCHES:
         raise api.step.StepFailure(
-            f'Too many active branches: {len(active_branches)} (max 5)')
+            f'Too many active branches: {len(active_branches)} '
+            f'(max {MAX_ACTIVE_BRANCHES})')
 
       added = [b for b in active_branches if b not in current_branches]
       removed = [b for b in current_branches if b not in active_branches]
@@ -150,6 +152,9 @@ def GenTests(api: TEST_DEPS):
                 '(https://review.source.com/3)'))
 
   yield (api.test("too many branches", status='FAILURE') + fake_milestones([{
+      'milestone': 127,
+      'v8_branch': '12.7'
+  }, {
       'milestone': 126,
       'v8_branch': '12.6'
   }, {
@@ -168,8 +173,9 @@ def GenTests(api: TEST_DEPS):
       'milestone': 121,
       'v8_branch': '12.1'
   }]) + stdout('Read branch definitions', 'ACTIVE_BRANCHES = ["12.5"]') +
-         api.post_process(post_process.SummaryMarkdown,
-                          'Too many active branches: 6 (max 5)') +
+         api.post_process(
+             post_process.SummaryMarkdown, f'Too many active branches: 7 '
+             f'(max {MAX_ACTIVE_BRANCHES})') +
          api.post_process(post_process.DropExpectation))
 
   yield (api.test("too many branches added", status='FAILURE') +
