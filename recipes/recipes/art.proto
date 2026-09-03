@@ -52,4 +52,12 @@ message InputProperties {
 
   // Whether to enable the continuousgc build variant.
   bool continuousgc = 15;
+
+  message TestStep {
+    string name = 1;
+    repeated string cmd = 2;
+  }
+
+  // List of test steps to run.
+  repeated TestStep test_steps = 16;
 }
