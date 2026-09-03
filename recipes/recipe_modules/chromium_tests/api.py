@@ -2963,8 +2963,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             report_via_property=True, relative_to=files_relative_to))
 
     with self.m.step.nest('[Experimental] analyze submodules') as presentation:
+      # Similar to nested submodules, sub-repo DEPS changes represent transitive
+      # rolls (e.g. CIPD packages or dependencies not yet migrated to submodules)
+      # that GN analyze cannot inspect. Skip analyze to safely run all tests.
+      submodule_deps = [
+          f for f in submodule_paths_result.affected_files
+          if f != 'DEPS' and f.endswith('/DEPS')
+      ]
       if (submodule_paths_result.nested_submodules or
-          submodule_paths_result.deleted_submodules):
+          submodule_paths_result.deleted_submodules or submodule_deps):
         reasons = []
         if submodule_paths_result.nested_submodules:
           reasons.append('nested submodules detected: ' +
@@ -2972,6 +2979,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         if submodule_paths_result.deleted_submodules:
           reasons.append('deleted submodules detected: ' +
                          ', '.join(submodule_paths_result.deleted_submodules))
+        if submodule_deps:
+          reasons.append('submodule DEPS modified: ' +
+                         ', '.join(submodule_deps))
         presentation.step_text = 'skipping analyze:<br/>* ' + '<br/>* '.join(
             reasons)
         return

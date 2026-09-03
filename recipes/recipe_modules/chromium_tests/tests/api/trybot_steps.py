@@ -1936,3 +1936,31 @@ def GenTests(api: RecipeTestApi):
           'skipping analyze:<br/>* nested submodules detected: sub/nested_sub'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'expand_submodules_skip_submodule_deps',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['chromium_checkout.expand_submodules'],
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.path.files_exist(api.path.cache_dir / 'builder' / 'src' / 'sub' /
+                           '.git'),
+      api.step_data(
+          '[Experimental] git diff --raw to analyze patch',
+          api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+      ),
+      api.step_data(
+          '[Experimental] git diff submodules.sub',
+          api.raw_io.stream_output(':100644 100644 1234567 89abcdef M\tDEPS\n'),
+      ),
+      api.post_process(
+          post_process.StepTextEquals, '[Experimental] analyze submodules',
+          'skipping analyze:<br/>* submodule DEPS modified: sub/DEPS'),
+      api.post_process(post_process.DropExpectation),
+  )
