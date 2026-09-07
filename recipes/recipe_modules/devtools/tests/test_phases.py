@@ -74,8 +74,7 @@ class TEST_DEPS(RecipeTestApi):
 
 
 def RunSteps(api: DEPS):
-  api.devtools.configure(
-      'Release', is_official_build=False, devtools_skip_typecheck=True)
+  api.devtools.configure('Release', is_official_build=False)
   api.devtools.update()
   trigger = SwarmingTrigger(api, '1234567/890')
 

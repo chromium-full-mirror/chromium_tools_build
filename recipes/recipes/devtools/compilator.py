@@ -75,7 +75,6 @@ def RunSteps(api: DEPS, properties):
 
   try:
     api.devtools.configure(builder_config, properties.is_official_build,
-                           properties.devtools_skip_typecheck,
                            properties.force_host_cpu or None, devtools_bundle)
     update_result = api.devtools.update()
     update_result.out_commit.position = 1

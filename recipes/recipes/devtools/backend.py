@@ -227,7 +227,6 @@ def _configure(api):
 
   build_cfg = api.chromium.make_config()
   build_cfg.build_config_fs = 'Release'
-  build_cfg.gn_args.append('devtools_skip_typecheck=true')
   api.chromium.c = build_cfg
 
 

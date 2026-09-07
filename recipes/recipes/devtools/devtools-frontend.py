@@ -118,8 +118,7 @@ def RunSteps(api: DEPS, properties):
   if 'coverage' not in api.properties:
     coverage = True
 
-  api.devtools.configure(builder_config, properties.is_official_build,
-                         properties.devtools_skip_typecheck)
+  api.devtools.configure(builder_config, properties.is_official_build)
   api.devtools.update()
 
   build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs
@@ -326,14 +325,6 @@ def GenTests(api: TEST_DEPS):
       status='SUCCESS',
   )
 
-  yield api.test(
-      'skip typecheck build',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='linux'),
-      api.properties(devtools_skip_typecheck=True, builder_config='Debug'),
-      api.post_process(Filter('gn')),
-      status='SUCCESS',
-  )
 
   yield api.test(
       'skip coverage',

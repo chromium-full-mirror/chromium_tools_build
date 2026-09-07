@@ -19,12 +19,10 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def configure(self,
                 builder_config,
                 is_official_build,
-                devtools_skip_typecheck,
                 force_host_cpu=None,
                 devtools_bundle=True):
     self._configure_source(force_host_cpu)
-    self._configure_build(builder_config, is_official_build,
-                          devtools_skip_typecheck, devtools_bundle)
+    self._configure_build(builder_config, is_official_build, devtools_bundle)
 
   def update(self):
     with self._in_builder_cache():
@@ -328,13 +326,11 @@ class DevToolsAPI(recipe_api.RecipeApi):
     self.m.gclient.c = src_cfg
 
   def _configure_build(self, builder_config, is_official_build,
-                       devtools_skip_typecheck, devtools_bundle):
+                       devtools_bundle):
     build_cfg = self.m.chromium.make_config(BUILD_CONFIG=builder_config)
     build_cfg.build_config_fs = builder_config
     if is_official_build:
       build_cfg.gn_args.append('is_official_build=true')
-    if devtools_skip_typecheck:
-      build_cfg.gn_args.append('devtools_skip_typecheck=true')
     if not devtools_bundle:
       build_cfg.gn_args.append('devtools_bundle=false')
     self.m.chromium.c = build_cfg

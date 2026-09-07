@@ -58,7 +58,6 @@ def RunSteps(api: DEPS, properties):
   api.devtools.configure(
       builder_config,
       is_official_build=True,
-      devtools_skip_typecheck=True,
       force_host_cpu=properties.force_host_cpu or None,
       devtools_bundle=devtools_bundle)
   api.devtools.update()

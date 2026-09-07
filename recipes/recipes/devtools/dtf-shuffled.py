@@ -69,9 +69,7 @@ PROPERTIES = InputProperties
 def RunSteps(api: DEPS, properties):
   builder_config = 'Release'
   is_official_build = False
-  devtools_skip_typecheck = False
-  api.devtools.configure(builder_config, is_official_build,
-                         devtools_skip_typecheck)
+  api.devtools.configure(builder_config, is_official_build)
   api.devtools.update()
 
   build_dir = api.devtools.source_dir / 'out' / api.chromium.c.build_config_fs

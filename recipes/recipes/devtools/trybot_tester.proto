@@ -7,8 +7,8 @@ message InputProperties {
   string builder_config = 1;
   // Turn the is_official_build gn flag on (default off)
   bool is_official_build = 2;
-  // Turn the devtools_skip_typecheck gn flag on (default off)
-  bool devtools_skip_typecheck = 3;
+  reserved 3;
+  reserved "devtools_skip_typecheck";
   // Compilator name
   string compilator_name = 4;
   // Target OS for swarming test tasks

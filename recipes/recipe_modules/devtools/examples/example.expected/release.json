@@ -213,7 +213,7 @@
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
       "[CACHE]/builder/devtools-frontend/out/e50c-builder",
-      "--args=is_official_build=true devtools_skip_typecheck=true is_debug=false target_cpu=\"x64\""
+      "--args=is_official_build=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {

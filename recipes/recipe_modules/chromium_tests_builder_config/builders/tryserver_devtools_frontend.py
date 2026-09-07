@@ -19,6 +19,5 @@ COMMON_BOT_CONFIG = builder_spec.BuilderSpec.create(
 
 SPEC = {
     'devtools_frontend_linux_blink_light_rel': COMMON_BOT_CONFIG,
-    'devtools_frontend_linux_blink_light_rel_fastbuild': COMMON_BOT_CONFIG,
     'devtools_frontend_linux_blink_rel': COMMON_BOT_CONFIG,
 }

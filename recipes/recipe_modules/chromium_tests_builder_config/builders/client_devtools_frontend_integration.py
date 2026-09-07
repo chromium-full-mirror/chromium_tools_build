@@ -25,5 +25,4 @@ _common_config = _client_devtools_frontend_integration_spec(
 
 SPEC = {
     'DevTools Linux': _common_config,
-    'DevTools Linux Fastbuild': _common_config,
 }
