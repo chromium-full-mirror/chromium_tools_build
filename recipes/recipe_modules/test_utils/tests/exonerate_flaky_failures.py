@@ -5,19 +5,47 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'chromium',
-    'chromium_tests',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, test_utils
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    json,
+    luci_analysis,
+    path,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  test_utils: test_utils.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  test_utils: test_utils.TEST_API
 
 from google.protobuf import json_format
 from google.protobuf import timestamp_pb2
@@ -51,8 +79,9 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, known_luci_analysis_flakes_expectations, weak_flaky_failures,
-             exclude_failed_test, has_too_many_failures, all_valid):
+def RunSteps(api: DEPS, known_luci_analysis_flakes_expectations,
+             weak_flaky_failures, exclude_failed_test, has_too_many_failures,
+             all_valid):
   test_specs = [
       steps.MockTestSpec.create(name='succeeded_test'),
       steps.MockTestSpec.create(
@@ -102,7 +131,7 @@ def RunSteps(api, known_luci_analysis_flakes_expectations, weak_flaky_failures,
                                set(weak_flaky_failures.get(t.name, [])))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'immune to infra failure of querying flaky failures',

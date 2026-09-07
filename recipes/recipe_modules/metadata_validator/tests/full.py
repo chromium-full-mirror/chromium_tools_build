@@ -4,23 +4,48 @@
 
 from recipe_engine.post_process import StatusFailure, StatusSuccess, MustRun, DoesNotRun, DropExpectation
 
-DEPS = [
-    'metadata_validator',
-    'depot_tools/gerrit',
-    'depot_tools/gitiles',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import metadata_validator
+from RECIPE_MODULES.depot_tools import gerrit, gitiles, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    properties,
+    raw_io,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  gerrit: gerrit.API
+  gitiles: gitiles.API
+  json: json.API
+  metadata_validator: metadata_validator.API
+  properties: properties.API
+  raw_io: raw_io.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  gitiles: gitiles.TEST_API
+  json: json.TEST_API
+  metadata_validator: metadata_validator.TEST_API
+  raw_io: raw_io.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS):
   return api.metadata_validator.validate()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   SKIP_FOOTER = 'Metadata-Validate-Bypass'
 
   def mock_validator(issues_by_path=None):

@@ -7,18 +7,27 @@ from __future__ import annotations
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'isolate',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import isolate
+from RECIPE_MODULES.recipe_engine import path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  isolate: isolate.API
+  path: path.API
+
+
+def RunSteps(api: DEPS):
   api.isolate.isolate('isolate',
                       api.path.cache_dir / 'builder' / 'src' / 'test.isolate')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(post_process.DropExpectation),

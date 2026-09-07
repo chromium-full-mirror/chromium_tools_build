@@ -12,19 +12,42 @@ from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (instruction as
                                                        instruction_pb)
 
-DEPS = [
-    'chromium_utr',
-    'repro_instructions',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_utr, repro_instructions
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    path,
+    properties,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium_utr: chromium_utr.API
+  path: path.API
+  properties: properties.API
+  repro_instructions: repro_instructions.API
+  resultdb: resultdb.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
+  resultdb: resultdb.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.repro_instructions.source_dir = api.path.cache_dir / 'builder' / 'src'
   _ = api.repro_instructions.source_dir
   api.repro_instructions.build_dir = (
@@ -86,7 +109,7 @@ def RunSteps(api):
   api.repro_instructions.get_step_instruction_tag(r'asdfasdf')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   instructions = instruction_pb.Instructions(
       instructions=[instruction_pb.Instruction(id='instruction')])
   yield api.test(

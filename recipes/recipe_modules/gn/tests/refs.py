@@ -8,13 +8,33 @@ from recipe_engine import post_process
 from recipe_engine.config import List
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'gn',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gn
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    path,
+    properties,
+    raw_io,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  gn: gn.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = {
     'targets': Property(kind=List(str), default=[]),
@@ -22,7 +42,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, targets, output_type):
+def RunSteps(api: DEPS, targets, output_type):
   refs = api.gn.refs(
       api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
       targets,
@@ -30,7 +50,7 @@ def RunSteps(api, targets, output_type):
   api.assertions.assertEqual(refs, set(['target3', 'target4']))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(targets=['target1', 'target2']),

@@ -22,24 +22,61 @@ from recipe_engine.recipe_api import Property
 from recipe_engine.post_process import (DropExpectation, StepSuccess,
                                         StepFailure)
 
-DEPS = [
-    'depot_tools/depot_tools',
-    'depot_tools/gerrit',
-    'depot_tools/git',
-    'depot_tools/gsutil',
-    'recipe_engine/buildbucket',
-    'recipe_engine/change_verifier',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/proto',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'v8_roll_watcher',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_roll_watcher
+from RECIPE_MODULES.depot_tools import (
+    depot_tools,
+    gerrit,
+    git,
+    gsutil,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    change_verifier,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    proto,
+    raw_io,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  change_verifier: change_verifier.API
+  context: context.API
+  depot_tools: depot_tools.API
+  file: file.API
+  gerrit: gerrit.API
+  git: git.API
+  gsutil: gsutil.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  proto: proto.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  v8_roll_watcher: v8_roll_watcher.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+  proto: proto.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = {
     'watched_rollers':
@@ -50,11 +87,11 @@ CV_RUN_STATUS_FAILED = 66
 TRYJOB_STATUS_FAILED_PERMANENTLY = 3
 
 
-def RunSteps(api, watched_rollers):
+def RunSteps(api: DEPS, watched_rollers):
   return api.v8_roll_watcher.process_rollers(watched_rollers)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   default_roller = {
       'name': 'roller',
       'subject': 'Update dependencies',

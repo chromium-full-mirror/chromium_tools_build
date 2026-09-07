@@ -6,21 +6,35 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, LogContains
 
-DEPS = [
-  'isolate',
-  'recipe_engine/properties',
-  'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import isolate
+from RECIPE_MODULES.recipe_engine import properties, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  isolate: isolate.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.step('isolated_tests', [])
   api.step.active_result.presentation.logs['details'] = [
     'isolated_tests: %r' % api.isolate.isolated_tests
   ]
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(swarm_hashes={

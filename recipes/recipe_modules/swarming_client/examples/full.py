@@ -5,16 +5,24 @@
 from __future__ import annotations
 
 
-DEPS = [
-  'swarming_client',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import swarming_client
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  swarming_client: swarming_client.API
+
+
+def RunSteps(api: DEPS):
   _ = api.swarming_client.path
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
   )

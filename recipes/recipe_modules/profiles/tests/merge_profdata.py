@@ -7,14 +7,23 @@ from __future__ import annotations
 from recipe_engine import post_process
 
 
-DEPS = [
-    'profiles',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import profiles
+from RECIPE_MODULES.recipe_engine import assertions, path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  path: path.API
+  profiles: profiles.API
+
+
+def RunSteps(api: DEPS):
   api.profiles.source_dir = api.path.cleanup_dir
   assert api.profiles.llvm_profdata_exec == api.profiles.source_dir.joinpath(
       'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata')
@@ -26,7 +35,7 @@ def RunSteps(api):
       'some_artifact', '.*', sparse=True, weights=weights)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'basic',

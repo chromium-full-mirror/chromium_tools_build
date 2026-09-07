@@ -6,15 +6,30 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'squashfs',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import squashfs
+from RECIPE_MODULES.recipe_engine import path, platform, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  squashfs: squashfs.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   if 'binary_not_found' not in api.properties:
     api.path.mock_add_paths(
         api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs'))
@@ -28,7 +43,7 @@ def RunSteps(api):
   api.squashfs.mksquashfs('some/folder', 'out.squash')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('basic')
 
   yield api.test(

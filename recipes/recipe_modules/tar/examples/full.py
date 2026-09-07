@@ -5,16 +5,37 @@
 from __future__ import annotations
 
 
-DEPS = [
-  'recipe_engine/context',
-  'recipe_engine/file',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/step',
-  'tar',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import tar
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    path,
+    platform,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  context: context.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  step: step.API
+  tar: tar.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Prepare files.
   temp = api.path.mkdtemp('tar-example')
   api.step('touch a', ['touch', temp / 'a'])
@@ -48,7 +69,7 @@ def RunSteps(api):
   api.file.rmtree('cleanup', temp)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for platform in ('linux', 'win', 'mac'):
     yield api.test(
         platform,

@@ -6,16 +6,24 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'profiles',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import profiles
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  profiles: profiles.API
+
+
+def RunSteps(api: DEPS):
   api.profiles.find_merge_errors()
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'basic',

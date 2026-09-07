@@ -6,17 +6,37 @@ from __future__ import annotations
 
 from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
 
-DEPS = [
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/step',
-    'v8',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8, v8_auto_roller
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  file: file.API
+  json: json.API
+  path: path.API
+  step: step.API
+  v8: v8.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  v8: v8.TEST_API
+
+
+def RunSteps(api: DEPS):
   """This tests the CL manager using a dummy roller."""
 
   update_result = api.v8_auto_roller.setup_target(
@@ -32,7 +52,7 @@ def RunSteps(api):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test('skip') + api.override_step_data(
       'Update dummy deps.gerrit changes',
       api.json.output([{

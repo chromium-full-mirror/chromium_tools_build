@@ -11,25 +11,65 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_checkout',
-    'chromium_swarming',
-    'chromium_tests',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'skylab',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    builder_group,
+    chromium,
+    chromium_checkout,
+    chromium_swarming,
+    chromium_tests,
+    skylab,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  skylab: skylab.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  skylab: skylab.TEST_API
+  test_utils: test_utils.TEST_API
 
 PROPERTIES = {
     'did_complete_first_run': Property(default=True),
@@ -44,7 +84,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, did_complete_first_run, did_complete_retry_shards,
+def RunSteps(api: DEPS, did_complete_first_run, did_complete_retry_shards,
              disable_resultdb, test_swarming, test_skylab, test_name,
              test_experimental, retry_failed_shards, retry_invalid_shards):
   api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
@@ -167,7 +207,7 @@ def RunSteps(api, did_complete_first_run, did_complete_retry_shards,
         'failed: %s' % ' '.join(t.name for t in failed_tests))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   failure_code = steps.MockTest.ExitCodes.FAILURE
   infra_code = steps.MockTest.ExitCodes.INFRA_FAILURE
 

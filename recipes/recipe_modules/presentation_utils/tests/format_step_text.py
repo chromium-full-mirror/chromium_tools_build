@@ -6,18 +6,32 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'presentation_utils',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import presentation_utils
+from RECIPE_MODULES.recipe_engine import properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  presentation_utils: presentation_utils.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   data = api.properties['data']
   api.presentation_utils.format_step_text(data)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(data=[('header', 'body')]),

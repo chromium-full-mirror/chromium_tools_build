@@ -6,16 +6,37 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'ssci',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import ssci
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    path,
+    properties,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  ssci: ssci.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   api.ssci.run(
       src_dir=api.path.abspath(source_dir),
@@ -28,7 +49,7 @@ def RunSteps(api):
       to_rename={"SystemWebViewGoogle": "AndroidWebview"})
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'rename-systemwebview',
       api.buildbucket.ci_build(

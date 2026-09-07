@@ -7,15 +7,30 @@ from __future__ import annotations
 from recipe_engine.post_process import (DropExpectation, MustRun,
                                         PropertyEquals, StepCommandContains)
 
-DEPS = [
-    'isolate',
-    'siso',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/buildbucket',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import isolate, siso
+from RECIPE_MODULES.recipe_engine import buildbucket, path, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  isolate: isolate.API
+  path: path.API
+  properties: properties.API
+  siso: siso.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   api.isolate.isolate_tests(
       source_dir / 'out/Release',
@@ -25,7 +40,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.post_process(StepCommandContains, 'isolate tests', [

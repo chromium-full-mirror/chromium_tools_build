@@ -9,19 +9,49 @@ from recipe_engine import recipe_api
 from recipe_engine import recipe_test_api
 from RECIPE_MODULES.depot_tools.bot_update import api as bot_update_api
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'pinlist',
-    'depot_tools/bot_update',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+    pinlist,
+)
+from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  path: path.API
+  pinlist: pinlist.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  pinlist: pinlist.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'mock_pinlist': recipe_api.Property(default=True, kind=bool),

@@ -2,14 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-DEPS = [
-    'recipe_engine/assertions',
-    'recipe_engine/step',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8
+from RECIPE_MODULES.recipe_engine import assertions, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  step: step.API
+  v8: v8.API
+
+
+def RunSteps(api: DEPS):
   # Test infer_active_branches
   definitions = 'ACTIVE_BRANCHES = ["15.1", "15.0"]'
   branches = api.v8.infer_active_branches(definitions)
@@ -31,5 +40,5 @@ def RunSteps(api):
   api.assertions.assertEqual(str(v10_0), '10.0.0')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test('basic')

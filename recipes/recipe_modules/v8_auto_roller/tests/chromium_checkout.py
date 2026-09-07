@@ -9,12 +9,20 @@ from recipe_engine.post_process import (
     StepCommandContains,
 )
 
-DEPS = [
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_auto_roller
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  v8_auto_roller: v8_auto_roller.API
+
+
+def RunSteps(api: DEPS):
   api.v8_auto_roller.setup_target(
       'v8',
       'https://chromium.googlesource.com/v8/v8',
@@ -22,7 +30,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'default',
       api.post_process(

@@ -8,22 +8,46 @@ from recipe_engine.post_process import (DoesNotRun, MustRun, DropExpectation)
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, Dict, Single, List
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'v8',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8, v8_auto_roller
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  v8: v8.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Add defaults
   autoroller_config = {
       'show_commit_log': False,
@@ -42,7 +66,7 @@ def RunSteps(api):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def test(name, chromium_deps, v8_deps, *expectations):
     return api.test(

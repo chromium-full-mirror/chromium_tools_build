@@ -6,12 +6,20 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
-DEPS = [
-  'ts_mon',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import ts_mon
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  ts_mon: ts_mon.API
+
+
+def RunSteps(api: DEPS):
   api.ts_mon.send_value('/example/metric', 'counter', 42)
   api.ts_mon.send_value(
       name='/example/metric',
@@ -25,7 +33,7 @@ def RunSteps(api):
       '/example/metric', 'counter', [(42, {'a': 1}), (43, {'a': 2})])
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(StepCommandContains, 'upload ts_mon metrics', [

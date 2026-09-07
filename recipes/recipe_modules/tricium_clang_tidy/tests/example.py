@@ -8,19 +8,46 @@ from PB.go.chromium.org.luci.common.proto.findings import findings as findings_p
 from RECIPE_MODULES.build.tricium_clang_tidy import _clang_tidy_path
 from recipe_engine import post_process
 
-DEPS = [
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/proto',
-    'recipe_engine/step',
-    'tricium_clang_tidy',
-    'chromium',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, tricium_clang_tidy
+from RECIPE_MODULES.recipe_engine import (
+    context,
+    file,
+    path,
+    platform,
+    properties,
+    proto,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  context: context.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  proto: proto.API
+  step: step.API
+  tricium_clang_tidy: tricium_clang_tidy.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  proto: proto.TEST_API
+
+
+def RunSteps(api: DEPS):
   cache_dir = api.path.cache_dir
   source_dir = cache_dir / 'builder' / 'src'
   with api.context(cwd=cache_dir):
@@ -38,7 +65,8 @@ def RunSteps(api):
               findings_pb.Findings(findings=findings), 'JSONPB'),
           log_name='findings.json')
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
 
   def with_patch(affected_files,
                  auto_exist_files=True,

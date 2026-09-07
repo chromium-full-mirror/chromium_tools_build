@@ -6,10 +6,24 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DoesNotRun, DropExpectation, MustRun, StepCommandContains
 
-DEPS = [
-    'recipe_engine/file',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_auto_roller
+from RECIPE_MODULES.recipe_engine import file
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  file: file.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
 
 DEFAULT_V8_DEPS = """deps = {
   'generic-dep-1': {
@@ -181,7 +195,7 @@ COLLIDING_CHROMIUM_DEPS = """deps = {
 }"""
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   # Add defaults
   autoroller_config = {
       'show_commit_log': False,
@@ -200,7 +214,7 @@ def RunSteps(api):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def test(name, chromium_deps, v8_deps, *expectations):
     return api.test(

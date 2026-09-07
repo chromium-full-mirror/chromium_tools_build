@@ -6,17 +6,38 @@ from __future__ import annotations
 
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-  'isolate',
-  'recipe_engine/json',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/step',
-  'swarming_client',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import isolate, swarming_client
+from RECIPE_MODULES.recipe_engine import (
+    json,
+    path,
+    properties,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  isolate: isolate.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  swarming_client: swarming_client.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  isolate: isolate.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   # 'isolate_tests' step needs swarming checkout.
   api.swarming_client.checkout('main')
 
@@ -36,7 +57,7 @@ def RunSteps(api):
         build_path, expected_targets)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def make_test(name, expected_targets, discovered_targets):
 

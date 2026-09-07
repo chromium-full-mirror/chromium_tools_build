@@ -8,10 +8,24 @@ from recipe_engine import recipe_api
 from recipe_engine.post_process import StepCommandRE, DropExpectation
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'recipe_engine/properties',
-    'ytdevinfra',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import ytdevinfra
+from RECIPE_MODULES.recipe_engine import properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  properties: properties.API
+  ytdevinfra: ytdevinfra.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'tool': Property(kind=str, default='ytdevinfra_android'),
@@ -27,7 +41,7 @@ def RunSteps(api: recipe_api.RecipeApi, tool: str, tool_target: str | None):
   api.ytdevinfra.title()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'droid',
       api.properties(ytdevinfra_recipe_version=0.2),

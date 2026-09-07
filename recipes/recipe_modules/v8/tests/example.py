@@ -7,17 +7,41 @@ from __future__ import annotations
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         LogContains, MustRun)
 
-DEPS = [
-    'builder_group',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'v8',
-    'v8_tests',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, v8, v8_tests
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    properties,
+    runtime,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  file: file.API
+  properties: properties.API
+  runtime: runtime.API
+  v8: v8.API
+  v8_tests: v8_tests.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  file: file.TEST_API
+  properties: properties.TEST_API
+  v8: v8.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.v8.apply_bot_config(
       {'triggers': ['v8_triggered_bot'], 'triggers_proxy': True})
   update_result = api.v8.checkout()
@@ -42,7 +66,7 @@ def RunSteps(api):
   api.v8.maybe_trigger()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield (api.v8.test('client.v8', 'V8 Foobar') +
          _job_exists(api, 'v8_triggered_bot') +
          api.v8.check_in_any_arg('compile', 'v8/out/build') +

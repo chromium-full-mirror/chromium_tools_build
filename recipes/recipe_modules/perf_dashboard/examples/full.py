@@ -5,15 +5,37 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'builder_group',
-    'perf_dashboard',
-    'recipe_engine/path',
-    'recipe_engine/json',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, perf_dashboard
+from RECIPE_MODULES.recipe_engine import (
+    json,
+    path,
+    platform,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  builder_group: builder_group.API
+  json: json.API
+  path: path.API
+  perf_dashboard: perf_dashboard.API
+  platform: platform.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  builder_group: builder_group.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 # To run, pass these options into properties:
 # bot_id="multivm-windows-release",
@@ -21,7 +43,7 @@ DEPS = [
 # builder_group="client.dart.fyi", buildnumber=75
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   s1 = api.perf_dashboard.get_skeleton_point('sunspider/string-unpack-code/ref',
                                              33241, '18.5')
   s1['supplemental_columns'] = {'d_supplemental': '167808'}
@@ -44,7 +66,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for platform in ('linux', 'win', 'mac'):
     for staging in (True, False):
       yield api.test(

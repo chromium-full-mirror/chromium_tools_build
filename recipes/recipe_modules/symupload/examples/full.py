@@ -9,18 +9,41 @@ from recipe_engine import post_process
 
 from PB.recipe_modules.build.symupload import properties
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'symupload',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_checkout, symupload
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    path,
+    platform,
+    properties as properties_module,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  file: file.API
+  path: path.API
+  platform: platform.API
+  properties: properties_module.API
+  symupload: symupload.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties_module.TEST_API
+  symupload: symupload.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
   api.chromium.set_config(
@@ -35,7 +58,7 @@ def RunSteps(api):
       custom_vars=api.properties.get('custom_vars'))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   input_properties = properties.InputProperties()
   symupload_data = input_properties.symupload_datas.add()
 

@@ -9,24 +9,58 @@ from recipe_engine import recipe_api
 from recipe_engine import recipe_test_api
 from RECIPE_MODULES.depot_tools.bot_update import api as bot_update_api
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'orderfile',
-    'profiles',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    orderfile,
+    profiles,
+)
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  orderfile: orderfile.API
+  path: path.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  orderfile: orderfile.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'mock_orderfile': recipe_api.Property(default=True, kind=bool),

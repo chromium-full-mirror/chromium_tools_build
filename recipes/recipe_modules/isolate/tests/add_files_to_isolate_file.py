@@ -6,14 +6,28 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'isolate',
-    'recipe_engine/file',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import isolate
+from RECIPE_MODULES.recipe_engine import file, path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  file: file.API
+  isolate: isolate.API
+  path: path.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder' / 'src'
   browser_test_path = source_dir / 'out/Release/browser_tests'
 
@@ -21,7 +35,7 @@ def RunSteps(api):
                                         [browser_test_path])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'add_files',
       api.override_step_data(

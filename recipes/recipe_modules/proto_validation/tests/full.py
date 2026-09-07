@@ -11,12 +11,20 @@ from RECIPE_MODULES.build.proto_validation import Registry
 
 from PB.recipe_modules.build.proto_validation.tests import test_protos
 
-DEPS = [
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+
+
+def RunSteps(api: DEPS):
   validators = Registry()
 
   def assert_valid(obj):
@@ -163,7 +171,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

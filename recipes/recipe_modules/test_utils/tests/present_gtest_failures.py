@@ -6,14 +6,29 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'test_utils',
-    'recipe_engine/json',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import test_utils
+from RECIPE_MODULES.recipe_engine import json, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  json: json.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
 
   step_result = api.step(
       'test', ['test_binary', '--result-json', api.test_utils.gtest_results()],
@@ -21,7 +36,7 @@ def RunSteps(api):
   api.test_utils.present_gtest_failures(step_result)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   log = 'Deterministic failure: Test.One (status FAILURE)'
   notrun_log = 'Deterministic failure: Test.Two (status NOTRUN)'
   flaky_log = 'Flaky failure: Test.One (status FAILURE,SUCCESS)'

@@ -8,19 +8,46 @@ import json
 
 from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'v8',
-    'v8_auto_roller',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8, v8_auto_roller
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cipd,
+    context,
+    file,
+    json as json_module,
+    path,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  cipd: cipd.API
+  context: context.API
+  file: file.API
+  json: json_module.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  v8: v8.API
+  v8_auto_roller: v8_auto_roller.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  cipd: cipd.TEST_API
+  file: file.TEST_API
+  path: path.TEST_API
+  raw_io: raw_io.TEST_API
 
 RETSAM = 'retsam'[::-1]
 
@@ -140,7 +167,7 @@ class DummyCLManager:
     return True
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   """This tests all roll handlers at once. The CL manager is mocked out to
   reduce the verbosity of the test.
   """
@@ -174,7 +201,7 @@ def RunSteps(api):
   return api.v8_auto_roller.report_result()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   MOCK_DEP_REFS_MAIN = [
       ('3', 'mock-skip-chromium-roll (main)'),
       ('deadbeef', 'mock-tot-rolled (main)'),

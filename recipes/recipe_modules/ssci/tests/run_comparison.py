@@ -10,20 +10,43 @@ from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 
 from google.protobuf import json_format as jsonpb
 
-DEPS = [
-    'chromium',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'ssci',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, ssci
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    json,
+    path,
+    properties,
+    runtime,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  bot_update: bot_update.API
+  chromium: chromium.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+  ssci: ssci.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   """Check providing the deprecated run_comparison arg won't fail the build."""
 
   api.gclient.set_config('chromium')
@@ -77,7 +100,7 @@ def RunSteps(api):
       })
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',

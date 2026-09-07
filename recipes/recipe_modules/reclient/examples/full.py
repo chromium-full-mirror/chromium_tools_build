@@ -11,21 +11,54 @@ from PB.recipe_modules.recipe_engine.led.properties import InputProperties
 import PB.go.chromium.org.foundry_x.re_client.api.log.log as log_pb
 import PB.go.chromium.org.foundry_x.re_client.api.stats.stats as stats_pb
 
-DEPS = [
-    'depot_tools/gclient',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'reclient',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import reclient, siso
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    context,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  context: context.API
+  file: file.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  reclient: reclient.API
+  siso: siso.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  reclient: reclient.TEST_API
+  siso: siso.TEST_API
 
 _NINJA_STEP_NAME = 'compile (reclient)'
 _BOOTSTRAP_STEP_NAME = 'preprocess for reclient.start reproxy via bootstrap'
@@ -37,7 +70,7 @@ _BOOTSTRAP_EXTRA_ENV = {
 }
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   src_cfg = api.gclient.make_config(CACHE_DIR=api.path.cache_dir / 'git')
   soln = src_cfg.solutions.add()
   soln.name = 'src'
@@ -101,7 +134,7 @@ def MakeTestRBEStats(num_records=0,
   return stats.SerializeToString()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.reclient.properties(),

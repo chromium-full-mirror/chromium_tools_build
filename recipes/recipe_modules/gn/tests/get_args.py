@@ -6,12 +6,28 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'gn',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gn
+from RECIPE_MODULES.recipe_engine import path, properties, raw_io
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gn: gn.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  gn: gn.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 _DEFAULT_ARGS = ('target_cpu = "x86"\n'
                  'target_sysroot = "/sysroot/"\n')
@@ -21,7 +37,8 @@ def _test_args(api, args=None):
   return (api.properties(expected_args=args)
           + api.step_data('read GN args', api.raw_io.output_text(args)))
 
-def RunSteps(api):
+
+def RunSteps(api: DEPS):
   args = api.gn.get_args(
       api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
       location=api.properties.get('location'),
@@ -29,7 +46,8 @@ def RunSteps(api):
   assert args == api.properties.get('expected_args'), \
       'expected:\n%s\nactual:%s' % (api.properties.get('expected_args'), args)
 
-def GenTests(api):
+
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       _test_args(api),

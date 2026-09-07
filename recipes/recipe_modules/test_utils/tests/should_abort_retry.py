@@ -16,19 +16,41 @@ from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils import util
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'test_utils',
-    'depot_tools/gerrit',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, test_utils
+from RECIPE_MODULES.depot_tools import gerrit
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    json,
+    properties,
+    resultdb,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  gerrit: gerrit.API
+  json: json.API
+  properties: properties.API
+  resultdb: resultdb.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   test_specs = []
   for i in range(api.properties.get('num_failed_suites', 1)):
     test_specs.append(steps.MockTestSpec.create(name=f'fake_suite{i}'))
@@ -59,7 +81,7 @@ def RunSteps(api):
   api.assertions.assertEqual(should_abort, expected_should_abort)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'disable-retries-footer', api.chromium.try_build(),
       api.properties(expected_should_abort=True),

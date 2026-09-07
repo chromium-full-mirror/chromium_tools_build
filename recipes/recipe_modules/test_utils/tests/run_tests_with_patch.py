@@ -5,16 +5,37 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'flakiness',
-    'test_utils',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    flakiness,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import path, properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  flakiness: flakiness.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  properties: properties.TEST_API
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
@@ -36,7 +57,8 @@ PROPERTIES = {
   'test_kwargs_list': Property(default=[]),
 }
 
-def RunSteps(api, retry_failed_shards, test_kwargs_list):
+
+def RunSteps(api: DEPS, retry_failed_shards, test_kwargs_list):
   def _get_test_kwargs_by_index(index):
     if index < len(test_kwargs_list):
       return test_kwargs_list[index]
@@ -81,7 +103,7 @@ def RunSteps(api, retry_failed_shards, test_kwargs_list):
     api.step('NONE failing', None)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   # TODO(martiniss): Rewrite these tests to use assertions in RunSteps.
   yield api.test(
       'success',

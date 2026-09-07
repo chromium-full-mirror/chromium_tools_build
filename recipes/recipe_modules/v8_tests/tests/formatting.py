@@ -9,10 +9,23 @@ from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.v8_tests import formatting
 
-DEPS = [
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'class_name': Property(kind=str),
@@ -107,14 +120,14 @@ class FormattingTest:
     )
 
 
-def RunSteps(api, class_name, test_name):
+def RunSteps(api: DEPS, class_name, test_name):
   test_cls = globals()[class_name]
   test_suite = test_cls(api)
 
   getattr(test_suite, test_name)()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for class_name, cls in globals().items():
     if not class_name.endswith('Test'):
       continue

@@ -7,11 +7,25 @@ from __future__ import annotations
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'gn',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gn
+from RECIPE_MODULES.recipe_engine import path, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gn: gn.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'args': Property(kind=str, default=None),
@@ -19,7 +33,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, args, write_ide_json_filename):
+def RunSteps(api: DEPS, args, write_ide_json_filename):
   api.gn.gen(
       api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
       step_name='foobar',
@@ -27,7 +41,7 @@ def RunSteps(api, args, write_ide_json_filename):
       write_ide_json_filename=write_ide_json_filename)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.post_process(StepCommandContains, 'foobar', [

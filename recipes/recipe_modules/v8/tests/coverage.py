@@ -6,16 +6,32 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'recipe_engine/file',
-    'recipe_engine/step',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8
+from RECIPE_MODULES.recipe_engine import file, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  file: file.API
+  step: step.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  v8: v8.TEST_API
 
 GS_URL = 'gs://chromium-v8/coverage'
 PUB_URL = 'https://storage.googleapis.com/chromium-v8/coverage'
 
-def RunSteps(api):
+
+def RunSteps(api: DEPS):
   api.v8.apply_bot_config(
       api.v8.get_bot_config(
           binary_size_tracking=None,
@@ -40,7 +56,7 @@ def StepLinkEquals(check, step_odict, step, link_name, link_value):
         (link_name, link_value) in step_odict[step].links.items())
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def step_command_contains_multiple(step, *parts):
     checks = [
       api.post_process(post_process.StepCommandContains, step, part)

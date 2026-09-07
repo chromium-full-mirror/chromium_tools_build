@@ -6,9 +6,17 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'gn',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gn
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  gn: gn.API
 
 _INPUT_ARGS = ('# some comments\n'
                'target_cpu = "x86"\n'
@@ -19,11 +27,13 @@ _EXPECTED_RESULT = {
     'use_remoteexec': 'true',
 }
 
-def RunSteps(api):
+
+def RunSteps(api: DEPS):
   actual_result = api.gn.parse_gn_args(_INPUT_ARGS)
   assert actual_result == _EXPECTED_RESULT
 
-def GenTests(api):
+
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(post_process.DropExpectation),

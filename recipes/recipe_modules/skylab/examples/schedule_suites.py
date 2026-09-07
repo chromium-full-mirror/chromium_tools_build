@@ -5,18 +5,45 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium_checkout',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'skylab',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout, skylab
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json as json_module,
+    path,
+    properties,
+    raw_io,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_checkout: chromium_checkout.API
+  file: file.API
+  json: json_module.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  skylab: skylab.API
+  step: step.API
+  time: time.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  skylab: skylab.TEST_API
+  time: time.TEST_API
 
 import base64
 import copy
@@ -296,7 +323,7 @@ def StepCommandContainsSubstrings(check, step_odict, step, substrings):
       (step, substrings), all(found_in_commandline(s) for s in substrings))
 
 
-def RunSteps(api, requests):
+def RunSteps(api: DEPS, requests):
   api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
   api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
@@ -325,7 +352,7 @@ def RunSteps(api, requests):
       api.skylab.fetch_test_runners(r, '')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def check_find_lkgm_build_target(check: post_process.Filter, step_odict: dict,
                                    step: str, value: str):

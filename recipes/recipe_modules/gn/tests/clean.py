@@ -6,19 +6,28 @@ from __future__ import annotations
 
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
-DEPS = [
-    'recipe_engine/path',
-    'gn',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gn
+from RECIPE_MODULES.recipe_engine import path
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  gn: gn.API
+  path: path.API
+
+
+def RunSteps(api: DEPS):
   api.gn.clean(
       api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
       step_name='foobar')
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'basic',
       api.post_process(StepCommandContains, 'foobar', [

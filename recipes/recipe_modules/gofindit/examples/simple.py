@@ -8,12 +8,20 @@ from recipe_engine.post_process import LogEquals, StepCommandRE, DropExpectation
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import test_result as test_result_pb2
 
-DEPS = [
-    'gofindit',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gofindit
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  gofindit: gofindit.API
+
+
+def RunSteps(api: DEPS):
   api.gofindit.send_result_to_luci_bisection("send_result_to_luci_bisection",
                                              123, common_pb.SUCCESS,
                                              "luci-bisection.appspot.com")
@@ -45,7 +53,7 @@ def RunSteps(api):
       host="luci-bisection.appspot.com")
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'success',
       api.post_process(StepCommandRE, "send_result_to_luci_bisection", [

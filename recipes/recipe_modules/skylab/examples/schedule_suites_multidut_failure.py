@@ -5,13 +5,27 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium_checkout',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'skylab',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_checkout, skylab
+from RECIPE_MODULES.recipe_engine import path, properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_checkout: chromium_checkout.API
+  path: path.API
+  properties: properties.API
+  skylab: skylab.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
 
@@ -50,7 +64,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, requests):
+def RunSteps(api: DEPS, requests):
   api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
   with api.step.nest('schedule skylab test'):
@@ -58,7 +72,7 @@ def RunSteps(api, requests):
       api.skylab.schedule_suite(r, '')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'multi_dut_should_provision_browser_files_len_mismatch',
       api.properties(requests=REQUESTS[0:1]),

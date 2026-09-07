@@ -7,23 +7,43 @@ from __future__ import annotations
 from PB.recipe_modules.build.xcode\
  import properties as xcode_properties
 
-DEPS = [
-    'xcode',
-    'recipe_engine/properties',
-    'recipe_engine/assertions',
-    'recipe_engine/file',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import xcode
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    file,
+    path,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  file: file.API
+  path: path.API
+  properties: properties.API
+  xcode: xcode.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  path: path.TEST_API
+  properties: properties.TEST_API
 
 from recipe_engine import post_process
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   actual_version = api.xcode.get_xcode_version(api.path.cache_dir / 'builder')
   api.assertions.assertEqual('0.0', actual_version)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   config_path = 'some-path/test_xcode_config.json'
   xcode_input_properties = xcode_properties.InputProperties(
       xcode_config_path=config_path)

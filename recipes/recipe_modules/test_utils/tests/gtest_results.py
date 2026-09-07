@@ -8,20 +8,35 @@ import itertools
 
 from recipe_engine import post_process
 
-DEPS = [
-    'test_utils',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import test_utils
+from RECIPE_MODULES.recipe_engine import json, properties, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  json: json.API
+  properties: properties.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  json: json.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.step('fake_test',
            ['fake', '--gtest-results', api.test_utils.gtest_results()])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'many-log-lines',
       api.override_step_data(

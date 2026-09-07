@@ -11,17 +11,43 @@ from PB.recipe_engine import result as result_pb2
 from recipe_engine.post_process import (DropExpectation, LogContains,
                                         StepFailure)
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'recipe_engine/swarming',
-    'v8_tests',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_tests
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json as json_module,
+    path,
+    properties,
+    runtime,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  json: json_module.API
+  path: path.API
+  properties: properties.API
+  runtime: runtime.API
+  swarming: swarming.API
+  v8_tests: v8_tests.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  swarming: swarming.TEST_API
+  v8_tests: v8_tests.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.v8_tests.set_config('v8')
   api.v8_tests.enable_swarming = api.properties.get('enable_swarming', True)
   api.v8_tests.set_up_swarming()
@@ -35,7 +61,7 @@ def RunSteps(api):
   return result_pb2.RawResult(status=status)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   # Minimal v8-side test spec for simulating most recipe features.
   test_spec = json.dumps({
     "tests": [

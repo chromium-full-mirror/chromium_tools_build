@@ -51,3 +51,7 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   file: file.API
   json: json.API
+
+
+from .api import MetadataValidatorApi as API
+from .test_api import MetadataValidatorTestApi as TEST_API

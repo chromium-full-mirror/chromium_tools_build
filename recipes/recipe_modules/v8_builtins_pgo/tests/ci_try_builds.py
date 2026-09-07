@@ -6,20 +6,36 @@ from __future__ import annotations
 
 import recipe_engine.post_process as post
 
-DEPS = [
-    'v8_builtins_pgo',
-    'recipe_engine/buildbucket',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_builtins_pgo
+from RECIPE_MODULES.recipe_engine import buildbucket, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  properties: properties.API
+  v8_builtins_pgo: v8_builtins_pgo.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
+  v8_builtins_pgo: v8_builtins_pgo.TEST_API
+
+
+def RunSteps(api: DEPS):
   return api.v8_builtins_pgo.run(
       compilators=['x64'],
       swarming_service_account=api.properties.get('swarming_service_account'))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   pgo_api = api.v8_builtins_pgo
 
   def test(name,

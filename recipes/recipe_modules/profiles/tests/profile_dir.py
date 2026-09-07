@@ -6,13 +6,22 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-DEPS = [
-    'profiles',
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import profiles
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  profiles: profiles.API
+
+
+def RunSteps(api: DEPS):
 
   api.assertions.assertFalse(api.profiles._root_profile_dir)
   api.profiles.profile_dir()
@@ -24,7 +33,7 @@ def RunSteps(api):
   api.assertions.assertTrue(api.profiles.profile_subdirs)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'basic',

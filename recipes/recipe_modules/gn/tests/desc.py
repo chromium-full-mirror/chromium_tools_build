@@ -7,13 +7,33 @@ from __future__ import annotations
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-DEPS = [
-    'gn',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gn
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    path,
+    properties,
+    raw_io,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  gn: gn.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 PROPERTIES = {
     'label_or_pattern': Property(kind=str, default='target1'),
@@ -23,7 +43,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, label_or_pattern, what_to_show, use_cache, all_flag):
+def RunSteps(api: DEPS, label_or_pattern, what_to_show, use_cache, all_flag):
   build_dir = api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release'
   flags = []
   if all_flag:
@@ -51,7 +71,7 @@ def RunSteps(api, label_or_pattern, what_to_show, use_cache, all_flag):
   api.assertions.assertEqual(res2, ['file1', 'file2'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.properties(

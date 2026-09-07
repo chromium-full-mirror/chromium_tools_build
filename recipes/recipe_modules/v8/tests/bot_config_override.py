@@ -7,22 +7,40 @@ from __future__ import annotations
 from recipe_engine.engine_types import freeze
 from recipe_engine.post_process import DropExpectation, LogEquals
 
-DEPS = [
-    'depot_tools/gitiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'v8',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8
+from RECIPE_MODULES.depot_tools import gitiles
+from RECIPE_MODULES.recipe_engine import buildbucket, json, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  gitiles: gitiles.API
+  json: json.API
+  properties: properties.API
+  v8: v8.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  gitiles: gitiles.TEST_API
+  json: json.TEST_API
+  properties: properties.TEST_API
 
 DEFAULT_BOT_CONFIG = freeze({'dims': {'os': 'Ubuntu-20', 'cpu': 'x64'}})
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.v8.apply_bot_config(DEFAULT_BOT_CONFIG, revision='deadbeef')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def test(name, override_content, bot_config_expectation):
     expected = api.json.dumps(bot_config_expectation)

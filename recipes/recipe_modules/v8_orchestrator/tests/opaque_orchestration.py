@@ -19,18 +19,42 @@ from RECIPE_MODULES.build.v8_orchestrator.api import (
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
 
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'v8_orchestrator',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_orchestrator
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json as json_module,
+    properties,
+    runtime,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  file: file.API
+  json: json_module.API
+  properties: properties.API
+  runtime: runtime.API
+  step: step.API
+  v8_orchestrator: v8_orchestrator.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json_module.TEST_API
+  runtime: runtime.TEST_API
+  step: step.TEST_API
+
+
+def RunSteps(api: DEPS):
 
   def fake_test_initialization():
     api.step.empty('testing initialized')
@@ -44,7 +68,7 @@ def RunSteps(api):
       status=common_pb.SUCCESS, summary_markdown=comp_props['summary'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def subbuild_data(output_properties=None,
                     summary='pass',

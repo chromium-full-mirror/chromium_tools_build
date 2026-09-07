@@ -9,21 +9,48 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import siso
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, chromium, siso as siso_module
+from RECIPE_MODULES.depot_tools import gclient, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    path,
+    properties,
+    raw_io,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  builder_group: builder_group.API
+  chromium: chromium.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso_module.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  builder_group: builder_group.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso_module.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder' / 'src'
   build_dir = api.path.join('out', 'Default')
   src_cfg = api.gclient.make_config(CACHE_DIR=api.path.cache_dir / 'git')
@@ -67,7 +94,7 @@ def RunSteps(api):
       )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def siso_env_checker(check, steps):
     env = steps['siso context'].env

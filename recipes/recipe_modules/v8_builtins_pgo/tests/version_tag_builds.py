@@ -15,16 +15,41 @@ from recipe_engine.post_process import (
     StepCommandContains,
 )
 
-DEPS = [
-    'chromium_swarming',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/time',
-    'test_utils',
-    'v8_builtins_pgo',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_swarming, test_utils, v8_builtins_pgo
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    properties,
+    step,
+    time,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_swarming: chromium_swarming.API
+  json: json.API
+  properties: properties.API
+  step: step.API
+  test_utils: test_utils.API
+  time: time.API
+  v8_builtins_pgo: v8_builtins_pgo.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  properties: properties.TEST_API
+  test_utils: test_utils.TEST_API
+  time: time.TEST_API
+  v8_builtins_pgo: v8_builtins_pgo.TEST_API
 
 PROPERTIES = {
     'compilators': Property(kind=list, default=None),
@@ -32,14 +57,14 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, compilators, max_parallel_versions):
+def RunSteps(api: DEPS, compilators, max_parallel_versions):
   return api.v8_builtins_pgo.run(
       compilators=compilators,
       version_number_cutoff=(1, 1),
       max_parallel_versions=max_parallel_versions)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   all_tracks = {'x86', 'x64', 'x86-rl', 'x64-rl'}
   pgo_api = api.v8_builtins_pgo
 

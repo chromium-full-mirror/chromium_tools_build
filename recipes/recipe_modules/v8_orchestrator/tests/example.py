@@ -14,14 +14,37 @@ from recipe_engine.post_process import (DropExpectation, MustRun,
 from recipe_engine.recipe_api import Property
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
-DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'v8_orchestrator',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import v8_orchestrator
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json as json_module,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  file: file.API
+  json: json_module.API
+  properties: properties.API
+  step: step.API
+  v8_orchestrator: v8_orchestrator.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  json: json_module.TEST_API
+  properties: properties.TEST_API
+  step: step.TEST_API
 
 PROPERTIES = {
     'revision': Property(kind=str, default=None),
@@ -30,7 +53,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, revision, step_suffix, gerrit_changes):
+def RunSteps(api: DEPS, revision, step_suffix, gerrit_changes):
   if gerrit_changes is None:
     gerrit_changes = api.v8_orchestrator.INHERIT
 
@@ -43,7 +66,7 @@ def RunSteps(api, revision, step_suffix, gerrit_changes):
         status=sub_build.status, summary_markdown=sub_build.summary_markdown)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def subbuild_data(
       summary='All good!',
       status=common_pb.SUCCESS,

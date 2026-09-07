@@ -5,15 +5,29 @@
 from __future__ import annotations
 
 
-DEPS = [
-  'gae_sdk',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import gae_sdk
+from RECIPE_MODULES.recipe_engine import path, platform, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  gae_sdk: gae_sdk.API
+  path: path.API
+  platform: platform.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.step('all_packages', [])
   api.step.active_result.presentation.logs['details'] = [
     '%r: %r' % (plat, arch) for plat, arch in api.gae_sdk.all_packages
@@ -32,7 +46,7 @@ def RunSteps(api):
                      (plat, api.platform.name, api.platform.bits)))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'win',
       api.platform('win', 64),

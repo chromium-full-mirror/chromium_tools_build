@@ -9,21 +9,40 @@ from PB.recipe_modules.build.xcode\
 
 from recipe_engine.post_process import (DropExpectation)
 
-DEPS = [
-    'xcode',
-    'recipe_engine/properties',
-    'recipe_engine/assertions',
-    'recipe_engine/file',
-    'recipe_engine/path',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import xcode
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    file,
+    path,
+    properties,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  file: file.API
+  path: path.API
+  properties: properties.API
+  xcode: xcode.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   actual_version = api.xcode.get_xcode_version(api.path.cache_dir / 'builder')
   api.assertions.assertIsNone(actual_version)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'testing xcode version retrieval with no input',
       api.post_process(DropExpectation),
