@@ -9,21 +9,46 @@ from PB.recipe_modules.build.chromium_compilator.properties import InputProperti
 
 from RECIPE_MODULES.build import chromium_types
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'filter',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    filter as filter_module,
+)
+from RECIPE_MODULES.recipe_engine import buildbucket, path, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  filter: filter_module.API
+  path: path.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   orchestrator = properties.orchestrator.builder_name
   builder_group = properties.orchestrator.builder_group
   orch_builder_id = chromium_types.BuilderId.create_for_group(
@@ -56,7 +81,7 @@ def RunSteps(api, properties):
       additional_compile_targets=additional_compile_targets)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def ctbc_properties(**kwargs):

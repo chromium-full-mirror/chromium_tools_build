@@ -8,15 +8,33 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/properties',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
 
-def RunSteps(api):
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_swarming, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import properties, swarming
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  properties: properties.API
+  swarming: swarming.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
+  swarming: swarming.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -25,7 +43,7 @@ def RunSteps(api):
   return build_result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builder_db = ctbc.BuilderDatabase.create({
       'test-group': {
           'test-builder':

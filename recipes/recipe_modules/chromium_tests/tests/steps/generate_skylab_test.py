@@ -10,22 +10,58 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 from recipe_engine import post_process
 
-DEPS = [
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'skylab',
-    'test_utils',
-    'depot_tools/tryserver',
-    'recipe_engine/file',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/json',
-    'recipe_engine/raw_io',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium_tests,
+    chromium_tests_builder_config,
+    siso,
+    skylab,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    json,
+    path,
+    properties,
+    raw_io,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  file: file.API
+  json: json.API
+  path: path.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  skylab: skylab.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  siso: siso.TEST_API
+  skylab: skylab.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   if api.tryserver.is_tryserver:
@@ -35,7 +71,7 @@ def RunSteps(api):
   return build_result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   TAST_TARGET = 'lacros_fyi_tast_tests'
   GTEST_TARGET = 'vaapi_unittest'
@@ -300,7 +336,7 @@ def GenTests(api):
                          (903, common_pb2.INFRA_FAILURE)]),
       api.override_step_data(
           'basic_EVE_TOT (retry shards).read_ctp_response',
-          api.m.json.output({
+          api.json.output({
               'some test 2': {
                   'url': 'http://runner-link/904',
                   'shard': 2,
@@ -347,7 +383,7 @@ def GenTests(api):
                          (903, common_pb2.INFRA_FAILURE)]),
       api.override_step_data(
           'basic_EVE_TOT (retry shards).read_ctp_response',
-          api.m.json.output({
+          api.json.output({
               'some test 2': {
                   'url': 'http://runner-link/904',
                   'shard': 2,
@@ -502,9 +538,9 @@ def GenTests(api):
       'Skylab outage',
       boilerplate('chrome-test-builds'),
       api.override_step_data('basic_EVE_TOT.read_ctp_response',
-                             api.m.json.output({})),
+                             api.json.output({})),
       api.override_step_data('basic_EVE_TOT (retry shards).read_ctp_response',
-                             api.m.json.output({})),
+                             api.json.output({})),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
       api.post_process(
           post_process.SummaryMarkdown,

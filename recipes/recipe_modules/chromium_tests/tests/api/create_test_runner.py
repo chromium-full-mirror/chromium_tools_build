@@ -8,19 +8,42 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
                                         SummaryMarkdown)
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'builder_group',
-    'chromium',
-    'chromium_tests',
-    'depot_tools/tryserver',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import builder_group, chromium, chromium_tests
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    path,
+    platform,
+    properties,
+    raw_io,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  builder_group: builder_group.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  builder_group: builder_group.TEST_API
+  chromium: chromium.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',
@@ -49,7 +72,7 @@ def RunSteps(api):
   return test_runner()
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'failure',
       api.chromium.ci_build(

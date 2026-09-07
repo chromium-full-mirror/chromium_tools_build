@@ -8,29 +8,69 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/bot_update',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/commit_position',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/runtime',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import bot_update, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    commit_position,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    runtime,
+    step,
+    swarming,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  commit_position: commit_position.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  runtime: runtime.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  swarming: swarming.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -44,7 +84,7 @@ def RunSteps(api):
       return build_result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   fake_group = 'fake-group'
   fake_builder = 'fake-builder'
   fake_tester = 'fake-tester'

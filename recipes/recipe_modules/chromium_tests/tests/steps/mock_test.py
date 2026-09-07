@@ -5,20 +5,40 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium_tests',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_tests: chromium_tests.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  properties: properties.TEST_API
 
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   test_spec = steps.MockTestSpec.create(
       name=api.properties.get('test_name', 'MockTest'),
       runs_on_swarming=api.properties.get('runs_on_swarming', True),
@@ -52,7 +72,7 @@ def RunSteps(api):
   api.assertions.assertEqual(test.retry_only_failed_tests, True)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   failure_code = steps.MockTest.ExitCodes.FAILURE
   infra_code = steps.MockTest.ExitCodes.INFRA_FAILURE
 

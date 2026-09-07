@@ -10,15 +10,32 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/bot_update',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.recipe_engine import assertions, json, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  json: json.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 
 @CONFIG_CTX()
@@ -26,7 +43,7 @@ def override_foo(c):
   c.revisions['src/foo'] = 'HEAD'
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   builder_id = api.chromium.get_builder_id()
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -42,7 +59,7 @@ def RunSteps(api):
       api.assertions.assertEqual(properties[k], v)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   src_revision = api.bot_update.gen_revision('src')
   yield api.test(
       'overridden-dep',

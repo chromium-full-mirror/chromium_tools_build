@@ -39,33 +39,94 @@ from PB.turboci.graph.orchestrator.v1.check_kind import CheckKind
 from PB.turboci.graph.orchestrator.v1.check_state import CheckState
 from PB.turboci.graph.orchestrator.v1.workplan import WorkPlan
 
-DEPS = [
-    'chromium',
-    'chromium_android',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'depot_tools/tryserver',
-    'filter',
-    'flakiness',
-    'orderfile',
-    'pgo',
-    'profiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cq',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/legacy_annotation',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_android,
+    chromium_swarming,
+    chromium_tests as chromium_tests_module,
+    chromium_tests_builder_config,
+    code_coverage,
+    filter as filter_module,
+    flakiness,
+    orderfile,
+    pgo,
+    profiles,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import tryserver as tryserver_module
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    cq,
+    file,
+    json,
+    legacy_annotation,
+    luci_analysis,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests_module.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  cq: cq.API
+  file: file.API
+  filter: filter_module.API
+  flakiness: flakiness.API
+  json: json.API
+  legacy_annotation: legacy_annotation.API
+  luci_analysis: luci_analysis.API
+  orderfile: orderfile.API
+  path: path.API
+  pgo: pgo.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver_module.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests_module.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  cq: cq.TEST_API
+  file: file.TEST_API
+  filter: filter_module.TEST_API
+  flakiness: flakiness.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  orderfile: orderfile.TEST_API
+  path: path.TEST_API
+  pgo: pgo.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  swarming: swarming.TEST_API
+  test_utils: test_utils.TEST_API
 
 _TEST_BUILDERS = ctbc.BuilderDatabase.create({
     'chromium.test': {

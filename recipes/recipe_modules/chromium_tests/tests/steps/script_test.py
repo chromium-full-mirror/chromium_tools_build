@@ -9,22 +9,52 @@ from recipe_engine.post_process import (DropExpectation, LogContains, MustRun,
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'presentation_utils',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    presentation_utils,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    json,
+    path,
+    properties,
+    raw_io,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  json: json.API
+  path: path.API
+  presentation_utils: presentation_utils.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  json: json.TEST_API
+  raw_io: raw_io.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
 
   test_spec = steps.ScriptTestSpec.create(
@@ -57,7 +87,7 @@ def RunSteps(api):
     ]
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.ci_build(
@@ -101,7 +131,7 @@ def GenTests(api):
               'valid': True,
               'failures': ['TestOne']
           }),
-          api.m.raw_io.stream_output_text(
+          api.raw_io.stream_output_text(
               ('rdb-stream: included "invocations/script_test" in'
                ' "invocations/build-inv"'),
               'stderr',

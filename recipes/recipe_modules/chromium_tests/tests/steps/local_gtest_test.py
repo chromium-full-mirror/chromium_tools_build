@@ -5,29 +5,62 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_android',
-    'chromium_tests',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_android,
+    chromium_tests,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import bot_update, gclient
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_android: chromium_android.API
+  chromium_tests: chromium_tests.API
+  gclient: gclient.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  test_utils: test_utils.TEST_API
 
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   api.chromium.set_config(
       'chromium',
@@ -63,7 +96,7 @@ def RunSteps(api):
                                   'without patch')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.chromium.ci_build(

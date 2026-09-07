@@ -8,17 +8,39 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_checkout',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_checkout,
+    chromium_tests,
+    chromium_tests_builder_config,
+)
+from RECIPE_MODULES.recipe_engine import platform, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id = api.chromium.get_builder_id()
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -39,7 +61,7 @@ def RunSteps(api):
   )
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def affected_spec_file():
     return sum([

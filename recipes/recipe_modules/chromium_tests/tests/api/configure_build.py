@@ -10,15 +10,33 @@ from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/gclient',
-    'recipe_engine/assertions',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.depot_tools import gclient
+from RECIPE_MODULES.recipe_engine import assertions, platform, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  gclient: gclient.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'test_only': Property(kind=bool, default=None),
@@ -26,7 +44,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, test_only, expected_gclient_vars):
+def RunSteps(api: DEPS, test_only, expected_gclient_vars):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   kwargs = {}
   if test_only is not None:
@@ -36,7 +54,7 @@ def RunSteps(api, test_only, expected_gclient_vars):
     api.assertions.assertEqual(v, api.gclient.c.solutions[0].custom_vars.get(k))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

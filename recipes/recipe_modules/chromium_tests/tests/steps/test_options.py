@@ -8,12 +8,20 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'recipe_engine/assertions',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.recipe_engine import assertions
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+
+
+def RunSteps(api: DEPS):
   # Option flags cannot be created with filter flag but no filter delimiter
   with api.assertions.assertRaises(ValueError) as caught:
     steps.TestOptionFlags.create(filter_flag='--filter-flag')
@@ -66,7 +74,7 @@ def RunSteps(api):
           retry_limit=steps.RETRY_LIMIT_FOR_CI_RETRY_SHARDS,))
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

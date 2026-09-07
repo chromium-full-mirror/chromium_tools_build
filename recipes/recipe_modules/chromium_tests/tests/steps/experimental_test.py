@@ -5,23 +5,45 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    path,
+    properties,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  path: path.API
+  properties: properties.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  properties: properties.TEST_API
 
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
 
   class RecordingTestSpec(steps.TestWrapperSpec):
 
@@ -95,7 +117,7 @@ def RunSteps(api):
   assert not experimental_test.deterministic_failures('')
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'experiment_on',

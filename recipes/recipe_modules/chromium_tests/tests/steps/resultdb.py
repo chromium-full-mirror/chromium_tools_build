@@ -8,18 +8,38 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests.steps import ResultDB
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    "recipe_engine/resultdb",
-    "recipe_engine/path",
-    'recipe_engine/platform',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    path,
+    platform,
+    resultdb,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  path: path.API
+  platform: platform.API
+  resultdb: resultdb.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+
+
+def RunSteps(api: DEPS):
   cmd = ["echo", "foo"]
 
   rdb = ResultDB.create(enable=False)
@@ -248,7 +268,7 @@ def RunSteps(api):
   rdb.unwrap(api, ['no-wrapping'])
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'test_results',
       api.chromium.ci_build(

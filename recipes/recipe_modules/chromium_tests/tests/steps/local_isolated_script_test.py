@@ -9,24 +9,56 @@ from recipe_engine.recipe_api import StepFailure
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'isolate',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    isolate,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  isolate: isolate.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   test_name = api.properties.get('test_name') or 'base_unittests'
 
   isolate_profile_data = api.properties.get('isolate_profile_data', False)
@@ -76,7 +108,7 @@ def RunSteps(api):
     raise StepFailure('failure in ' + test.name)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   def verify_isolate_flag(check, step_odict):
     step = step_odict[
         'base_unittests']

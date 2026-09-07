@@ -16,13 +16,29 @@ from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import properties, step
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  properties: properties.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'commit': recipe_api.Property(default=None),
@@ -30,7 +46,7 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, commit, set_output_commit):
+def RunSteps(api: DEPS, commit, set_output_commit):
   # Create a nested step so that setup steps can be easily filtered out
   with api.step.nest('setup steps'):
     builder_id = api.chromium.get_builder_id()
@@ -46,7 +62,7 @@ def RunSteps(api, commit, set_output_commit):
       builder_id, update_step, builder_config, commit=commit)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def StepStdinRE(check, step_odict, step, regex):
     check('stdin for %s contained %s' % (step, regex),

@@ -11,24 +11,60 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'filter',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/cq',
-    'recipe_engine/buildbucket',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    filter as filter_module,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    cq,
+    path,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  cq: cq.API
+  filter: filter_module.API
+  path: path.API
+  properties: properties.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  cq: cq.TEST_API
+  filter: filter_module.TEST_API
+  path: path.TEST_API
+  properties: properties.TEST_API
+  tryserver: tryserver.TEST_API
 
 PROPERTIES = InputProperties
 
 
-def RunSteps(api, properties):
+def RunSteps(api: DEPS, properties):
   orchestrator = properties.orchestrator.builder_name
   builder_group = properties.orchestrator.builder_group
   orch_builder_id = chromium_types.BuilderId.create_for_group(
@@ -60,7 +96,7 @@ def RunSteps(api, properties):
     api.assertions.assertCountEqual(tests, expected_tests)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def ctbc_properties():

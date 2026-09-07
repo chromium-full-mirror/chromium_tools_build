@@ -15,33 +15,76 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    json,
+    luci_analysis,
+    path,
+    platform,
+    properties,
+    raw_io,
+    resultdb,
+    step,
+    swarming,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  swarming: swarming.TEST_API
+  test_utils: test_utils.TEST_API
+  tryserver: tryserver.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   return api.chromium_tests.trybot_steps(builder_id, builder_config)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

@@ -10,28 +10,68 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/bot_update',
-    'isolate',
-    'profiles',
-    'recipe_engine/assertions',
-    'recipe_engine/commit_position',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    isolate,
+    profiles,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    commit_position,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+    swarming,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  commit_position: commit_position.API
+  isolate: isolate.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  swarming: swarming.TEST_API
+  test_utils: test_utils.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Create a nested step so that setup steps can be easily filtered out
   with api.step.nest('setup steps'):
     api.chromium.set_build_properties({
@@ -108,7 +148,7 @@ def RunSteps(api):
           'has_valid_results: %r' % test.has_valid_results('with patch'))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def arbitrary_tester():

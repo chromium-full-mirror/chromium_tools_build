@@ -9,14 +9,23 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build.attr_utils import attrib, attrs
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'chromium_tests',
-    'recipe_engine/assertions',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests
+from RECIPE_MODULES.recipe_engine import assertions, step
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_tests: chromium_tests.API
+  step: step.API
+
+
+def RunSteps(api: DEPS):
 
   @attrs()
   class FakeTestSpec(steps.TestSpec):
@@ -96,7 +105,8 @@ def RunSteps(api):
   test.relative_cwd = 'fake-relative-cwd'
   api.assertions.assertEqual(test.relative_cwd, 'fake-relative-cwd')
 
-def GenTests(api):
+
+def GenTests(api: RecipeTestApi):
   yield api.test(
       'full',
       api.post_process(post_process.DropExpectation),

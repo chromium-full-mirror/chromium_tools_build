@@ -8,17 +8,34 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/assertions',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import assertions, platform, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  platform: platform.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   api.chromium_tests.configure_build(builder_config)
@@ -28,7 +45,7 @@ def RunSteps(api):
   api.assertions.assertCountEqual(actual, expected)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

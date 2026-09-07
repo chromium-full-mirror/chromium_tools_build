@@ -5,14 +5,33 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium_tests',
-    'test_utils',
-    'recipe_engine/assertions',
-    'recipe_engine/properties',
-    'recipe_engine/resultdb',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests, test_utils
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    properties,
+    resultdb,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  chromium_tests: chromium_tests.API
+  properties: properties.API
+  resultdb: resultdb.API
+  step: step.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  properties: properties.TEST_API
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
@@ -31,8 +50,8 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, per_suffix_valid, per_suffix_failures, per_suffix_complete,
-             expected_status, suffix):
+def RunSteps(api: DEPS, per_suffix_valid, per_suffix_failures,
+             per_suffix_complete, expected_status, suffix):
   test_spec = steps.MockTestSpec.create(
       name='test_name',
       per_suffix_failures=per_suffix_failures,
@@ -54,7 +73,7 @@ def RunSteps(api, per_suffix_valid, per_suffix_failures, per_suffix_complete,
   api.assertions.assertEqual(test.get_status(suffix), expected_status)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'all_invalid',
       api.properties(

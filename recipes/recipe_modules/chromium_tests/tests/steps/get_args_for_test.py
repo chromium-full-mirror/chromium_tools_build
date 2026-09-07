@@ -5,23 +5,40 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'depot_tools/bot_update',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
-    'recipe_engine/assertions',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests
+from RECIPE_MODULES.depot_tools import bot_update, gclient, tryserver
+from RECIPE_MODULES.recipe_engine import assertions, path, properties
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  bot_update: bot_update.API
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  gclient: gclient.API
+  path: path.API
+  properties: properties.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  properties: properties.TEST_API
+  tryserver: tryserver.TEST_API
 
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import generators
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
 
@@ -48,7 +65,7 @@ def RunSteps(api):
         list(api.properties.get('expected_args')), test_args)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'buildbucket_string',
       api.chromium.ci_build(

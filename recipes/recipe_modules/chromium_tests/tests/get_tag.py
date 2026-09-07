@@ -10,20 +10,35 @@ from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
-DEPS = [
-    'chromium_tests',
-    'recipe_engine/buildbucket',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests
+from RECIPE_MODULES.recipe_engine import buildbucket, properties
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium_tests: chromium_tests.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   result = api.chromium_tests.get_first_tag('lookup_key')
   expected = api.properties.get('result')
   assert result == expected
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   yield api.test(
       'basic',
       api.buildbucket.try_build(

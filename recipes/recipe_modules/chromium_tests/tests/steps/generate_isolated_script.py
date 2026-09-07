@@ -14,21 +14,55 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 
-DEPS = [
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/tryserver',
-    'flakiness',
-    'recipe_engine/json',
-    'recipe_engine/luci_analysis',
-    'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
-    'recipe_engine/swarming',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    flakiness,
+)
+from RECIPE_MODULES.depot_tools import tryserver
+from RECIPE_MODULES.recipe_engine import (
+    json,
+    luci_analysis,
+    raw_io,
+    resultdb,
+    swarming,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  flakiness: flakiness.API
+  json: json.API
+  luci_analysis: luci_analysis.API
+  raw_io: raw_io.API
+  resultdb: resultdb.API
+  swarming: swarming.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  flakiness: flakiness.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
+  swarming: swarming.TEST_API
+
+
+def RunSteps(api: DEPS):
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
@@ -39,7 +73,7 @@ def RunSteps(api):
   return build_result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   builder_db = ctbc.BuilderDatabase.create({
       'test-group': {
           'test-builder':

@@ -14,26 +14,74 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'code_coverage',
-    'orderfile',
-    'pgo',
-    'pinlist',
-    'profiles',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/legacy_annotation',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    chromium_tests_builder_config,
+    code_coverage,
+    orderfile,
+    pgo,
+    pinlist,
+    profiles,
+    test_utils,
+)
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    legacy_annotation,
+    path,
+    platform,
+    properties,
+    raw_io,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  code_coverage: code_coverage.API
+  file: file.API
+  json: json.API
+  legacy_annotation: legacy_annotation.API
+  orderfile: orderfile.API
+  path: path.API
+  pgo: pgo.API
+  pinlist: pinlist.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  raw_io: raw_io.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  orderfile: orderfile.TEST_API
+  path: path.TEST_API
+  pgo: pgo.TEST_API
+  pinlist: pinlist.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  test_utils: test_utils.TEST_API
 
 PROPERTIES = {'fail_compile': Property(default=False, kind=bool)}
 
@@ -202,7 +250,7 @@ def NotIdempotent(check, step_odict, step):
         '--idempotent' not in step_odict[step].cmd)
 
 
-def RunSteps(api, fail_compile):
+def RunSteps(api: DEPS, fail_compile):
   api.profiles._root_profile_dir = api.path.cache_dir / 'profile_root'
   api.path.mock_add_paths(
       api.profiles.profile_dir().joinpath('overall-merged.profdata'))
@@ -229,7 +277,7 @@ def RunSteps(api, fail_compile):
   return build_result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

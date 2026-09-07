@@ -8,18 +8,39 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         StepCommandContains, StepSuccess)
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'recipe_engine/file',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.recipe_engine import (
+    file,
+    properties,
+    raw_io,
+    step,
+)
 
 
-def RunSteps(api):
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  file: file.API
+  properties: properties.API
+  raw_io: raw_io.API
+  step: step.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  properties: properties.TEST_API
+
+
+def RunSteps(api: DEPS):
   # Create a nested step so that setup steps can be easily filtered out
   with api.step.nest('setup steps'):
     builder_id, builder_config = (
@@ -37,7 +58,7 @@ def RunSteps(api):
   api.chromium_tests.archive_build(build_dir, update_step)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'cf_archive_build',

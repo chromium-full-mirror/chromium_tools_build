@@ -8,11 +8,25 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
-DEPS = [
-    'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  chromium: chromium.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
 
 BUILDERS = ctbc.BuilderDatabase.create({
     'fake-group': {
@@ -31,7 +45,7 @@ TRYBOTS = ctbc.TryDatabase.create({
 })
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_db=BUILDERS, try_db=TRYBOTS)
   api.chromium_tests.report_builders(
@@ -42,7 +56,7 @@ def check_link(check, steps, link_name, expected_link):
   check(steps['report builders'].links[link_name] == expected_link)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   for bucket, link_bucket in (
       ('try', 'ci'),
       ('try-beta', 'ci-beta'),

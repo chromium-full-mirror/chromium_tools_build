@@ -15,25 +15,46 @@ from google.protobuf import timestamp_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
-DEPS = [
-    'chromium_tests',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cq',
-    'recipe_engine/properties',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import chromium_tests
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    cq,
+    properties,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  buildbucket: buildbucket.API
+  chromium_tests: chromium_tests.API
+  cq: cq.API
+  properties: properties.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
+  cq: cq.TEST_API
+  properties: properties.TEST_API
 
 PROPERTIES = {
     'expected': Property(kind=set),
 }
 
 
-def RunSteps(api, expected):
+def RunSteps(api: DEPS, expected):
   actual = api.chromium_tests.find_suites_to_skip()
   api.assertions.assertSetEqual(actual, expected)
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   def _create_previous_build(test_statuses=None,
                              flake_endorser_flakes=None,

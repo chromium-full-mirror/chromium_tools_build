@@ -16,23 +16,62 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.chromium_tests_builder_config import builder_spec
 
-DEPS = [
-    'chromium',
-    'chromium_rts',
-    'chromium_tests',
-    'chromium_tests_builder_config',
-    'depot_tools/bot_update',
-    'depot_tools/tryserver',
-    'recipe_engine/buildbucket',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'siso',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_rts,
+    chromium_tests,
+    chromium_tests_builder_config,
+    siso,
+)
+from RECIPE_MODULES.depot_tools import bot_update, tryserver
+from RECIPE_MODULES.recipe_engine import (
+    buildbucket,
+    file,
+    json,
+    path,
+    platform,
+    properties,
+    raw_io,
+    step,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_rts: chromium_rts.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
+  file: file.API
+  json: json.API
+  path: path.API
+  platform: platform.API
+  properties: properties.API
+  raw_io: raw_io.API
+  siso: siso.API
+  step: step.API
+  tryserver: tryserver.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
+  buildbucket: buildbucket.TEST_API
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  file: file.TEST_API
+  json: json.TEST_API
+  path: path.TEST_API
+  platform: platform.TEST_API
+  properties: properties.TEST_API
+  siso: siso.TEST_API
 
 BUILDERS = ctbc.BuilderDatabase.create({
     'fake.group': {
@@ -103,7 +142,8 @@ _TEST_TRYBOTS = ctbc.TryDatabase.create({
     }
 })
 
-def RunSteps(api):
+
+def RunSteps(api: DEPS):
   # Create a nested step so that setup steps can be easily filtered out
   with api.step.nest('setup steps'):
     builder_id, builder_config = (
@@ -141,7 +181,7 @@ def RunSteps(api):
   return compile_result
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(

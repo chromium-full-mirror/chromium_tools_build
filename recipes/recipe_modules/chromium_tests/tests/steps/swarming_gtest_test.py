@@ -5,32 +5,69 @@
 from __future__ import annotations
 
 
-DEPS = [
-    'chromium',
-    'chromium_swarming',
-    'chromium_tests',
-    'depot_tools/bot_update',
-    'isolate',
-    'pgo',
-    'profiles',
-    'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/commit_position',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/swarming',
-    'test_utils',
-]
+from dataclasses import dataclass
+
+from recipe_engine.recipe_api import RecipeScriptApi
+from recipe_engine.recipe_test_api import RecipeTestApi
+
+from RECIPE_MODULES.build import (
+    chromium,
+    chromium_swarming,
+    chromium_tests,
+    isolate,
+    pgo,
+    profiles,
+    test_utils,
+)
+from RECIPE_MODULES.depot_tools import bot_update
+from RECIPE_MODULES.recipe_engine import (
+    assertions,
+    buildbucket,
+    commit_position,
+    json,
+    path,
+    platform,
+    properties,
+    step,
+    swarming,
+)
+
+
+@dataclass
+class DEPS(RecipeScriptApi):
+  assertions: assertions.API
+  bot_update: bot_update.API
+  buildbucket: buildbucket.API
+  chromium: chromium.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  commit_position: commit_position.API
+  isolate: isolate.API
+  json: json.API
+  path: path.API
+  pgo: pgo.API
+  platform: platform.API
+  profiles: profiles.API
+  properties: properties.API
+  step: step.API
+  swarming: swarming.API
+  test_utils: test_utils.API
+
+
+@dataclass
+class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_swarming: chromium_swarming.TEST_API
+  pgo: pgo.TEST_API
+  properties: properties.TEST_API
+  swarming: swarming.TEST_API
 
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
-def RunSteps(api):
+def RunSteps(api: DEPS):
   api.chromium.set_config(
       'chromium',
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
@@ -77,7 +114,7 @@ def RunSteps(api):
         'failed: %s' % ' '.join(t.name for t in failed_tests + invalid_tests))
 
 
-def GenTests(api):
+def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'basic',
