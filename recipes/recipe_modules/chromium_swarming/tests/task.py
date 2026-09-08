@@ -112,6 +112,26 @@ def GenTests(api: TEST_DEPS):
       api.post_process(post_process.DropExpectation),
   )
 
+  def check_optional_dimensions(check, req):
+    check(len(req) == 4)
+    # Slice 0: most-preferred fallback
+    check(req[0].expiration_secs == 60)
+    check(req[0].dimensions['os'] == 'most-preferred-os')
+    check(req[0].dimensions.get('zone') == 'us-central1-b')
+    # Slice 1: less-preferred fallback (verifies relative duration and no
+    # dimension bleeding)
+    check(req[1].expiration_secs == 60)
+    check(req[1].dimensions['os'] == 'less-preferred-os')
+    check('zone' not in req[1].dimensions)
+    # Slice 2: least-preferred fallback
+    check(req[2].expiration_secs == 60)
+    check(req[2].dimensions['os'] == 'least-preferred-os')
+    check('zone' not in req[2].dimensions)
+    # Slice 3: base slice with original dimensions
+    check(req[3].expiration_secs == 3420)
+    check(req[3].dimensions['os'] == 'Linux')
+    check('zone' not in req[3].dimensions)
+
   yield api.test(
       'optional_dimensions',
       api.properties(
@@ -119,18 +139,19 @@ def GenTests(api: TEST_DEPS):
           wait_for_capacity=True,
           optional_dimensions={
               60: {
-                  'os': 'most-preferred-os'
+                  'os': 'most-preferred-os',
+                  'zone': 'us-central1-b',
               },
               120: {
-                  'os': 'less-preferred-os'
+                  'os': 'less-preferred-os',
               },
               180: {
-                  'os': 'least-preferred-os'
+                  'os': 'least-preferred-os',
               },
           }),
       api.post_check(api.swarming.check_triggered_request,
-                     '[trigger] optional-dimension task', lambda check, req:
-                     check(len(req) == 4)),
+                     '[trigger] optional-dimension task',
+                     check_optional_dimensions),
       api.post_process(post_process.DropExpectation),
   )
 

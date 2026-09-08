@@ -1216,13 +1216,22 @@ class SwarmingApi(recipe_api.RecipeApi):
         'shard_count': [str(task.shards)],
     })
 
-    slices = [req_slice]
+    slices = []
     if task.optional_dimensions:
+      prev_exp = 0
       for exp, dimensions in sorted(task.optional_dimensions.items()):
-        current_slice = slices[0]
+        # Create the new slice on top of the original base slice.
+        current_slice = req_slice
         current_slice = current_slice.with_dimensions(**dimensions)
-        current_slice = current_slice.with_expiration_secs(exp)
-        slices = [current_slice] + slices
+        # The expiration time in swarming is a relative duration added to
+        # preceding slice while in recipe it's absolute duration.
+        # So subtract exp with the previous exp.
+        current_slice = current_slice.with_expiration_secs(exp - prev_exp)
+        slices.append(current_slice)
+        prev_exp = exp
+      req_slice = req_slice.with_expiration_secs(
+          max(0, req_slice.expiration_secs - prev_exp))
+    slices.append(req_slice)
     req = req.with_slice(0, slices[0])
     for s in slices[1:]:
       req = req.add_slice(s)
