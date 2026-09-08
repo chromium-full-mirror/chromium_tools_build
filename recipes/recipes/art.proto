@@ -60,4 +60,7 @@ message InputProperties {
 
   // List of test steps to run.
   repeated TestStep test_steps = 16;
+
+  // Environment variables to be used.
+  map<string, string> env = 17;
 }
