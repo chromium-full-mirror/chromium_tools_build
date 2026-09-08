@@ -26,8 +26,9 @@ class DawnApi(recipe_api.RecipeApi):
 
   def ci_steps(self):
     builder_id, builder_config = self._get_builder_id_and_config()
-    chromium_results = self.m.chromium_tests.main_waterfall_steps(
-        builder_id, builder_config)
+    with self.m.osx_sdk('mac'):
+      chromium_results = self.m.chromium_tests.main_waterfall_steps(
+          builder_id, builder_config)
     self._kill_mspdbsrv()
     return chromium_results
 
@@ -35,8 +36,9 @@ class DawnApi(recipe_api.RecipeApi):
     self.m.tryserver.require_is_tryserver()
 
     builder_id, builder_config = self._get_builder_id_and_config()
-    chromium_results = self.m.chromium_tests.trybot_steps(
-        builder_id, builder_config, files_relative_to='dawn/')
+    with self.m.osx_sdk('mac'):
+      chromium_results = self.m.chromium_tests.trybot_steps(
+          builder_id, builder_config, files_relative_to='dawn/')
     self._kill_mspdbsrv()
     return chromium_results
 
