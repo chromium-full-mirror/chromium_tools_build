@@ -59,6 +59,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.compilator = properties.compilator
     self.compilator_watcher_git_revision = (
         properties.compilator_watcher_git_revision)
+    self.compilator_watcher_polling_timeout_sec = (
+        properties.compilator_watcher_polling_timeout_sec)
 
     self.compilator_watcher_pkg = None
 
@@ -600,6 +602,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       cmd.extend(['-end-step-tag', outputted_trigger_tag])
     else:
       cmd.extend(['-start-step-tag', outputted_trigger_tag])
+
+    if self.compilator_watcher_polling_timeout_sec:
+      cmd.extend([
+          '-compilator-polling-timeout-sec',
+          str(self.compilator_watcher_polling_timeout_sec),
+      ])
 
     if with_patch:
       name = 'compilator steps (with patch)'

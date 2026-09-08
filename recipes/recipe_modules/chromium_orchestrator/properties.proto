@@ -16,4 +16,8 @@ message InputProperties {
 
   reserved 3;
   reserved "propagate_properties_to_compilator";
+
+  // Max number of seconds to poll compilator. If not set, defaults to 7200
+  // (2 hours) in compilator_watcher.
+  int64 compilator_watcher_polling_timeout_sec = 4;
 }

@@ -193,6 +193,48 @@ def GenTests(api: TEST_DEPS):
       api.post_process(post_process.LogDoesNotContain,
                        'trigger compilator (with patch)', 'request',
                        ['rts_model']),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'compilator steps (with patch)',
+          ['-compilator-polling-timeout-sec'],
+      ),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'compilator steps (with patch) (2)',
+          ['-compilator-polling-timeout-sec'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'compilator_watcher_polling_timeout_sec',
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                      compilator_watcher_polling_timeout_sec=10000,
+                  ),
+          }),
+      api.code_coverage(use_clang_coverage=True),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'compilator steps (with patch)',
+          ['-compilator-polling-timeout-sec', '10000'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
