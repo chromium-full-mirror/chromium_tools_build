@@ -78,20 +78,23 @@ def _evaluate_all_tests(
     active_suites: set[str],
 ) -> tuple[dict[str, SuiteSafetyDetails], list[str]]:
   """Evaluates RTS performance across all given tests."""
-  filter_file_dir = api.filter_file_dir(build_dir)
-
   evaluation_results: dict[str, SuiteSafetyDetails] = {}
   missing_filter_suites = []
   for test in tests:
+    filter_file_path = api.get_filter_file_path(build_dir, test)
+    if filter_file_path is None:
+      continue
+
     target_name = test.isolate_target or test.target_name
-    filter_file_path = filter_file_dir / f'{target_name}.filter'
+    suite_name = test.canonical_name
+
     if not api.m.path.exists(filter_file_path):
       missing_filter_suites.append(test.name)
       skipped_tests = set()
     else:
-      skipped_tests = _get_skipped_tests(api, target_name, filter_file_path)
-    is_banned = target_name in banned_suites
-    is_active = test.target_name in active_suites
+      skipped_tests = _get_skipped_tests(api, suite_name, filter_file_path)
+    is_banned = target_name in banned_suites or suite_name in banned_suites
+    is_active = test.name in active_suites
     res = _evaluate_test_suite(test, skipped_tests, is_banned, is_active)
     if res:
       evaluation_results[test.name] = res

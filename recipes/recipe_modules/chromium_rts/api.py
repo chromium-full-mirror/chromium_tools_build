@@ -40,6 +40,19 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     """Returns the path to the directory containing the RTS filter files."""
     return build_dir / 'gen' / 'rts'
 
+  def get_filter_file_path(
+      self,
+      build_dir: Path,
+      test: Test,
+  ) -> Path | None:
+    """Returns the path to the RTS filter file for a test, if applicable."""
+    target_name = test.isolate_target or test.target_name
+    # Derivative suites sharing a target/isolate with a parent suite should not
+    # look for or associate filter files unless RTS filtering is enabled.
+    if test.canonical_name != target_name and not test.enable_rts_filtering:
+      return None
+    return self.filter_file_dir(build_dir) / f'{test.canonical_name}.filter'
+
   def generate_filter_files(
       self,
       src_dir: Path,
@@ -245,9 +258,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
           build_dir) / f'{target}_inverted.filter'
       if self.m.path.exists(filter_file):
         rts_cmd = list(cmd)
-        rts_cmd.append(
-            f'--test-launcher-filter-file={self.m.path.relpath(filter_file, build_dir)}'
-        )
+        rel_path = self.m.path.relpath(filter_file, build_dir)
+        rts_cmd.append(f'--test-launcher-filter-file={rel_path}')
         rts_complement_command_lines[target] = rts_cmd
 
     return rts_complement_command_lines
@@ -267,7 +279,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     rts_command_line = command_line_variants['rts'].get(test.target_name, [])
     if rts_command_line:
       test.raw_cmd = rts_command_line
-      self._overwritten_tests.add(test.target_name)
+      self._overwritten_tests.add(test.name)
 
   def append_test_step_text(
       self,
@@ -275,6 +287,6 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       messages: list[str],
   ) -> None:
     """Appends RTS info message if the test's command was overwritten by RTS."""
-    if test.target_name in self._overwritten_tests:
+    if test.name in self._overwritten_tests:
       messages.append(
           'Ran tests selected by Regression Test Selection (RTS).\n')

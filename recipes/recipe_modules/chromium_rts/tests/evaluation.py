@@ -82,6 +82,14 @@ def RunSteps(api: DEPS):
   if api.properties.get('include_second_test', False):
     test_list.append(second_test)
 
+  if api.properties.get('include_derivative_suite', False):
+    derivative_suite = steps.MockTestSpec.create(
+        'pixel_' + test_suite_name,
+        target_name=test_suite_name,
+        enable_rts_filtering=False,
+    ).get_test(api.chromium_tests)
+    test_list.append(derivative_suite)
+
   if enable_rts_filtering:
     api.chromium_rts._overwritten_tests.add(test_suite_name)
   if second_test_enable_rts:
@@ -704,5 +712,37 @@ def GenTests(api: TEST_DEPS):
                            'Total Inactive Tests Skipped by RTS: 2',
                            'Missing RTS filter files for: SecondTest',
                        ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'evaluation_derivative_suite_not_actively_filtered',
+      api.chromium.try_build(
+          builder='win-rel', experiments=['chromium_rts.filter_file_analysis']),
+      api.properties(
+          test_suite_name='interactive_ui_tests',
+          enable_rts_filtering=True,
+          include_derivative_suite=True,
+      ),
+      api.path.exists(api.path.cleanup_dir / 'gen' / 'rts' /
+                      'interactive_ui_tests.filter'),
+      api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
+      api.post_process(
+          post_process.StepTextEquals, 'Evaluate chromium-rts safety',
+          '<br/>'.join([
+              'RTS Evaluation Summary',
+              'Overall Test Recall: 100.00% (0/0 caught)',
+              'Overall Builder Recall: 100.00%',
+              'Total Tests Skipped by RTS: 2',
+          ])),
+      api.post_process(
+          post_process.PropertyEquals, 'rts_suite_safety_details', {
+              'interactive_ui_tests': {
+                  'test_suite': 'interactive_ui_tests',
+                  'rts_skipped_tests_count': 2,
+                  'rts_banned': False,
+                  'actively_filtered': True,
+              }
+          }),
       api.post_process(post_process.DropExpectation),
   )
