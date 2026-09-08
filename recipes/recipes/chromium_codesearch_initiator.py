@@ -70,7 +70,7 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
 
 
-def RevisionFromGob(api, properties):
+def RevisionFromGob(api: DEPS, properties):
   commits, _ = api.gitiles.log(
       properties.source_repo,
       'refs/heads/main',
@@ -104,7 +104,7 @@ def RevisionFromGob(api, properties):
   return props
 
 
-def RevisionFromGit(api, properties):
+def RevisionFromGit(api: DEPS, properties):
   env = {
       # Turn off the low speed limit, since checkout will be long.
       'GIT_HTTP_LOW_SPEED_LIMIT': '0',

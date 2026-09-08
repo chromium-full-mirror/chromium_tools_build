@@ -91,7 +91,7 @@ CANCELLATION_MESSAGE = (
     'Parent orchestrator build ended, causing this build to be canceled.')
 
 
-def orchestrator_name(api):
+def orchestrator_name(api: DEPS):
   """Contruct orchestrator name by compilator name.
 
   Returns the orchestrator name by naming convention. Same as compilator
@@ -110,7 +110,7 @@ def orchestrator_name(api):
   return name
 
 
-def read_test_spec(api, source_dir):
+def read_test_spec(api: DEPS, source_dir):
   """Dynamically load test specifications from all discovered test roots."""
   test_spec = api.v8_tests.TEST_SPEC()
   for test_root in api.v8.get_test_roots(source_dir):
@@ -118,7 +118,7 @@ def read_test_spec(api, source_dir):
   return test_spec
 
 
-def emit_compilator_properties(api, test_spec):
+def emit_compilator_properties(api: DEPS, test_spec):
   properties = dict(test_spec.as_properties_dict_single())
   properties['swarm_hashes'] = api.v8_tests.isolated_tests
   properties['gn_args'] = api.v8_tests.gn_args
@@ -129,7 +129,7 @@ def emit_compilator_properties(api, test_spec):
       properties, indent=2)
 
 
-def compilator_steps(api, custom_deps, default_targets, gclient_vars,
+def compilator_steps(api: DEPS, custom_deps, default_targets, gclient_vars,
                      target_arch, target_platform, revision):
   v8 = api.v8
   api.v8_tests.load_static_test_configs()

@@ -79,12 +79,12 @@ PROPERTIES = InputProperties
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
-def _new_ensure_file(api):
+def _new_ensure_file(api: DEPS):
   return api.cipd.EnsureFile().with_paranoid_mode(
       api.cipd.ParanoidMode.CHECK_INTEGRITY)
 
 
-def _checkout_steps(api):
+def _checkout_steps(api: DEPS):
   '''Checks out Dawn. After this, api.path.checkout_dir returns the dawn root.'''
   # Check out dawn into an un-cached directory in 'cache'. This seems weird,
   # but it allows us to use api.path.cache_dir as a common root for RBE.
@@ -118,7 +118,7 @@ def _checkout_steps(api):
 # Installs libraries required for Kotlin tests to named cache directory mentioned in luci builder
 # configurations. Data in this directory will be persistent and will be
 # available between builds
-def _install_android_deps(api):
+def _install_android_deps(api: DEPS):
   env_paths = []
 
   # Install Java 17
@@ -162,7 +162,7 @@ def _install_android_deps(api):
   return env_paths
 
 
-def _install_clang(api):
+def _install_clang(api: DEPS):
   # 'builder' directory is implicitly cached, so cache clang there
   install_path = api.path.cache_dir / 'builder'
 
@@ -195,7 +195,7 @@ def _install_clang(api):
 
 
 @contextmanager
-def windows_sdk(api, source_dir):
+def windows_sdk(api: DEPS, source_dir):
   """Sets up environment for MSVC usage"""
   if not api.platform.is_win:
     yield
@@ -277,7 +277,7 @@ class CMakeFixedArgs:
 # Make a CMake build for Dawn. Returns the build_path, which is unique based
 # on cmake args.
 def _cmake_build(flavor,
-                 api,
+                 api: DEPS,
                  source_dir,
                  fixed_args: CMakeFixedArgs,
                  dawn_node=False,
@@ -293,7 +293,7 @@ def _cmake_build(flavor,
                            build_fuzzers, targets)
 
 
-def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
+def _do_cmake_build(flavor, api: DEPS, source_dir, fixed_args: CMakeFixedArgs,
                     dawn_node: bool, build_as_other: bool,
                     enable_readers_and_writers: bool, build_fuzzers: bool,
                     targets: list):

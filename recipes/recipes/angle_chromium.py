@@ -76,8 +76,8 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
 
 
-def get_component_revision_from_deps(api, component, project, repository_url,
-                                     branch):
+def get_component_revision_from_deps(api: DEPS, component, project,
+                                     repository_url, branch):
   deps = api.gitiles.download_file(
       repository_url,
       'DEPS',

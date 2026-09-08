@@ -95,7 +95,7 @@ def RunSteps(api: DEPS, properties):
                                                properties.bisection_host)
 
 
-def _configure_builder(api, target_builder, should_clobber):
+def _configure_builder(api: DEPS, target_builder, should_clobber):
   target_builder_id = chromium_types.BuilderId.create_for_group(
       target_builder.group, target_builder.builder)
   # TODO: replace this with the polymorphic API when it is ready (go/test-reviver-builders-dd)
@@ -110,7 +110,7 @@ def _configure_builder(api, target_builder, should_clobber):
 
 def GenTests(api: TEST_DEPS):
 
-  def setup(api,
+  def setup(api: TEST_DEPS,
             target_builder_group='fake-group',
             target_builder='fake-builder',
             should_clobber=False):

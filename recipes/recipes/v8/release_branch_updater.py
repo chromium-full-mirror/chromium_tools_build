@@ -79,7 +79,7 @@ def RunSteps(api: DEPS, props):
 
 class Channel:
 
-  def __init__(self, api, milestones, spec):
+  def __init__(self, api: DEPS, milestones, spec):
     self.api = api
     self.milestones = milestones
     self.spec = spec
@@ -185,7 +185,7 @@ class ReleaseChannel(Channel):
 
 class ReleaseBranchUpdater:
 
-  def __init__(self, api, channel_specs):
+  def __init__(self, api: DEPS, channel_specs):
     self.channels = []
     self.channel_specs = channel_specs
     self.api = api

@@ -104,7 +104,7 @@ def RunSteps(api: DEPS, properties):
           status=common_pb.CANCELED, summary_markdown=CANCELLATION_MESSAGE)
 
 
-def emit_compilator_properties(api, properties):
+def emit_compilator_properties(api: DEPS, properties):
   properties_step = api.step('compilator properties', [])
   properties_step.presentation.properties['compilator_properties'] = properties
   properties_step.presentation.logs['compilator_properties'] = api.json.dumps(

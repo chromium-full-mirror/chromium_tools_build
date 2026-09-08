@@ -96,7 +96,7 @@ def RunSteps(api: DEPS):
     _RunStepsInBuilderCacheDir(api, builder_id, bot_config)
 
 
-def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
+def _RunStepsInBuilderCacheDir(api: DEPS, builder_id, bot_config):
   update_result = api.bot_update.ensure_checkout()
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path

@@ -234,12 +234,13 @@ DETERMINISTIC_TRYBOTS = freeze({
         'android-desktop-x64-deterministic-dbg',
 })
 
-def MoveBuildDirectory(api, src_dir, dst_dir):
+
+def MoveBuildDirectory(api: DEPS, src_dir, dst_dir):
   cmd = ['python3', api.resource('move.py'), src_dir, dst_dir]
   api.step('Move %s to %s' % (src_dir, dst_dir), cmd)
 
 
-def ConfigureChromiumBuilder(api, recipe_config):
+def ConfigureChromiumBuilder(api: DEPS, recipe_config):
   api.chromium.set_config(recipe_config['chromium_config'],
                           **recipe_config.get('chromium_config_kwargs',
                                               {'BUILD_CONFIG': 'Release'}))

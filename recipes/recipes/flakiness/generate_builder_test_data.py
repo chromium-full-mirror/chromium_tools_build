@@ -54,8 +54,8 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
 
 
-def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
-                                     project, builder_bucket):
+def analyze_try_builder_test_history(api: DEPS, builder, gs_bucket,
+                                     build_number, project, builder_bucket):
   """Query test history for the given builder, and upload the results to CIPD
 
   Args:

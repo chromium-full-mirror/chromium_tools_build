@@ -92,7 +92,11 @@ MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
 DEFAULT_ARCHIVE_SCHEMA_VERSION = 0
 
 
-def gn_refs(api, build_dir: Path, step_name, target, output_type='executable'):
+def gn_refs(api: DEPS,
+            build_dir: Path,
+            step_name,
+            target,
+            output_type='executable'):
   """Runs gn refs to calculate targets depending on target.
   Returns: the set of matched targets.
   """
@@ -107,7 +111,7 @@ def gn_refs(api, build_dir: Path, step_name, target, output_type='executable'):
   }
 
 
-def copy_path(api, source_dir: Path, build_dir: Path, path_name):
+def copy_path(api: DEPS, source_dir: Path, build_dir: Path, path_name):
   """Copies the path_name, which could be a file or a directory
   into ${build_dir}/src_root.
   """
@@ -187,12 +191,12 @@ def batched(iterable):
     yield batch
 
 
-def get_target_cpu(api, gn_args):
+def get_target_cpu(api: DEPS, gn_args):
   args = api.gn.parse_gn_args(gn_args)
   return str(args.get('target_cpu')).replace('"', '')
 
 
-def gn_ls_with_filter(api, build_dir, inputs, **kwargs):
+def gn_ls_with_filter(api: DEPS, build_dir, inputs, **kwargs):
   """Wraps api.gn.ls to filter out 'is_asan' warnings."""
   raw_output = api.gn.ls(build_dir, inputs, **kwargs)
   return {

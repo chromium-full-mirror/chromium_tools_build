@@ -96,14 +96,14 @@ class FileInfo:
     self.is_dir = is_dir
 
 
-def CheckoutSteps(api):
+def CheckoutSteps(api: DEPS):
   api.gclient.set_config('nacl')
   update_result = api.bot_update.ensure_checkout()
   api.gclient.runhooks()
   return update_result
 
 
-def ExecBuildSteps(api, source_dir, env):
+def ExecBuildSteps(api: DEPS, source_dir, env):
   with api.context(cwd=source_dir, env=env):
     with api.depot_tools.on_path():
       cmd = [
@@ -113,7 +113,8 @@ def ExecBuildSteps(api, source_dir, env):
       api.legacy_annotation('annotated steps', cmd)
 
 
-def AnnotatedStepsSteps(api, got_revision, source_dir, compiled_sources_path):
+def AnnotatedStepsSteps(api: DEPS, got_revision, source_dir,
+                        compiled_sources_path):
   use_reclient = api.reclient.instance
   # Default environment; required by all builders.
   env = {
@@ -136,7 +137,7 @@ def AnnotatedStepsSteps(api, got_revision, source_dir, compiled_sources_path):
     ExecBuildSteps(api, source_dir, env)
 
 
-def UploadFilesToCAS(api, files):
+def UploadFilesToCAS(api: DEPS, files):
   """Pushes files up to the RBE-CAS."""
   with api.step.nest('Upload isolates'):
     isolate_dir = api.path.mkdtemp('isolate_directory')
@@ -148,7 +149,7 @@ def UploadFilesToCAS(api, files):
   return api.cas.archive('archive files', isolate_dir, isolate_dir)
 
 
-def ParseSwarmingResults(api, builder_name, results):
+def ParseSwarmingResults(api: DEPS, builder_name, results):
   """Called after swarming.collect() to produce proper step results."""
   success = True
   message = 'Starting execution on {}'.format(builder_name)
@@ -180,8 +181,8 @@ def ParseSwarmingResults(api, builder_name, results):
     raise api.step.StepFailure(fail_text)
 
 
-def TriggerHardwareTests(api, got_revision, source_dir, compiled_sources_path,
-                         dimensions):
+def TriggerHardwareTests(api: DEPS, got_revision, source_dir,
+                         compiled_sources_path, dimensions):
   """Triggers tests on ARM hardware bots with precompiled sources."""
   # Isolate required files
   isolated_files = [

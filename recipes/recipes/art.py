@@ -104,7 +104,7 @@ def RunSteps(api: DEPS, props):
           manifest_branch=manifest_branch or 'master-art')
 
 
-def checkout(api, branch, repo_root):
+def checkout(api: DEPS, branch, repo_root):
   if 'art.superproject' in api.buildbucket.build.input.experiments:
     if api.path.exists(api.context.cwd.joinpath(".repo")):
       api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
@@ -115,7 +115,7 @@ def checkout(api, branch, repo_root):
     checkout_repo(api, branch, repo_root or "https://android.googlesource.com")
 
 
-def checkout_git(api, branch, repo_root):
+def checkout_git(api: DEPS, branch, repo_root):
   with api.step.nest('checkout'):
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.git("fetch")
@@ -163,7 +163,7 @@ def checkout_git(api, branch, repo_root):
           api.git("cherry-pick", "FETCH_HEAD")
 
 
-def checkout_repo(api, manifest_branch, repo_root):
+def checkout_repo(api: DEPS, manifest_branch, repo_root):
   # (https://crbug.com/1153114): do not attempt to update repo when
   # 'repo sync' runs.
   env = {'DEPOT_TOOLS_UPDATE': '0'}
@@ -182,21 +182,22 @@ def checkout_repo(api, manifest_branch, repo_root):
     api.repo.manifest()
 
 
-def clobber(api):
+def clobber(api: DEPS):
   # buildbot sets 'clobber' to the empty string which is falsey, check with 'in'
   if 'clobber' in api.properties:
     api.file.rmtree('clobber', api.context.cwd.joinpath('out'))
 
 # Calls api.cipd.ensure_tool, then modifies the path returned by the call to
 # join the subdir.
-def ensure_tool(api, package, version, subdir=""):
+def ensure_tool(api: DEPS, package, version, subdir=""):
   dirname = api.path.split(api.cipd.ensure_tool(
     package=package,
     version=version,
   ))[0]
   return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
 
-def setup_host_x86(api,
+
+def setup_host_x86(api: DEPS,
                    debug,
                    bitness,
                    build_only,
@@ -341,7 +342,8 @@ def setup_host_x86(api,
         defer(api.step, 'test libjdwp interpreter',
               libjdwp_common_command + ['--no-jit'])
 
-def setup_target(api,
+
+def setup_target(api: DEPS,
                  device,
                  bitness,
                  product,
@@ -514,7 +516,7 @@ def setup_target(api,
     with api.context(env=env):
       defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
 
-    def test_logging(api, test_name):
+    def test_logging(api: DEPS, test_name):
       # adb doesn't know about the VM and will hang.
       if on_virtual_machine:
         return

@@ -305,7 +305,7 @@ def version_ships_nacl(version):
          ] < [int(x) for x in FIRST_RELEASE_WITHOUT_NACL.split('.')]
 
 
-def gsutil_upload(api, source, bucket, dest, args):
+def gsutil_upload(api: DEPS, source, bucket, dest, args):
   api.gsutil.upload(source, bucket, dest, args, name=str('upload ' + dest))
 
 
@@ -334,7 +334,7 @@ def published_all_tarballs(version, ls_result):
   return all((check(version, ls_result) for check in checks))
 
 
-def export_tarball(api, args, tarball_name, step_name_suffix):
+def export_tarball(api: DEPS, args, tarball_name, step_name_suffix):
   try:
     temp_dir = api.path.mkdtemp('export_tarball')
     with api.context(cwd=temp_dir):
@@ -370,7 +370,7 @@ def export_tarball(api, args, tarball_name, step_name_suffix):
 
 
 @contextlib.contextmanager
-def copytree_checkout(api, source_dir):
+def copytree_checkout(api: DEPS, source_dir):
   try:
     temp_dir = api.path.mkdtemp('tmp')
     dest_dir = api.path.join(temp_dir, 'src')
@@ -380,7 +380,7 @@ def copytree_checkout(api, source_dir):
     api.file.rmtree('rmtree temp dir', temp_dir)
 
 
-def export_lite_tarball(api, source_dir, version):
+def export_lite_tarball(api: DEPS, source_dir, version):
   # Make destructive file operations on the copy of the checkout.
   with copytree_checkout(api, source_dir) as dest_dir:
     prune_directories = [
@@ -469,7 +469,7 @@ def export_lite_tarball(api, source_dir, version):
         'lite')
 
 
-def export_nacl_tarball(api, source_dir, version):
+def export_nacl_tarball(api: DEPS, source_dir, version):
   # Make destructive file operations on the copy of the checkout.
   with copytree_checkout(api, source_dir) as dest_dir:
     # Based on instructions from https://sites.google.com/a/chromium.org/dev/
@@ -498,7 +498,7 @@ def export_nacl_tarball(api, source_dir, version):
         'nacl')
 
 
-def fetch_pgo_profiles(api, source_dir):
+def fetch_pgo_profiles(api: DEPS, source_dir):
   cmd = [
       'python3',
       source_dir.joinpath('tools', 'update_pgo_profiles.py'),
@@ -509,7 +509,7 @@ def fetch_pgo_profiles(api, source_dir):
   api.step('fetch Linux PGO profiles', cmd)
 
 
-def trigger_publish_tarball_jobs(api):
+def trigger_publish_tarball_jobs(api: DEPS):
   ls_result = api.gsutil(
       ['ls', 'gs://chromium-browser-official/'],
       stdout=api.raw_io.output_text(add_output_log=True)).stdout
@@ -551,7 +551,7 @@ def trigger_publish_tarball_jobs(api):
           step_name='trigger publish_tarball for %s' % version)
 
 
-def publish_tarball(api):
+def publish_tarball(api: DEPS):
   version = api.properties['version']
 
   # Although trigger_publish_tarball_jobs() filters versions in

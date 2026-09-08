@@ -76,7 +76,7 @@ MIN_FILE_THRESHOLD = 100
 MIN_COMMITS_THRESHOLD = 500
 
 
-def get_destination_bucket(api):
+def get_destination_bucket(api: DEPS):
   build = api.buildbucket.build
   if build.builder.bucket == 'ci' and build.builder.builder == 'linux-history-rag':
     return GCS_BUCKET_PROD
@@ -128,7 +128,7 @@ def RunSteps(api: DEPS):
     raise api.step.StepFailure("One or more submodules failed to process.")
 
 
-def checkout_source_code(api):
+def checkout_source_code(api: DEPS):
   with api.step.nest('Checkout Chrome Source Code'):
     _, builder_config = api.chromium_tests_builder_config.lookup_builder()
     api.chromium_tests.configure_build(builder_config)
@@ -144,7 +144,7 @@ def checkout_source_code(api):
     return source_dir, revision
 
 
-def find_submodules(api, source_dir):
+def find_submodules(api: DEPS, source_dir):
   """
   Finds all configured submodules, their paths, and their current HEAD commits.
 
@@ -219,7 +219,8 @@ def find_submodules(api, source_dir):
     return submodules
 
 
-def process_submodule(api, submodule_name, submodule_dir, submodule_revision):
+def process_submodule(api: DEPS, submodule_name, submodule_dir,
+                      submodule_revision):
   """Runs the indexing pipeline for a single source directory (repo or submodule)."""
   file_blame_jsons_dir, file_blame_jsons_pkg_name, file_blame_jsons_pkg_id = (
       generate_file_blame_jsons(api, submodule_name, submodule_dir,
@@ -237,7 +238,7 @@ def process_submodule(api, submodule_name, submodule_dir, submodule_revision):
   api.file.rmcontents('clean up work', api.path.cleanup_dir)
 
 
-def generate_file_blame_jsons(api, submodule_name, submodule_dir,
+def generate_file_blame_jsons(api: DEPS, submodule_name, submodule_dir,
                               current_revision):
   """Generates a set of blame jsons for the source code.
 
@@ -288,7 +289,7 @@ def generate_file_blame_jsons(api, submodule_name, submodule_dir,
     return merged_dir, pkg_name, instance_id
 
 
-def generate_commit_hash_jsons(api, submodule_name, submodule_dir,
+def generate_commit_hash_jsons(api: DEPS, submodule_name, submodule_dir,
                                file_blame_jsons_dir):
   """Generate commit_hash jsons from file_blame jsons.
 
@@ -317,7 +318,7 @@ def generate_commit_hash_jsons(api, submodule_name, submodule_dir,
     return output_dir
 
 
-def _collect_file_blame_jsons(api, submodule_name, submodule_dir,
+def _collect_file_blame_jsons(api: DEPS, submodule_name, submodule_dir,
                               blame_json_dir):
   """Collects all blame hash jsons and converts to a monolith inverse map.
 
@@ -373,7 +374,7 @@ def _collect_file_blame_jsons(api, submodule_name, submodule_dir,
   return blame_hashes_file
 
 
-def generate_topics(api, submodule_name, submodule_revision,
+def generate_topics(api: DEPS, submodule_name, submodule_revision,
                     commit_hash_jsons_dir):
   with api.step.nest('Generate and Upload Topics'):
     with api.context(
@@ -436,14 +437,14 @@ def generate_topics(api, submodule_name, submodule_revision,
           'GCS Topics File'] = f"https://storage.cloud.google.com/{gcs_bucket}/{topic_dest_path}"
 
 
-def _get_topics_dest_path(api, submodule_name, current_revision):
+def _get_topics_dest_path(api: DEPS, submodule_name, current_revision):
   """Generates the GCS destination path for the embeddings file."""
   now = api.time.utcnow()
   date_path = now.strftime('%Y/%m/%d')
   return f"embeddings/{date_path}/{current_revision}/{submodule_name}/topics.zip"
 
 
-def _get_baseline_package_info(api, submodule_name):
+def _get_baseline_package_info(api: DEPS, submodule_name):
   """
   Fetches a pointer package, reads a manifest file, and returns the content.
 
@@ -503,7 +504,8 @@ def _get_baseline_package_info(api, submodule_name):
   return manifest_data
 
 
-def _download_baseline_file_blame_jsons(api, submodule_name, baseline_package):
+def _download_baseline_file_blame_jsons(api: DEPS, submodule_name,
+                                        baseline_package):
   dest_path = api.path.cleanup_dir / f'{submodule_name}_baseline_blame_jsons'
   with api.step.nest('Fetch baseline blame jsons'):
     pkgs = api.cipd.EnsureFile()
@@ -513,7 +515,7 @@ def _download_baseline_file_blame_jsons(api, submodule_name, baseline_package):
   return dest_path
 
 
-def _generate_fresh_file_blame_jsons(api, submodule_name, submodule_dir,
+def _generate_fresh_file_blame_jsons(api: DEPS, submodule_name, submodule_dir,
                                      baseline_pkg):
   output_dir = api.path.cleanup_dir / f'{submodule_name}_fresh_blame_jsons'
   cmd = ['vpython3', api.resource('git_data_processor.py'), 'blame']
@@ -525,7 +527,7 @@ def _generate_fresh_file_blame_jsons(api, submodule_name, submodule_dir,
   return output_dir
 
 
-def _merge_blame_jsons(api, baseline_dir, fresh_dir):
+def _merge_blame_jsons(api: DEPS, baseline_dir, fresh_dir):
   """Merge the fresh jsons into the baseline directory. """
   cmd = [
       'vpython3',
@@ -538,7 +540,7 @@ def _merge_blame_jsons(api, baseline_dir, fresh_dir):
   return baseline_dir
 
 
-def _extract_cipd_instance_id(api, step_result):
+def _extract_cipd_instance_id(api: DEPS, step_result):
   """Extracts the instance ID from cipd create stdout."""
   if step_result.stdout:
     # A correct output looks like
@@ -550,7 +552,7 @@ def _extract_cipd_instance_id(api, step_result):
   return None
 
 
-def _update_cipd_package(api,
+def _update_cipd_package(api: DEPS,
                          package_name,
                          package_content_dir,
                          package_description='',
@@ -589,7 +591,7 @@ def _update_cipd_package(api,
       f"CIPD instance ID not found in output for {package_name}")
 
 
-def update_pointers_to_latest_CIPDs(api, submodule_name, current_revision,
+def update_pointers_to_latest_CIPDs(api: DEPS, submodule_name, current_revision,
                                     file_blame_jsons_package,
                                     file_blame_jsons_version):
   with api.step.nest('Update Pointers to all JSON CIPD packages'):
@@ -614,7 +616,7 @@ def update_pointers_to_latest_CIPDs(api, submodule_name, current_revision,
     )
 
 # Default builder config for tests
-def builder_config_test_data(api):
+def builder_config_test_data(api: TEST_DEPS):
   return api.chromium_tests_builder_config.ci_build(
       builder_group='fake-group',
       builder='fake-builder',
@@ -632,7 +634,7 @@ def builder_config_test_data(api):
 
 
 # Test config corresponding to prod builder
-def prod_builder_config_test_data(api):
+def prod_builder_config_test_data(api: TEST_DEPS):
   return api.chromium_tests_builder_config.ci_build(
       builder_group='fake-group',
       builder='linux-history-rag',

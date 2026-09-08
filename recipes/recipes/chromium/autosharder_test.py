@@ -137,7 +137,7 @@ def RunSteps(api: RecipeApi):
     return result_pb2.RawResult(status=common_pb.SUCCESS)
 
 
-def _get_new_shardings(api: RecipeApi) -> tuple[dict[str, list[str]], str]:
+def _get_new_shardings(api: DEPS) -> tuple[dict[str, list[str]], str]:
   update_result = api.chromium_checkout.ensure_checkout()
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
       'infra', 'config', 'autoshard_exceptions.json')
@@ -196,7 +196,7 @@ def _get_new_shardings(api: RecipeApi) -> tuple[dict[str, list[str]], str]:
 
 
 def _test_builder(
-    api: RecipeApi,
+    api: DEPS,
     builder_name: str,
     suites: Iterable[str],
     revision: str,
@@ -266,7 +266,7 @@ def _parse_ts(ts: str) -> datetime.datetime:
 
 
 def _get_shards(
-    api: RecipeApi,
+    api: DEPS,
     step_name: str,
     suite: str,
     build_number: int,
@@ -288,7 +288,7 @@ def _get_shards(
 
 
 def _compare_shards(
-    api: RecipeApi,
+    api: DEPS,
     builder_name: str,
     suite: str,
     pre_shard_tasks: list[dict],

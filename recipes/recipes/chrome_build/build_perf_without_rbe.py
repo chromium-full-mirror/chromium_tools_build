@@ -82,7 +82,7 @@ _GS_BUCKET = 'chrome-goma-log'
 
 
 def _compile(
-    api,
+    api: DEPS,
     source_dir: Path,
     build_dir: Path,
     target,
@@ -114,7 +114,7 @@ def _compile(
 
 
 def _analyze_includes(
-    api,
+    api: DEPS,
     target: str,
     source_dir: Path,
     staging_dir: Path,

@@ -49,7 +49,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 PROPERTIES = InputProperties
 
 
-def read_processor_spec(api, file_path):
+def read_processor_spec(api: DEPS, file_path):
   """Reads the contents of a json file from given file_path."""
   content = api.file.read_json(
       'read processor spec file (%s)' % api.path.basename(file_path),

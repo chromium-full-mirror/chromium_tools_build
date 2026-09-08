@@ -122,7 +122,7 @@ TRYBOT_SPEC = freeze({
 })
 
 
-def _get_revision(api):  # pragma: no cover
+def _get_revision(api: DEPS):  # pragma: no cover
   """Returns the git commit hash of the project.
   """
   commit = api.chromium.build_properties.get('got_revision')
@@ -130,7 +130,7 @@ def _get_revision(api):  # pragma: no cover
     return commit
 
 
-def _get_commit_position(api):
+def _get_commit_position(api: DEPS):
   """Returns the commit position of the project.
   """
   got_revision_cp = api.chromium.build_properties.get('got_revision_cp')
@@ -143,7 +143,7 @@ def _get_commit_position(api):
   return rev
 
 
-def generate_compilation_database(api, source_dir, out_path,
+def generate_compilation_database(api: DEPS, source_dir, out_path,
                                   compile_commands_json_file, targets):
   try:
     step_result = api.step('generate compilation database', [
@@ -156,7 +156,7 @@ def generate_compilation_database(api, source_dir, out_path,
   return step_result
 
 
-def generate_gn_metadata(api,
+def generate_gn_metadata(api: DEPS,
                          source_dir,
                          out_path,
                          export_compile_cmd=False,
@@ -177,7 +177,7 @@ def generate_gn_metadata(api,
     api.step('run gn gen', cmd, stdout=api.raw_io.output_text())
 
 
-def generate_gn_target_list(api,
+def generate_gn_target_list(api: DEPS,
                             source_dir,
                             out_path,
                             gn_targets_json_file,
@@ -195,7 +195,7 @@ def generate_gn_target_list(api,
   api.file.write_raw('write gn target list', gn_targets_json_file, output)
 
 
-def extract_minimal_rust_kzip(api, rust_index_pack_path):
+def extract_minimal_rust_kzip(api: DEPS, rust_index_pack_path):
   """Extracts a minimal .kzip from the full Rust .kzip.
 
   The full Rust .kzip is known to crash the Kythe Rust ingester, so in order
@@ -509,7 +509,7 @@ def RunSteps(api: DEPS, properties):
           copy_config, _get_revision(api)))
 
 
-def _RunStepWithRetry(api, step_function, max_tries=3):
+def _RunStepWithRetry(api: DEPS, step_function, max_tries=3):
   failures = 0
   while failures < max_tries:
     try:

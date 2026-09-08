@@ -192,7 +192,7 @@ def _createSummaryMarkdown(step_json):
   return '\n\n'.join(error_messages)
 
 
-def _RunStepsInternal(api):
+def _RunStepsInternal(api: DEPS):
   repo_name = api.properties.get('repo_name')
 
   # TODO(nodir): remove repo_name and repository_url properties.

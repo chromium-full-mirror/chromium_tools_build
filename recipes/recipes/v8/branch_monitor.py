@@ -146,7 +146,7 @@ def RunSteps(api: DEPS, max_gap_seconds, branch_cut_max_gap_seconds):
   )
 
 
-def check_branch(api, branch, max_gap_seconds, now):
+def check_branch(api: DEPS, branch, max_gap_seconds, now):
   chromium_branch = branch['chromium_branch']
   v8_branch = branch['v8_branch']
 
@@ -170,7 +170,8 @@ def check_branch(api, branch, max_gap_seconds, now):
                         overdue_commits)
 
 
-def adjust_for_branch_cut_day(api, branch_results, branch_cut_max_gap_seconds):
+def adjust_for_branch_cut_day(api: DEPS, branch_results,
+                              branch_cut_max_gap_seconds):
   latest_branch = max(branch_results, key=lambda br: int(br.chromium_branch))
   if not latest_branch.overdue_commits:
     return
@@ -185,7 +186,7 @@ def adjust_for_branch_cut_day(api, branch_results, branch_cut_max_gap_seconds):
       latest_branch.overdue_commits = []
 
 
-def read_v8_version(api, v8_revision):
+def read_v8_version(api: DEPS, v8_revision):
   version_blob = api.gitiles.download_file(
       'https://chromium.googlesource.com/v8/v8',
       'include/v8-version.h',
@@ -194,7 +195,7 @@ def read_v8_version(api, v8_revision):
   return api.v8.version_from_file(version_blob)
 
 
-def download_chromium_deps(api, chromium_branch):
+def download_chromium_deps(api: DEPS, chromium_branch):
   chromium_deps = api.gitiles.download_file(
       'https://chromium.googlesource.com/chromium/src',
       'DEPS',
@@ -206,7 +207,7 @@ def download_chromium_deps(api, chromium_branch):
   return deps_file
 
 
-def read_last_rolled_revision(api, deps_file):
+def read_last_rolled_revision(api: DEPS, deps_file):
   return api.gclient(
       'get v8_revision',
       ['getdep', '--var=v8_revision', f'--deps-file={deps_file}'],
@@ -214,7 +215,7 @@ def read_last_rolled_revision(api, deps_file):
   ).stdout.strip()
 
 
-def get_commits_not_rolled(api, last_rolled_revision, v8_branch):
+def get_commits_not_rolled(api: DEPS, last_rolled_revision, v8_branch):
   commits, _ = api.gitiles.log(
       url='https://chromium.googlesource.com/v8/v8',
       ref=f'{last_rolled_revision}..refs/branch-heads/{v8_branch}',

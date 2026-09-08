@@ -127,7 +127,7 @@ def RunSteps(api: DEPS):
       status=common_pb.SUCCESS, summary_markdown=summary[:4000])
 
 
-def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
+def _analyze_builder_suite(api: DEPS, builder, test_suite, rejections_dir,
                            durations_dir, exec_path):
   # Request 1 CPU core (1000 millicores) and 2 GiB RAM (2048 MiB) per step.
   # On a 60-core c2-standard-60 VM (60,000 millicores, ~240 GiB RAM), the recipe
@@ -163,7 +163,7 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
     )
 
 
-def _fetch_model_data(api, exec_path, duration_date_range):
+def _fetch_model_data(api: DEPS, exec_path, duration_date_range):
   """Fetches the data for model creation.
 
   Returns:

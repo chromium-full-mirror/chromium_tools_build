@@ -108,7 +108,7 @@ def GenTests(api: TEST_DEPS):
          api.expect_status('INFRA_FAILURE') + api.post_process(DropExpectation))
 
 
-def _job_exists(api, builder_name):
+def _job_exists(api: TEST_DEPS, builder_name):
   return api.step_data(
       'trigger.read jobs json',
       api.file.read_json({

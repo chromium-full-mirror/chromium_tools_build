@@ -146,7 +146,7 @@ class Sharding:
 
   def calculate_optimal_shard_count(
       self,
-      api: RecipeApi,
+      api: DEPS,
       target_runtime: float,
   ):
 
@@ -191,7 +191,7 @@ class Sharding:
                 f'Simulated runtime {simulated_max_shard_duration} is greater '
                 f'than the desired runtime {target_runtime}')
 
-  def _emit_cost_step(self, api: RecipeApi):
+  def _emit_cost_step(self, api: DEPS):
     # Display estimated_bot_hour_cost and avg_num_builds_per_peak_hour
     estimated_bot_hour_cost = round(
         (self.optimal_shard_count - self.shard_count) * (self.overhead / 60.0) *
@@ -200,7 +200,7 @@ class Sharding:
         'estimated_cost',
         step_text=f'Estimated change in bot hours: {estimated_bot_hour_cost}')
 
-  def check_valid_sharding(self, api: RecipeApi, old_sharding: Self) -> bool:
+  def check_valid_sharding(self, api: DEPS, old_sharding: Self) -> bool:
     if old_sharding and self.shard_count != int(old_sharding.shard_count):
       # This row is for an old shard count that is no longer being used.
       api.step.empty(
@@ -291,7 +291,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
 
 def _calculate_optimal_shards(
-    api: RecipeApi,
+    api: DEPS,
     target_runtime: float,
     percentile: int,
     exclude_suites: list[str],
@@ -347,7 +347,7 @@ def _calculate_optimal_shards(
   )
 
 
-def _load_shardings_file(api: RecipeApi):
+def _load_shardings_file(api: DEPS):
   exceptions_file = api.chromium_checkout.source_dir.joinpath(
       'infra', 'config', 'autoshard_exceptions.json')
   exceptions_json = api.file.read_json(
@@ -367,7 +367,7 @@ def _load_shardings_file(api: RecipeApi):
   ], exceptions_file
 
 
-def _save_shardings_file(api: RecipeApi, shardings: list[Sharding],
+def _save_shardings_file(api: DEPS, shardings: list[Sharding],
                          exceptions_file: config_types.Path):
   # Update the file contents
   shard_exceptions = {}
@@ -391,7 +391,7 @@ def _save_shardings_file(api: RecipeApi, shardings: list[Sharding],
 
 
 def _calculate_optimal_shard_counts(
-    api: RecipeApi,
+    api: DEPS,
     target_runtime: float,
     shardings: list[Sharding],
     old_shardings: list[Sharding],
@@ -411,7 +411,7 @@ def _calculate_optimal_shard_counts(
   return list(builder_suite_shardings.values())
 
 
-def _run_query(api: RecipeApi, query: str) -> list[dict[str, Any]]:
+def _run_query(api: DEPS, query: str) -> list[dict[str, Any]]:
 
   result = api.step(
       'query', [
@@ -430,7 +430,7 @@ def _run_query(api: RecipeApi, query: str) -> list[dict[str, Any]]:
 
 
 def _query_avg_builds_per_hour(
-    api: RecipeApi,
+    api: DEPS,
     shardings: list[Sharding],
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
@@ -453,7 +453,7 @@ def _query_avg_builds_per_hour(
 
 
 def _query_overheads(
-    api: RecipeApi,
+    api: DEPS,
     shardings: list[Sharding],
     lookback_start_date: datetime.datetime,
     lookback_end_date: datetime.datetime,
@@ -484,7 +484,7 @@ def _query_overheads(
 
 
 def _query_durations(
-    api: RecipeApi,
+    api: DEPS,
     target_runtime: float,
     percentile: int,
     lookback_start_date: datetime.datetime,
@@ -536,7 +536,7 @@ def _query_durations(
     ]
 
 
-def _query_cq_builders(api: RecipeApi) -> list[str]:
+def _query_cq_builders(api: DEPS) -> list[str]:
   with api.step.nest('query cq builders'):
     query_tmpl = api.file.read_text('read_query',
                                     api.resource('query_cq_builders.sql.tmpl'))
@@ -548,7 +548,7 @@ def _query_cq_builders(api: RecipeApi) -> list[str]:
     return [row['builder'] for row in rows]
 
 
-def _check_run_conditions(api: RecipeApi) -> result_pb2.RawResult:
+def _check_run_conditions(api: DEPS) -> result_pb2.RawResult:
   # If it's a led job, we almost certainly want to run
   if api.led.led_build:
     return None
@@ -620,7 +620,7 @@ def _check_run_conditions(api: RecipeApi) -> result_pb2.RawResult:
   return None
 
 
-def _setup_git(api: RecipeApi) -> None:
+def _setup_git(api: DEPS) -> None:
   api.git('config', 'user.name', 'autosharder')
   api.git('branch', '-D', 'autoshard', ok_ret='any')
   api.git('restore', '--staged', '.')

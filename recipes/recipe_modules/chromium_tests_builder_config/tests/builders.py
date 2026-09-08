@@ -55,7 +55,8 @@ VALIDATORS = {
 }
 
 
-def validate_tester_config(api, builder_group, buildername, builder_config):
+def validate_tester_config(api: DEPS, builder_group, buildername,
+                           builder_config):
   # Some builders are 'dummy' builders. They don't actually run, but are created
   # for configuration reasons. Don't validate these builders.
   if 'dummy' in buildername:

@@ -154,7 +154,7 @@ CHROMIUM_DEPS = "deps = " + json.dumps({
 
 class DummyCLManager:
 
-  def __init__(self, api):
+  def __init__(self, api: DEPS):
     self.bugs = 'dummy:123'
     self.api = api
 

@@ -32,7 +32,8 @@ class TEST_DEPS(RecipeTestApi):
 _DEFAULT_ARGS = ('target_cpu = "x86"\n'
                  'target_sysroot = "/sysroot/"\n')
 
-def _test_args(api, args=None):
+
+def _test_args(api: TEST_DEPS, args=None):
   args = args or _DEFAULT_ARGS
   return (api.properties(expected_args=args)
           + api.step_data('read GN args', api.raw_io.output_text(args)))

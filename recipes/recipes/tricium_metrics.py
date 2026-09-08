@@ -65,7 +65,7 @@ class TEST_DEPS(RecipeTestApi):
   tryserver: tryserver.TEST_API
 
 
-def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
+def _RunMetricsAnalyzer(api: DEPS, src_dir, prev_dir, metrics_paths, patch_path,
                         commit_message):
   packages_dir = api.path.cleanup_dir / 'packages'
   test = bool(api.tryserver.get_footer('Tricium-Test'))

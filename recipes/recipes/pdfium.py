@@ -225,7 +225,7 @@ class _TestRequest:
   command: str
 
 
-def _checkout_step(api, target_os, rust, skia, v8):
+def _checkout_step(api: DEPS, target_os, rust, skia, v8):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
@@ -283,8 +283,8 @@ def _generate_out_path(memory_tool, partition_alloc, skia, rust, xfa, v8, rel,
 
 # _gn_gen_builds() calls 'gn gen' and returns a dictionary of
 # the used build configuration to be used by Gold.
-def _gn_gen_builds(api, source_root, memory_tool, partition_alloc, skia, rust,
-                   xfa, v8, target_cpu, rel, brotli, component, target_os,
+def _gn_gen_builds(api: DEPS, source_root, memory_tool, partition_alloc, skia,
+                   rust, xfa, v8, target_cpu, rel, brotli, component, target_os,
                    use_cxx23, out_dir):
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
@@ -350,7 +350,7 @@ def _gn_gen_builds(api, source_root, memory_tool, partition_alloc, skia, rust,
   return _gold_build_config(args)
 
 
-def _build_steps(api, source_root, out_dir):
+def _build_steps(api: DEPS, source_root, out_dir):
   debug_path = source_root.joinpath('out', out_dir)
   ninja_cmd = ['ninja', '-C', debug_path]
   ninja_cmd.append('pdfium_all')
@@ -401,7 +401,7 @@ def _request_all_corpus_tests(test_runner, skia, v8, xfa):
       test_runner.request_corpus_tests(_XfaDisabledOption)
 
 
-def _run_tests(api, source_root, memory_tool, v8, xfa, skia, out_dir,
+def _run_tests(api: DEPS, source_root, memory_tool, v8, xfa, skia, out_dir,
                build_config, revision, run_skia_gold, renderers, swarming):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
@@ -444,7 +444,7 @@ def _run_tests(api, source_root, memory_tool, v8, xfa, skia, out_dir,
 
 class _ResultDb:
 
-  def __init__(self, api, source_root, *, base_variant):
+  def __init__(self, api: DEPS, source_root, *, base_variant):
     self.api = api
     self.base_variant = base_variant
 
@@ -513,7 +513,7 @@ class _Swarming:
     # The triggered task request.
     task: TaskRequestMetadata = None
 
-  def __init__(self, api, source_dir, out_dir, properties):
+  def __init__(self, api: DEPS, source_dir, out_dir, properties):
     self.api = api
     self.source_dir = source_dir
     self.out_dir = out_dir
@@ -686,7 +686,7 @@ def _validate_renderers(context_name, renderers):
 
 class _TestRunner:
 
-  def __init__(self, api, source_dir, memory_tool, resultdb, out_dir,
+  def __init__(self, api: DEPS, source_dir, memory_tool, resultdb, out_dir,
                build_config, revision, run_skia_gold, embedder_test_renderers,
                python_test_renderers, swarming):
     self.api = api
@@ -907,7 +907,7 @@ def _get_test_suite(base_name, suffix=None):
   return f'{base_name}_{suffix}' if suffix else base_name
 
 
-def _get_modifiable_script_args(api, build_config, option, renderer):
+def _get_modifiable_script_args(api: DEPS, build_config, option, renderer):
   """Get the list of additional arguments for Python-based tests that can be
   further modified based on test options.
   Returns a list that can be concatenated with the other script arguments.
@@ -988,7 +988,7 @@ def _gold_build_config(args):
   return build_config
 
 
-def _gen_try_build(api, builder):
+def _gen_try_build(api: TEST_DEPS, builder):
   return api.buildbucket.try_build(
       project='pdfium',
       builder=builder,
@@ -997,7 +997,7 @@ def _gen_try_build(api, builder):
   )
 
 
-def _gen_ci_build(api, builder):
+def _gen_ci_build(api: TEST_DEPS, builder):
   return api.buildbucket.ci_build(
       project='pdfium',
       builder=builder,
@@ -1006,13 +1006,13 @@ def _gen_ci_build(api, builder):
   )
 
 
-def _gen_local_build(api, builder):
+def _gen_local_build(api: TEST_DEPS, builder):
   build_message = api.buildbucket.try_build_message(builder=builder)
   build_message.infra.ClearField('resultdb')
   return api.buildbucket.build(build_message)
 
 
-def _gen_properties(api, **kwargs):
+def _gen_properties(api: TEST_DEPS, **kwargs):
   updated_kwargs = {
       'bot_id': 'test_bot',
   }

@@ -117,7 +117,7 @@ def RunSteps(api: DEPS):
       git_cl_issue_link(api)
 
 
-def git_cl_issue_link(api):
+def git_cl_issue_link(api: DEPS):
   """Runs a step which adds a link to the current CL if there is one."""
   issue_step = api.git_cl(
       'issue', ['--json', api.json.output()], name='git cl issue')

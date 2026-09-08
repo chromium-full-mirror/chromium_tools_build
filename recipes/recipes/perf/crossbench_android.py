@@ -75,7 +75,7 @@ _DEFAULT_RUNNER = 'crossbench/tests/end2end/android/runner.py'
 
 class AndroidEmulator:
 
-  def __init__(self, api, android_sdk, avd_suffix=''):
+  def __init__(self, api: DEPS, android_sdk, avd_suffix=''):
     self.api = api
     self.android_sdk = android_sdk
     self.avd_suffix = avd_suffix

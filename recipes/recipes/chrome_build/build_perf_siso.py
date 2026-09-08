@@ -84,18 +84,18 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
 
 
-def _raise_raw_result_on_failure(api, raw_result):
+def _raise_raw_result_on_failure(api: DEPS, raw_result):
   if raw_result.status != common_pb.SUCCESS:
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
-def _get_builder_id(api):
+def _get_builder_id(api: DEPS):
   buildername = api.buildbucket.builder_name
   return chromium_types.BuilderId.create_for_group(
       api.builder_group.for_current, buildername)
 
 
-def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
+def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target: str):
   # Do not run clean build for CI benchmarking since it's too slow for
   # small -remote_jobs value.
   if api.siso.project.startswith("rbe-chromium-trusted"):
@@ -108,7 +108,7 @@ def _clean_builds(api, source_dir: Path, build_dir: Path, target: str):
 
 
 def _incremental_build_with_one_hour_changes(
-    api,
+    api: DEPS,
     source_dir: Path,
     default_build_dir: Path,
     target,
@@ -168,7 +168,7 @@ def _incremental_build_with_one_hour_changes(
 
 
 
-def _run_clean_builds(api,
+def _run_clean_builds(api: DEPS,
                       source_dir: Path,
                       build_dir: Path,
                       target,

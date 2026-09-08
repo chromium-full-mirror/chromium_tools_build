@@ -77,13 +77,13 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
 
 
-def _raise_raw_result_on_failure(api, raw_result):
+def _raise_raw_result_on_failure(api: DEPS, raw_result):
   if raw_result.status != common_pb.SUCCESS:
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
 def _incremental_build_with_one_day_changes(
-    api,
+    api: DEPS,
     source_dir: Path,
     default_build_dir: Path,
     target,
@@ -195,7 +195,7 @@ def _incremental_build_with_one_day_changes(
 
 
 def _incremental_builds_with_patch(
-    api,
+    api: DEPS,
     source_dir: Path,
     default_build_dir: Path,
     target,
@@ -310,7 +310,7 @@ def _incremental_builds_with_patch(
 
 
 
-def _clean_builds(api, source_dir: Path, build_dir: Path, target):
+def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
     # Ninja+Reclient builds.

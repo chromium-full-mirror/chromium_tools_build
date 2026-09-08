@@ -155,7 +155,7 @@ def RunSteps(api: DEPS):
   )
 
 
-def archive_training_data(api):
+def archive_training_data(api: DEPS):
   zip_out = api.path.cleanup_dir.joinpath('rts-chromium-model-data',
                                           'rts-chromium-model-data.zip')
   api.zip.directory('zip model dir',
@@ -169,7 +169,8 @@ def archive_training_data(api):
       name='archive model data')
 
 
-def create_cipd_package(api, platform, exec_pkg_dir, model_dir, update_ref):
+def create_cipd_package(api: DEPS, platform, exec_pkg_dir, model_dir,
+                        update_ref):
   with api.step.nest('Upload CIPD package - %s' % platform):
     # Copy the model files, such that create_cipd_package can be called for
     # different platforms concurrently.
@@ -204,7 +205,7 @@ def create_cipd_package(api, platform, exec_pkg_dir, model_dir, update_ref):
       api.cipd.set_ref(pin.package, version=pin.instance_id, refs=['latest'])
 
 
-def install_rts_executables(api):
+def install_rts_executables(api: DEPS):
   """Installs rts-chromium executables for all platforms.
 
   Returns:
@@ -229,7 +230,7 @@ def install_rts_executables(api):
   return ret
 
 
-def pick_executable_version(api) -> str:
+def pick_executable_version(api: DEPS) -> str:
   """Returns the CIPD version of rts-executable CIPD packages to use.
   Waits until the latest Windows revision is available on all platforms.
   """
@@ -287,14 +288,14 @@ def pick_executable_version(api) -> str:
       'Timed out waiting for version %s to appear on all platforms' % ver)
 
 
-def checkout_chromium(api):
+def checkout_chromium(api: DEPS):
   """Checks out chromium/src and returns its path."""
   api.gclient.set_config('chromium_empty')
   api.chromium_checkout.ensure_checkout()
   return api.chromium_checkout.source_dir
 
 
-def _fetch_model_data(api, exec_path, rejection_date_range,
+def _fetch_model_data(api: DEPS, exec_path, rejection_date_range,
                       duration_date_range):
   """Fetches the data for model creation.
 
@@ -341,7 +342,7 @@ def _date_range_flags(date_range):
   ]
 
 
-def compose_build_summary(api, model_dir):
+def compose_build_summary(api: DEPS, model_dir):
   cfg = api.file.read_json(
       'read thresholds',
       model_dir.joinpath('git-file-graph', 'config.json'),
@@ -389,7 +390,7 @@ def compose_build_summary(api, model_dir):
   return '<br>'.join(lines)
 
 
-def run_integration_tests(api, exec_path, model_dir, checkout_dir):
+def run_integration_tests(api: DEPS, exec_path, model_dir, checkout_dir):
   return api.step(
       'integration_tests',
       [

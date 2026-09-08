@@ -83,7 +83,7 @@ CELAB_REPO = 'https://chromium.googlesource.com/enterprise/cel'
 CHROMIUM_REPO = 'https://chromium.googlesource.com/chromium/src'
 
 
-def _get_bin_directory(api, bin_root):
+def _get_bin_directory(api: DEPS, bin_root):
   bin_dir = bin_root
   if api.platform.is_linux:
     bin_dir = bin_dir.joinpath('linux_amd64', 'bin')
@@ -92,12 +92,12 @@ def _get_bin_directory(api, bin_root):
   return bin_dir
 
 
-def _get_ctl_binary_name(api):
+def _get_ctl_binary_name(api: DEPS):
   suffix = '.exe' if api.platform.is_win else ''
   return 'cel_ctl' + suffix
 
 
-def _get_python_packages(api, checkout):
+def _get_python_packages(api: DEPS, checkout):
   """Returns the full path of the python whl package files."""
   out_dir = checkout / 'out'
   return api.file.glob_paths(
@@ -118,7 +118,7 @@ def RunSteps(api: DEPS):
         'Invalid `project`. Accepted values: celab, chromium, chrome.')
 
 
-def _RunStepsCelab(api):
+def _RunStepsCelab(api: DEPS):
   checkout = _CheckoutCelabRepo(api)
 
   # Build CELab binaries from source.
@@ -142,7 +142,7 @@ def _RunStepsCelab(api):
     )
 
 
-def _GetCelabVersionFromVPython(api, path):
+def _GetCelabVersionFromVPython(api: DEPS, path):
   output = api.file.read_text('read vpython file', path)
 
   anything_except_closing = '[^>]*'
@@ -161,7 +161,7 @@ def _GetCelabVersionFromVPython(api, path):
   raise ValueError('Couldn\'t find CELab version in vpython file: %s' % path)
 
 
-def _RunStepsChromium(api):
+def _RunStepsChromium(api: DEPS):
   tests = api.properties.get('tests')
   if not tests:
     raise ValueError('Chromium bots must define `tests`.')
@@ -191,7 +191,7 @@ def _RunStepsChromium(api):
             test_py_args)
 
 
-def _GetCelabFromCipd(api, version):
+def _GetCelabFromCipd(api: DEPS, version):
   packages_root = api.path.start_dir / 'packages'
   ensure_file = api.cipd.EnsureFile().add_package(
       'infra/celab/celab/${platform}', version)
@@ -199,7 +199,7 @@ def _GetCelabFromCipd(api, version):
   return _get_bin_directory(api, packages_root)
 
 
-def _CheckoutCelabRepo(api):
+def _CheckoutCelabRepo(api: DEPS):
   # Checkout the CELab repo
   go_root = api.path.start_dir / 'go'
   src_root = go_root.joinpath('src', 'chromium.googlesource.com', 'enterprise')
@@ -212,7 +212,7 @@ def _CheckoutCelabRepo(api):
   return update_result.source_root.path
 
 
-def _BuildCelabFromSource(api, checkout):
+def _BuildCelabFromSource(api: DEPS, checkout):
   go_root = api.path.start_dir / 'go'
 
   # Install Go & Protoc
@@ -243,7 +243,7 @@ def _BuildCelabFromSource(api, checkout):
   return _get_bin_directory(api, checkout / 'out')
 
 
-def _CheckoutChromiumRepo(api):
+def _CheckoutChromiumRepo(api: DEPS):
   project = api.buildbucket.build.builder.project
 
   with api.chromium.chromium_layout():
@@ -275,7 +275,7 @@ def _CheckoutChromiumRepo(api):
   return source_dir, build_dir
 
 
-def _BuildChromiumFromSource(api, source_dir: Path, build_dir: Path):
+def _BuildChromiumFromSource(api: DEPS, source_dir: Path, build_dir: Path):
   with api.chromium.chromium_layout():
     compile_targets = [
         'chrome/updater', 'chrome/installer/mini_installer', 'chromedriver'
@@ -291,7 +291,7 @@ def _BuildChromiumFromSource(api, source_dir: Path, build_dir: Path):
   return raw_result
 
 
-def _UploadCelabBinariesToStorage(api, checkout, bin_dir):
+def _UploadCelabBinariesToStorage(api: DEPS, checkout, bin_dir):
   cel_ctl = _get_ctl_binary_name(api)
   zip_out = api.path.start_dir / 'cel.zip'
   pkg = api.zip.make_package(checkout / 'out', zip_out)
@@ -314,7 +314,7 @@ def _UploadCelabBinariesToStorage(api, checkout, bin_dir):
     link_name='CELab binaries')
 
 
-def _RunTests(api,
+def _RunTests(api: DEPS,
               test_root,
               test_scripts_root,
               host_file_template,
@@ -402,7 +402,8 @@ def _RunTests(api,
 
 
 # Zips the content of a directory and uploads the zip file to a given bucket.
-def _ZipAndUploadDirectory(api, bucket, directory, zip_filename, display_name):
+def _ZipAndUploadDirectory(api: DEPS, bucket, directory, zip_filename,
+                           display_name):
   zip_out = api.path.start_dir / zip_filename
   pkg = api.zip.make_package(directory, zip_out)
   pkg.add_directory(directory)
@@ -424,7 +425,7 @@ def _ZipAndUploadDirectory(api, bucket, directory, zip_filename, display_name):
 
 # Parses the summary.json file created by run_tests.py, organizes the steps
 # presentation of tests and creates separate zips for each test logs.
-def _ParseTestSummary(api, storage_logs, logs_dir):
+def _ParseTestSummary(api: DEPS, storage_logs, logs_dir):
   summary_path = logs_dir / 'summary.json'
 
   with api.step.nest('test summary') as summary_step:

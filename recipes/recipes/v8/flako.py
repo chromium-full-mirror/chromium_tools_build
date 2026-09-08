@@ -299,7 +299,7 @@ def fallback_buildername(buildername):
 class Depot:
   """Helper class for mapping offsets to git revisions."""
 
-  def __init__(self, api, known_bad_revision):
+  def __init__(self, api: DEPS, known_bad_revision):
     """
     Args:
       known_bad_revision: Start revision of bisection. All other revisions
@@ -445,7 +445,8 @@ class Depot:
 class Builds:
   """Helper class for locating builds in content-addressed storage (CAS)."""
 
-  def __init__(self, api, depot, builder_group, buildername, isolated_name):
+  def __init__(self, api: DEPS, depot, builder_group, buildername,
+               isolated_name):
     """
     Args:
       depot: Helper that maps offsets to revisions.
@@ -575,7 +576,8 @@ class Builds:
 
 class Runner:
   """Helper class for executing the V8 test runner to check for flakes."""
-  def __init__(self, api, builds, command, num_shards, repro_only,
+
+  def __init__(self, api: DEPS, builds, command, num_shards, repro_only,
                max_calibration_attempts, min_flake_threshold, failure_regexp):
     self.api = api
     self.builds = builds
@@ -743,7 +745,7 @@ class Runner:
 
 class Validator:
 
-  def __init__(self, api):
+  def __init__(self, api: DEPS):
     self.api = api
 
   def validate(self, known_bad_reproduces):
@@ -752,7 +754,8 @@ class Validator:
 
 
 class Bisector(Validator):
-  def __init__(self, api, depot, builds, is_bad_func):
+
+  def __init__(self, api: DEPS, depot, builds, is_bad_func):
     """Collection of bisection helpers.
 
     Args:
@@ -847,7 +850,8 @@ class RegressionBisector(Bisector):
 
 
 class ProgressionBisector(Bisector):
-  def __init__(self, api, depot, builds, is_bad_func):
+
+  def __init__(self, api: DEPS, depot, builds, is_bad_func):
     # For progression testing we invert the meaning of "is_bad".
     super().__init__(api, depot, builds, lambda *args: not is_bad_func(*args))
 
@@ -868,7 +872,7 @@ class ProgressionBisector(Bisector):
 class CombinedBisector(Validator):
   """Combines the regression and progression bisector steps."""
 
-  def __init__(self, api, depot, builds, is_bad_func):
+  def __init__(self, api: DEPS, depot, builds, is_bad_func):
     super().__init__(api)
     self.progression = ProgressionBisector(api, depot, builds, is_bad_func)
     self.regression = RegressionBisector(api, depot, builds, is_bad_func)
@@ -910,8 +914,8 @@ BISECTORS = {
 }
 
 
-def setup_swarming(
-    api, swarming_dimensions, swarming_priority, swarming_expiration):
+def setup_swarming(api: DEPS, swarming_dimensions, swarming_priority,
+                   swarming_expiration):
   api.chromium_swarming.default_expiration = swarming_expiration
   api.chromium_swarming.default_hard_timeout = 60 * 60
   api.chromium_swarming.default_io_timeout = 20 * 60
@@ -927,7 +931,7 @@ def setup_swarming(
     api.chromium_swarming.set_default_dimension(k, v)
 
 
-def create_flakes_pyl_entry_step(api, config):
+def create_flakes_pyl_entry_step(api: DEPS, config):
   """Generate config for flakes.pyl."""
   json_config = api.json.dumps(
       [config], indent=2, separators=(',', ': '), sort_keys=True)

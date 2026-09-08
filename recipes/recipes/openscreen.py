@@ -124,7 +124,7 @@ POOL_DIMENSION = 'pool'
 class RepositoryPaths:
   """Container for checkout_path dependent repository paths."""
 
-  def __init__(self, api: recipe_api.RecipeApi, source_dir: Path):
+  def __init__(self, api: DEPS, source_dir: Path):
     self.api = api
     self.checkout_path = source_dir
     self.output_path = self.checkout_path / 'out' / BUILD_CONFIG
@@ -157,8 +157,7 @@ def GetHostToolLabel(platform: recipe_api.PlatformApi) -> str:
   raise ValueError('unknown or unsupported platform')  # pragma: no cover
 
 
-def GenerateCoverageTestConstants(api: recipe_api.RecipeApi,
-                                  paths: RepositoryPaths):
+def GenerateCoverageTestConstants(api: DEPS, paths: RepositoryPaths):
   """Generates fake file paths used for validation in code coverage tests."""
   if api.properties.get('is_valid_coverage_test', False):
     llvm_dir = (
@@ -176,8 +175,7 @@ def GenerateCoverageTestConstants(api: recipe_api.RecipeApi,
     api.path.mock_add_paths(paths.output_path / 'default.profdata')
 
 
-def GetChangedFiles(api: recipe_api.RecipeApi,
-                    checkout_path: Path) -> list[str]:
+def GetChangedFiles(api: DEPS, checkout_path: Path) -> list[str]:
   """Returns list of POSIX paths of files affected by patch."""
   files = []
   if api.tryserver.gerrit_change:
@@ -211,8 +209,7 @@ def FormatGnArgs(properties: recipe_api.Properties) -> str:
   return ' '.join(format_arg(k, v) for k, v in gn_args.items())
 
 
-def UploadOpenscreenTestFilesToCas(api: recipe_api.RecipeApi,
-                                   paths: RepositoryPaths) -> str:
+def UploadOpenscreenTestFilesToCas(api: DEPS, paths: RepositoryPaths) -> str:
   """Pushes files up to RBE-CAS server storage."""
   return api.cas.archive(
       'upload files to cas',
@@ -235,7 +232,7 @@ class SwarmRequest:
     self.task_name = task_name
 
 
-def TriggerTest(api: recipe_api.RecipeApi, dimensions: dict[str, str],
+def TriggerTest(api: DEPS, dimensions: dict[str, str],
                 swarm_request: SwarmRequest):
   """Triggers a swarming test request."""
   request = api.swarming.task_request().with_name(swarm_request.task_name)
@@ -248,8 +245,7 @@ def TriggerTest(api: recipe_api.RecipeApi, dimensions: dict[str, str],
       f'trigger {swarm_request.task_name}', requests=[request])
 
 
-def SwarmTests(api: recipe_api.RecipeApi, paths: RepositoryPaths,
-               dimensions: dict[str, str]):
+def SwarmTests(api: DEPS, paths: RepositoryPaths, dimensions: dict[str, str]):
   """Runs specific types of tests on a separate swarming bot."""
   cas_digest = UploadOpenscreenTestFilesToCas(api, paths)
   requests = {
@@ -296,8 +292,8 @@ def SwarmTests(api: recipe_api.RecipeApi, paths: RepositoryPaths,
       result.analyze()
 
 
-def SetCodeCoverageConstants(api: recipe_api.RecipeApi, checkout_path: Path,
-                             output_path: Path, host_tool_label: str):
+def SetCodeCoverageConstants(api: DEPS, checkout_path: Path, output_path: Path,
+                             host_tool_label: str):
   """Configures the code_coverage and profiles modules."""
   llvm_dir = (
       checkout_path / 'third_party' / 'llvm-build' / 'Release+Asserts' / 'bin')
@@ -328,7 +324,7 @@ def SetCodeCoverageConstants(api: recipe_api.RecipeApi, checkout_path: Path,
         step_text='\n'.join(missing))
 
 
-def CalculateCodeCoverage(api: recipe_api.RecipeApi, paths: RepositoryPaths):
+def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
   """Calculates code coverage from raw coverage data."""
   temp_dir = api.profiles.profile_dir('profdata')
 
@@ -367,14 +363,13 @@ def CalculateCodeCoverage(api: recipe_api.RecipeApi, paths: RepositoryPaths):
       binaries={paths.unit_test_binary_path}, upload_metadata=True)
 
 
-def RunTestsLocally(api: recipe_api.RecipeApi, paths: RepositoryPaths):
+def RunTestsLocally(api: DEPS, paths: RepositoryPaths):
   """Runs unit tests and e2e tests locally."""
   api.step('run unit tests', [paths.unit_test_binary_path])
   api.step('run e2e tests', [paths.e2e_test_binary_path])
 
 
-def RunTestsAndCoverageLocally(api: recipe_api.RecipeApi,
-                               paths: RepositoryPaths):
+def RunTestsAndCoverageLocally(api: DEPS, paths: RepositoryPaths):
   """Runs tests locally and calculates code coverage."""
   with api.step.nest('run tests'):
     with api.step.nest('perform pre-test cleanup'):

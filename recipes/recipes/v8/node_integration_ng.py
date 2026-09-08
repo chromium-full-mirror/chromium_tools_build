@@ -83,7 +83,7 @@ ARCHIVE_PATH = 'chromium-v8/node-%s-rel'
 ARCHIVE_LINK = 'https://storage.googleapis.com/%s/%%s' % ARCHIVE_PATH
 
 
-def run_with_retry(api, step_name, step_fun):
+def run_with_retry(api: DEPS, step_name, step_fun):
   """Runs `step_fun` and retries once on failure.
 
   Returns: True if a flake has been detected.

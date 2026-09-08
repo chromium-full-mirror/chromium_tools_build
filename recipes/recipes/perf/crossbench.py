@@ -261,7 +261,7 @@ def _validate_cft_url(url, expected_version, expected_platform, binary_name):
     )
 
 
-def download_chrome(api, channel):
+def download_chrome(api: DEPS, channel):
   channel_info = api.url.get_json(
       CFT_LKGR_URL,
       step_name=f'Get the latest Chrome {channel} binary URL to download',
@@ -327,5 +327,5 @@ def download_chrome(api, channel):
       return chrome_app_path, chrome_driver_path
 
 
-def unzip_archive(api, archive_path, output):
+def unzip_archive(api: DEPS, archive_path, output):
   api.zip.unzip('Extract archive', archive_path, output, quiet=True)

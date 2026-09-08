@@ -138,13 +138,13 @@ def RunSteps(api: DEPS, properties):
     raise exception_type('%d script invocation(s) failed' % len(failures))
 
 
-def _GetScriptWorkingDirectory(api, source_dir, script_invocation):
+def _GetScriptWorkingDirectory(api: DEPS, source_dir, script_invocation):
   if script_invocation.working_directory:
     return source_dir / script_invocation.working_directory
   return source_dir
 
 
-def _RunScript(api, source_dir, script_invocation):
+def _RunScript(api: DEPS, source_dir, script_invocation):
   result_output_file = api.raw_io.output_text(
       suffix='.html', name='script_results')
   has_bug_file = False
@@ -189,7 +189,7 @@ def _GenerateCLMessage(script_invocation,
   return ''.join(cl_description)
 
 
-def _UploadCL(api, script_invocation, bugs, cmdline):
+def _UploadCL(api: DEPS, script_invocation, bugs, cmdline):
   # Check to see if we actually have any changes to upload. `git status
   # --porcelain` returns " M path/to/file" for a changed file, so look for that.
   def status_step_test_data():
@@ -264,7 +264,7 @@ def _UploadCL(api, script_invocation, bugs, cmdline):
     api.step.raise_on_failure(result)
 
 
-def _GetReviewerList(api, script_invocation):
+def _GetReviewerList(api: DEPS, script_invocation):
   if script_invocation.reviewer_rotation:
     # Pull reviewers from a rotation.
     rotation = script_invocation.reviewer_rotation

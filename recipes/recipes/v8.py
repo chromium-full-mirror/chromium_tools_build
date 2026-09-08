@@ -219,7 +219,7 @@ def RunSteps(api: DEPS, binary_size_tracking, build_config, clobber,
   return v8.recipe_result
 
 
-def link_to_parent(api):
+def link_to_parent(api: DEPS):
   value = api.properties.get('parent_build')
   if value :
     step_result = api.step('triggered by', [])

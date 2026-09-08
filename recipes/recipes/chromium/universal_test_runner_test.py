@@ -190,7 +190,7 @@ _FILES_TO_IGNORE_REGEXES = [
 
 
 def _is_affected(
-    api: RecipeApi,
+    api: DEPS,
     recipe_dir: Path,
     affected_files: list[str],
 ):
@@ -252,7 +252,7 @@ def _is_affected(
   return affected_recipes
 
 
-def checkout(api: RecipeApi):
+def checkout(api: DEPS):
   """Checks out chromium/src and build repos.
 
   Returns tuple of (path to the tools/build.git recipe checkout, path to the
@@ -280,7 +280,7 @@ def checkout(api: RecipeApi):
 
 
 @contextmanager
-def replace_bootstrap_proto_link(api: RecipeApi, infra_dir: Path):
+def replace_bootstrap_proto_link(api: DEPS, infra_dir: Path):
   """Replaces a known-symlink in a recipe checkout with a copy of its target.
 
   Creating a bundle on windows breaks due to this symlink:
@@ -313,7 +313,7 @@ def replace_bootstrap_proto_link(api: RecipeApi, infra_dir: Path):
                 bootstrap_proto_link)
 
 
-def create_recipe_bundle(api: RecipeApi, recipe_dir: Path, infra_dir: Path):
+def create_recipe_bundle(api: DEPS, recipe_dir: Path, infra_dir: Path):
   """Creates a hermetic recipe bundle via `recipes.py bundle`."""
   bundle_dir = api.path.mkdtemp('recipe_bundle')
   api.step(

@@ -68,7 +68,7 @@ def RunSteps(api: DEPS, properties):
     f.result()
 
 
-def _trigger_runner(api, target_builder, runner_builder_id):
+def _trigger_runner(api: DEPS, target_builder, runner_builder_id):
   b = target_builder.builder_id
   with api.step.nest(f'{b.project}/{b.bucket}/{b.builder}'):
     tester_filter = (

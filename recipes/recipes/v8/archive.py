@@ -82,7 +82,7 @@ RELEASE_BRANCH_RE = re.compile(r'^(?:refs/branch-heads/)?(\d+\.\d+)$')
 FIRST_BUILD_IN_MILESTONE_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
 
-def make_archive(api,
+def make_archive(api: DEPS,
                  bot_config,
                  ref,
                  version,

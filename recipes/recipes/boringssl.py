@@ -243,7 +243,7 @@ class _Config:
 
 
 @contextmanager
-def _CleanupMSVC(api):
+def _CleanupMSVC(api: DEPS):
   try:
     yield
   finally:
@@ -520,14 +520,14 @@ def RunSteps(api: DEPS, android, check_prefixed_symbols,
         api.cas.archive("Upload debug artifacts to CAS", output_dir)
 
 
-def _CIBuild(api, builder):
+def _CIBuild(api: TEST_DEPS, builder):
   return api.buildbucket.ci_build(
       project='boringssl',
       builder=builder,
       git_repo='https://boringssl.googlesource.com/boringssl')
 
 
-def _TryBuild(api, builder):
+def _TryBuild(api: TEST_DEPS, builder):
   return api.buildbucket.try_build(
       project='boringssl',
       builder=builder,

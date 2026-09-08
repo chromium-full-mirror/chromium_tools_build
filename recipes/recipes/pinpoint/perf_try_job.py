@@ -64,7 +64,7 @@ _CQ_TRIGGER_THRESHOLD = 3
 _STATIC_MAP_FILE_NAME = 'sp3_static_map.json'
 
 
-def _generate_try_job_name(api, properties):
+def _generate_try_job_name(api: DEPS, properties):
   benchmark = properties.benchmark
   story = properties.story
   project = api.tryserver.gerrit_change_repo_project
@@ -77,7 +77,7 @@ def _generate_try_job_name(api, properties):
 # convert a list of key-value pairs in tags into a json string.
 # e.g. [{'key':'k','value':'v'},{'key':'kk','value':'vv'}]
 #        => '{"k":"v", "kk":"vv"}'
-def _generate_tag_string(api, tags):
+def _generate_tag_string(api: DEPS, tags):
   # The default tags to indicate the job source.
   tags_dict = {
       'origin': 'CQ',
@@ -89,11 +89,11 @@ def _generate_tag_string(api, tags):
   return json.dumps(tags_dict)
 
 
-def _generate_access_token(api):
+def _generate_access_token(api: DEPS):
   return api.service_account.default().get_access_token()
 
 
-def _get_current_change_from_gerrit(api):
+def _get_current_change_from_gerrit(api: DEPS):
   change_id = str(api.tryserver.gerrit_change.change)
   patchset_id = api.tryserver.gerrit_patchset_number
   changes = api.gerrit.get_changes(
@@ -113,7 +113,7 @@ def _get_current_change_from_gerrit(api):
   return changes[0]
 
 
-def _get_user(api, gerrit_change):
+def _get_user(api: DEPS, gerrit_change):
   user = gerrit_change.get('owner', {}).get('email')
   if not user:
     change = api.tryserver.gerrit_change_number
@@ -122,7 +122,7 @@ def _get_user(api, gerrit_change):
   return user
 
 
-def _ask_gemini(api):
+def _ask_gemini(api: DEPS):
   ask_gemini = api.properties.get('ask_gemini')
   # Remove API KEY after switching to keyless authentication.
   gemini_api_key = api.properties.get('gemini_api_key')
@@ -149,7 +149,7 @@ def _should_run_perf_on_cq(file_names, static_map, benchmark, story):
   return False
 
 
-def _load_static_map(api):
+def _load_static_map(api: DEPS):
   mock_data = api.json.dumps({
       'abc': {
           'fake-benchmark': {
@@ -168,7 +168,7 @@ def _load_static_map(api):
   return data
 
 
-def _generate_invoker_cmd(api, properties, gerrit_change):
+def _generate_invoker_cmd(api: DEPS, properties, gerrit_change):
   cmd = ['vpython3', api.resource('pinpoint_try_job_invoker.py')]
 
   cmd.extend(['--name', _generate_try_job_name(api, properties)])
@@ -189,7 +189,7 @@ def _generate_invoker_cmd(api, properties, gerrit_change):
   return cmd
 
 
-def _generate_poller_cmd(api, properties, job_id):
+def _generate_poller_cmd(api: DEPS, properties, job_id):
   cmd = ['vpython3', api.resource('pinpoint_try_job_poller.py')]
 
   cmd.extend(['--job_id', job_id])
@@ -201,7 +201,7 @@ def _generate_poller_cmd(api, properties, job_id):
   return cmd
 
 
-def _generate_cabe_analysis_cmd(api, job_id):
+def _generate_cabe_analysis_cmd(api: DEPS, job_id):
   cmd = ['vpython3', api.resource('cabe_analysis_getter.py')]
 
   cmd.extend(['--job_id', job_id])

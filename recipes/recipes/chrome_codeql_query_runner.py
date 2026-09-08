@@ -75,7 +75,7 @@ DATABASE_FILE_SUFFIX = "database.zip"
 PROPERTIES = InputProperties
 
 
-def download_database(api, db_name, basename_of_directory, datetime):
+def download_database(api: DEPS, db_name, basename_of_directory, datetime):
   path_to_db_within_bucket = (
       f'{basename_of_directory}/'
       f'{db_name}-codeql-{datetime}-{DATABASE_FILE_SUFFIX}')
@@ -94,7 +94,7 @@ def download_database(api, db_name, basename_of_directory, datetime):
   return unzipped_db_path
 
 
-def checkout_chromium(api):
+def checkout_chromium(api: DEPS):
   # Fetches Chromium source and returns the location.
   api.gclient.set_config('chromium')
   api.chromium.set_config()

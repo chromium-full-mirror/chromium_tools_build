@@ -79,7 +79,7 @@ def RunSteps(api: DEPS, properties):
     api.step.raise_on_failure(result)
 
 
-def _RunScript(api, source_dir, script_invocation):
+def _RunScript(api: DEPS, source_dir, script_invocation):
   cmd = [source_dir / script_invocation.script]
   cmd.extend(script_invocation.args)
   return api.step(

@@ -114,8 +114,8 @@ def RunSteps(api: DEPS, properties):
         return result
 
 
-def _process_packages(api, cmdline_tools_dir, source_dir, packages, channel,
-                      target_os, target_arch):
+def _process_packages(api: DEPS, cmdline_tools_dir, source_dir, packages,
+                      channel, target_os, target_arch):
   """Process packages from a given list.
 
   Including use sdkmanager to fetch the package versions, and install packages

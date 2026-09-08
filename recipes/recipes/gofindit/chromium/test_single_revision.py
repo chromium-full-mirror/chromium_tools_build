@@ -144,7 +144,7 @@ def RunSteps(api: DEPS, properties):
         properties.bisection_host)
 
 
-def fetch_test_results(api, tests_to_run, step_tests, suffix):
+def fetch_test_results(api: DEPS, tests_to_run, step_tests, suffix):
   test_ids_by_test_suite = {}
   for test_to_run in tests_to_run:
     test_ids = test_ids_by_test_suite.setdefault(test_to_run.test_suite_name,
@@ -164,8 +164,8 @@ def fetch_test_results(api, tests_to_run, step_tests, suffix):
   return test_results
 
 
-def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
-                                          run_all):
+def compute_step_test_and_compile_targets(api: DEPS, targets_config,
+                                          tests_to_run, run_all):
   """Returns the step tests and compile targets.
 
     The step tests will be set with the test filter to run only the tests_to_run.
@@ -214,7 +214,7 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
 def GenTests(api: TEST_DEPS):
 
   def setup(
-      api,
+      api: TEST_DEPS,
       target_builder_group='fake-group',
       target_builder='fake-builder',
       query_resultdb=False,
@@ -294,7 +294,7 @@ def GenTests(api: TEST_DEPS):
     ] + query, api.empty_test_data())
     return t
 
-  def setup_input_properties(api,
+  def setup_input_properties(api: TEST_DEPS,
                              tests_to_run,
                              target_builder_group='fake-group',
                              target_builder='fake-builder',

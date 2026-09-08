@@ -114,7 +114,7 @@ def RunSteps(api: DEPS, properties):
     build_dwarf_extension(api, target='builder', extra_build_args=extra_args)
 
 
-def compile_n_test_e2e(api, builder_config, upload_dwarf_binary):
+def compile_n_test_e2e(api: DEPS, builder_config, upload_dwarf_binary):
   compile_command = [
       "vpython3",
       "-u",
@@ -141,7 +141,7 @@ def compile_n_test_e2e(api, builder_config, upload_dwarf_binary):
     upload_build(api, version, patch)
 
 
-def git_output(api, *args, **kwargs):
+def git_output(api: DEPS, *args, **kwargs):
   """Convenience wrapper."""
   step_result = api.git(*args, stdout=api.raw_io.output_text(), **kwargs)
   result = step_result.stdout
@@ -149,14 +149,14 @@ def git_output(api, *args, **kwargs):
   return result.strip()
 
 
-def get_gitiles_ref(api):
+def get_gitiles_ref(api: DEPS):
   scheduler_props = api.properties.get("$recipe_engine/scheduler", {})
   triggers_props = scheduler_props.get('triggers', [{}])[0]
   gitiles_props = triggers_props.get('gitiles', {})
   return gitiles_props.get('ref', None)
 
 
-def resolve_version_patch(api):
+def resolve_version_patch(api: DEPS):
   ref = get_gitiles_ref(api)
   if ref == 'refs/heads/main':
     return api.buildbucket.build.number, 0
@@ -166,7 +166,7 @@ def resolve_version_patch(api):
   return version, commit_count
 
 
-def upload_build(api, version, patch):
+def upload_build(api: DEPS, version, patch):
   extension_dir = _repo_path(api).joinpath('build',
                                            'DevTools_CXX_Debugging.stage2')
   result = api.step(
@@ -209,13 +209,13 @@ def upload_build(api, version, patch):
   )
 
 
-def _repo_path(api):
+def _repo_path(api: DEPS):
   checkout_path = get_checkout_path(api, 'builder')
   return checkout_path.joinpath('devtools-frontend', 'extensions',
                                 'cxx_debugging')
 
 
-def _configure(api):
+def _configure(api: DEPS):
   c = api.gclient.make_config()
   soln = c.solutions.add()
   soln.name = 'devtools-frontend'
@@ -230,7 +230,7 @@ def _configure(api):
   api.chromium.c = build_cfg
 
 
-def run_script(api, step_name, script, args=None):
+def run_script(api: DEPS, step_name, script, args=None):
   sc_path = _repo_path(api) / script
   args = args or []
   api.step(step_name, ["vpython3", "-u", sc_path] + args)
@@ -239,14 +239,14 @@ def run_script(api, step_name, script, args=None):
 ### CPP Debug Extension ###
 # TODO(liviurau): this code moved from the internal recipe module; it should
 # be refactored and cleaned up
-def get_checkout_path(api, target='head'):
+def get_checkout_path(api: DEPS, target='head'):
   path = api.path.start_dir / target
   api.file.ensure_directory('Ensure checkout dir for %s exists' % path, path)
   return path
 
 
 @contextmanager
-def dwarf_ext_context(api, target='head'):
+def dwarf_ext_context(api: DEPS, target='head'):
   """Set the context to run the dwarf_extension scripts. It adds the extension
   dependencies to the PATH."""
 
@@ -267,7 +267,7 @@ def dwarf_ext_context(api, target='head'):
     yield
 
 
-def build_dwarf_extension(api, target='head', extra_build_args=None):
+def build_dwarf_extension(api: DEPS, target='head', extra_build_args=None):
   extra_build_args = extra_build_args or []
 
   dwarf_tools = api.path.join(

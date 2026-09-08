@@ -212,7 +212,7 @@ _GnArgsByPhase = dict[str | None, str]
 
 
 def _get_post_patch_gn_args(
-    api,
+    api: DEPS,
     checkout_dir: config_types.Path,
     source_dir: config_types.Path,
     step_name: str,
@@ -277,7 +277,7 @@ def _get_post_patch_gn_args(
 
 
 def _verify_gn_args(
-    api,
+    api: DEPS,
     checkout_dir: config_types.Path,
     source_dir: config_types.Path,
     step_name: str,
@@ -346,7 +346,7 @@ def _verify_gn_args(
     return True
 
 
-def _compare_gn_args(api, pre_patch_args: str, post_patch_args: str,
+def _compare_gn_args(api: DEPS, pre_patch_args: str, post_patch_args: str,
                      presentation: StepPresentation) -> bool:
   pre_patch_args_lines = pre_patch_args.splitlines()
   post_patch_args_lines = post_patch_args.splitlines()
@@ -408,7 +408,7 @@ _UNKNOWN_BUILDER_RETCODE = 2
 
 
 def _mb_lookup(
-    api,
+    api: DEPS,
     source_dir: config_types.Path,
     step_name: str,
     builder_id: BuilderId,

@@ -70,7 +70,7 @@ deps = {
 V8_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+(?:\.\d+)?$')
 
 
-def get_last_v8_revision(api):
+def get_last_v8_revision(api: DEPS):
   """Retrieve the last V8 revision in Chromium from gitiles."""
   deps = api.gitiles.download_file(
       'https://chromium.googlesource.com/chromium/src',
@@ -91,13 +91,13 @@ def get_last_v8_revision(api):
   return revision
 
 
-def get_v8_tag(api, revision):
+def get_v8_tag(api: DEPS, revision):
   """Returns the V8 version tag associated with a revision or None."""
   tags = api.v8.git_output('tag', '--points-at', revision).split('\n')
   return next((tag for tag in tags if V8_VERSION_RE.match(tag)), None)
 
 
-def get_next_v8_revision(api, last_v8_revision):
+def get_next_v8_revision(api: DEPS, last_v8_revision):
   """Choose the next newest viable V8 revision to roll.
 
   We override with the last if the algorithm determined that a new

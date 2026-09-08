@@ -59,7 +59,7 @@ PROPERTIES = InputProperties
 
 
 def run_autotest(
-    api: RecipeApi,
+    api: DEPS,
     base_cmd: list[str],
     test: AutotestInvocation,
 ):
@@ -68,7 +68,7 @@ def run_autotest(
   api.step(step_name, cmd)
 
 
-def run_tests(api: RecipeApi, properties: InputProperties, src_dir, build_dir):
+def run_tests(api: DEPS, properties: InputProperties, src_dir, build_dir):
   with api.depot_tools.on_path(), api.context(
       cwd=src_dir, env={
           'LANG': 'en_US.UTF-8',

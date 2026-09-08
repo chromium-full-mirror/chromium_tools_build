@@ -137,7 +137,7 @@ def RunSteps(api: RecipeApi):
     )
 
 
-def checkout(api: RecipeApi):
+def checkout(api: DEPS):
   _ensure_btrfs_subvolume(api, api.chromium_checkout.default_checkout_dir)
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
@@ -153,14 +153,14 @@ def checkout(api: RecipeApi):
   return update_result
 
 
-def _ensure_btrfs_subvolume(api, path):
+def _ensure_btrfs_subvolume(api: DEPS, path):
   with api.step.nest('ensure btrfs subvolume', status='last'):
     if not _is_btrfs_subvolume(api, path):
       api.file.rmtree('remove non-btrfs checkout dir', path)
       api.step('create btrfs subvolume', ['btrfs', 'subvolume', 'create', path])
 
 
-def _is_btrfs_subvolume(api, path):
+def _is_btrfs_subvolume(api: DEPS, path):
   return api.step(
       'check btrfs subvolume',
       ['sudo', 'btrfs', 'subvolume', 'show', path],
@@ -168,7 +168,7 @@ def _is_btrfs_subvolume(api, path):
   ).retcode == 0
 
 
-def _run_tests(api, update_result, source_dir, stable):
+def _run_tests(api: DEPS, update_result, source_dir, stable):
   build = api.buildbucket.build
   cmd = [
       'vpython3',
@@ -216,7 +216,7 @@ def _run_tests(api, update_result, source_dir, stable):
   )
 
 
-def _ensure_nodejs(api, cipd_root):
+def _ensure_nodejs(api: DEPS, cipd_root):
   ef = api.cipd.EnsureFile()
   ef.add_package(
       'infra/3pp/tools/nodejs/linux-${arch}',
@@ -225,7 +225,7 @@ def _ensure_nodejs(api, cipd_root):
   api.cipd.ensure(cipd_root, ef, 'ensure nodejs')
 
 
-def _install_gemini_cli(api):
+def _install_gemini_cli(api: DEPS):
   # TODO(crbug.com/445459853): This is hacky and only a temporary workaround.
   # This should be replaced with the 3pp cipd package when that is available
   path = api.path.cleanup_dir / 'gemini'

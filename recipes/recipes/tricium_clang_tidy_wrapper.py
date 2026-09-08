@@ -112,7 +112,8 @@ BUILDERS = freeze({
     },
 })
 
-def _should_skip_linting(api):
+
+def _should_skip_linting(api: DEPS):
   revision_info = api.gerrit.get_revision_info(
       'https://%s' % api.tryserver.gerrit_change.host,
       api.tryserver.gerrit_change.change, api.tryserver.gerrit_change.patchset)
@@ -121,7 +122,7 @@ def _should_skip_linting(api):
   return commit_message.startswith('Revert')
 
 
-def _normalize_path_for_os(api, path):
+def _normalize_path_for_os(api: DEPS, path):
   # Some APIs give us paths with `/` in them regardless of OS. On Windows, we
   # need to convert these to `\`
   if api.platform.is_win:

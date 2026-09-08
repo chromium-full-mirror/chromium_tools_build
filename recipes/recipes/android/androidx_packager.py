@@ -64,7 +64,7 @@ class TEST_DEPS(RecipeTestApi):
 PROPERTIES = sdk_packager.InputProperties
 
 
-def RollSubproject(api, subproject_name, subproject_path, roll_cmd):
+def RollSubproject(api: DEPS, subproject_name, subproject_path, roll_cmd):
   api.file.ensure_directory(f'Ensure {subproject_name} dir exists',
                             subproject_path)
   api.file.rmcontents(f'Cleanup old {subproject_name} contents',

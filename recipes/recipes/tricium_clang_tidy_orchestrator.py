@@ -75,7 +75,7 @@ _CONDITIONAL_CHILD_BUILDERS = (
 _CONDITIONAL_PROBABILITY = 0.20
 
 
-def _should_skip_linting(api):
+def _should_skip_linting(api: DEPS):
   revision_info = api.gerrit.get_revision_info(
       'https://%s' % api.tryserver.gerrit_change.host,
       api.tryserver.gerrit_change.change, api.tryserver.gerrit_change.patchset)
@@ -147,7 +147,7 @@ def _fixup_finding_paths(finding):
       r.location.file_path = _fixup_path(r.location.file_path)
 
 
-def _dedup_findings(api, all_platforms, findings_by_platform):
+def _dedup_findings(api: DEPS, all_platforms, findings_by_platform):
   platforms_by_encoded_finding = collections.defaultdict(list)
   for platform, findings in findings_by_platform.items():
     for f in findings:

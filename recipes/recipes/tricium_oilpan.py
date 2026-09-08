@@ -56,7 +56,7 @@ class TEST_DEPS(RecipeTestApi):
 
 class _ChangeDetails:
 
-  def __init__(self, api):
+  def __init__(self, api: DEPS):
     changes = api.gerrit.get_changes(
         'https://%s' % api.tryserver.gerrit_change.host,
         query_params=[('change', str(api.tryserver.gerrit_change.change))],
@@ -91,7 +91,7 @@ class _ChangeDetails:
             self.cc.append(reviewer['email'])
 
 
-def _RunUntracedMemberAnalyzer(api, src_dir, affected):
+def _RunUntracedMemberAnalyzer(api: DEPS, src_dir, affected):
   with api.step.nest('untraced_member'):
     target = 'UntracedMember'
     for path in affected:

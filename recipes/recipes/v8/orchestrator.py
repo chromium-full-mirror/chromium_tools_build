@@ -85,7 +85,7 @@ BUILD_WRONGLY_CANCELED_SUMMARY = (
 EXONERATE_FLAKES_MAX = 3
 
 
-def orchestrator_steps(api, compilator_name):
+def orchestrator_steps(api: DEPS, compilator_name):
   v8 = api.v8_tests
 
   def initialize_v8_testing():

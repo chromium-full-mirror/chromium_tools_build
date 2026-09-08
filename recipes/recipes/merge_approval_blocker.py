@@ -39,7 +39,7 @@ class TEST_DEPS(RecipeTestApi):
 
 
 def get_cl_description(
-    api: recipe_api.RecipeApi,
+    api: DEPS,
     properties: InputProperties,
 ) -> str:
   """Return CL description from gerrit API
@@ -84,7 +84,7 @@ def get_bug_ids(text: str) -> list[int]:
 
 
 def get_branch(
-    api: recipe_api.RecipeApi,
+    api: DEPS,
     properties: InputProperties,
 ) -> str:
   """Return branch from the CL

@@ -107,7 +107,8 @@ def RunSteps(api: DEPS, properties):
 
 class E2EStressTests(E2ETests):
 
-  def __init__(self, api, trigger, builder_config, step_name, runner_args):
+  def __init__(self, api: DEPS, trigger, builder_config, step_name,
+               runner_args):
     super().__init__(api, trigger, builder_config, step_name)
     self.test_list = []
     self.extra_args = []

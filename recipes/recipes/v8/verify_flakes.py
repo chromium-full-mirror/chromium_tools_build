@@ -70,7 +70,7 @@ TEST_CONFIG = [{
 }]
 
 
-def update_step_presentation(api, presentation, build, flake_config):
+def update_step_presentation(api: DEPS, presentation, build, flake_config):
   presentation.links['build %s' % build.id] = (
       api.buildbucket.build_url(build_id=build.id))
   bug_url = flake_config.get('bug_url')

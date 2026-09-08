@@ -62,7 +62,7 @@ class TEST_DEPS(RecipeTestApi):
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
-def _checkout_steps(api):
+def _checkout_steps(api: DEPS):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
   with api.context(cwd=solution_path):

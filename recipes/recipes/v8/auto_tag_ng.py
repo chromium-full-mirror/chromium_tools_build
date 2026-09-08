@@ -129,7 +129,7 @@ def RunSteps(api: DEPS):
       return RawResult(status=FAILURE)
 
 
-def fetch_unmanaged_chromium_versions(api, milestone_versions):
+def fetch_unmanaged_chromium_versions(api: DEPS, milestone_versions):
   """Returns supported chromium branches for the active milestones without
   the milestone branches themselves, which are managed automatically by this
   script.
@@ -162,7 +162,7 @@ def fetch_unmanaged_chromium_versions(api, milestone_versions):
   return unmanaged_versions
 
 
-def milestone_version_mapping(api):
+def milestone_version_mapping(api: DEPS):
   """Returns a list of tuples (V8 version, Chromium version) for all active
   Chromium milestones.
 
@@ -205,7 +205,7 @@ def milestone_version_mapping(api):
   return result
 
 
-def update_v8_branch(api, source_dir, branch_version, chromium_version,
+def update_v8_branch(api: DEPS, source_dir, branch_version, chromium_version,
                      build_results):
   with api.step.nest(f'Checking V8 branch {branch_version}'):
     branch_ref = f'branch-heads/{branch_version}'
@@ -235,7 +235,8 @@ def update_v8_branch(api, source_dir, branch_version, chromium_version,
                               new_version, build_results)
 
 
-def update_chromium_branch(api, source_dir, chromium_version, build_results):
+def update_chromium_branch(api: DEPS, source_dir, chromium_version,
+                           build_results):
   with api.step.nest(f'Checking Chromium branch {chromium_version}'):
     branch_ref = f'remotes/origin/chromium/{chromium_version}'
     api.v8.git_output('checkout', branch_ref)
@@ -250,12 +251,12 @@ def update_chromium_branch(api, source_dir, chromium_version, build_results):
                               new_version, build_results)
 
 
-def current_branch_has_version_change(api):
+def current_branch_has_version_change(api: DEPS):
   return api.v8.git_output(
       'show', api.v8.VERSION_FILE, ok_ret='any', name='Proof of version change')
 
 
-def verify_version_tag(api, version_at_branch_head, build_results):
+def verify_version_tag(api: DEPS, version_at_branch_head, build_results):
   with api.step.nest('Verify version tag'):
     commit_at_tag = get_commit_at_tag(api, version_at_branch_head)
     commit_at_head = api.v8.git_output(
@@ -272,12 +273,12 @@ def verify_version_tag(api, version_at_branch_head, build_results):
             "Tagged %s" % version_at_branch_head)
 
 
-def verify_pgo_tag(api, version_at_branch_head):
+def verify_pgo_tag(api: DEPS, version_at_branch_head):
   with api.step.nest('Verify pgo tag'):
     return bool(get_commit_at_tag(api, f'{version_at_branch_head}-pgo'))
 
 
-def get_commit_at_tag(api, tag):
+def get_commit_at_tag(api: DEPS, tag):
   return api.v8.git_output(
       'show',
       '--format=%H',
@@ -287,8 +288,8 @@ def get_commit_at_tag(api, tag):
       ok_ret='any')
 
 
-def verify_floating_refs(
-    api, version_at_head, branch_version, chromium_version, build_results):
+def verify_floating_refs(api: DEPS, version_at_head, branch_version,
+                         chromium_version, build_results):
   """Update the two floating refs pointing to a valid tip of the release branch.
 
   The two refs are:
@@ -307,7 +308,7 @@ def verify_floating_refs(
     verify_ref(api, 'Chromium', chromium_ref, branch_head, build_results)
 
 
-def verify_ref(api, name, ref, branch_head, build_results):
+def verify_ref(api: DEPS, name, ref, branch_head, build_results):
   with api.step.nest(f'Verify {name}'):
     current_commit = get_commit_for_ref(api, ref)
     api.step(f'{name} commit {current_commit}', [])
@@ -318,7 +319,7 @@ def verify_ref(api, name, ref, branch_head, build_results):
       api.step(f'There is no new {name} ref.', [])
 
 
-def set_ref(api, branch_head, ref, build_results):
+def set_ref(api: DEPS, branch_head, ref, build_results):
   if api.v8.dry_run:
     api.step('Dry-run ref update %s' % branch_head, cmd=None)
   else:
@@ -326,7 +327,7 @@ def set_ref(api, branch_head, ref, build_results):
   build_results.performed_actions.append(f'Updated {ref}')
 
 
-def get_commit_for_ref(api, ref):
+def get_commit_for_ref(api: DEPS, ref):
   result = api.v8.git_output(
       'ls-remote',
       REMOTE_REPO_URL,
@@ -340,12 +341,12 @@ def get_commit_for_ref(api, ref):
   return result
 
 
-def push_ref(api, repo, ref, hsh):
+def push_ref(api: DEPS, repo, ref, hsh):
   api.git('push', repo, '+%s:%s' % (hsh, ref))
 
 
-def maybe_increment_version(api, source_dir, ref, latest_version, new_version,
-                            build_results):
+def maybe_increment_version(api: DEPS, source_dir, ref, latest_version,
+                            new_version, build_results):
   with api.step.nest('Increment version from %s' % latest_version):
     commits = api.gerrit.get_changes(
         'https://chromium-review.googlesource.com',

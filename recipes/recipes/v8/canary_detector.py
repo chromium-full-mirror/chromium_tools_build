@@ -66,7 +66,7 @@ CANARY_REF = 'refs/heads/canary'
 VERSION_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
 
-def GetHeads(api, repo):
+def GetHeads(api: DEPS, repo):
   """Return all branch heads and the current revision of the remote repository.
 
   Returns:
@@ -93,7 +93,7 @@ def GetHeads(api, repo):
     return heads_by_name
 
 
-def PushRef(api, repo, hsh):
+def PushRef(api: DEPS, repo, hsh):
   api.gclient.set_config('v8')
   update_result = api.v8.checkout()
 
@@ -102,7 +102,7 @@ def PushRef(api, repo, hsh):
     api.git('push', repo, '-f', '%s:%s' % (CANARY_REF, CANARY_REF))
 
 
-def LogStep(api, text):
+def LogStep(api: DEPS, text):
   api.step('log', ['echo', text])
 
 

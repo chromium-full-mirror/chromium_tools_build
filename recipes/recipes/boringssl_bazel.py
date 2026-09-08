@@ -42,14 +42,14 @@ class TEST_DEPS(RecipeTestApi):
 
 
 @contextmanager
-def _BazelShutdown(api, bazel):
+def _BazelShutdown(api: DEPS, bazel):
   try:
     yield
   finally:
     api.step('bazel shutdown', [bazel, 'shutdown'], ok_ret='any')
 
 
-def _RetryStepAfterBazelClean(api, bazel, name, cmd):
+def _RetryStepAfterBazelClean(api: DEPS, bazel, name, cmd):
   # If the first Bazel operation in a project fails, we retry after expunging
   # all state. See https://crbug.com/463446310 and https://crbug.com/466089105,
   # where Bazel is seemingly remembering an old Xcode location.
@@ -104,7 +104,8 @@ def RunSteps(api: DEPS):
       ])
       # The example consumer has no tests. Just make sure it builds.
 
-def _CIBuild(api, builder):
+
+def _CIBuild(api: TEST_DEPS, builder):
   return api.buildbucket.ci_build(
       project='boringssl',
       builder=builder,

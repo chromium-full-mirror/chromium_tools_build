@@ -159,7 +159,7 @@ def RunSteps(api: DEPS, properties):
     return results.raw_result()
 
 
-def run_lint_check(api, builder_config):
+def run_lint_check(api: DEPS, builder_config):
   is_debug_build = api.devtools.is_debug(builder_config)
   if is_debug_build or not api.platform.is_linux:
     return
@@ -168,7 +168,7 @@ def run_lint_check(api, builder_config):
 
 
 
-def publish_performance_benchmarks(api, skip):
+def publish_performance_benchmarks(api: DEPS, skip):
   if skip:
     return
   report_file = api.devtools.source_dir / 'perf-data/devtools-perf.json'
@@ -190,7 +190,7 @@ def publish_performance_benchmarks(api, skip):
   save_perf_data_in_bucket(api, results_file)
 
 
-def save_perf_data_in_bucket(api, report_file):
+def save_perf_data_in_bucket(api: DEPS, report_file):
   bucket = 'devtools-frontend-perf'
   today = api.time.utcnow().strftime('%Y/%m/%d/%H')
   upload_name = '{}/{}/{}/{}/{}/{}'.format(
@@ -225,7 +225,7 @@ def test_cov_data():
   }
 
 
-def publish_coverage_points(api, skip):
+def publish_coverage_points(api: DEPS, skip):
   if api.tryserver.is_tryserver or skip:
     return
   with api.step.nest('Coverage'):
@@ -264,7 +264,7 @@ def publish_coverage_points(api, skip):
       api.step.empty('Coverage data not available')
 
 
-def _point(api, dimension, totals, commit_count):
+def _point(api: DEPS, dimension, totals, commit_count):
   p = {
       'master': api.builder_group.for_current,
       'bot': api.buildbucket.builder_name,

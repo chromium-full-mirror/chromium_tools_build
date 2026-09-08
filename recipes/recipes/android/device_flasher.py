@@ -59,7 +59,7 @@ UID_LOWER_LIMIT = 10000
 UID_UPPER_LIMIT = 19999
 
 
-def _LookupImage(api, cache: dict[tuple[str, str], bool], device_type,
+def _LookupImage(api: DEPS, cache: dict[tuple[str, str], bool], device_type,
                  device_os):
   """Check if an image exists in the bucket for a (device_type, device_os) combo
 
@@ -95,7 +95,7 @@ def _LookupImage(api, cache: dict[tuple[str, str], bool], device_type,
   return result
 
 
-def _GetSwarmingBots(api, flash_criteria):
+def _GetSwarmingBots(api: DEPS, flash_criteria):
   """Get all bots that match the given criteria:
 
   Criteria include:
@@ -124,7 +124,7 @@ def _GetSwarmingBots(api, flash_criteria):
   return swarming_bots
 
 
-def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
+def _CreateFlashTaskRequest(api: DEPS, bot_id, pool, device_type, device_os):
   gs_image_path = '%s/%s/%s.zip' % (BASE_IMAGE_URI, device_type, device_os)
   # TODO: Swith to use the latest catapult repo, i.e.
   #  - checkout catapult
@@ -160,7 +160,7 @@ def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
   return task_request
 
 
-def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
+def _ProcessBot(api: DEPS, lookup_image_cache, bot, flash_criteria):
   task_request = None
 
   if (not flash_criteria.max_uid_threshold and
@@ -220,7 +220,7 @@ def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
   return task_request
 
 
-def _RunTasks(api, tasks_by_host, dry_run):
+def _RunTasks(api: DEPS, tasks_by_host, dry_run):
   """Trigger the tasks group by group and collect the results.
 
   One Android host machine hosts up to 7 devices. The machine may run of disk

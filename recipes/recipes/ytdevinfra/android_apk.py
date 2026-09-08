@@ -46,7 +46,7 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-def _checkout_steps(api):
+def _checkout_steps(api: DEPS):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 

@@ -138,7 +138,7 @@ BUILDERS = freeze(BUILDERS)
 GCS_BUCKET_PROD = 'chromium-browser-toolchain-prod'
 
 
-def _trigger_tbi(api, change=None):
+def _trigger_tbi(api: DEPS, change=None):
   with api.step.nest("package clang using TBI"):
     try:
       tbi_client = api.cipd.ensure_tool(

@@ -83,7 +83,7 @@ step_test_data = {
 }
 
 
-def ExecBuildSteps(api, build_steps, sync_dir, dir_flags):
+def ExecBuildSteps(api: DEPS, build_steps, sync_dir, dir_flags):
   for step in build_steps:
     script = sync_dir / step['command'][0]
     args = step['command'][1:]

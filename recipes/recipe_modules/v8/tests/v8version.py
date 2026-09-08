@@ -51,7 +51,8 @@ def ref_data(ref_tuples):
 
 
 class VersionUtilsTest:
-  def __init__(self, api):
+
+  def __init__(self, api: DEPS):
     self.api = api
 
   def assertEqual(self, actual, expected):

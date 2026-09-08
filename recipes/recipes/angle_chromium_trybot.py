@@ -89,8 +89,8 @@ class TEST_DEPS(RecipeTestApi):
   tryserver: tryserver.TEST_API
 
 
-def get_component_revision_from_deps(api, component, project, repository_url,
-                                     branch):
+def get_component_revision_from_deps(api: DEPS, component, project,
+                                     repository_url, branch):
   deps = api.gitiles.download_file(
       repository_url,
       'DEPS',
@@ -108,7 +108,7 @@ def get_component_revision_from_deps(api, component, project, repository_url,
   return revision
 
 
-def get_chromium_revision_from_angle_cl(api):
+def get_chromium_revision_from_angle_cl(api: DEPS):
   angle_revision = api.tryserver.gerrit_change_fetch_ref
   angle_dir = api.path.mkdtemp('angle')
   with api.context(cwd=angle_dir):

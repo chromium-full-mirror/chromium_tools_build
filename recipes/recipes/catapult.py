@@ -54,7 +54,7 @@ from PB.recipes.build.catapult import InputProperties
 PROPERTIES = InputProperties
 
 
-def _CheckoutSteps(api):
+def _CheckoutSteps(api: DEPS):
   """Checks out the catapult repo (and any dependencies) using gclient."""
   api.gclient.set_config('catapult')
   update_result = api.bot_update.ensure_checkout()
@@ -62,7 +62,7 @@ def _CheckoutSteps(api):
   return update_result
 
 
-def _RemoteSteps(api, source_dir, app_engine_sdk_path, properties):
+def _RemoteSteps(api: DEPS, source_dir, app_engine_sdk_path, properties):
   """Runs the build steps specified in catapult_build/build_steps.py.
 
   Steps are specified in catapult repo in order to avoid multi-sided patches

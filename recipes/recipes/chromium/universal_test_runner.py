@@ -85,7 +85,7 @@ def RunSteps(api: RecipeApi, properties: Request):
 
 
 def configure_build(
-    api: RecipeApi,
+    api: DEPS,
     build: bool,
     skip_validation: bool,
 ) -> tuple[chromium_types.BuilderId, ctbc.BuilderConfig]:

@@ -225,7 +225,7 @@ def _get_recipe(led_builder):
     raise ValueError(message) from ex
 
 
-def _process_footer_builders(api, builders):
+def _process_footer_builders(api: DEPS, builders):
   bad_builders = sorted(b for b in builders if ':' not in b)
   if bad_builders:
     step_name = 'bad builders'
@@ -250,7 +250,7 @@ def _process_footer_builders(api, builders):
   ]
 
 
-def _get_builders_to_check(api):
+def _get_builders_to_check(api: DEPS):
   """Get the set of builders to test the recipe change against.
 
   If the CL has Led-Recipes-Tester-Builder footer in its description,
@@ -282,7 +282,8 @@ def _get_builders_to_check(api):
   return builders, files_to_ignore
 
 
-def _ignore_affected_files(api, repo_path, affected_files, files_to_ignore):
+def _ignore_affected_files(api: DEPS, repo_path, affected_files,
+                           files_to_ignore):
   """Ignore files for analysis that match a regex.
 
   Args:
@@ -319,7 +320,7 @@ def _ignore_affected_files(api, repo_path, affected_files, files_to_ignore):
   return new_affected_files
 
 
-def _get_led_builders(api, builders):
+def _get_led_builders(api: DEPS, builders):
   """Get the led job definitions for the builders.
 
   Args:
@@ -354,8 +355,8 @@ def _get_led_builders(api, builders):
   return led_builders
 
 
-def _determine_affected_recipes(api, affected_files, recipes, recipes_py_path,
-                                recipes_cfg_path):
+def _determine_affected_recipes(api: DEPS, affected_files, recipes,
+                                recipes_py_path, recipes_cfg_path):
   """Determine the set of recipes that are affected by the change.
 
   Args:
@@ -449,7 +450,7 @@ def _get_filepath_to_change(affected_files, affected_recipes, builder, recipe,
   return None
 
 
-def _test_builder(api, builder, led_builder, cl):
+def _test_builder(api: DEPS, builder, led_builder, cl):
   """Try running a builder with the patched recipe.
 
   Args:

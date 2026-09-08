@@ -95,14 +95,14 @@ def RunSteps(api: DEPS):
       api.v8.vpython('Export V8 commits to Test262', script, args)
 
 
-def configure(api):
+def configure(api: DEPS):
   api.gclient.set_config('chromium')
   api.gclient.apply_config('v8_bare')
   # TODO: Remove this in finalized version. This is just for testing.
   #api.gclient.c.revisions['v8'] = "49cd7d838c98245268b12d2c75538faa3e402ac0"
 
 
-def patch_gerrit_credentials(api, creds_file):
+def patch_gerrit_credentials(api: DEPS, creds_file):
   # read the file as json
   creds = api.file.read_json("read credetials", creds_file,
                              test_data={}, include_log=False)
