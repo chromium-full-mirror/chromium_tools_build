@@ -66,6 +66,8 @@ def RunSteps(api: DEPS, properties):
 
     if properties.toolchain == InputProperties.CLANG:
       args.append("--clang")
+    if properties.config_path:
+      args.extend(["--config", properties.config_path])
 
     if properties.trusted_build_instance:
       args.extend(["--instance", properties.trusted_build_instance])
@@ -237,7 +239,7 @@ def GenTests(api: TEST_DEPS):
           trusted_build_instance_pool='fake-pool',
           trusted_build_instance_env='fake-env',
           trusted_build_instance_project='fake-project',
-      ),
+          config_path='fake/config/path/linux.textproto'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'package clang.request build'),
       api.post_process(post_process.StepCommandContains,

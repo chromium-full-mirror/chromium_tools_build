@@ -17,4 +17,6 @@ message InputProperties {
   string trusted_build_instance_pool = 3;
   string trusted_build_instance_env = 4;
   string trusted_build_instance_project = 5;
+  // The path to the TBI config relative to chromium/src/internal.
+  string config_path = 6;
 }
