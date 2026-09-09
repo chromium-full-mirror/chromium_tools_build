@@ -1396,6 +1396,24 @@ class Tests(unittest.TestCase):
     self.assertEqual(built_objects,
                      [['foo.o'], ['rdep.o', 'rdep2.o', 'rdep3.o', 'rdep4.o']])
 
+  def test_perform_build_skips_parsing_deps_when_no_targets(self):
+    self._silence_logs()
+
+    def parse_ninja_deps(out_dir, base_path):
+      self.fail('parse_ninja_deps ran with no targets to build')
+
+    src_file_to_target_map, failed_targets = tidy._perform_build(
+        out_dir='/out',
+        base_path='/foo',
+        run_ninja=lambda out_dir, base_path, object_targets: (),
+        parse_ninja_deps=parse_ninja_deps,
+        cc_to_target_map={},
+        gn_desc=tidy._GnDesc({}, {}),
+        potential_src_cc_file_deps={})
+
+    self.assertEqual(src_file_to_target_map, {})
+    self.assertEqual(failed_targets, ())
+
   def test_generate_tidy_actions_copes_with_unknown_objects(self):
     self._silence_logs()
 

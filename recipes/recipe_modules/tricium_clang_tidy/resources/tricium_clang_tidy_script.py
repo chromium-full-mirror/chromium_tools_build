@@ -715,7 +715,11 @@ def _parse_ninja_deps(
         ninja.wait()
 
   if ninja.returncode:
-    raise subprocess.CalledProcessError(ninja.returncode, command)
+    stderr = ninja.stderr.read() if ninja.stderr else ''
+    logging.error('siso query deps failed with %d: %s', ninja.returncode,
+                  stderr)
+    raise subprocess.CalledProcessError(
+        ninja.returncode, command, stderr=stderr)
 
 
 # `gn desc` dumps a ton of information about the structure of Chromium's build
@@ -1024,9 +1028,14 @@ def _perform_build(
   failed_targets = run_ninja(
       out_dir=out_dir, base_path=base_path, object_targets=sorted(all_targets))
 
-  src_file_to_target_map = parse_deps(
-      only_targets=all_targets,
-      interesting_src_files=potential_src_cc_file_deps)
+  # No targets means run_ninja never invoked siso ninja, so there's no siso
+  # state for parse_deps to query.
+  if all_targets:
+    src_file_to_target_map = parse_deps(
+        only_targets=all_targets,
+        interesting_src_files=potential_src_cc_file_deps)
+  else:
+    src_file_to_target_map = collections.defaultdict(set)
 
   # As a special case, we know that files depend on themselves. This lets us
   # more reliably report broken source files (since a failed compilation
@@ -1076,8 +1085,11 @@ def _perform_build(
         base_path=base_path,
         object_targets=sorted(all_targets))
 
-    missing_deps = parse_deps(
-        only_targets=None, interesting_src_files=still_missing)
+    if all_targets:
+      missing_deps = parse_deps(
+          only_targets=None, interesting_src_files=still_missing)
+    else:
+      missing_deps = collections.defaultdict(set)
 
     logging.info('Building rdeps found the following extra targets: %r',
                  missing_deps)
