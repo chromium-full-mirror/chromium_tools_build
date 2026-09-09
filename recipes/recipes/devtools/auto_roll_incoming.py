@@ -44,7 +44,6 @@ CONFIG = {
         "third_party/chrome/chrome-linux",
         "third_party/cmake",
         "third_party/esbuild",
-        "third_party/rollup_libs",
         "scripts/ai_assistance/suite/outputs",
     ],
     "show_commit_log": False,
