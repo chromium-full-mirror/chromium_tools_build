@@ -4,6 +4,7 @@
 
 from PB.recipes.build.art import InputProperties
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
@@ -87,7 +88,8 @@ def RunSteps(api: DEPS, props):
           continuousgc=props.continuousgc,
           on_virtual_machine=props.on_virtual_machine,
           repo_root=props.repo_root,
-          manifest_branch=manifest_branch or 'master-art')
+          manifest_branch=manifest_branch or 'master-art',
+          test_steps=props.test_steps)
   else:
     with api.context(cwd=api.path.cache_dir / 'art'):
       setup_host_x86(
@@ -101,7 +103,8 @@ def RunSteps(api: DEPS, props):
           gcstress=props.gcstress,
           continuousgc=props.continuousgc,
           repo_root=props.repo_root,
-          manifest_branch=manifest_branch or 'master-art')
+          manifest_branch=manifest_branch or 'master-art',
+          test_steps=props.test_steps)
 
 
 def checkout(api: DEPS, branch, repo_root):
@@ -197,6 +200,47 @@ def ensure_tool(api: DEPS, package, version, subdir=""):
   return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
 
 
+@contextmanager
+def verify_test_steps_context(api: DEPS, test_steps):
+  """Wraps api.defer.context() to verify test steps against props.test_steps."""
+  with api.defer.context() as defer:
+    if not test_steps:
+      yield defer
+      return
+
+    step_index = [0]
+    cwd_prefix = f"{api.context.cwd}/"
+
+    def verifying_defer(fn, *args, **kwargs):
+      if (fn == api.step and args and args[0].startswith('test ') and
+          ': ' not in args[0]):
+        name = args[0]
+        cmd = args[1] if len(args) > 1 else []
+        assert step_index[0] < len(test_steps), (
+            f"Extra test step '{name}' not in props.test_steps")
+        expected = test_steps[step_index[0]]
+        step_index[0] += 1
+        assert name == expected.name, (
+            f"Step {step_index[0]} name mismatch: '{name}' != '{expected.name}'"
+        )
+        norm_cmd = [str(c).removeprefix(cwd_prefix) for c in cmd]
+        assert norm_cmd == list(
+            expected.cmd), (f"Step '{name}' cmd mismatch:\n"
+                            f"Actual:   {norm_cmd}\n"
+                            f"Expected: {list(expected.cmd)}")
+      defer(fn, *args, **kwargs)
+
+    yield verifying_defer
+
+    assert step_index[0] == len(test_steps), (
+        f"Missing test steps: expected {len(test_steps)}, "
+        f"but only {step_index[0]} deferred")
+    api.step.empty(
+        'verify test_steps',
+        step_text=f'Verified {step_index[0]} test steps match props.test_steps',
+    )
+
+
 def setup_host_x86(api: DEPS,
                    debug,
                    bitness,
@@ -207,7 +251,8 @@ def setup_host_x86(api: DEPS,
                    gcstress=False,
                    continuousgc=False,
                    repo_root=None,
-                   manifest_branch="master-art"):
+                   manifest_branch="master-art",
+                   test_steps=None):
   checkout(api, manifest_branch, repo_root)
   clobber(api)
 
@@ -287,7 +332,7 @@ def setup_host_x86(api: DEPS,
     if build_only:
       return
 
-    with api.defer.context() as defer:
+    with verify_test_steps_context(api, test_steps) as defer:
       defer(api.step, 'test gtest', [
           'build/soong/soong_ui.bash', '--make-mode',
           'test-art-host-gtest%d' % bitness
@@ -356,7 +401,8 @@ def setup_target(api: DEPS,
                  heap_poisoning=False,
                  on_virtual_machine=False,
                  repo_root=None,
-                 manifest_branch="master-art"):
+                 manifest_branch="master-art",
+                 test_steps=None):
 
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
@@ -505,7 +551,7 @@ def setup_target(api: DEPS,
       api.step('boot the virtual machine',
                [art_tools.joinpath('buildbot-vm.sh'), 'boot'])
 
-  with api.defer.context() as defer:
+  with verify_test_steps_context(api, test_steps) as defer:
     with api.context(env=test_env):
       defer(api.step, 'device pre-run cleanup',
             [art_tools.joinpath('buildbot-cleanup-device.sh')])
@@ -663,17 +709,95 @@ def setup_target(api: DEPS,
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-    'host-x86_64-default_opts',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.properties(
-      bitness=32,
-      debug=False,
-      concurrent_collector=True,
-      generational_cc=True,
-    )
-  )
+      'host-x86_64-default_opts', api.buildbucket.ci_build(project='art',),
+      api.properties(
+          bitness=32,
+          debug=False,
+          concurrent_collector=True,
+          generational_cc=True,
+          test_steps=[
+              {
+                  'name':
+                      'test gtest',
+                  'cmd': [
+                      'build/soong/soong_ui.bash', '--make-mode',
+                      'test-art-host-gtest32'
+                  ]
+              },
+              {
+                  'name':
+                      'test optimizing',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--verbose',
+                      '--host', '--ndebug', '--optimizing'
+                  ]
+              },
+              {
+                  'name':
+                      'test debuggable',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--verbose',
+                      '--host', '--ndebug', '--jit', '--debuggable'
+                  ]
+              },
+              {
+                  'name':
+                      'test interpreter',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--verbose',
+                      '--host', '--ndebug', '-j5', '--interpreter'
+                  ]
+              },
+              {
+                  'name':
+                      'test baseline',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--verbose',
+                      '--host', '--ndebug', '--baseline'
+                  ]
+              },
+              {
+                  'name':
+                      'test jit',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--verbose',
+                      '--host', '--ndebug', '--jit'
+                  ]
+              },
+              {
+                  'name':
+                      'test speed-profile',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--verbose',
+                      '--host', '--ndebug', '--speed-profile'
+                  ]
+              },
+              {
+                  'name':
+                      'test libcore',
+                  'cmd': [
+                      'art/tools/run-libcore-tests.sh', '--mode=host',
+                      '--variant=X32'
+                  ]
+              },
+              {
+                  'name':
+                      'test libjdwp jit',
+                  'cmd': [
+                      'art/tools/run-libjdwp-tests.sh', '--mode=host',
+                      '--variant=X32'
+                  ]
+              },
+              {
+                  'name':
+                      'test libjdwp interpreter',
+                  'cmd': [
+                      'art/tools/run-libjdwp-tests.sh', '--mode=host',
+                      '--variant=X32', '--no-jit'
+                  ]
+              },
+          ],
+      ))
 
   yield api.test(
       'host-x86_64-opts', api.buildbucket.ci_build(project='art',),
@@ -723,6 +847,112 @@ def GenTests(api: TEST_DEPS):
           device="target.arm.64",
           generational_cc=True,
           product="armv8",
+          test_steps=[
+              {
+                  'name': 'test gtest',
+                  'cmd': ['art/tools/run-gtests.sh']
+              },
+              {
+                  'name':
+                      'test optimizing',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--optimizing'
+                  ]
+              },
+              {
+                  'name':
+                      'test optimizing all-isa-features',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--optimizing',
+                      '--run-test-option=--Xcompiler-option='
+                      '--instruction-set-variant=cortex-a35',
+                      '--run-test-option=--Xcompiler-option='
+                      '--instruction-set-features=runtime'
+                  ]
+              },
+              {
+                  'name':
+                      'test debuggable',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--optimizing', '--debuggable'
+                  ]
+              },
+              {
+                  'name':
+                      'test jit debuggable',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--jit', '--debuggable'
+                  ]
+              },
+              {
+                  'name':
+                      'test interpreter',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--interpreter'
+                  ]
+              },
+              {
+                  'name':
+                      'test baseline',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--baseline'
+                  ]
+              },
+              {
+                  'name':
+                      'test jit',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--jit'
+                  ]
+              },
+              {
+                  'name':
+                      'test jit-on-first-use',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--jit-on-first-use'
+                  ]
+              },
+              {
+                  'name':
+                      'test speed-profile',
+                  'cmd': [
+                      './art/test/testrunner/testrunner.py', '--target',
+                      '--verbose', '--debug', '--speed-profile'
+                  ]
+              },
+              {
+                  'name':
+                      'test libcore',
+                  'cmd': [
+                      'art/tools/run-libcore-tests.sh', '--mode=device',
+                      '--variant=X64', '--debug'
+                  ]
+              },
+              {
+                  'name':
+                      'test libjdwp jit',
+                  'cmd': [
+                      'art/tools/run-libjdwp-tests.sh', '--mode=device',
+                      '--variant=X64', '--debug'
+                  ]
+              },
+              {
+                  'name':
+                      'test libjdwp interpreter',
+                  'cmd': [
+                      'art/tools/run-libjdwp-tests.sh', '--mode=device',
+                      '--variant=X64', '--debug', '--no-jit'
+                  ]
+              },
+          ],
       ),
   )
 

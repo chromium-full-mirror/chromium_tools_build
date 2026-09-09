@@ -2850,6 +2850,13 @@
     "name": "device post-run cleanup"
   },
   {
+    "cmd": [],
+    "name": "verify test_steps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Verified 13 test steps match props.test_steps@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

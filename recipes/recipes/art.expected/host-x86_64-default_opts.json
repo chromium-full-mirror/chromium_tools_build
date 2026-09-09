@@ -526,6 +526,13 @@
     "name": "test libjdwp interpreter"
   },
   {
+    "cmd": [],
+    "name": "verify test_steps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Verified 10 test steps match props.test_steps@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]
