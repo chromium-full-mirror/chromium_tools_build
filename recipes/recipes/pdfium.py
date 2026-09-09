@@ -218,6 +218,16 @@ class _ReverseByteOrderOption(_DefaultOption):
 
 
 @dataclass
+class _FontationsOption(_DefaultOption):
+  """A test_runner.py test option to enable Fontations."""
+
+  name: str = 'fontations'
+  test_suite_suffix: str = 'fontations'
+  additional_arg: str = '--fontations'
+  renderers: frozenset = _DEFAULT_RENDERERS
+
+
+@dataclass
 class _TestRequest:
   """A request to run a test."""
 
@@ -256,7 +266,6 @@ def _generate_out_path(memory_tool, partition_alloc, skia, rust, xfa, v8, rel,
   if skia:
     out_dir += '_skia'
   if rust:
-    assert (skia)
     out_dir += '_rust'
   if xfa:
     out_dir += '_xfa'
@@ -367,7 +376,7 @@ def _request_all_javascript_tests(test_runner, xfa):
     test_runner.request_javascript_tests(_XfaDisabledOption)
 
 
-def _request_all_pixel_tests(test_runner, skia, v8, xfa):
+def _request_all_pixel_tests(test_runner, skia, v8, xfa, fontations):
   test_runner.request_pixel_tests(_DefaultOption)
   test_runner.request_pixel_tests(_OneshotOption)
 
@@ -383,8 +392,11 @@ def _request_all_pixel_tests(test_runner, skia, v8, xfa):
     if xfa:
       test_runner.request_pixel_tests(_XfaDisabledOption)
 
+  if fontations:
+    test_runner.request_pixel_tests(_FontationsOption)
 
-def _request_all_corpus_tests(test_runner, skia, v8, xfa):
+
+def _request_all_corpus_tests(test_runner, skia, v8, xfa, fontations):
   test_runner.request_corpus_tests(_DefaultOption)
   test_runner.request_corpus_tests(_OneshotOption)
 
@@ -400,9 +412,13 @@ def _request_all_corpus_tests(test_runner, skia, v8, xfa):
     if xfa:
       test_runner.request_corpus_tests(_XfaDisabledOption)
 
+  if fontations:
+    test_runner.request_corpus_tests(_FontationsOption)
 
-def _run_tests(api: DEPS, source_root, memory_tool, v8, xfa, skia, out_dir,
-               build_config, revision, run_skia_gold, renderers, swarming):
+
+def _run_tests(api: DEPS, source_root, memory_tool, v8, xfa, skia, rust,
+               out_dir, build_config, revision, run_skia_gold, renderers,
+               swarming):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
       api, source_root, base_variant={
@@ -427,17 +443,20 @@ def _run_tests(api: DEPS, source_root, memory_tool, v8, xfa, skia, out_dir,
   test_runner.request_unit_tests()
 
   # pdfium_embeddertests:
-  test_runner.request_embedder_tests()
+  use_fontations = rust and not skia
+  test_runner.request_embedder_tests(fontations=False)
+  if use_fontations:
+    test_runner.request_embedder_tests(fontations=True)
 
   # run_javascript_tests.py:
   if v8:
     _request_all_javascript_tests(test_runner, xfa)
 
   # run_pixel_tests.py:
-  _request_all_pixel_tests(test_runner, skia, v8, xfa)
+  _request_all_pixel_tests(test_runner, skia, v8, xfa, use_fontations)
 
   # run_corpus_tests.py:
-  _request_all_corpus_tests(test_runner, skia, v8, xfa)
+  _request_all_corpus_tests(test_runner, skia, v8, xfa, use_fontations)
 
   test_runner.run_tests()
 
@@ -775,23 +794,31 @@ class _TestRunner:
   def request_unit_tests(self):
     self._request_gtest('unittests', target=('', 'pdfium_unittests'))
 
-  def request_embedder_tests(self):
+  def request_embedder_tests(self, fontations):
     for renderer in self.embedder_test_renderers:
       if renderer not in _DEFAULT_RENDERERS:
         continue
 
       test_name = 'embeddertests'
       args = []
+      test_suite_suffix = ''
+
+      if fontations:
+        test_name = f'{test_name} (fontations)'
+        args.append('--fontations')
+        test_suite_suffix = 'fontations'
 
       if renderer:
         test_name = f'{test_name} ({renderer})'
         args.append(f'--use-renderer={renderer}')
+        test_suite_suffix = (f'{test_suite_suffix}_{renderer}'
+                             if test_suite_suffix else renderer)
 
       self._request_gtest(
           test_name,
           target=('', 'pdfium_embeddertests'),
           args=args,
-          test_suite_suffix=renderer)
+          test_suite_suffix=test_suite_suffix or None)
 
   def request_javascript_tests(self, option):
     self._request_python_tests(_JAVASCRIPT_TEST_TYPE, option)
@@ -1046,7 +1073,7 @@ def RunSteps(api: DEPS, memory_tool, partition_alloc, skia, rust, xfa, v8,
     if skip_test:
       return
 
-    _run_tests(api, source_dir, memory_tool, v8, xfa, skia, out_dir,
+    _run_tests(api, source_dir, memory_tool, v8, xfa, skia, rust, out_dir,
                build_config, revision, run_skia_gold, renderers, swarming)
 
 
@@ -1187,6 +1214,14 @@ def GenTests(api: TEST_DEPS):
       api.builder_group.for_current('client.pdfium'),
       _gen_properties(api, skia=True, rust=True, xfa=True),
       _gen_ci_build(api, 'linux_skia_rust'),
+  )
+
+  yield api.test(
+      'linux_xfa_rust',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, rust=True, xfa=True),
+      _gen_ci_build(api, 'linux_xfa_rust'),
   )
 
   yield api.test(
