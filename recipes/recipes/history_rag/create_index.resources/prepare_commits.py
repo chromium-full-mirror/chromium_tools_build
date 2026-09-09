@@ -81,7 +81,7 @@ def load_commit_data(input_dir: Path) -> list[dict]:
 
   for file_path in json_files:
     try:
-      with open(file_path, 'r', encoding='utf-8') as f:
+      with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
         data = json.load(f)
 
       # Validate required fields

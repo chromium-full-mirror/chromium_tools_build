@@ -40,7 +40,12 @@ def get_git_root(git_dir: Optional[str] = None) -> str:
       cmd.extend(['-C', git_dir])
     cmd.extend(['rev-parse', '--show-toplevel'])
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        cmd,
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding='utf-8',
+        errors='replace')
     return result.stdout.strip()
   except (subprocess.CalledProcessError, FileNotFoundError) as e:
     print(f"Error finding git root: {e}", file=sys.stderr)
@@ -62,7 +67,12 @@ def get_file_hash(file_path: Path) -> Optional[str]:
   try:
     cmd = ['git', '-C', str(file_path.parent), 'hash-object', file_path.name]
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        cmd,
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding='utf-8',
+        errors='replace')
     return result.stdout.strip()
   except (subprocess.CalledProcessError, FileNotFoundError) as e:
     print(f"Error getting hash for {file_path}: {e}", file=sys.stderr)
@@ -89,7 +99,12 @@ def get_blame_data(file_path: Path) -> Optional[List[str]]:
         str(file_path.parent), 'blame', '--porcelain', file_path.name
     ]
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        cmd,
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding='utf-8',
+        errors='replace')
 
     lines = result.stdout.splitlines()
     blame_commits = []
@@ -222,7 +237,12 @@ def blame(args):
       cmd = ['git', '-C', str(input_dir), 'ls-files', '.']
 
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        cmd,
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding='utf-8',
+        errors='replace')
     files_to_process = result.stdout.splitlines()
 
   except (subprocess.CalledProcessError, FileNotFoundError) as e:
@@ -318,7 +338,12 @@ def get_git_root_for_file(file_path: Path) -> Optional[str]:
   try:
     cmd = ['git', '-C', str(dir_path), 'rev-parse', '--show-toplevel']
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        cmd,
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding='utf-8',
+        errors='replace')
     root = result.stdout.strip()
     _git_root_cache[dir_path] = root
     return root
@@ -341,7 +366,7 @@ def _process_blame_file(file_info: Tuple[Path, Path]) -> defaultdict:
   source_relative_path = Path(relative_path_str[:-5])
 
   try:
-    with open(json_file, 'r', encoding='utf-8') as f:
+    with open(json_file, 'r', encoding='utf-8', errors='replace') as f:
       blame_data = json.load(f)
 
     if 'lines' in blame_data and isinstance(blame_data['lines'], list):
@@ -401,7 +426,7 @@ def thread_safe_memoize(func):
 @thread_safe_memoize
 def read_source_file(file_path: Path) -> Optional[List[str]]:
   try:
-    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+    with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
       source_lines = f.readlines()
       return source_lines
   except IOError as e:
@@ -568,7 +593,12 @@ def get_commit_details(commit_hash: str,
         'show', '-s', '--format=%B%n--author--%n%an%n--date--%n%ai', commit_hash
     ])
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        cmd,
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding='utf-8',
+        errors='replace')
 
     output = result.stdout.strip()
     parts = output.split('\n--author--\n')
@@ -641,7 +671,7 @@ def get_commit_details(commit_hash: str,
         'date': date.strip(),
         'metadata': metadata
     }
-  except (subprocess.CalledProcessError, FileNotFoundError, IndexError) as e:
+  except Exception as e:
     print(
         f"Error getting details for commit {commit_hash}: {e}", file=sys.stderr)
     return None
@@ -665,7 +695,7 @@ def process_commit_hash(commit_hash: str,
 
   if output_file.exists():
     try:
-      with open(output_file, 'r', encoding='utf-8') as f:
+      with open(output_file, 'r', encoding='utf-8', errors='replace') as f:
         existing_data = json.load(f)
       if existing_data.get('version') == VERSION:
         return
@@ -712,7 +742,7 @@ def fetch(args):
   output_dir.mkdir(parents=True, exist_ok=True)
 
   try:
-    with open(blame_details_file, 'r', encoding='utf-8') as f:
+    with open(blame_details_file, 'r', encoding='utf-8', errors='replace') as f:
       blame_details = json.load(f)
     if not isinstance(blame_details, dict):
       raise TypeError("Input file should contain a JSON dictionary.")

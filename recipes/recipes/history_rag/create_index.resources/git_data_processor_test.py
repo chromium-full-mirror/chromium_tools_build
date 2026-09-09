@@ -119,6 +119,29 @@ class TestCommitMetadata(unittest.TestCase):
     self.assertIn("Subject line", details['message'])
     self.assertNotIn("Bug: 123", details['message'])
 
+  @patch('subprocess.run')
+  def test_get_commit_details_unicode_replace(self, mock_run):
+    # Simulate non-UTF8 characters replaced with replacement character
+    raw_output = ("Subject with non-utf8 char: \ufffd\n"
+                  "\n"
+                  "--author--\n"
+                  "Dev Name \ufffd <dev@example.com>\n"
+                  "--date--\n"
+                  "2025-01-01 10:00:00")
+    mock_run.return_value.stdout = raw_output
+
+    details = git_data_processor.get_commit_details(HASH_A)
+    self.assertIsNotNone(details)
+    self.assertEqual(details['author'], "Dev Name \ufffd <dev@example.com>")
+    self.assertIn("non-utf8 char", details['message'])
+    self.assertEqual(mock_run.call_args.kwargs.get('errors'), 'replace')
+
+  @patch('subprocess.run')
+  def test_get_commit_details_exception_handling(self, mock_run):
+    mock_run.side_effect = subprocess.SubprocessError("Command failed")
+    details = git_data_processor.get_commit_details(HASH_A)
+    self.assertIsNone(details)
+
 
 class TestCommandFlows(unittest.TestCase):
   """Tests for the high-level CLI command functions."""
