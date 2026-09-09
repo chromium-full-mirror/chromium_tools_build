@@ -126,6 +126,8 @@ def RollSubproject(api: DEPS, subproject_name, subproject_path, roll_cmd):
 
 
 def RunSteps(api: DEPS, properties):
+  assert (not api.buildbucket.build.input.gerrit_changes
+         ), "CI builders must not run with gerrit_changes"
   if not api.led.led_build:
     api.bcid_reporter.report_stage("start")
 
@@ -315,5 +317,13 @@ def GenTests(api: TEST_DEPS):
                        f'{autorolled_step_prefix}Run fetch_all script'),
       api.post_process(post_process.MustRun,
                        f'{autorolled_step_prefix}register cipd.yaml'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'gerrit_changes_rejected',
+      api.buildbucket.try_build(),
+      api.expect_exception('AssertionError'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
