@@ -171,13 +171,14 @@ message BuilderSpec {
       string gs_bucket = 1;
       // A canned ACL to apply to the uploaded archive
       string gs_acl = 2;
-      // Required, the prefix of the name of the archive to create
+      // The prefix of the name of the archive to create.
       //
       // The name of the archive will begin with the prefix and include
       // additional details such as platform and target, among others.
+      // Required if `use_archive_path` is false.
       string archive_name_prefix = 3;
       // Path prefix to use verbatim for the uploaded zip archive.
-      // If `use_archive_path` is true, this path is used verbatim.
+      // If `use_archive_path` is true, this path is used verbatim and is required.
       // Otherwise, the derived path is checked to match this path.
       string archive_path = 6;
       // If true, use `archive_path` verbatim and skip path derivation.

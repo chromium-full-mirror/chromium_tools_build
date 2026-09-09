@@ -79,7 +79,10 @@ def _validate_skylab_upload_location(obj, ctx):
 @VALIDATORS.register(properties_pb.BuilderSpec.ClusterfuzzArchive)
 def _validate_clusterfuzz_archive(obj, ctx):
   ctx.validate_field(obj, 'gs_bucket')
-  ctx.validate_field(obj, 'archive_name_prefix')
+  if obj.use_archive_path:
+    ctx.validate_field(obj, 'archive_path')
+  else:
+    ctx.validate_field(obj, 'archive_name_prefix')
 
 
 @VALIDATORS.register(properties_pb.BuilderSpec)
