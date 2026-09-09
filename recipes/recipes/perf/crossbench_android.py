@@ -243,8 +243,8 @@ def RunSteps(api: DEPS, properties):
 
 def GenTests(api: TEST_DEPS):
 
-  _INSTALL_STEP = 'Install android_35_google_apis_x64.textpb'
-  run_config = TestRunConfig(sdk_version=35, avd_suffix='')
+  _INSTALL_STEP = 'Install android_37_google_apis_x64.textpb'
+  run_config = TestRunConfig(sdk_version=37, avd_suffix='')
 
   def gen_test_data_retry_start(max_attempts=2):
     start_step = 'Start Android emulator'
@@ -263,7 +263,7 @@ def GenTests(api: TEST_DEPS):
       'basic-android-test',
       api.platform('linux', 64),
       api.platform.arch('intel'),
-      api.properties(android_sdk=35),
+      api.properties(android_sdk=37),
       api.path.exists(gen_adb_path()),
   )
 
@@ -271,7 +271,7 @@ def GenTests(api: TEST_DEPS):
       'retry-android-test',
       api.platform('linux', 64),
       api.platform.arch('intel'),
-      api.properties(android_sdk=35),
+      api.properties(android_sdk=37),
       api.path.exists(gen_adb_path()),
       gen_test_data_retry_start(),
       api.step_data(
@@ -281,7 +281,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
       'no-emulator-test', api.platform('linux', 64), api.platform.arch('intel'),
-      api.properties(android_sdk=35), api.path.exists(gen_adb_path()),
+      api.properties(android_sdk=37), api.path.exists(gen_adb_path()),
       api.step_data(f'{_INSTALL_STEP}.List adb devices', api.json.output([])))
 
   yield api.test(
